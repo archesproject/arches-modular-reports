@@ -1,0 +1,6 @@
+{
+    "name": "arches_provenance",
+    "dependencies": {
+        "arches": "archesproject/arches#stable/5.1.3"
+    }
+}

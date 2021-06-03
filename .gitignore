@@ -127,3 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.DS_Store
+
+arches_provenance/media/packages
+data/
+settings_local.py
