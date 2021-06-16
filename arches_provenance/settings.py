@@ -15,6 +15,7 @@ except ImportError:
 APP_NAME = 'arches_provenance'
 APP_ROOT = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 STATICFILES_DIRS =  (os.path.join(APP_ROOT, 'media'),) + STATICFILES_DIRS
+STATIC_ROOT = ''
 
 DATATYPE_LOCATIONS.append('arches_provenance.datatypes')
 FUNCTION_LOCATIONS.append('arches_provenance.functions')
@@ -89,6 +90,7 @@ INSTALLED_APPS = (
     'corsheaders',
     'oauth2_provider',
     'django_celery_results',
+    'compressor',
     'arches_provenance',
 )
 
@@ -96,7 +98,6 @@ ALLOWED_HOSTS = []
 
 SYSTEM_SETTINGS_LOCAL_PATH = os.path.join(APP_ROOT, 'system_settings', 'System_Settings.json')
 WSGI_APPLICATION = 'arches_provenance.wsgi.application'
-STATIC_ROOT = '/var/www/media'
 
 RESOURCE_IMPORT_LOG = os.path.join(APP_ROOT, 'logs', 'resource_import.log')
 DEFAULT_RESOURCE_IMPORT_USER = {'username': 'admin', 'userid': 1}
