@@ -5567,13 +5567,13 @@ In more recent documentation often point coordinate information is provided that
   <rdfs:subClassOf rdf:resource="E33_Linguistic_Object"/>
   <rdfs:subClassOf rdf:resource="E41_Appellation"/>
 </rdfs:Class>
-<rdf:Property rdf:about="P199_represents_entity_of_type">
+<rdf:Property rdf:about="P199_represents_instance_of_type">
     <rdfs:label xml:lang="en">represents entity of type</rdfs:label>
     <rdfs:comment>This property establishes the relationship between an instance of E36 Visual Item and an instance of E55 Type that characterises the thing depicted. This property is used when the identity of the thing depicted is unknown or unrecorded, but is clearly a particular thing of that type. If the instance of E36 Visual Item directly depicts the concept of the E55 Type rather than an instance of a thing of that type, then this should be represented using E36 Visual Item P138 represents E55 Type.
     This property is a shortcut of the more fully developed path from E36 Visual Item through P138 represents, E1 CRM Entity, P2 has type, E55 Type.</rdfs:comment>
     <rdfs:domain rdf:resource="E36_Visual_Item" />
     <rdfs:range rdf:resource="E55_Type" />
-    <owl:inverseOf rdf:resource="P199i_is_type_of_entity_represented_by" />
+    <owl:inverseOf rdf:resource="P199i_is_type_of_instance_represented_by" />
 </rdf:Property>
 <rdf:Property rdf:about="P199i_is_type_of_entity_represented_by">
     <rdfs:label xml:lang="en">is type of entity represented by</rdfs:label>

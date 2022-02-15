@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rdf:RDF xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/">
+<skos:Concept rdf:about="http://localhost:8000/4908e3dc-cc22-4b17-b172-e874ea20cb5b">
+<skos:narrower>
+<skos:Concept rdf:about="http://localhost:8000/c0c27c02-9a7f-4c83-90e6-6223526e98e4">
+<skos:inScheme rdf:resource="http://localhost:8000/1d20ed6c-b049-4957-821f-901e33edae31"/>
+<skos:prefLabel xml:lang="en">{"id": "6e151508-4b65-43ac-b78a-b7189e893279", "value": "STAR Identifier"}</skos:prefLabel>
+<dcterms:identifier xml:lang="en">{"id": "c6fd5dfc-581b-4806-9cf9-23fdd89a8911", "value": "https://data.getty.edu/local/thesaurus/star-identifier"}</dcterms:identifier>
+</skos:Concept>
+</skos:narrower>
+<skos:inScheme>
 <skos:ConceptScheme rdf:about="http://localhost:8000/1d20ed6c-b049-4957-821f-901e33edae31">
 <dcterms:title xml:lang="en">{"id": "a9ef011d-2899-453f-a9d2-654ce555bf7b", "value": "PSCP Entries"}</dcterms:title>
-<skos:hasTopConcept>
+<skos:hasTopConcept rdf:resource="http://localhost:8000/48e3cb94-3bf9-4240-8ca0-0de5fee2847e"/>
+</skos:ConceptScheme>
+</skos:inScheme>
+<skos:prefLabel xml:lang="en">{"id": "5d385592-bb8b-4f5c-b42d-b7d48e8df8a5", "value": "Identifiers"}</skos:prefLabel>
+</skos:Concept>
 <skos:Concept rdf:about="http://localhost:8000/48e3cb94-3bf9-4240-8ca0-0de5fee2847e">
 <skos:narrower rdf:resource="http://localhost:8000/4908e3dc-cc22-4b17-b172-e874ea20cb5b"/>
 <skos:prefLabel xml:lang="en">{"id": "4333051d-32bd-4410-bf58-d9b4f69ad755", "value": "PSCP Concepts"}</skos:prefLabel>
-<skos:inScheme rdf:resource="http://localhost:8000/1d20ed6c-b049-4957-821f-901e33edae31"/>
-</skos:Concept>
-</skos:hasTopConcept>
-</skos:ConceptScheme>
-<skos:Concept rdf:about="http://localhost:8000/c0c27c02-9a7f-4c83-90e6-6223526e98e4">
-<dcterms:identifier xml:lang="en">{"id": "c6fd5dfc-581b-4806-9cf9-23fdd89a8911", "value": "https://data.getty.edu/local/thesaurus/star-identifier"}</dcterms:identifier>
-<skos:inScheme rdf:resource="http://localhost:8000/1d20ed6c-b049-4957-821f-901e33edae31"/>
-<skos:prefLabel xml:lang="en">{"id": "6e151508-4b65-43ac-b78a-b7189e893279", "value": "STAR Identifier"}</skos:prefLabel>
-</skos:Concept>
-<skos:Concept rdf:about="http://localhost:8000/4908e3dc-cc22-4b17-b172-e874ea20cb5b">
-<skos:narrower rdf:resource="http://localhost:8000/c0c27c02-9a7f-4c83-90e6-6223526e98e4"/>
-<skos:prefLabel xml:lang="en">{"id": "5d385592-bb8b-4f5c-b42d-b7d48e8df8a5", "value": "Identifiers"}</skos:prefLabel>
 <skos:inScheme rdf:resource="http://localhost:8000/1d20ed6c-b049-4957-821f-901e33edae31"/>
 </skos:Concept>
 </rdf:RDF>
