@@ -63,7 +63,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
     {% endblock loading_mask %}
-    <div class="machine-banner">!</div>
+    <div class="machine-banner"> - {{ app_settings.VERSION }}</div>
     {% block body %}
     {{ block.super }}
     {% endblock body %}
