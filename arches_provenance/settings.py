@@ -12,6 +12,8 @@ try:
 except ImportError:
     pass
 
+# ACCESSIBILITY_MODE = ""
+
 APP_NAME = 'arches_provenance'
 APP_ROOT = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 STATICFILES_DIRS =  (os.path.join(APP_ROOT, 'media'),) + STATICFILES_DIRS
@@ -145,6 +147,10 @@ SESSION_COOKIE_NAME = 'arches_provenance'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    },
+    "user_permission": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "user_permission_cache",
     }
 }
 
