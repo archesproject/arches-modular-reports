@@ -98,7 +98,7 @@
                     "helptext": null,
                     "helptitle": null,
                     "instructions": null,
-                    "is_editable": false,
+                    "is_editable": true,
                     "name": "Reference",
                     "nodegroup_id": "546a8750-2a60-11ec-b195-0a9473e82189",
                     "sortorder": 11,
@@ -135,7 +135,7 @@
                     "helptext": null,
                     "helptitle": null,
                     "instructions": null,
-                    "is_editable": false,
+                    "is_editable": true,
                     "name": "Subject of VIsual Work",
                     "nodegroup_id": "6d3775a0-bbd9-11ea-b6b2-3af9d3b32b71",
                     "sortorder": 3,
@@ -635,7 +635,7 @@
                     "label": "Style Metatype",
                     "node_id": "6d9eafaa-bca5-11ea-83db-3af9d3b32b71",
                     "sortorder": 1,
-                    "visible": false,
+                    "visible": true,
                     "widget_id": "10000000-0000-0000-0000-000000000002"
                 },
                 {
@@ -1447,7 +1447,6 @@
                 {
                     "card_id": "3c341490-bbd9-11ea-b6b2-3af9d3b32b71",
                     "config": {
-                        "defaultResourceInstance": [],
                         "label": "Entity",
                         "placeholder": ""
                     },
@@ -1475,7 +1474,6 @@
                 {
                     "card_id": "d3dccfd6-bbd8-11ea-b6b2-3af9d3b32b71",
                     "config": {
-                        "defaultResourceInstance": [],
                         "label": "Source Reference Work for Name",
                         "placeholder": null
                     },
@@ -2618,23 +2616,25 @@
             "functions_x_graphs": [
                 {
                     "config": {
-                        "description": {
-                            "nodegroup_id": "d74c3c7e-bbd8-11ea-b6b2-3af9d3b32b71",
-                            "string_template": "<statement_content>"
-                        },
-                        "map_popup": {
-                            "nodegroup_id": "",
-                            "string_template": ""
-                        },
-                        "name": {
-                            "nodegroup_id": "d3dccdec-bbd8-11ea-b6b2-3af9d3b32b71",
-                            "string_template": "<name_content>"
+                        "descriptor_types": {
+                            "description": {
+                                "nodegroup_id": "d74c3c7e-bbd8-11ea-b6b2-3af9d3b32b71",
+                                "string_template": "<statement_content>"
+                            },
+                            "map_popup": {
+                                "nodegroup_id": "",
+                                "string_template": ""
+                            },
+                            "name": {
+                                "nodegroup_id": "d3dccdec-bbd8-11ea-b6b2-3af9d3b32b71",
+                                "string_template": "<name_content>"
+                            }
                         },
                         "triggering_nodegroups": []
                     },
                     "function_id": "60000000-0000-0000-0000-000000000001",
                     "graph_id": "933ee880-b4b5-11ea-84f7-3af9d3b32b71",
-                    "id": "18e65412-9931-11ec-bb8f-3af9d39ee102"
+                    "id": "0e4979e9-cf11-11eb-ba14-0a9473e82189"
                 }
             ],
             "graphid": "933ee880-b4b5-11ea-84f7-3af9d3b32b71",
@@ -2670,7 +2670,7 @@
                     "parentnodegroup_id": null
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "6d9eac1c-bca5-11ea-83db-3af9d3b32b71",
                     "parentnodegroup_id": null
@@ -2786,6 +2786,7 @@
             ],
             "nodes": [
                 {
+                    "alias": "type_depicted",
                     "config": {
                         "rdmCollection": "11b54ec4-f0f1-49a6-b0d0-43fc742aa972"
                     },
@@ -2806,6 +2807,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "entity_depicted",
                     "config": {
                         "graphs": [
                             {
@@ -2845,6 +2847,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "source_reference",
                     "config": {
                         "graphs": [
                             {
@@ -2872,6 +2875,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "subject",
                     "config": {
                         "rdmCollection": "8e6ae7e3-998e-469a-aa9a-9304da33d270"
                     },
@@ -2892,6 +2896,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "style",
                     "config": {
                         "rdmCollection": "ad955a6b-1718-45f4-a9ed-f718f837fd48"
                     },
@@ -2912,6 +2917,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "style_metatype",
                     "config": {
                         "rdmCollection": "20ec82f4-3ad0-49cc-95c2-489bf1c62a2e"
                     },
@@ -2932,6 +2938,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_statement_name",
                     "config": null,
                     "datatype": "semantic",
                     "description": "# Specific:\n\n\n# General:\nIt is strongly recommended that every resource that should be rendered to an end user have at least one name. Different types of name can be distinguished using classifications. See: https://linked.art/model/base/#names\n\n# Arches Note:\nIn Statement, this is not exposed to advanced search, as it is just a display label. The value of the statement's content is in Content.\n\n* BranchId: la-name\n* FieldId: \n",
@@ -2950,6 +2957,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_statement",
                     "config": null,
                     "datatype": "semantic",
                     "description": "# Specific:\n\n\n# General:\nIn many cases, current data does not support the level of specificity that the full ontology allows, or the information is simply best expressed in human-readable form. For example, instead of a completely modeled set of parts with materials, many museum collection management systems allow only a single human-readable string for the \"medium\" or \"materials statement\".  Any time that there is a description of the resource, with or without qualification as to the type of description, then this branch can be used to record the descriptive text. See: https://linked.art/model/base/#statements-about-a-resource\n\n# Arches Note:\n\n\n* BranchId: la-statement\n* FieldId: \n",
@@ -2968,6 +2976,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation",
                     "config": null,
                     "datatype": "semantic",
                     "description": "",
@@ -2986,6 +2995,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_duration_name",
                     "config": null,
                     "datatype": "semantic",
                     "description": "* Collection_id: LAP.8_Dimension\n* Field_id: LAF.22_LAF.100_dimension_name\n* Category_id: CAT.10_Substance",
@@ -3004,6 +3014,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_statement",
                     "config": null,
                     "datatype": "semantic",
                     "description": "* Collection_id: LAP.6_TimeSpan\n* Field_id: LAF.47_timespan_statement\n* Category_id: CAT.10_Substance",
@@ -3022,6 +3033,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_name",
                     "config": null,
                     "datatype": "semantic",
                     "description": "* Collection_id: LAP.6_TimeSpan\n* Field_id: LAF.49_timespan_name\n* Category_id: CAT.10_Substance\n",
@@ -3040,6 +3052,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_name",
                     "config": null,
                     "datatype": "semantic",
                     "description": "# Specific:\n\n\n# General:\nIt is strongly recommended that every resource that should be rendered to an end user have at least one name. Different types of name can be distinguished using classifications. See: https://linked.art/model/base/#names\n\n# Arches Note:\nThis node's content should be the value for the title descriptor function, when used for a resource model.\n\n* BranchId: la-name\n* FieldId: \n",
@@ -3058,6 +3071,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_duration",
                     "config": null,
                     "datatype": "semantic",
                     "description": "* Collection_id: LAP.6_TimeSpan\n* Field_id: LAF.22_timespan_duration\n* Category_id: CAT.10_Substance\n",
@@ -3076,6 +3090,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan",
                     "config": null,
                     "datatype": "semantic",
                     "description": "* Collection_id: \n* Field_id: \n* Category_id: ",
@@ -3094,6 +3109,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_statement_name",
                     "config": null,
                     "datatype": "semantic",
                     "description": "* Collection_id: LAP.4_Statement\n* Field_id: LAF.47_LAF.50_statement_name\n* Category_id: CAT.10_Substance",
@@ -3112,6 +3128,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_name_content",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nThe string value of the full name.\n\n# Arches Note:\n\n\n* BranchId: la-name-content\n* FieldId: \n",
@@ -3130,6 +3147,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_statement_language",
                     "config": {
                         "rdmCollection": "f7fc4f6d-fd46-4881-846f-4a08bc1a3fef"
                     },
@@ -3150,6 +3168,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_location",
                     "config": {
                         "graphs": [
                             {
@@ -3177,6 +3196,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_duration_highest_possible_value",
                     "config": null,
                     "datatype": "number",
                     "description": "* Collection_id: LAP.8_Dimension\n* Field_id: LAF.22_LAF.98_dimension_highest_possible_value\n* Category_id: CAT.10_Substance\n",
@@ -3195,6 +3215,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_duration_unit",
                     "config": {
                         "rdmCollection": "bbf81641-b1dd-4ddf-858d-7e8ca823d385"
                     },
@@ -3215,6 +3236,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_label",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nEvery node should have a _label that provides a human-readable summary label for the node. This is intended not for end users, but for developers looking at the data. See:  https://linked.art/model/base/#core-properties\n\n# Arches Note:\n\n\n* BranchId: la-label\n* FieldId: \n",
@@ -3233,6 +3255,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_duration_label",
                     "config": null,
                     "datatype": "string",
                     "description": "* Collection_id: LAP.8_Dimension\n* Field_id: LAF.22_LAF.102_dimension_label\n* Category_id: CAT.10_Substance",
@@ -3251,6 +3274,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_statement_content",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nThis field records the string content of the statement.\n\n# Arches Note:\n\n\n* BranchId: \n* FieldId: \n",
@@ -3269,6 +3293,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_statement__label",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nEvery node should have a _label that provides a human-readable summary label for the node. This is intended not for end users, but for developers looking at the data. See:  https://linked.art/model/base/#core-properties\n\n# Arches Note:\n\n\n* BranchId: la-label\n* FieldId: \n",
@@ -3287,6 +3312,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_actor",
                     "config": {
                         "graphs": [
                             {
@@ -3318,6 +3344,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_statement_name_label",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nEvery node should have a _label that provides a human-readable summary label for the node. This is intended not for end users, but for developers looking at the data. See:  https://linked.art/model/base/#core-properties\n\n# Arches Note:\n\n\n* BranchId: la-label\n* FieldId: \n",
@@ -3336,6 +3363,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_name_type",
                     "config": {
                         "rdmCollection": "9f1cf9a8-ce65-455f-ab1e-a9b36e9e23ce"
                     },
@@ -3356,6 +3384,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_duration_lowest_possible_value",
                     "config": null,
                     "datatype": "number",
                     "description": "* Collection_id: LAP.8_Dimension\n* Field_id: LAF.22_LAF.105_dimension_lowest_possible_value\n* Category_id: CAT.10_Substance",
@@ -3374,6 +3403,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_duration_type",
                     "config": {
                         "rdmCollection": null
                     },
@@ -3394,6 +3424,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_duration_name_type",
                     "config": {
                         "rdmCollection": "9f1cf9a8-ce65-455f-ab1e-a9b36e9e23ce"
                     },
@@ -3414,6 +3445,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_duration_name_label",
                     "config": null,
                     "datatype": "string",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: LAF.22_LAF.100_LAF.4_name_label\n* Category_id: CAT.10_Substance",
@@ -3432,6 +3464,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_begin_of_the_begin",
                     "config": {
                         "dateFormat": "YYYY-MM-DD"
                     },
@@ -3452,6 +3485,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_statement_language",
                     "config": {
                         "rdmCollection": "f7fc4f6d-fd46-4881-846f-4a08bc1a3fef"
                     },
@@ -3472,6 +3506,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_statement_name_language",
                     "config": {
                         "rdmCollection": "f7fc4f6d-fd46-4881-846f-4a08bc1a3fef"
                     },
@@ -3492,6 +3527,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_name_language",
                     "config": {
                         "rdmCollection": "f7fc4f6d-fd46-4881-846f-4a08bc1a3fef"
                     },
@@ -3512,6 +3548,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_begin_of_the_end",
                     "config": {
                         "dateFormat": "YYYY-MM-DD"
                     },
@@ -3532,6 +3569,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_label",
                     "config": null,
                     "datatype": "string",
                     "description": "* Collection_id: LAP.6_TimeSpan\n* Field_id: LAF.46_timespan_label\n* Category_id: CAT.10_Substance\n",
@@ -3550,6 +3588,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_name_label",
                     "config": null,
                     "datatype": "string",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: LAF.49_LAF.4_name_label\n* Category_id: CAT.10_Substance",
@@ -3568,6 +3607,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_end_of_the_end",
                     "config": {
                         "dateFormat": "YYYY-MM-DD"
                     },
@@ -3588,6 +3628,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_type",
                     "config": {
                         "rdmCollection": null
                     },
@@ -3608,6 +3649,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_statement_name_type",
                     "config": {
                         "rdmCollection": "9f1cf9a8-ce65-455f-ab1e-a9b36e9e23ce"
                     },
@@ -3628,6 +3670,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_statement_name_content",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nThe string value of the full name.\n\n# Arches Note:\n\n\n* BranchId: la-name-content\n* FieldId: \n",
@@ -3646,6 +3689,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_statement_name_language",
                     "config": {
                         "rdmCollection": "f7fc4f6d-fd46-4881-846f-4a08bc1a3fef"
                     },
@@ -3666,6 +3710,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_statement_type_metatype",
                     "config": {
                         "rdmCollection": "a3c57ce4-58db-4f70-90ee-aeb94a9f86d7"
                     },
@@ -3686,6 +3731,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_statement_metatype",
                     "config": {
                         "rdmCollection": "a3c57ce4-58db-4f70-90ee-aeb94a9f86d7"
                     },
@@ -3706,6 +3752,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_statement_name_type",
                     "config": {
                         "rdmCollection": "9f1cf9a8-ce65-455f-ab1e-a9b36e9e23ce"
                     },
@@ -3726,6 +3773,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_statement_name_label",
                     "config": null,
                     "datatype": "string",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: LAF.47_LAF.50_LAF.4_name_label\n* Category_id: CAT.10_Substance\n",
@@ -3744,6 +3792,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_statement_content",
                     "config": null,
                     "datatype": "string",
                     "description": "* Collection_id: LAP.4_Statement\n* Field_id: LAF.47_LAF.15_statement_content\n* Category_id: CAT.10_Substance",
@@ -3762,6 +3811,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_statement_name_content",
                     "config": null,
                     "datatype": "string",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: LAF.47_LAF.50_LAF.6_name_content\n* Category_id: CAT.10_Substance",
@@ -3780,6 +3830,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_duration_value",
                     "config": null,
                     "datatype": "number",
                     "description": "* Collection_id: LAP.8_Dimension\n* Field_id: LAF.22_LAF.101_dimension_value\n* Category_id: CAT.10_Substance",
@@ -3798,6 +3849,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_duration_name_content",
                     "config": null,
                     "datatype": "string",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: LAF.22_LAF.100_LAF.6_name_content\n* Category_id: CAT.10_Substance",
@@ -3816,6 +3868,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_type",
                     "config": {
                         "rdmCollection": null
                     },
@@ -3836,6 +3889,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_duration_name_language",
                     "config": {
                         "rdmCollection": "f7fc4f6d-fd46-4881-846f-4a08bc1a3fef"
                     },
@@ -3856,6 +3910,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_statement_type",
                     "config": {
                         "rdmCollection": "f44f7240-35c5-49e8-a0e3-2ffe308f0862"
                     },
@@ -3876,6 +3931,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_name_language",
                     "config": {
                         "rdmCollection": "f7fc4f6d-fd46-4881-846f-4a08bc1a3fef"
                     },
@@ -3896,6 +3952,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_name_content",
                     "config": null,
                     "datatype": "string",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: LAF.49_LAF.6_name_content\n* Category_id: CAT.10_Substance",
@@ -3914,6 +3971,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_statement_label",
                     "config": null,
                     "datatype": "string",
                     "description": "* Collection_id: LAP.4_Statement\n* Field_id: LAF.47_LAF.13_statement_label\n* Category_id: CAT.10_Substance",
@@ -3932,6 +3990,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_name_type",
                     "config": {
                         "rdmCollection": "9f1cf9a8-ce65-455f-ab1e-a9b36e9e23ce"
                     },
@@ -3952,6 +4011,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_name_label",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nEvery node should have a _label that provides a human-readable summary label for the node. This is intended not for end users, but for developers looking at the data. See:  https://linked.art/model/base/#core-properties\n\n# Arches Note:\n\n\n* BranchId: la-label\n* FieldId: \n",
@@ -3970,6 +4030,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_end_of_the_begin",
                     "config": {
                         "dateFormat": "YYYY-MM-DD"
                     },
@@ -3990,6 +4051,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "creation_timespan_statement_type",
                     "config": {
                         "rdmCollection": "f44f7240-35c5-49e8-a0e3-2ffe308f0862"
                     },
@@ -4010,6 +4072,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "visual_work",
                     "config": null,
                     "datatype": "semantic",
                     "description": "# Specific:\n\n\n# General:\n\n\n# Arches Note:\n\n\n* BranchId: \n* FieldId: \n",
@@ -4028,6 +4091,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "name_source",
                     "config": {
                         "graphs": [
                             {
@@ -4055,6 +4119,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "part_of_visual_work",
                     "config": {
                         "graphs": [
                             {
@@ -4082,6 +4147,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "label",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nEvery node should have a _label that provides a human-readable summary label for the node. This is intended not for end users, but for developers looking at the data. See:  https://linked.art/model/base/#core-properties\n\n# Arches Note:\n\n\n* BranchId: la-label\n* FieldId: \n",
@@ -4100,6 +4166,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "name",
                     "config": null,
                     "datatype": "semantic",
                     "description": "# Specific:\n\n\n# General:\nIt is strongly recommended that every resource that should be rendered to an end user have at least one name. Different types of name can be distinguished using classifications. See: https://linked.art/model/base/#names\n\n# Arches Note:\nThis node's content should be the value for the title descriptor function, when used for a resource model.\n\n* BranchId: la-name\n* FieldId: \n",
@@ -4118,6 +4185,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "name_content",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nThe string value of the full name.\n\n# Arches Note:\n\n\n* BranchId: la-name-content\n* FieldId: \n",
@@ -4136,6 +4204,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "name_type",
                     "config": {
                         "rdmCollection": "9f1cf9a8-ce65-455f-ab1e-a9b36e9e23ce"
                     },
@@ -4156,6 +4225,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "name_language",
                     "config": {
                         "rdmCollection": "f7fc4f6d-fd46-4881-846f-4a08bc1a3fef"
                     },
@@ -4176,6 +4246,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "name_label",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nEvery node should have a _label that provides a human-readable summary label for the node. This is intended not for end users, but for developers looking at the data. See:  https://linked.art/model/base/#core-properties\n\n# Arches Note:\n\n\n* BranchId: la-label\n* FieldId: \n",
@@ -4194,6 +4265,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "type",
                     "config": {
                         "rdmCollection": "b4c4df8e-2f6f-47a3-a28e-325f0f38bbc8"
                     },
@@ -4214,6 +4286,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "type_metatype",
                     "config": {
                         "rdmCollection": "54a59418-5426-4f78-b402-16729c2d9343"
                     },
@@ -4234,6 +4307,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "statement_name",
                     "config": null,
                     "datatype": "semantic",
                     "description": "# Specific:\n\n\n# General:\nIt is strongly recommended that every resource that should be rendered to an end user have at least one name. Different types of name can be distinguished using classifications. See: https://linked.art/model/base/#names\n\n# Arches Note:\nIn Statement, this is not exposed to advanced search, as it is just a display label. The value of the statement's content is in Content.\n\n* BranchId: la-name\n* FieldId: \n",
@@ -4252,6 +4326,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "statement",
                     "config": null,
                     "datatype": "semantic",
                     "description": "# Specific:\n\n\n# General:\nIn many cases, current data does not support the level of specificity that the full ontology allows, or the information is simply best expressed in human-readable form. For example, instead of a completely modeled set of parts with materials, many museum collection management systems allow only a single human-readable string for the \"medium\" or \"materials statement\".  Any time that there is a description of the resource, with or without qualification as to the type of description, then this branch can be used to record the descriptive text. See: https://linked.art/model/base/#statements-about-a-resource\n\n# Arches Note:\n\n\n* BranchId: la-statement\n* FieldId: \n",
@@ -4270,6 +4345,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "statement_content",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nThis field records the string content of the statement.\n\n# Arches Note:\n\n\n* BranchId: \n* FieldId: \n",
@@ -4288,6 +4364,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "statement_language",
                     "config": {
                         "rdmCollection": "f7fc4f6d-fd46-4881-846f-4a08bc1a3fef"
                     },
@@ -4308,6 +4385,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "statement_name_content",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nThe string value of the full name.\n\n# Arches Note:\n\n\n* BranchId: la-name-content\n* FieldId: \n",
@@ -4326,6 +4404,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "statement_name_language",
                     "config": {
                         "rdmCollection": "f7fc4f6d-fd46-4881-846f-4a08bc1a3fef"
                     },
@@ -4346,6 +4425,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "statement_name_type",
                     "config": {
                         "rdmCollection": "9f1cf9a8-ce65-455f-ab1e-a9b36e9e23ce"
                     },
@@ -4366,6 +4446,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "statement_name_label",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nEvery node should have a _label that provides a human-readable summary label for the node. This is intended not for end users, but for developers looking at the data. See:  https://linked.art/model/base/#core-properties\n\n# Arches Note:\n\n\n* BranchId: la-label\n* FieldId: \n",
@@ -4384,6 +4465,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "statement_label",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nEvery node should have a _label that provides a human-readable summary label for the node. This is intended not for end users, but for developers looking at the data. See:  https://linked.art/model/base/#core-properties\n\n# Arches Note:\n\n\n* BranchId: la-label\n* FieldId: \n",
@@ -4402,6 +4484,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "statement_type_metatype",
                     "config": {
                         "rdmCollection": "a3c57ce4-58db-4f70-90ee-aeb94a9f86d7"
                     },
@@ -4422,6 +4505,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "statement_type",
                     "config": {
                         "rdmCollection": "f44f7240-35c5-49e8-a0e3-2ffe308f0862"
                     },
@@ -4442,6 +4526,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "identifier",
                     "config": null,
                     "datatype": "semantic",
                     "description": "# Specific:\n\n\n# General:\nMany resources have identifier values associated with them of different types, such as accession numbers, database numbers, lot numbers for auctions and so forth.  Identifiers are similar to Names, but instead use the Identifier class and do not have a language associated with them. See: https://linked.art/model/base/#identifiers\n\n# Arches Note:\n\n\n* BranchId: la-identifier\n* FieldId: \n",
@@ -4460,6 +4545,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "identifier_label",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nEvery node should have a _label that provides a human-readable summary label for the node. This is intended not for end users, but for developers looking at the data. See:  https://linked.art/model/base/#core-properties\n\n# Arches Note:\n\n\n* BranchId: la-label\n* FieldId: \n",
@@ -4478,6 +4564,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "identifier_type",
                     "config": {
                         "rdmCollection": "7a8d3213-0a64-4f31-92a4-191b41236ae9"
                     },
@@ -4498,6 +4585,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "identifier_content",
                     "config": null,
                     "datatype": "string",
                     "description": "# Specific:\n\n\n# General:\nThe string value of the identifier.\n\n# Arches Note:\n\n\n* BranchId: \n* FieldId: \n",
@@ -4516,6 +4604,7 @@
                     "sortorder": 0
                 },
                 {
+                    "alias": "exact_match",
                     "config": null,
                     "datatype": "url",
                     "description": "# Specific:\n\n\n# General:\nAn external URI that identifies the same entity as this resource.  Examples: the URI in ULAN for the same entity as a Person, or TGN URI for a Place.\n\n# Arches Note:\n\n\n* BranchId: la-exact-match\n* FieldId: \n",
@@ -4538,6 +4627,7 @@
             "relatable_resource_model_ids": [],
             "resource_2_resource_constraints": [],
             "root": {
+                "alias": "visual_work",
                 "config": null,
                 "datatype": "semantic",
                 "description": "# Specific:\n\n\n# General:\n\n\n# Arches Note:\n\n\n* BranchId: \n* FieldId: \n",
@@ -4561,9 +4651,9 @@
         }
     ],
     "metadata": {
-        "db": "PostgreSQL 13.1 on x86_64-apple-darwin19.6.0, compiled by Apple clang version 11.0.3 (clang-1103.0.32.62), 64-bit",
-        "git hash": "fatal: not a git repository (or any of the parent directories): .git",
-        "os": "Darwin",
-        "os version": "19.6.0"
+        "db": "PostgreSQL 12.8 on x86_64-pc-linux-gnu, compiled by x86_64-pc-linux-gnu-gcc (GCC) 7.4.0, 64-bit",
+        "git hash": "fatal: not a git repository (or any parent up to mount point /)",
+        "os": "Linux",
+        "os version": "5.4.0-1085-aws"
     }
 }
