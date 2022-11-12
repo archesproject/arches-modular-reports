@@ -18,6 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 {% load static %}
 {% load template_tags %}
 {% load i18n %}
+{% load webpack_static from webpack_loader %}
 <!DOCTYPE html>
 <!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->
 <!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->
@@ -34,14 +35,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <link rel="shortcut icon" href="{% static 'img/favicon.png' %}" />
+    <link rel="shortcut icon" href="{% webpack_static 'img/favicon.png' %}" />
 
     <link rel='stylesheet' type='text/css' href='//fonts.googleapis.com/css?family=Open+Sans:400,300,600&amp;subset=cyrillic,latin'>
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.min.css">
 
-    <link href="{% static 'css/unify.css' %}" rel="stylesheet">
+    <link href="{% webpack_static 'css/unify.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css">
-    <link href="{% static 'css/index.css' %}" rel="stylesheet">
+    <link href="{% webpack_static 'css/index.css' %}" rel="stylesheet">
 
 </head>
 
@@ -66,7 +67,7 @@ The data-spy and data-target are part of the built-in Bootstrap scrollspy functi
 
                     <div class="relative" style="padding: 8px 10px 8px 100px; width: 300px;">
                         <div class="navbar-brand-v5-icon-container" style="">
-                            <img class="navbar-brand-v5-icon" src="{% static 'img/landing/arches_logo_dark.png' %}" style="" alt="Arches Logo">
+                            <img class="navbar-brand-v5-icon" src="{% webpack_static 'img/landing/arches_logo_dark.png' %}" style="" alt="Arches Logo">
                         </div>
                         <div class="application-name" style="position: absolute; top: 5px; left: 160px;">
                             <h2>{% blocktrans %}Arches | {{version}}{% endblocktrans %}</h2>
@@ -169,7 +170,7 @@ The data-spy and data-target are part of the built-in Bootstrap scrollspy functi
                     <!-- SLIDE 1 -->
                     <li data-transition="fade" data-slotamount="9" data-masterspeed="0" data-title="Slide 1">
                         <!-- MAIN IMAGE -->
-                        <img src="{% static 'img/landing/potala_palace.jpg' %}" alt="slidebg1" data-bgfit="cover" data-bgposition="center center" data-bgrepeat="no-repeat">
+                        <img src="{% webpack_static 'img/landing/potala_palace.jpg' %}" alt="slidebg1" data-bgfit="cover" data-bgposition="center center" data-bgrepeat="no-repeat">
 
                         <!-- LAYERS -->
                         <!-- NEW LAYER -->
@@ -219,7 +220,7 @@ The data-spy and data-target are part of the built-in Bootstrap scrollspy functi
 
             <!-- Content -->
             <div class="splash-img">
-                <img class="" src="{% static 'img/landing/imac_designer.png' %}" style="" alt="Arches Designer">
+                <img class="" src="{% webpack_static 'img/landing/imac_designer.png' %}" style="" alt="Arches Designer">
             </div>
 
             <!-- Sub-section -->
@@ -232,7 +233,7 @@ The data-spy and data-target are part of the built-in Bootstrap scrollspy functi
                         <p class="sub-block-description">
                             {% trans "Arches automatically creates data entry forms based on your data models.  Use Arches' Card Manager to configure the look and feel of your data entry UI." %}
                         </p>
-                        <img class="sub-block-image" src="{% static 'img/landing/card_manager.png' %}" style="" alt="Card Manager">
+                        <img class="sub-block-image" src="{% webpack_static 'img/landing/card_manager.png' %}" style="" alt="Card Manager">
                     </div>
                 </div>
 
@@ -243,7 +244,7 @@ The data-spy and data-target are part of the built-in Bootstrap scrollspy functi
                         <p class="sub-block-description">
                             {% trans "Use Arches' Permissions Manager to set up data access rules for all your user groups and individual accounts.  You can define read/write/delete and no-access permissions." %}
                         </p>
-                        <img class="sub-block-image" src="{% static 'img/landing/permissions_manager.png' %}" style="" alt="Permissions Manager">
+                        <img class="sub-block-image" src="{% webpack_static 'img/landing/permissions_manager.png' %}" style="" alt="Permissions Manager">
                     </div>
                 </div>
 
@@ -275,7 +276,7 @@ The data-spy and data-target are part of the built-in Bootstrap scrollspy functi
 
             <!-- Content -->
             <div class="splash-img">
-                <img class="search-screen" src="{% static 'img/landing/consultation_workflow.jpg' %}" style="" alt="Arches Workflows">
+                <img class="search-screen" src="{% webpack_static 'img/landing/consultation_workflow.jpg' %}" style="" alt="Arches Workflows">
             </div>
 
         </div>
@@ -302,7 +303,7 @@ The data-spy and data-target are part of the built-in Bootstrap scrollspy functi
 
             <!-- Content -->
             <div class="splash-img">
-                <img class="search-screen" src="{% static 'img/landing/arches_search.png' %}" style="" alt="Arches Search">
+                <img class="search-screen" src="{% webpack_static 'img/landing/arches_search.png' %}" style="" alt="Arches Search">
             </div>
 
             <!-- Sub-section -->
@@ -341,7 +342,7 @@ The data-spy and data-target are part of the built-in Bootstrap scrollspy functi
             <!-- Content -->
             <div class="row">
                 <div class="col-md-6 col-lg-4">
-                    <img class="iphone" src="{% static 'img/landing/iPhone_8_map.png' %}" style="" alt="Arches Designer">
+                    <img class="iphone" src="{% webpack_static 'img/landing/iPhone_8_map.png' %}" style="" alt="Arches Designer">
                 </div>
                 <div class="col-md-6 col-lg-8">
                     <div class="mobile-description-container">
@@ -456,21 +457,21 @@ The data-spy and data-target are part of the built-in Bootstrap scrollspy functi
     </div>
     <!-- End Copyright Container -->
 
-<script src="{% static 'packages/requirejs/require.js' %}"></script>
+<script src="{% webpack_static 'node_modules/requirejs/require.js' %}"></script>
 
 <script>
     require.config({
         baseUrl: '{{ STATIC_URL }}js',
         paths: {
             'templates': '{% url "templates" ""%}'.replace(/\/$/, ""),
-            'text': '{{ STATIC_URL }}packages/requirejs-text/text',
+            'text': '{{ STATIC_URL }}node_modules/requirejs-text/text',
             'jquery-lib': '{{ STATIC_URL }}plugins/revolution-slider/rs-plugin/js/jquery2.2.3/jquery.min',
-            'jquery': '{{ STATIC_URL }}packages/jquery-migrate/dist/jquery-migrate.min',
-            'jquery-ui': '{{ STATIC_URL }}packages/jqueryui/jquery-ui.min',
-            'underscore': '{{ STATIC_URL }}packages/underscore/underscore-min',
-            'chosen': '{{ STATIC_URL }}packages/chosen-js/chosen.jquery.min',
-            'knockout': '{{ STATIC_URL }}packages/knockout/build/output/knockout-latest',
-            'bootstrap': '{{ STATIC_URL }}packages/bootstrap/dist/js/bootstrap.min',
+            'jquery': '{{ STATIC_URL }}node_modules/jquery-migrate/dist/jquery-migrate.min',
+            'jquery-ui': '{{ STATIC_URL }}node_modules/jqueryui/jquery-ui.min',
+            'underscore': '{{ STATIC_URL }}node_modules/underscore/underscore-min',
+            'chosen': '{{ STATIC_URL }}node_modules/chosen-js/chosen.jquery.min',
+            'knockout': '{{ STATIC_URL }}node_modules/knockout/build/output/knockout-latest',
+            'bootstrap': '{{ STATIC_URL }}node_modules/bootstrap/dist/js/bootstrap.min',
             'themepunch-tools': '{{ STATIC_URL }}plugins/revolution-slider/rs-plugin/js/jquery.themepunch.tools.min',
             'themepunch-revolution': '{{ STATIC_URL }}plugins/revolution-slider/rs-plugin/js/jquery.themepunch.revolution',
             'revolution-slider': '{{ STATIC_URL }}plugins/revolution-slider',

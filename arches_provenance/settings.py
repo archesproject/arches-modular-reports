@@ -17,7 +17,7 @@ except ImportError:
 APP_NAME = 'arches_provenance'
 APP_ROOT = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 STATICFILES_DIRS =  (os.path.join(APP_ROOT, 'media'),) + STATICFILES_DIRS
-STATIC_ROOT = ''
+STATIC_ROOT = '/arches/static'
 
 DATATYPE_LOCATIONS.append('arches_provenance.datatypes')
 FUNCTION_LOCATIONS.append('arches_provenance.functions')
@@ -32,7 +32,7 @@ LOCALE_PATHS.append(os.path.join(APP_ROOT, 'locale'))
 SECRET_KEY = 'mnl1pz=2p+sacc88*8ujh)r9-p8du+8#6#hd)kn$k5a(8)k)k7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ROOT_URLCONF = 'arches_provenance.urls'
 
@@ -94,6 +94,7 @@ INSTALLED_APPS = (
     'django_celery_results',
     'compressor',
     'arches_provenance',
+    'webpack_loader',
 )
 
 ALLOWED_HOSTS = []
@@ -168,7 +169,7 @@ CACHE_BY_USER = {'anonymous': 3600 * 24}
 TILE_CACHE_TIMEOUT = 600 #seconds
 GRAPH_MODEL_CACHE_TIMEOUT = None
 
-MOBILE_OAUTH_CLIENT_ID = ''  #'9JCibwrWQ4hwuGn5fu2u1oRZSs9V6gK8Vu8hpRC4'
+OAUTH_CLIENT_ID = ''  #'9JCibwrWQ4hwuGn5fu2u1oRZSs9V6gK8Vu8hpRC4'
 MOBILE_DEFAULT_ONLINE_BASEMAP = {'default': 'mapbox://styles/mapbox/streets-v9'}
 MOBILE_IMAGE_SIZE_LIMITS = {
     # These limits are meant to be approximates. Expect to see uploaded sizes range +/- 20%
@@ -255,13 +256,47 @@ LANGUAGES = [
 # override this to permenantly display/hide the language switcher
 SHOW_LANGUAGE_SWITCH = len(LANGUAGES) > 1
 
+STATIC_URL = "/arches/pir/static/"
+
+STATICFILES_DIRS =  (
+    os.path.join(APP_ROOT, 'media', 'build'),
+    os.path.join(APP_ROOT, 'media'),
+) + STATICFILES_DIRS
+
+
+WEBPACK_LOADER = {
+    "DEFAULT": {
+        "STATS_FILE": os.path.join(APP_ROOT, "webpack/webpack-stats.json"),
+    },
+}
+
 
 try:
     from .package_settings import *
 except ImportError:
-    pass
+    try:
+        from package_settings import *
+    except ImportError as e:
+        pass
 
-try:
-    from .settings_local import *
-except ImportError:
-    pass
+if __name__ != "__main__":
+    try:
+        from .settings_local import *
+    except ImportError as e:
+        try:
+            from settings_local import *
+        except ImportError as e:
+            pass
+
+
+if __name__ == "__main__":
+    print(
+        json.dumps({
+            'ARCHES_NAMESPACE_FOR_DATA_EXPORT': ARCHES_NAMESPACE_FOR_DATA_EXPORT,
+            'STATIC_URL': STATIC_URL,
+            'ROOT_DIR': ROOT_DIR,
+            'APP_ROOT': APP_ROOT,
+            'WEBPACK_DEVELOPMENT_SERVER_PORT': WEBPACK_DEVELOPMENT_SERVER_PORT,
+        })
+    )
+    sys.stdout.flush()
