@@ -49,9 +49,10 @@ class ProvenanceRelatedResources(View):
             records_total = cursor.fetchone()[0]
 
         sql = """
-            SELECT rx.*, r.name->>'en' as name, COUNT(*) OVER() AS full_count 
-            FROM resource_x_resource rx
-            JOIN resource_instances r on r.resourceinstanceid = rx.resourceinstanceidto WHERE resourceinstanceidfrom = '{0}' AND resourceinstanceto_graphid = '{1}'
+            SELECT rx.*, r.name->>'en', COUNT(*) OVER() AS full_count 
+            FROM resource_x_resource rx 
+            JOIN resource_instances r ON rx.resourceinstanceidto = r.resourceinstanceid
+            WHERE rx.resourceinstanceidfrom = '{0}' AND rx.resourceinstanceto_graphid = '{1}'
             """.format(resourceid, resourcegraphto)
         
         with connection.cursor() as cursor:
@@ -70,7 +71,7 @@ class ProvenanceRelatedResources(View):
                 'relationshiptype': related_resource[4],
                 'resourceinstancefrom': related_resource[5],
                 'resourceinstanceto': related_resource[6],
-                'displayname': related_resource[13],
+                'displayname': related_resource[14],
                 'modified': related_resource[7],
                 'created': related_resource[8],
                 'inverserelationshiptype': related_resource[9],
@@ -79,7 +80,7 @@ class ProvenanceRelatedResources(View):
                 'resourceinstancefrom_graphid': related_resource[12],
                 'resourceinstanceto_graphid': related_resource[13],
             }
-            filtered_resources=related_resource[14]
+            filtered_resources=related_resource[15]
             related_resources.append(r)            
 
         return JSONResponse({'related_resources': related_resources, 'recordsTotal': records_total, 'recordsFiltered': filtered_resources},indent=4)
@@ -261,7 +262,7 @@ class ProvenanceGroupReportView(View):
         template = models.ReportTemplate.objects.get(pk=graph.template_id)
 
         if str(resource.graph_id) == 'd6774bfc-b4b4-11ea-84f7-3af9d3b32b71':
-            return JSONResponse({"template": template, "resourceid": resourceid, "resource_name": resource.descriptors['name']})
+            return JSONResponse({"template": template, "resourceid": resourceid, "resource_name": resource.displayname()})
         else:
             response = api.ResourceReport().get(request, resourceid=resourceid) 
             return response
