@@ -1,0 +1,9 @@
+{
+    "name": "Provenance Group Report",
+    "componentid": "aee56c3a-44cf-4ab2-a5fb-6c51cda7b760",
+    "component": "reports/provenance_group_report",
+    "componentname": "provenance_group_report",
+    "description": "A custom report for Provenance Groups.",
+    "defaultconfig": {},
+    "preload_resource_data": false
+}
