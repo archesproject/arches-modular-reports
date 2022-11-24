@@ -190,7 +190,7 @@
     <div class="modal fade" id="formationModal" role="dialog">
       <div class="modal-dialog" style="position: absolute;left: 50vw;top: 50vh;bottom: -130vh;transform: translate(-35vw, -45vh);">
         <div style="padding: 24px; width: fit-content;" class="rp-report-section">
-          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closemodal" style="cursor:pointer">x</a></div>
+          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeformationmodal" style="cursor:pointer">x</a></div>
           <div class="summary-table-container">
         <div class="table-label">Group Formation</div>
         <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
@@ -524,7 +524,7 @@
     <div class="modal fade" id="dissolutionModal" role="dialog">
         <div class="modal-dialog" style="position: absolute;left: 50vw;top: 50vh;bottom: -130vh;transform: translate(-35vw, -45vh);">
           <div style="padding: 24px; width: fit-content;" class="rp-report-section">
-            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closemodal" style="cursor:pointer">x</a></div>
+            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closedissolutionmodal" style="cursor:pointer">x</a></div>
       <div class="summary-table-container">
         <div class="table-label">Group Dissolution</div>
         <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
@@ -803,7 +803,7 @@
     <div class="modal fade" id="establishmentModal" role="dialog">
       <div class="modal-dialog" style="position: absolute;left: 50vw;top: 50vh;bottom: -130vh;transform: translate(-35vw, -45vh);">
         <div style="padding: 24px; width: fit-content;" class="rp-report-section">
-          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closemodal" style="cursor:pointer">x</a></div>
+          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeestablishmentmodal" style="cursor:pointer">x</a></div>
         <div class="summary-table-container">
           <div class="table-label">Group Establishment</div>
           <!-- ko foreach: { data: groupEstablishmentData, as: 'sojourn' } -->
@@ -1096,7 +1096,7 @@
     <div class="modal fade" id="professionalActivityModal" role="dialog">
       <div class="modal-dialog" style="position: absolute;left: 50vw;top: 50vh;bottom: -130vh;transform: translate(-35vw, -45vh);">
         <div style="padding: 24px; width: fit-content;" class="rp-report-section">
-          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closemodal" style="cursor:pointer">x</a></div>
+          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closepreofessionalActivitymodal" style="cursor:pointer">x</a></div>
           <div class="summary-table-container">
             <div class="table-label">Group Professional Activity</div>
             <!-- ko if: groupProfessionalActivityData != 'undefined' -->
@@ -1396,7 +1396,7 @@
     <div class="modal fade" id="identifierModal" role="dialog">
       <div class="modal-dialog" style="position: absolute;left: 50vw;top: 50vh;bottom: -130vh;transform: translate(-35vw, -45vh);">
         <div style="padding: 24px; width: fit-content;" class="rp-report-section">
-          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closemodal" style="cursor:pointer">x</a></div>
+          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeindentifiermodal" style="cursor:pointer">x</a></div>
           <div class="summary-table-container">
             <div class="table-label">Group Identifier Assignment</div>
             <!-- ko if: groupIdentifierAssignmentData != 'undefined' -->
@@ -1676,7 +1676,11 @@
             <tbody>
                 <tr>
                   <td class="header" style="padding: 8px">Sources: </td>
-                  <td data-bind="text: sourceReference"> </td>
+                  <td>
+                    <!-- ko foreach: { data: sourceReference, as: 'instance' } -->
+                    <a data-bind="text: instance['display_value'] + ', ', attr: {href: '/report/' + instance['resourceId'], target: '_blank'}"></a>
+                    <!-- /ko -->
+                  </td>  
             </tbody>
         </table>
       </div>

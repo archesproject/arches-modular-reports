@@ -15,7 +15,6 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             const statementNodegroupId = "9285a4ba-bb18-11ea-85a6-3af9d3b32b71";
             const externalIdentifierNodegroupId = "f5930746-bb18-11ea-85a6-3af9d3b32b71";
             const subGroupNodegroupId = "df216a34-bb18-11ea-85a6-3af9d3b32b71";
-            const referenceNodegroupId = "30e30626-c798-11ea-b94e-3af9d3b32b71";
             const labelNodegroupId = "97f15d22-bb18-11ea-85a6-3af9d3b32b71";
             const contactNodegroupId = "ace43c39-f43b-11eb-ba14-0a9473e82189";
             const groupFormationNodegroupId = "c6dc61cc-bb18-11ea-85a6-3af9d3b32b71";
@@ -31,7 +30,6 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             self.externalIdentifierLabel = ko.observable();
             self.sourceReference = ko.observable();
             self.subgroup = ko.observable();
-            self.sourceReference = ko.observable();
             self.label = ko.observable();
             self.statementData = ko.observableArray();
             self.groupFormationData = ko.observable();
@@ -169,7 +167,11 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             ];
 
             const establishmentColumns  = [
-                {"title": "Place", "orderable": false, targets: 0, "data": "e5f12154-17c1-11ec-b193-0a9473e82189", "defaultContent": ""},
+                {"title": "Place", "orderable": false, targets: 0, "data": "e5f12154-17c1-11ec-b193-0a9473e82189", "defaultContent": "",
+                    "render": function(data) {
+                        return JSON.parse(data).en.value;
+                    }    
+                },
                 {"title": "Time", "orderable": false, targets: 0, "data": "child_nodegroups.7c58676a-eac9-11eb-ba14-0a9473e82189.0.child_nodegroups.7c586758-eac9-11eb-ba14-0a9473e82189.0.7c5867a1-eac9-11eb-ba14-0a9473e82189", "defaultContent": ""},
                 {"title": "Type", "orderable": false, targets: 0, "data": "7c58678a-eac9-11eb-ba14-0a9473e82189", "defaultContent": ""},
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "",
@@ -181,9 +183,17 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             ];
 
             const identifierAssignmentColumns  = [
-                {"title": "Name", "orderable": false, targets: 0, "data": "42b0dbab-e319-11eb-ba14-0a9473e82189", "defaultContent": ""},
+                {"title": "Name", "orderable": false, targets: 0, "data": "42b0dbab-e319-11eb-ba14-0a9473e82189", "defaultContent": "",
+                    "render": function(data) {
+                        return JSON.parse(data).en.value;
+                    }
+                },
                 {"title": "Type", "orderable": false, targets: 0, "data": "42b0db9e-e319-11eb-ba14-0a9473e82189", "defaultContent": ""},
-                {"title": "Data Assigner", "orderable": false, targets: 0, "data": "child_nodegroups.42b0db6b-e319-11eb-ba14-0a9473e82189.0.42b0db8c-e319-11eb-ba14-0a9473e82189", "defaultContent": ""},
+                {"title": "Data Assigner", "orderable": false, targets: 0, "data": "child_nodegroups.42b0db6b-e319-11eb-ba14-0a9473e82189.0.42b0db8c-e319-11eb-ba14-0a9473e82189", "defaultContent": "",
+                    "render": function(data) {
+                        return JSON.parse(data).en.value;
+                    }
+                },
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "",
                     "render": function(data) {
                         var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large;' data-toggle='modal' data-target='#identifierModal'>+</button>";
@@ -227,9 +237,8 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             // get values for all cardinality "1" nodegroups
             self.getSimpleBranchData(typeOfGroupNodegroupId, ['data', '0', 'type', '@display_value'], self.typeOfGroup);
             self.getSimpleBranchData(nationalityNodegroupId, ['data', '0', 'nationality', '@display_value'], self.nationality);
-            self.getSimpleBranchData(sourceReferenceNodegroupId, ['data', '0', 'source_reference', '@display_value'], self.sourceReference);
+            self.getSimpleBranchData(sourceReferenceNodegroupId, ['data', '0', 'source_reference', 'instance_details'], self.sourceReference);
             self.getSimpleBranchData(subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value'], self.subgroup);
-            self.getSimpleBranchData(referenceNodegroupId, ['data', '0', 'source_reference', '@display_value'], self.sourceReference);
             self.getSimpleBranchData(labelNodegroupId, ['data', '0', '_label', '@display_value'], self.label);
             
             // these had to be separated because of the datatype
@@ -310,8 +319,24 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
 
             $.fn.dataTable.ext.errMode = 'ignore';
 
-            $('#closemodal').click(function() {
+            $('#closeformationmodal').click(function() {
                 $('#formationModal').modal('hide');
+            });
+
+            $('#closedissolutionmodal').click(function() {
+                $('#dissolutionModal').modal('hide');
+            });
+            
+            $('#closeestablishmentmodal').click(function() {
+                $('#establishmentModal').modal('hide');
+            });
+
+            $('#closepreofessionalActivitymodal').click(function() {
+                $('#professionalActivityModal').modal('hide');
+            });
+
+            $('#closeindentifiermodal').click(function() {
+                $('#identifierModal').modal('hide');
             });
 
         },
