@@ -1680,7 +1680,7 @@
                   <td class="header" style="padding: 8px">Sources: </td>
                   <td style="display: grid; grid-template-columns: repeat(4, 3fr);">
                     <!-- ko foreach: { data: sourceReference, as: 'instance' } -->
-                    <a data-bind="text: instance['display_value'] + ', ', attr: {href: '/report/' + instance['resourceId'], target: '_blank'}"></a>
+                    <a data-bind="text: instance['display_value'], attr: {href: '/report/' + instance['resourceId'], target: '_blank'}"></a>
                     <!-- /ko -->
                   </td>  
             </tbody>
