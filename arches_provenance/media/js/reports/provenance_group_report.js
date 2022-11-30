@@ -140,9 +140,9 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                 {"title": "Name", "orderable": false, targets: 0, "data": "name.name_content.@display_value", "defaultContent": ""},
                 {"title": "Type", "orderable": false, targets: 0, "data": "name.name_type.@display_value", "defaultContent": ""},
                 {"title": "Source", "orderable": false, targets: 0, "data": "name.name_source_reference.@display_value", "defaultContent": ""},
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "",
-                    "render": function(data) {
-                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large;' data-toggle='modal' data-target='#nameModal'>+</button>";
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                    "render": function() {
+                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#nameModal'>+</button>";
                         return t;
                     } 
                 },
@@ -155,12 +155,20 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             ];
 
             const professionalActivityColumns  = [
-                {"title": "Place", "orderable": false, targets: 0, "data": "0c3baf01-e323-11eb-ba14-0a9473e82189", "defaultContent": ""},
-                {"title": "Time", "orderable": false, targets: 0, "data": "child_nodegroups.0c3baee7-e323-11eb-ba14-0a9473e82189.0.child_nodegroups.0c3baeea-e323-11eb-ba14-0a9473e82189.0.0c3baef5-e323-11eb-ba14-0a9473e82189", "defaultContent": ""},
-                {"title": "Type", "orderable": false, targets: 0, "data": "0c3baefb-e323-11eb-ba14-0a9473e82189", "defaultContent": ""},
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "",
+                {"title": "Place", "orderable": false, targets: 0, "data": "0c3baf01-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
-                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large;' data-toggle='modal' data-target='#professionalActivityModal'>+</button>";
+                        return JSON.parse(data).en.value;
+                    }
+                },
+                {"title": "Time", "orderable": false, targets: 0, "data": "child_nodegroups.0c3baee7-e323-11eb-ba14-0a9473e82189.0.child_nodegroups.0c3baeea-e323-11eb-ba14-0a9473e82189.0.0c3baef5-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
+                    "render": function(data) {
+                        return JSON.parse(data).en.value;
+                    }
+                },
+                {"title": "Type", "orderable": false, targets: 0, "data": "0c3baefb-e323-11eb-ba14-0a9473e82189", "defaultContent": ""},
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                    "render": function(data) {
+                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#professionalActivityModal'>+</button>";
                         return t;
                     } 
                 },
@@ -172,11 +180,15 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                         return JSON.parse(data).en.value;
                     }    
                 },
-                {"title": "Time", "orderable": false, targets: 0, "data": "child_nodegroups.7c58676a-eac9-11eb-ba14-0a9473e82189.0.child_nodegroups.7c586758-eac9-11eb-ba14-0a9473e82189.0.7c5867a1-eac9-11eb-ba14-0a9473e82189", "defaultContent": ""},
-                {"title": "Type", "orderable": false, targets: 0, "data": "7c58678a-eac9-11eb-ba14-0a9473e82189", "defaultContent": ""},
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "",
+                {"title": "Time", "orderable": false, targets: 0, "data": "child_nodegroups.7c58676a-eac9-11eb-ba14-0a9473e82189.0.child_nodegroups.7c586758-eac9-11eb-ba14-0a9473e82189.0.7c5867a1-eac9-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
-                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large;' data-toggle='modal' data-target='#establishmentModal'>+</button>";
+                        return JSON.parse(data).en.value;
+                    }
+                },
+                {"title": "Type", "orderable": false, targets: 0, "data": "7c58678a-eac9-11eb-ba14-0a9473e82189", "defaultContent": ""},
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                    "render": function(data) {
+                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#establishmentModal'>+</button>";
                         return t;
                     } 
                 },
@@ -194,9 +206,9 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                         return JSON.parse(data).en.value;
                     }
                 },
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "",
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
                     "render": function(data) {
-                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large;' data-toggle='modal' data-target='#identifierModal'>+</button>";
+                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#identifierModal'>+</button>";
                         return t;
                     } 
                 },
@@ -258,7 +270,11 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                     scrollY: "250px",
                     // scrollY: 20,
                     columns: [
-                        {"title": "Related Resource", "orderable": false, targets: 0, "data": "displayname"},
+                        {"title": "Related Resource", "orderable": false, targets: 0, "data": 'resourceinstance_to',
+                            "render": function(data) {
+                                return "<a href=/report/" + data.resourceid + " target=_blank>" + data.displayname + "</a>";
+                            }
+                        },
                         {"title": "Relationship Type", "orderable": false, targets: 0, "data": "relationshiptype"}
                     // {"title": "Identifier Content", "orderable": false, targets: 0, "data": "identifier.identifier_content.@display_value"},
                     // {"title": "Statement Source", "orderable": false, targets: 0, "data": "identifier.identifier_type.@display_value"},
@@ -337,6 +353,10 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
 
             $('#closeindentifiermodal').click(function() {
                 $('#identifierModal').modal('hide');
+            });
+
+            $('#closenamemodal').click(function() {
+                $('#nameModal').modal('hide');
             });
 
         },
