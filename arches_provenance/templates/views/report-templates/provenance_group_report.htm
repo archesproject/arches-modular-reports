@@ -116,9 +116,11 @@
       </div>
     </div>
 
+    <!-- Name Modal -->
     <div class="modal fade" id="nameModal" role="dialog">
       <div class="modal-dialog" style="display: inline-flex;">
         <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
+          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closenamemodal" style="cursor:pointer">x</a></div>
           <div class="summary-table-container" style="width:unset">
             <!-- ko if: nameRowData -->
             <div style="font-weight: bold;">Name</div>
@@ -176,8 +178,8 @@
               <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', '@display_value'])"> </td>
               <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan' ,'group_formation_timespan_name', '0', 'group_formation_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
-              <td>
-                <button type="button" class="btn" style="font-weight:bold; font-size:large;" data-toggle="modal" data-target="#formationModal">+</button>
+              <td style="width:40px;">
+                <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px" data-toggle="modal" data-target="#formationModal">+</button>
               </td>
             </tr>
             <!-- /ko -->
@@ -510,8 +512,8 @@
               <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_content', '@display_value'])"> </td>
               <!-- /ko -->
               <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
-              <td>
-                <button type="button" class="btn" style="font-weight:bold; font-size:large;" data-toggle="modal" data-target="#dissolutionModal">+</button>
+              <td style="width:40px;">
+                <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px;" data-toggle="modal" data-target="#dissolutionModal">+</button>
               </td>
             </tr>
             <!-- /ko -->
@@ -1676,7 +1678,7 @@
             <tbody>
                 <tr>
                   <td class="header" style="padding: 8px">Sources: </td>
-                  <td>
+                  <td style="display: grid; grid-template-columns: repeat(4, 3fr);">
                     <!-- ko foreach: { data: sourceReference, as: 'instance' } -->
                     <a data-bind="text: instance['display_value'] + ', ', attr: {href: '/report/' + instance['resourceId'], target: '_blank'}"></a>
                     <!-- /ko -->
