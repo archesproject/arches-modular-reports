@@ -202,16 +202,37 @@ class ProvenanceSummaryTables(View):
                                     vv['child_nodegroups'][str(t['nodegroupid'])] = []
                                     vv['child_nodegroups'][str(t['nodegroupid'])].append(t)
 
-        def util_function(data):
+        def check_string_or_int(data):
             try:
                 data = int(data)
                 return 'int'
             except:
                 return 'str'
-        
+
+        def get_item(a, b):
+            # get nested value to sort on from list of nested dicts
+            sort_value = ''
+            if a is not None:
+                if isinstance(a, dict):
+                    if b in a.keys():
+                        sort_value = operator.getitem(a,b)
+                        if sort_value != {}:
+                            sort_value = sort_value
+                elif isinstance(a, list) and len(a) > 0:
+                    sort_value = operator.getitem(a, b)
+                else:
+                    sort_value = ''
+            else:
+                sort_value = []
+
+            return sort_value
+
+
         if order_column and order_dir:
-            path = ['' + a + '' if util_function(a) == 'str' else int(a) for a in order_column.split('.')]
-            ret.sort(key=lambda d: reduce(operator.getitem, path, d), reverse=True if order_dir == 'asc' else False)
+            # create path from data property from javascript columns array
+            path = ['' + a + '' if check_string_or_int(a) == 'str' else int(a) for a in order_column.split('.')]
+            # sort based on a value in the nested dict
+            ret.sort(key=lambda d: reduce(get_item, path, d), reverse=True if order_dir == 'asc' else False)
 
         return JSONResponse({'data': ret, 'recordsTotal': records_total, 'recordsFiltered': filtered_tiles}, indent=4)     
     

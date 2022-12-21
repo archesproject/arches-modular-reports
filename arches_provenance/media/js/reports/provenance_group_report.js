@@ -226,7 +226,7 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                     }
                 },
                 {"title": "Type", "orderable": true, targets: 0, "data": "42b0db9e-e319-11eb-ba14-0a9473e82189", "defaultContent": ""},
-                {"title": "Data Assigner", "orderable": false, targets: 0, "data": "child_nodegroups.42b0db6b-e319-11eb-ba14-0a9473e82189.0.42b0db8c-e319-11eb-ba14-0a9473e82189", "defaultContent": "",
+                {"title": "Data Assigner", "orderable": true, targets: 0, "data": "child_nodegroups.42b0db6b-e319-11eb-ba14-0a9473e82189.0.42b0db8c-e319-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
                         if (data) {
                             return JSON.parse(data).en.value;
@@ -236,7 +236,7 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                         }
                     }
                 },
-                {"title": "", "orderable": true, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
                     "render": function(data) {
                         var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#identifierModal'>+</button>";
                         return t;
