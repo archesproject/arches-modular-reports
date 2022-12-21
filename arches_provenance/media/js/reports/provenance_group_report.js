@@ -217,13 +217,23 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             const identifierAssignmentColumns  = [
                 {"title": "Name", "orderable": true, targets: 0, "data": "42b0dbab-e319-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
-                        return JSON.parse(data).en.value;
+                        if (data) {
+                            return JSON.parse(data).en.value;
+                        }
+                        else {
+                            return '';
+                        }
                     }
                 },
                 {"title": "Type", "orderable": true, targets: 0, "data": "42b0db9e-e319-11eb-ba14-0a9473e82189", "defaultContent": ""},
                 {"title": "Data Assigner", "orderable": false, targets: 0, "data": "child_nodegroups.42b0db6b-e319-11eb-ba14-0a9473e82189.0.42b0db8c-e319-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
-                        return JSON.parse(data).en.value;
+                        if (data) {
+                            return JSON.parse(data).en.value;
+                        }
+                        else {
+                            return '';
+                        }
                     }
                 },
                 {"title": "", "orderable": true, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
