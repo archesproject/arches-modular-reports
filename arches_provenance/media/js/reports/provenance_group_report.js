@@ -41,7 +41,7 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             self.relatedResourceConfigs = ko.observableArray();
             self.nameRowData = ko.observable();
             
-            self.related_resource_graphs = {
+            self.relatedResourceGraphs = {
                 "Activity":"734d1558-bfad-11ea-a62b-3af9d3b32b71",
                 "Bidding":"21d83275-e88f-11ea-9fb6-0a1706e75f30",
                 "Digital Object":"0044f7da-b4b6-11ea-84f7-3af9d3b32b71",
@@ -137,7 +137,7 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             
             // create columns for each table
             const nameColumns = [
-                {"title": "Name", "orderable": false, targets: 0, "data": "name.name_content.@display_value", "defaultContent": ""},
+                {"title": "Name", "orderable": true, targets: 0, "name": "5bc66298-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_content.@display_value", "defaultContent": ""},
                 {"title": "Type", "orderable": false, targets: 0, "data": "name.name_type.@display_value", "defaultContent": ""},
                 {"title": "Source", "orderable": false, targets: 0, "data": "name.name_source_reference.@display_value", "defaultContent": ""},
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
@@ -155,17 +155,27 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             ];
 
             const professionalActivityColumns  = [
-                {"title": "Place", "orderable": false, targets: 0, "data": "0c3baf01-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
+                {"title": "Place", "orderable": true, targets: 0, "data": "0c3baf01-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
-                        return JSON.parse(data).en.value;
+                        if (data) {
+                            return JSON.parse(data).en.value;
+                        }
+                        else {
+                            return '';
+                        }
                     }
                 },
-                {"title": "Time", "orderable": false, targets: 0, "data": "child_nodegroups.0c3baee7-e323-11eb-ba14-0a9473e82189.0.child_nodegroups.0c3baeea-e323-11eb-ba14-0a9473e82189.0.0c3baef5-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
+                {"title": "Time", "orderable": true, targets: 0, "data": "child_nodegroups.0c3baee7-e323-11eb-ba14-0a9473e82189.0.child_nodegroups.0c3baeea-e323-11eb-ba14-0a9473e82189.0.0c3baef5-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
-                        return JSON.parse(data).en.value;
+                        if (data) {
+                            return JSON.parse(data).en.value;
+                        }
+                        else {
+                            return '';
+                        }
                     }
                 },
-                {"title": "Type", "orderable": false, targets: 0, "data": "0c3baefb-e323-11eb-ba14-0a9473e82189", "defaultContent": ""},
+                {"title": "Type", "orderable": true, targets: 0, "data": "0c3baefb-e323-11eb-ba14-0a9473e82189", "defaultContent": ""},
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
                     "render": function(data) {
                         var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#professionalActivityModal'>+</button>";
@@ -175,17 +185,27 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             ];
 
             const establishmentColumns  = [
-                {"title": "Place", "orderable": false, targets: 0, "data": "e5f12154-17c1-11ec-b193-0a9473e82189", "defaultContent": "",
+                {"title": "Place", "orderable": true, targets: 0, "data": "e5f12154-17c1-11ec-b193-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
-                        return JSON.parse(data).en.value;
+                        if (data) {
+                            return JSON.parse(data).en.value;
+                        }
+                        else {
+                            return '';
+                        }
                     }    
                 },
-                {"title": "Time", "orderable": false, targets: 0, "data": "child_nodegroups.7c58676a-eac9-11eb-ba14-0a9473e82189.0.child_nodegroups.7c586758-eac9-11eb-ba14-0a9473e82189.0.7c5867a1-eac9-11eb-ba14-0a9473e82189", "defaultContent": "",
+                {"title": "Time", "orderable": true, name: "7c5867a1-eac9-11eb-ba14-0a9473e82189", targets: 0, "data": "child_nodegroups.7c58676a-eac9-11eb-ba14-0a9473e82189.0.child_nodegroups.7c586758-eac9-11eb-ba14-0a9473e82189.0.7c5867a1-eac9-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
-                        return JSON.parse(data).en.value;
+                        if (data) {
+                            return JSON.parse(data).en.value;
+                        }
+                        else {
+                            return '';
+                        }
                     }
                 },
-                {"title": "Type", "orderable": false, targets: 0, "data": "7c58678a-eac9-11eb-ba14-0a9473e82189", "defaultContent": ""},
+                {"title": "Type", "orderable": true, targets: 0, "data": "7c58678a-eac9-11eb-ba14-0a9473e82189", "defaultContent": ""},
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
                     "render": function(data) {
                         var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#establishmentModal'>+</button>";
@@ -195,18 +215,18 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             ];
 
             const identifierAssignmentColumns  = [
-                {"title": "Name", "orderable": false, targets: 0, "data": "42b0dbab-e319-11eb-ba14-0a9473e82189", "defaultContent": "",
+                {"title": "Name", "orderable": true, targets: 0, "data": "42b0dbab-e319-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
                         return JSON.parse(data).en.value;
                     }
                 },
-                {"title": "Type", "orderable": false, targets: 0, "data": "42b0db9e-e319-11eb-ba14-0a9473e82189", "defaultContent": ""},
+                {"title": "Type", "orderable": true, targets: 0, "data": "42b0db9e-e319-11eb-ba14-0a9473e82189", "defaultContent": ""},
                 {"title": "Data Assigner", "orderable": false, targets: 0, "data": "child_nodegroups.42b0db6b-e319-11eb-ba14-0a9473e82189.0.42b0db8c-e319-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
                         return JSON.parse(data).en.value;
                     }
                 },
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                {"title": "", "orderable": true, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
                     "render": function(data) {
                         var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#identifierModal'>+</button>";
                         return t;
@@ -270,12 +290,12 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                     scrollY: "250px",
                     // scrollY: 20,
                     columns: [
-                        {"title": "Related Resource", "orderable": false, targets: 0, "data": 'resourceinstance_to',
+                        {"title": "Related Resource", "orderable": true, targets: 0, "name": "resourceinstanceidto", "data": 'resourceinstance_to',
                             "render": function(data) {
                                 return "<a href=/report/" + data.resourceid + " target=_blank>" + data.displayname + "</a>";
                             }
                         },
-                        {"title": "Relationship Type", "orderable": false, targets: 0, "data": "relationshiptype"}
+                        {"title": "Relationship Type", "orderable": true, targets: 0, "name": "relationshiptype", "data": "relationshiptype"}
                     // {"title": "Identifier Content", "orderable": false, targets: 0, "data": "identifier.identifier_content.@display_value"},
                     // {"title": "Statement Source", "orderable": false, targets: 0, "data": "identifier.identifier_type.@display_value"},
                     ],
@@ -285,6 +305,9 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                     serverSide: true,
                     scroller: true,
                     deferRender: true,
+                    language: {
+                        emptyTable: "No related " + name + " resources."
+                    },
                     errMode: 'Ignore',
                     ajax: {
                         url: '/provenance_related_resources?' + new URLSearchParams ({
@@ -299,8 +322,8 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                 return self[name + "RelatedTableConfig"];
             };
 
-            for (el in self.related_resource_graphs) { 
-                self.relatedResourceConfigs.push(self.createRelatedResourceConfig(el, self.related_resource_graphs[el]));
+            for (var el in self.relatedResourceGraphs) { 
+                self.relatedResourceConfigs.push(self.createRelatedResourceConfig(el, self.relatedResourceGraphs[el]));
             }
 
             self.createSummaryTableConfig('professionalActivity', professionalActivityColumns, groupProfessionalActivityNodegroupId, ['0c3baf01-e323-11eb-ba14-0a9473e82189', '0c3baefb-e323-11eb-ba14-0a9473e82189', '0c3baef5-e323-11eb-ba14-0a9473e82189']);

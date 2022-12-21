@@ -89,19 +89,24 @@
     <!-- Navigation Buttons-->
     <div style="padding: 20px;" class="rp-report-section">
       <div style="text-align: center;" class="sumamry-table-container">
-        <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#names">Names</a>
+        <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#names">Names & Statements</a>
         <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#history">History</a>
-        <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#identifiers">Identifiers</a>
-        <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#statements">Statements</a>
-        <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#sources">Sources/References</a>
+        <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#identifiers">Identifiers & URIs</a>
+        <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#sources">Sources</a>
         <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#related_resources">Related Resources</a>
       </div>
     </div>
 
-    <!-- Name and Statement Tables-->
-    <div id="name" style="padding-top: 24px;" class="rp-report-section">
+    <div id="name" class="anchor"></div>
+    <!-- Name and Statments Section -->
+    <div style="padding-top: 24px;" class="rp-report-section">
       <div class="summary-table-container">
-        <div class="table-label">Names and Statement Information</div>
+        <div class="table-label" style="font-size:24px;">Name and Statement Information</div>
+      </div>
+
+      <!-- Name Summary Table -->
+      <div class="summary-table-container">
+        <div class="table-label">Names</div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
               <table id="name-summary-table" class="table table-striped" cellspacing="0" width="100%;">
                   <thead>
@@ -114,6 +119,26 @@
               </table>
           </div>
       </div>
+
+      <!-- Statment Tables -->
+      <div class="summary-table-container">
+        <div class="table-label">Statements</div>
+        <!-- ko foreach: { data: statementData, as: 'statement_data' } -->
+          <table class="table summary-table-top-header">
+              <tbody>
+                <th class="header" style="padding: 8px">Statement Type </td>
+                <th class="header" style="padding: 8px">Statement Confidentiality </td>
+                  <tr>
+                    <td data-bind="text: $parent.getValue(statement_data, ['statement', 'statement_type', '@display_value'])"> </td>
+                    <td data-bind="text: $parent.getValue(statement_data, ['statement', 'statement_confidentiality', '@display_value'])"> </td>
+                  </tr>
+                  <tr>
+                    <td colspan=2 data-bind="text: $parent.getValue(statement_data, ['statement', 'statement_content', '@display_value'])"> </td>
+              </tbody>
+          </table>
+          <!-- /ko -->
+      </div>      
+
     </div>
 
     <!-- Name Modal -->
@@ -139,30 +164,16 @@
         </div>
       </div>
     </div>
-    
-    <!-- Statement Tables-->
-    <div id="statements" style="padding-top: 24px;" class="rp-report-section">
-      <div class="summary-table-container">
-        <div class="table-label">Statements</div>
-        <!-- ko foreach: { data: statementData, as: 'statement_data' } -->
-          <table class="table summary-table-top-header">
-              <tbody>
-                <th class="header" style="padding: 8px">Statement Type </td>
-                <th class="header" style="padding: 8px">Statement Confidentiality </td>
-                  <tr>
-                    <td data-bind="text: $parent.getValue(statement_data, ['statement', 'statement_type', '@display_value'])"> </td>
-                    <td data-bind="text: $parent.getValue(statement_data, ['statement', 'statement_confidentiality', '@display_value'])"> </td>
-                  </tr>
-                  <tr>
-                    <td colspan=2 data-bind="text: $parent.getValue(statement_data, ['statement', 'statement_content', '@display_value'])"> </td>
-              </tbody>
-          </table>
-          <!-- /ko -->
-        </div>
-    </div>
 
-    <!-- Formation Table-->
-    <div id="history" style="padding-top: 24px;" class="rp-report-section">
+
+    <div id="history" class="anchor"></div>
+    <!-- History Section -->
+    <div style="padding-top: 24px;" class="rp-report-section">
+      <div class="summary-table-container">
+        <div class="table-label" style="font-size:24px;">History</div>
+      </div>
+
+      <!-- Formation Sumamry Table -->
       <div class="summary-table-container">
         <div class="table-label">Formation</div>
         <table class="table summary-table-top-header">
@@ -186,6 +197,64 @@
             </tbody>
         </table>
       </div>
+
+      <!-- Professional Activity Summary Table -->
+      <div class="summary-table-container">
+        <div class="table-label">Professional Activity</div>
+          <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
+              <table id="professional-activity-summary-table" class="table table-striped" cellspacing="0" width="100%;">
+                  <thead>
+                      <tr class="aher-table-header">
+                  </thead>
+                  <tbody data-bind="dataTablesForEach: {dataTableOptions: professionalActivityTableConfig}">
+                  </tbody>
+              </table>
+          </div>
+      </div>
+
+      <!-- Establishment Summary Table -->
+      <div class="summary-table-container">
+        <div class="table-label">Establishment</div>
+          <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
+              <table id="establishment-activity-summary-table" class="table table-striped" cellspacing="0" width="100%;">
+                  <thead>
+                      <tr class="aher-table-header">
+                  </thead>
+                  <tbody data-bind="dataTablesForEach: {dataTableOptions: establishmentTableConfig}">
+                      <tr>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+      </div>
+
+      <!-- Dissolution Summary Table -->
+      <div class="summary-table-container">
+        <div class="table-label">Dissolution</div>
+        <table class="table summary-table-top-header">
+          <tbody>
+            <tr>
+              <th class="header" style="padding: 8px">Place</th>
+              <th class="header" style="padding: 8px">Time</th>
+              <th class="header" style="padding: 8px">Type</th>
+              <th class="header" style="padding: 8px"></th>
+            </tr>
+            <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
+            <tr>
+              <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td>
+              <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name, as: 'timespanName' } -->
+              <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_content', '@display_value'])"> </td>
+              <!-- /ko -->
+              <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
+              <td style="width:40px;">
+                <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px;" data-toggle="modal" data-target="#dissolutionModal">+</button>
+              </td>
+            </tr>
+            <!-- /ko -->
+            </tbody>
+        </table>
+      </div>
+
     </div>
 
     <!-- Formation Modal-->
@@ -456,69 +525,6 @@
         <!-- /ko -->
       </div>
         </div>
-      </div>
-    </div>
-
-    <!-- professional activity summary table -->
-    <div style="padding-top: 24px;" class="rp-report-section">
-      <div class="summary-table-container">
-        <div class="table-label">Professional Activity</div>
-          <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
-              <table id="professional-activity-summary-table" class="table table-striped" cellspacing="0" width="100%;">
-                  <thead>
-                      <tr class="aher-table-header">
-                  </thead>
-                  <tbody data-bind="dataTablesForEach: {dataTableOptions: professionalActivityTableConfig}">
-                  </tbody>
-              </table>
-          </div>
-      </div>
-    </div>
-
-    <!-- establishment activity summary table -->
-    <div style="padding-top: 24px;" class="rp-report-section">
-      <div class="summary-table-container">
-        <div class="table-label">Establishment</div>
-          <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
-              <table id="establishment-activity-summary-table" class="table table-striped" cellspacing="0" width="100%;">
-                  <thead>
-                      <tr class="aher-table-header">
-                  </thead>
-                  <tbody data-bind="dataTablesForEach: {dataTableOptions: establishmentTableConfig}">
-                      <tr>
-                      </tr>
-                  </tbody>
-              </table>
-          </div>
-      </div>
-    </div>
-
-    <!-- Dissolution Table -->
-    <div style="padding-top: 24px;" class="rp-report-section">
-      <div class="summary-table-container">
-        <div class="table-label">Dissolution</div>
-        <table class="table summary-table-top-header">
-          <tbody>
-            <tr>
-              <th class="header" style="padding: 8px">Place</th>
-              <th class="header" style="padding: 8px">Time</th>
-              <th class="header" style="padding: 8px">Type</th>
-              <th class="header" style="padding: 8px"></th>
-            </tr>
-            <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
-            <tr>
-              <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td>
-              <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name, as: 'timespanName' } -->
-              <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_content', '@display_value'])"> </td>
-              <!-- /ko -->
-              <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
-              <td style="width:40px;">
-                <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px;" data-toggle="modal" data-target="#dissolutionModal">+</button>
-              </td>
-            </tr>
-            <!-- /ko -->
-            </tbody>
-        </table>
       </div>
     </div>
 
@@ -1376,8 +1382,16 @@
       </div>
     </div>
 
+
+
+    <div id="identifiers" class="anchor"></div>
     <!-- identifier summary table -->
-    <div id="identifiers"  style="padding-top: 24px;" class="rp-report-section">
+    <div style="padding-top: 24px;" class="rp-report-section">
+      <div class="summary-table-container">
+        <div class="table-label" style="font-size:24px;">Identifiers & URIs</div>
+      </div>
+
+      <!-- Identifiers Summary Table -->
       <div class="summary-table-container">
         <div class="table-label">Identifiers</div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
@@ -1392,8 +1406,21 @@
               </table>
           </div>
       </div>
-    </div>
 
+      <!-- External URIs -->
+      <div class="summary-table-container">
+        <div class="table-label">External URIs</div>
+        <table class="table summary-table-left-header">
+            <tbody>
+                <tr>
+                  <td class="header" style="padding: 8px">URI: </td>
+                  <td><a data-bind="text: externalIdentifierLabel, attr: {href: externalIdentifierUrl, target: '_blank'}"></a></td>
+            </tbody>
+        </table>
+      </div>
+
+    </div>
+    
     <!-- Identifier Assignment Modal -->
     <div class="modal fade" id="identifierModal" role="dialog">
       <div class="modal-dialog" style="position: absolute;left: 50vw;top: 50vh;bottom: -130vh;transform: translate(-35vw, -45vh);">
@@ -1656,22 +1683,12 @@
       </div>
     </div>
 
-    <!-- External URIs -->
-    <div id="external-uris" style="padding-top: 24px;" class="rp-report-section">
-      <div class="summary-table-container">
-        <div class="table-label">External URIs</div>
-        <table class="table summary-table-left-header">
-            <tbody>
-                <tr>
-                  <td class="header" style="padding: 8px">URI: </td>
-                  <td><a data-bind="text: externalIdentifierLabel, attr: {href: externalIdentifierUrl, target: '_blank'}"></a></td>
-            </tbody>
-        </table>
-      </div>
-    </div>
-
+    <div id="sources" class="anchor"></div>
     <!-- sources -->
-    <div id="sources" style="padding-top: 24px;" class="rp-report-section">
+    <div style="padding-top: 24px;" class="rp-report-section">
+      <div class="summary-table-container">
+        <div class="table-label" style="font-size:24px;">Sources</div>
+      </div>
       <div class="summary-table-container">
         <div class="table-label">Sources</div>
         <table class="table summary-table-left-header">
@@ -1705,13 +1722,14 @@
   </div> -->
 <!-- </div> -->
     
+    <div id="related_resources" class="anchor"></div>
     <!-- Related Resources -->
     <div style="padding-top: 24px; background-color:#efefef;" class="rp-report-section">
       <div class="summary-table-container">
         <div class="table-label" style="font-size:24px;">Related Resources</div>
       </div>
       <!-- ko foreach: { data: relatedResourceConfigs, as: 'relatedResourceConfig' } -->
-      <div id="related_resources" class="summary-table-container">
+      <div class="summary-table-container">
         <div class="table-label" data-bind="text: relatedResourceConfig.tableName"></div>
           <div class="table summary-table-standard related-resources-table" data-bind="" style="width: 100%; padding: 10px 15px; background-color: #fbfbfb">
               <table class="table table-striped" cellspacing="0" width="100%;">

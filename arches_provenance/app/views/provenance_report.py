@@ -17,7 +17,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+import operator
 from re import search
+from functools import reduce
 from arches.app.models import models
 from django.views.generic import View
 from arches.app.utils.response import JSONResponse
@@ -38,7 +40,8 @@ class ProvenanceRelatedResources(View):
         resourcegraphto = request.GET.get("resourcegraphto")
         offset = request.GET.get("start") if request.GET.get("start") != None else 0
         limit = request.GET.get("length") if request.GET.get("length") != None else  5
-        
+        order_column = request.GET.get("columns[{0}][name]".format(int(request.GET.get("order[0][column]")))) if request.GET.get("order[0][column]") != None else "resourceinstanceidto"
+        order_dir = request.GET.get("order[0][dir]") if request.GET.get("order[0][column]") != None else "ASC"
         
         #get total number of records
         with connection.cursor() as cursor:
@@ -56,6 +59,8 @@ class ProvenanceRelatedResources(View):
             """.format(resourceid, resourcegraphto)
         
         with connection.cursor() as cursor:
+            if order_column and order_dir:
+                sql = sql + ' ORDER BY rx.{0} {1}'.format(order_column, order_dir)
             sql = sql + ' OFFSET {0} LIMIT {1}'.format(offset, limit)
             cursor.execute(sql)
             queried_related_resources = cursor.fetchall()
@@ -79,6 +84,10 @@ class ProvenanceRelatedResources(View):
                 'nodeid': related_resource[11],
                 'resourceinstancefrom_graphid': related_resource[12],
                 'resourceinstanceto_graphid': related_resource[13],
+                'resourceinstance_to': {
+                    'resourceid': related_resource[6],
+                    'displayname': related_resource[14]
+                }
             }
             filtered_resources=related_resource[15]
             related_resources.append(r)            
@@ -94,6 +103,8 @@ class ProvenanceSummaryTables(View):
         limit = request.GET.get("length") if request.GET.get("length") != None else  5
         search_value = request.GET.get("search[value]") if request.GET.get("search[value]") else None
         nodes = request.GET.get("nodes") if request.GET.get("nodes") != None else ''
+        order_column = request.GET.get("columns[{0}][data]".format(int(request.GET.get("order[0][column]")))) if request.GET.get("order[0][column]") != None else None
+        order_dir = request.GET.get("order[0][dir]") if request.GET.get("order[0][column]") != None else "ASC"
 
         if nodes != '':
             nodes_string = ",".join(['__arches_get_node_display_value(tiledata, \'{0}\'::uuid) AS \"{1}\"'.format(n,n) for n in nodes.split(",")])
@@ -191,7 +202,16 @@ class ProvenanceSummaryTables(View):
                                     vv['child_nodegroups'][str(t['nodegroupid'])] = []
                                     vv['child_nodegroups'][str(t['nodegroupid'])].append(t)
 
-
+        def util_function(data):
+            try:
+                data = int(data)
+                return 'int'
+            except:
+                return 'str'
+        
+        if order_column and order_dir:
+            path = ['' + a + '' if util_function(a) == 'str' else int(a) for a in order_column.split('.')]
+            ret.sort(key=lambda d: reduce(operator.getitem, path, d), reverse=True if order_dir == 'asc' else False)
 
         return JSONResponse({'data': ret, 'recordsTotal': records_total, 'recordsFiltered': filtered_tiles}, indent=4)     
     
@@ -203,7 +223,8 @@ class provenance_report(View):
         offset = request.GET.get("start") if request.GET.get("start") != None else 0
         limit = request.GET.get("length") if request.GET.get("length") != None else  5
         search_value = request.GET.get("search[value]") if request.GET.get("search[value]") else None
-     
+        order_column = request.GET.get("columns[{0}][name]".format(int(request.GET.get("order[0][column]")))) if request.GET.get("order[0][column]") != None else None
+        order_dir = request.GET.get("order[0][dir]") if request.GET.get("order[0][column]") != None else None
 
         #get total number of records
         with connection.cursor() as cursor:
@@ -223,6 +244,8 @@ class provenance_report(View):
 
         #execute query
         with connection.cursor() as cursor:
+            if order_column and order_dir:
+                query_string = query_string + " ORDER BY tiledata->>'{0}' {1}".format(order_column, order_dir)
             sql = query_string + ' OFFSET {0} LIMIT {1}'.format(offset, limit)
             cursor.execute(sql)
             queried_tiles = cursor.fetchall()
