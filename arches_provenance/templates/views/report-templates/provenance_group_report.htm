@@ -302,7 +302,7 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Formation Location: </td>
-                  <a data-bind="text: $parents[1].getValue(formation_location, ['display_value']), attr: {href: '/report/' + $parents[1].getValue(formation_location, ['resourceId']), target: '_blank'}"></a> 
+                  <a data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'display_value']), attr: {href: '/report/' + $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'resourceId']), target: '_blank'}"></a> 
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Formation Type: </td>
@@ -316,6 +316,7 @@
         </table>
 
         <div>Group Formation Statement</div>
+        <!-- ko if: groupFormation.group_formation.group_formation_statement != undefined -->
         <table class="table summary-table-left-header">
           <tr style="overflow:scroll; height: 100px;">
             <td class="header">Statement Names</td>
@@ -361,6 +362,10 @@
             <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_language', '@display_value'])"> </td>
           </tr>
         </table>
+        <!-- /ko -->
+        <!-- ko if: groupFormation.group_formation.group_formation_statement === undefined -->
+        No Formation Statement
+        <!-- /ko -->
 
         <div>Group Formation Time Span</div>
         <table class="table summary-table-left-header">
@@ -413,6 +418,7 @@
           </tr> -->
           <tr>
             <td class="header">Duration</td>
+            <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration -->
             <td>
               <table class="table summary-table-left-header">
                 <tr style="overflow:scroll; height: 100px;">
@@ -469,13 +475,16 @@
                 </tr>
               </table>
             </td>
+            <!-- /ko -->
           </tr>
           <tr>
             <td class="header">Statement About Time Span</td>
+            <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement -->
             <td>
               <table class="table summary-table-left-header">
                 <tr style="overflow:scroll; height: 100px;">
                   <td class="header">Statement About Time Span Names</td>
+                  <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name, as: 'timespanStatementName != undefined -->
                   <td>
                     <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name, as: 'timespanStatementName' } -->
                       <table style="margin: 0px;" class="table summary-table-left-header">
@@ -500,6 +509,7 @@
                       </table>
                     <!-- /ko -->
                   </td>
+                  <!-- /ko -->
     
                 </tr>
                 <tr>
@@ -520,6 +530,7 @@
                 </tr>
               </table>
             </td>
+            <!-- /ko -->
           </tr>
         </table>
         <!-- /ko -->
