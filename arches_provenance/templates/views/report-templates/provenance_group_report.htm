@@ -44,9 +44,9 @@
       <span data-bind="text: resourceName "></span><span data-bind="text: ' [Group] '"></span>
       <!-- ko if: groupFormationData() && groupFormationData().length > 0 -->
       <span data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value']"></span> 
+      <!-- /ko -->
       <!-- ko if: groupDissolutionData() && groupDissolutionData().length > 0 -->
       <span data-bind="text: ' -- ' + groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value']"></span>
-      <!-- /ko -->
       <!-- /ko -->
     </div>
     </h4>
