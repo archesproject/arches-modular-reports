@@ -72,15 +72,16 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Overall Dates: </td>
-                  <!-- ko if: groupFormationData() && groupFormationData().length > 0 -->
-                  <!-- ko if: groupDissolutionData() && groupDissolutionData().length > 0 -->
                   <!-- <td data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value'] + ' -- ' + groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value']">  -->
                     <td>
-                    <div data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value']"></div>
+                      <!-- ko if: groupFormationData() && groupFormationData().length > 0 -->
+                      <div data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value']"></div>
+                      <!-- /ko -->
+                      <!-- ko if: groupDissolutionData() && groupDissolutionData().length > 0 -->
+                      <div>--</div>
                     <div data-bind="text: groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value']"></div>
+                    <!-- /ko -->
                   </td>
-                  <!-- /ko -->
-                  <!-- /ko -->
             </tbody>
         </table>
       </div>
