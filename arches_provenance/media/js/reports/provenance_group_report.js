@@ -43,7 +43,7 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             
             self.relatedResourceGraphs = {
                 "Activity":"734d1558-bfad-11ea-a62b-3af9d3b32b71",
-                "Bidding":"21d83275-e88f-11ea-9fb6-0a1706e75f30",
+                // "Bidding":"21d83275-e88f-11ea-9fb6-0a1706e75f30",
                 "Digital Object":"0044f7da-b4b6-11ea-84f7-3af9d3b32b71",
                 "Event":"7c2205b2-baee-11ea-81b2-3af9d3b32b71",
                 "Exhibition Concept":"2a7fb09a-bfa5-11ea-a62b-3af9d3b32b71",
