@@ -300,7 +300,7 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                     scrollY: "250px",
                     // scrollY: 20,
                     columns: [
-                        {"title": "Related Resource", "orderable": true, targets: 0, "name": "resourceinstanceidto", "data": 'resourceinstance_to',
+                        {"title": "Related Resource", "orderable": true, targets: 0, "name": "name", "data": 'resourceinstance_to',
                             "render": function(data) {
                                 return "<a href=/report/" + data.resourceid + " target=_blank>" + data.displayname + "</a>";
                             }

@@ -51,16 +51,38 @@ class ProvenanceRelatedResources(View):
             cursor.execute(sql)
             records_total = cursor.fetchone()[0]
 
-        sql = """
-            SELECT rx.*, r.name->>'en', COUNT(*) OVER() AS full_count 
-            FROM resource_x_resource rx 
-            JOIN resource_instances r ON rx.resourceinstanceidto = r.resourceinstanceid
-            WHERE rx.resourceinstanceidfrom = '{0}' AND rx.resourceinstanceto_graphid = '{1}'
-            """.format(resourceid, resourcegraphto)
+        # sql = """
+        #     SELECT rx.*, r.name->>'en', COUNT(*) OVER() AS full_count 
+        #     FROM resource_x_resource rx 
+        #     JOIN resource_instances r ON rx.resourceinstanceidto = r.resourceinstanceid
+        #     WHERE rx.resourceinstanceidfrom = '{0}' AND rx.resourceinstanceto_graphid = '{1}'
+        #     """.format(resourceid, resourcegraphto)
+
+
+            sql = """
+            WITH relations AS (
+                SELECT 
+                    rx.*, 
+                    r.name->>'en' AS name
+                FROM resource_x_resource rx
+                JOIN resource_instances r ON rx.resourceinstanceidto = r.resourceinstanceid
+                WHERE 
+                    rx.resourceinstanceidfrom = '{0}' AND rx.resourceinstanceto_graphid = '{1}'
+                UNION 
+                SELECT 
+                    rx.*, 
+                    r.name->>'en' AS name
+                FROM resource_x_resource rx
+                JOIN resource_instances r ON rx.resourceinstanceidfrom = r.resourceinstanceid
+                WHERE 
+                    rx.resourceinstanceidto = '{2}' AND rx.resourceinstancefrom_graphid = '{3}'
+                )
+            SELECT *, COUNT(*) OVER() AS full_count FROM relations
+            """.format(resourceid, resourcegraphto, resourceid, resourcegraphto)
         
         with connection.cursor() as cursor:
             if order_column and order_dir:
-                sql = sql + ' ORDER BY rx.{0} {1}'.format(order_column, order_dir)
+                sql = sql + ' ORDER BY {0} {1}'.format(order_column, order_dir)
             sql = sql + ' OFFSET {0} LIMIT {1}'.format(offset, limit)
             cursor.execute(sql)
             queried_related_resources = cursor.fetchall()
@@ -74,8 +96,8 @@ class ProvenanceRelatedResources(View):
                 'datestarted': related_resource[2],
                 'dateended': related_resource[3],
                 'relationshiptype': related_resource[4],
-                'resourceinstancefrom': related_resource[5],
-                'resourceinstanceto': related_resource[6],
+                'resourceinstancefrom': related_resource[5] if related_resource[5] == resourceid else resourceid,
+                'resourceinstanceto': related_resource[6] if related_resource[6] != resourceid else related_resource[5],
                 'displayname': related_resource[14],
                 'modified': related_resource[7],
                 'created': related_resource[8],
