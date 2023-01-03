@@ -40,6 +40,7 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             self.proActivity = ko.observable();
             self.relatedResourceConfigs = ko.observableArray();
             self.nameRowData = ko.observable();
+            self.externalIdentifierData = ko.observable();
             
             self.relatedResourceGraphs = {
                 "Activity":"734d1558-bfad-11ea-a62b-3af9d3b32b71",
@@ -284,12 +285,14 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
             self.getSimpleBranchData(labelNodegroupId, ['data', '0', '_label', '@display_value'], self.label);
             
             // these had to be separated because of the datatype
-            self.getSimpleBranchData(externalIdentifierNodegroupId, ['data', '0', 'exact_match', 'url'], self.externalIdentifierUrl);
-            self.getSimpleBranchData(externalIdentifierNodegroupId, ['data', '0', 'exact_match', 'url_label'], self.externalIdentifierLabel);
+            // self.getSimpleBranchData(externalIdentifierNodegroupId, ['data', '0', 'exact_match', 'url'], self.externalIdentifierUrl);
+            // self.getSimpleBranchData(externalIdentifierNodegroupId, ['data', '0', 'exact_match', 'url_label'], self.externalIdentifierLabel);
             
+            self.getComplexBranchData(self.externalIdentifierData, externalIdentifierNodegroupId);
+
             // get complex branch data
             self.getComplexBranchData(self.groupFormationData, groupFormationNodegroupId);
-            self.getComplexBranchData(self.groupDissolutionData, groupDissolutionNodegroupId);
+            // self.getComplexBranchData(self.groupDissolutionData, groupDissolutionNodegroupId);
             self.getComplexBranchData(self.statementData, statementNodegroupId);
             
             self.createRelatedResourceConfig = function(name, resourcegraphto) {

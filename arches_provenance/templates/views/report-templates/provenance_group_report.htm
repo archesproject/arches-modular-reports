@@ -1431,7 +1431,18 @@
             <tbody>
                 <tr>
                   <td class="header" style="padding: 8px">URI: </td>
-                  <td><a data-bind="text: externalIdentifierLabel, attr: {href: externalIdentifierUrl, target: '_blank'}"></a></td>
+                  <td style="display: grid; grid-template-columns: repeat(4, 3fr);">
+                  <!-- ko if: externalIdentifierData -->
+                  <!-- ko foreach: { data: externalIdentifierData, as: 'identifier' } -->
+                  <!-- ko if: identifier['exact_match']['url_label'] -->
+                  <a data-bind="text: identifier['exact_match']['url_label'], attr: {href: identifier['exact_match']['url'], target: '_blank'}"></a>
+                  <!-- /ko -->
+                  <!-- ko if: !identifier['exact_match']['url_label'] -->
+                  <a data-bind="text: identifier['exact_match']['url'], attr: {href: identifier['exact_match']['url'], target: '_blank'}"></a>
+                  <!-- /ko -->
+                  <!-- /ko -->
+                  <!-- /ko -->
+                  </td>
             </tbody>
         </table>
       </div>
