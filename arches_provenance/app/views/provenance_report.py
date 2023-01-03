@@ -51,14 +51,6 @@ class ProvenanceRelatedResources(View):
             cursor.execute(sql)
             records_total = cursor.fetchone()[0]
 
-        # sql = """
-        #     SELECT rx.*, r.name->>'en', COUNT(*) OVER() AS full_count 
-        #     FROM resource_x_resource rx 
-        #     JOIN resource_instances r ON rx.resourceinstanceidto = r.resourceinstanceid
-        #     WHERE rx.resourceinstanceidfrom = '{0}' AND rx.resourceinstanceto_graphid = '{1}'
-        #     """.format(resourceid, resourcegraphto)
-
-
             sql = """
             WITH relations AS (
                 SELECT 
