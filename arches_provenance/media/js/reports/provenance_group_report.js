@@ -308,7 +308,16 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                                 return "<a href=/report/" + data.resourceid + " target=_blank>" + data.displayname + "</a>";
                             }
                         },
-                        {"title": "Relationship Type", "orderable": true, targets: 0, "name": "relationshiptype", "data": "relationshiptype"}
+                        {"title": "Relationship Type", "orderable": true, targets: 0, "name": "relationshiptype", "data": "relationshiptype",
+                            "render": function(data) {
+                                if (data != null) {
+                                    return "<a href=" + data + " target=_blank>" + data + "</a>";
+                                }
+                                else {
+                                    return "No relationship type defined.";
+                                }
+                            }
+                        }
                     // {"title": "Identifier Content", "orderable": false, targets: 0, "data": "identifier.identifier_content.@display_value"},
                     // {"title": "Statement Source", "orderable": false, targets: 0, "data": "identifier.identifier_type.@display_value"},
                     ],
