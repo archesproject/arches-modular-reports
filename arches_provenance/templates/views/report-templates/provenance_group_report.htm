@@ -586,7 +586,7 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Dissolution Location: </td>
-                  <a data-bind="text: $parents[1].getValue(dissolution_location, ['display_value']), attr: {href: '/report/' + $parents[1].getValue(dissolution_location, ['resourceId']), target: '_blank'}"></a> 
+                  <a data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'display_value']), attr: {href: '/report/' + $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'resourceId']), target: '_blank'}"></a> 
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Dissolution Type: </td>
@@ -600,7 +600,6 @@
         <table class="table summary-table-left-header">
           <tr style="overflow:scroll; height: 100px;">
             <td class="header">Statement Names</td>
-            <!-- ko if: groupDissolution.group_dissolution.group_dissolution_statement.group_dissolution_statement_name != undefined-->
             <td>
               <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_statement.group_dissolution_statement_name, as: 'statementName' } -->
                 <table style="margin: 0px;" class="table summary-table-left-header">
@@ -625,7 +624,6 @@
                 </table>
               <!-- /ko -->
             </td>
-            <!-- /ko -->
           </tr>
           <tr>
             <td class="header" style="padding: 8px">Dissolution Statement: </td>
@@ -646,7 +644,7 @@
         </table>
         <!-- /ko -->
         <!-- ko if: groupDissolution.group_dissolution.group_dissolution_statement === undefined -->
-        No Group Dissolution Statement
+        No Dissolution Statement
         <!-- /ko -->
   
         <div>Group Dissolution Time Span</div>
@@ -761,12 +759,13 @@
             <!-- /ko -->
           </tr>
           <tr>
-            <td class="h'eader">Statement About Time Span</td>
+            <td class="header">Statement About Time Span</td>
+            <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement -->
             <td>
               <table class="table summary-table-left-header">
                 <tr style="overflow:scroll; height: 100px;">
                   <td class="header">Statement About Time Span Names</td>
-                  <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement.group_dissolution_timespan_statement_name != undefined -->
+                  <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement.group_dissolution_timespan_statement_name, as: 'timespanStatementName != undefined -->
                   <td>
                     <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement.group_dissolution_timespan_statement_name, as: 'timespanStatementName' } -->
                       <table style="margin: 0px;" class="table summary-table-left-header">
@@ -796,22 +795,23 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Statement: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_content', '@display_value'])"> </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Statement Type: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_type', '@display_value'])"> </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_type', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Statement Language: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_language', '@display_value'])"> </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_language', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Statement Label: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_label', '@display_value'])"> </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_statement_label', '@display_value'])"> </td>
                 </tr>
               </table>
             </td>
+            <!-- /ko -->
           </tr>
         </table>
         <!-- /ko -->
@@ -1270,7 +1270,6 @@
               </tr>
               <tr>
                 <td class="header">Duration</td>
-                <!-- <div data-bind="value: console.log(professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration === undefined)"></div> -->
                 <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration === undefined -->
                 <td>
                   <table class="table summary-table-left-header">

@@ -292,7 +292,7 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
 
             // get complex branch data
             self.getComplexBranchData(self.groupFormationData, groupFormationNodegroupId);
-            // self.getComplexBranchData(self.groupDissolutionData, groupDissolutionNodegroupId);
+            self.getComplexBranchData(self.groupDissolutionData, groupDissolutionNodegroupId);
             self.getComplexBranchData(self.statementData, statementNodegroupId);
             
             self.createRelatedResourceConfig = function(name, resourcegraphto) {
