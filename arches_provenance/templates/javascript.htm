@@ -1,0 +1,15 @@
+{% extends "javascript.htm" %}
+
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+
+
+{% block arches_urls %}
+{{ block.super }}
+<div class="arches-urls"
+    provenance_report = "{% url 'provenance_report' %}"
+    provenance_summary_table = "{% url 'provenance_summary_table' %}"
+    provenance_related_resources = "{% url 'provenance_related_resources' %}"
+></div>
+{% endblock arches_urls %}

@@ -1,4 +1,4 @@
-define(['knockout', 'bindings/datatable', 'templates/views/report-templates/provenance_group_report.htm'], function(ko, datatable, provenanceGroupReportTemplate) {
+define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-templates/provenance_group_report.htm'], function(arches, ko, datatable, provenanceGroupReportTemplate) {
     return ko.components.register('provenance_group_report', {
         viewModel: function(params) {
             params.configKeys = [];
@@ -84,7 +84,7 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                     deferRender: true,
                     errMode: 'Ignore',
                     ajax: {
-                        url: '/provenance_report?resourceid=' + resourceid + '&nodegroupid=' + nodegroupId,
+                        url: arches.urls.provenance_report + '?resourceid=' + resourceid + '&nodegroupid=' + nodegroupId,
                         dataSrc: function(json) {
                             for (el of json.data) {
                                 for (const [key, value] of Object.entries(el[name])) {
@@ -103,12 +103,12 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
 
             // helper function to get values for a given nodegroup
             self.getSimpleBranchData = function(nodegroupid, path, cardData) {
-                fetch('/provenance_report?' + new URLSearchParams({
+                const searchParams = new URLSearchParams({
                     resourceid: resourceid,
                     nodegroupid: nodegroupid
-                }), {
-                    method: 'GET',
-                }).then (response => response.json())
+                });
+                fetch(`${arches.urls.provenance_report}?${searchParams}`)
+                    .then (response => response.json())
                     .then(result => {
                         if (result.data.length != 0) {
                             cardData(path.reduce(function index(result, i) {return result[i];}, result));
@@ -121,13 +121,13 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
 
             // helper function to get values for a given nodegroup
             self.getComplexBranchData = function(cardData, nodegroupid, tileid='') {
-                fetch('/provenance_report?' + new URLSearchParams ({
+                const searchParams = new URLSearchParams ({
                     resourceid: resourceid,
                     nodegroupid: nodegroupid,
                     tileid: tileid
-                }), {
-                    method: 'GET',
-                }).then (response => response.json())
+                });
+                fetch(`${arches.urls.provenance_report}?${searchParams}`)
+                    .then (response => response.json())
                     .then(result => {
                         cardData(result.data);
                     })
@@ -265,7 +265,7 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                     deferRender: true,
                     errMode: 'Ignore',
                     ajax: {
-                        url: '/provenance_summary_table?' + new URLSearchParams ({
+                        url: arches.urls.provenance_summary_table + '?' + new URLSearchParams ({
                             resourceid: resourceid,
                             nodegroupid: nodegroupId,
                             nodes: nodes
@@ -332,7 +332,7 @@ define(['knockout', 'bindings/datatable', 'templates/views/report-templates/prov
                     },
                     errMode: 'Ignore',
                     ajax: {
-                        url: '/provenance_related_resources?' + new URLSearchParams ({
+                        url: arches.urls.provenance_related_resources + '?' + new URLSearchParams ({
                             resourceid: resourceid,
                             resourcegraphto: resourcegraphto
                         }),
