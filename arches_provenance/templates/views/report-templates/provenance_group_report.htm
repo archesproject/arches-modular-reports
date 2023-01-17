@@ -1,0 +1,1787 @@
+{% extends "views/report-templates/default.htm" %}
+{% load i18n %}
+
+{% block title %}
+{{ block.super }}
+{% trans "Resource Report" %}
+{% endblock title %}
+{% block report %}
+{% block report_title_bar %}
+<!-- Report Title Bar -->
+<!-- <div class="relative report-title-bar" style="position: fixed; width: 100vw; z-index: 100;"> -->
+  
+  <!-- Title Block -->
+  <!-- <div class="report-toolbar-preview ep-form-toolbar"> -->
+    <!-- <h4 class="report-toolbar-title"><span data-bind="text: 'Group'"></span> - <span data-bind="text: resourceName "></span></h4> -->
+    
+    <!-- Tools -->
+    <!-- <div class="ep-form-toolbar-tools mar-no flex">
+      <p class="report-print-date">
+        <span data-bind="text: $root.translations.reportDate"></span>
+        <span data-bind="text: reportDate"></span>
+      </p> -->
+      
+      <!-- <div 
+      class="report-print-date" 
+      data-bind="component: { 
+        name: 'views/components/simple-switch', 
+        params: {
+          value: hideEmptyNodes, 
+          config:{ label: $root.translations.hideNullValues, subtitle: ''}
+        }
+      }"
+      ></div> -->
+    <!-- </div> -->
+  <!-- </div> -->
+<!-- </div> -->
+{% endblock report_title_bar %}
+{% block group_report_title %}
+
+<div class="relative report-title-bar" style="position: absolute; z-index: 5; width: 100vw;">
+  <div class="report-toolbar-preview ep-form-toolbar">
+    <h4 class="report-toolbar-title" style="width: 95vw;">
+      <div>
+      <span data-bind="text: resourceName "></span><span data-bind="text: ' [Group] '"></span>
+      <div style="display:inline-flex;">
+        <!-- ko if: groupFormationData() && groupFormationData().length > 0 -->
+        <div data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value']"></div>
+        <!-- /ko -->
+        <!-- ko if: groupDissolutionData() && groupDissolutionData().length > 0 -->
+        <div> -- </div>
+        <div data-bind="text: groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value']"></div>
+        <!-- /ko -->
+      </div>
+    </div>
+    </h4>
+  </div>
+</div>
+{% endblock group_report_title %}
+{% block body %}
+<div>
+
+    <!-- Summary Table-->
+    <div style="padding-top: 80px;" class="rp-report-section">
+      <div class="summary-table-container">
+        <div class="table-label">Summary Data</div>
+        <table class="table summary-table-left-header">
+            <tbody>
+                <tr>
+                  <td class="header" style="padding: 8px">Role: </td>
+                  <td data-bind="text: typeOfGroup"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Nationality: </td>
+                  <td data-bind="text: nationality"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Overall Dates: </td>
+                  <!-- <td data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value'] + ' -- ' + groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value']">  -->
+                    <td>
+                      <div style="display:inline-flex;">
+                        <!-- ko if: groupFormationData() && groupFormationData().length > 0 -->
+                        <div data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value']"></div>
+                        <!-- /ko -->
+                        <!-- ko if: groupDissolutionData() && groupDissolutionData().length > 0 -->
+                        <div> -- </div>
+                        <div data-bind="text: groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value']"></div>
+                        <!-- /ko -->
+                      </div>
+                  </td>
+            </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Navigation Buttons-->
+    <div style="padding: 20px;" class="rp-report-section">
+      <div style="text-align: center;" class="sumamry-table-container">
+        <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#names">Names & Statements</a>
+        <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#history">History</a>
+        <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#identifiers">Identifiers & URIs</a>
+        <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#sources">Sources</a>
+        <a class="btn" style="font-weight: 600; background-color: #ebeef0; border-radius: 7px; margin: 5px;" href="#related_resources">Related Resources</a>
+      </div>
+    </div>
+
+    <div id="name" class="anchor"></div>
+    <!-- Name and Statments Section -->
+    <div style="padding-top: 24px;" class="rp-report-section">
+      <div class="summary-table-container">
+        <div class="table-label" style="font-size:24px;">Name & Statement Information</div>
+      </div>
+
+      <!-- Name Summary Table -->
+      <div class="summary-table-container">
+        <div class="table-label">Names</div>
+          <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
+              <table id="name-summary-table" class="table table-striped" cellspacing="0" width="100%;">
+                  <thead>
+                      <tr class="aher-table-header">
+                  </thead>
+                  <tbody data-bind="dataTablesForEach: {dataTableOptions: nameTableConfig}">
+                      <tr>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+      </div>
+
+      <!-- Statment Tables -->
+      <div class="summary-table-container">
+        <div class="table-label">Statements</div>
+        <!-- ko foreach: { data: statementData, as: 'statement_data' } -->
+          <table class="table summary-table-top-header">
+              <tbody>
+                <th class="header" style="padding: 8px">Statement Type </td>
+                <th class="header" style="padding: 8px">Statement Confidentiality </td>
+                  <tr>
+                    <td data-bind="text: $parent.getValue(statement_data, ['statement', 'statement_type', '@display_value'])"> </td>
+                    <td data-bind="text: $parent.getValue(statement_data, ['statement', 'statement_confidentiality', '@display_value'])"> </td>
+                  </tr>
+                  <tr>
+                    <td colspan=2 data-bind="text: $parent.getValue(statement_data, ['statement', 'statement_content', '@display_value'])"> </td>
+              </tbody>
+          </table>
+          <!-- /ko -->
+      </div>      
+
+    </div>
+
+    <!-- Name Modal -->
+    <div class="modal fade" id="nameModal" role="dialog">
+      <div class="modal-dialog" style="display: inline-flex;">
+        <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
+          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closenamemodal" style="cursor:pointer">x</a></div>
+          <div class="summary-table-container" style="width:unset">
+            <!-- ko if: nameRowData -->
+            <div style="font-weight: bold;">Name</div>
+              <div data-bind="text: getValue(nameRowData(), ['name', 'name_content', '@display_value'])"></div>
+            <div style="padding-top: 24px; font-weight: bold;">Type</div>
+              <div data-bind="text: getValue(nameRowData(), ['name', 'name_type', '@display_value'])"></div>
+            <div style="padding-top: 24px; font-weight: bold;">Sources</div>
+            <div>
+              <!-- ko foreach: {data: nameRowData().name.name_source_reference.instance_details, as: 'instance' } -->
+                <a style="cursor:pointer; color:blue; text-decoration:underline;" data-bind="text: instance['display_value'], attr: {href: '/report/' + instance['resourceId'], target: '_blank'}"></a>
+              <!-- /ko -->
+            </div>
+
+            <!-- /ko -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="history" class="anchor"></div>
+    <!-- History Section -->
+    <div style="padding-top: 24px;" class="rp-report-section">
+      <div class="summary-table-container">
+        <div class="table-label" style="font-size:24px;">History</div>
+      </div>
+
+      <!-- Formation Sumamry Table -->
+      <div class="summary-table-container">
+        <div class="table-label">Formation</div>
+        <table class="table summary-table-top-header">
+          <tbody>
+            <tr>
+              <th class="header" style="padding: 8px">Place</th>
+              <th class="header" style="padding: 8px">Time</th>
+              <th class="header" style="padding: 8px">Type</th>
+              <th class="header" style="padding: 8px"></th>
+            </tr>
+            <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
+            <tr>
+              <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', '@display_value'])"> </td>
+              <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan' ,'group_formation_timespan_name', '0', 'group_formation_timespan_name_content', '@display_value'])"> </td>
+              <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
+              <td style="width:40px;">
+                <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px" data-toggle="modal" data-target="#formationModal">+</button>
+              </td>
+            </tr>
+            <!-- /ko -->
+            </tbody>
+        </table>
+      </div>
+
+      <!-- Professional Activity Summary Table -->
+      <div class="summary-table-container">
+        <div class="table-label">Professional Activity</div>
+          <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
+              <table id="professional-activity-summary-table" class="table table-striped" cellspacing="0" width="100%;">
+                  <thead>
+                      <tr class="aher-table-header">
+                  </thead>
+                  <tbody data-bind="dataTablesForEach: {dataTableOptions: professionalActivityTableConfig}">
+                  </tbody>
+              </table>
+          </div>
+      </div>
+
+      <!-- Establishment Summary Table -->
+      <div class="summary-table-container">
+        <div class="table-label">Establishment</div>
+          <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
+              <table id="establishment-activity-summary-table" class="table table-striped" cellspacing="0" width="100%;">
+                  <thead>
+                      <tr class="aher-table-header">
+                  </thead>
+                  <tbody data-bind="dataTablesForEach: {dataTableOptions: establishmentTableConfig}">
+                      <tr>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+      </div>
+
+      <!-- Dissolution Summary Table -->
+      <div class="summary-table-container">
+        <div class="table-label">Dissolution</div>
+        <table class="table summary-table-top-header">
+          <tbody>
+            <tr>
+              <th class="header" style="padding: 8px">Place</th>
+              <th class="header" style="padding: 8px">Time</th>
+              <th class="header" style="padding: 8px">Type</th>
+              <th class="header" style="padding: 8px"></th>
+            </tr>
+            <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
+            <tr>
+              <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td>
+              <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name, as: 'timespanName' } -->
+              <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_content', '@display_value'])"> </td>
+              <!-- /ko -->
+              <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
+              <td style="width:40px;">
+                <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px;" data-toggle="modal" data-target="#dissolutionModal">+</button>
+              </td>
+            </tr>
+            <!-- /ko -->
+            </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- Formation Modal-->
+    <div class="modal fade" id="formationModal" role="dialog">
+      <div class="modal-dialog" style="position: absolute;left: 50vw;top: 50vh;bottom: -130vh;transform: translate(-35vw, -45vh);">
+        <div style="padding: 24px; width: fit-content;" class="rp-report-section">
+          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeformationmodal" style="cursor:pointer">x</a></div>
+          <div class="summary-table-container">
+        <div class="table-label">Group Formation</div>
+        <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
+        <table class="table summary-table-left-header">
+            <tbody>
+                <tr style="overflow:scroll; height: 100px;">
+                  <td class="header">Group Formation Name</td>
+                  <td>
+                      <table style="margin: 0px;" class="table summary-table-left-header">
+                          <tbody>
+                              <tr>
+                                  <td class="header">Content</td>
+                                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_content', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Label</td>
+                                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_label', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Language</td>
+                                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_language', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                <td class="header">Type</td>
+                                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_type', '@display_value'])"> </td>
+                              </tr>
+                          </tbody>
+                      </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Formation Actor: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Formation Influence: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_influence', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Formation Location: </td>
+                  <a data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'display_value']), attr: {href: '/report/' + $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'resourceId']), target: '_blank'}"></a> 
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Formation Type: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Formation Label: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_label', '@display_value'])"> </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div>Group Formation Statement</div>
+        <!-- ko if: groupFormation.group_formation.group_formation_statement != undefined -->
+        <table class="table summary-table-left-header">
+          <tr style="overflow:scroll; height: 100px;">
+            <td class="header">Statement Names</td>
+            <td>
+              <!-- ko foreach: { data: groupFormation.group_formation.group_formation_statement.group_formation_statement_name, as: 'statementName' } -->
+                <table style="margin: 0px;" class="table summary-table-left-header">
+                    <tbody>
+                        <tr>
+                            <td class="header">Content</td>
+                            <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_content', '@display_value'])"> </td>
+                        </tr>
+                        <tr>
+                            <td class="header">Label</td>
+                            <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_label', '@display_value'])"> </td>
+                        </tr>
+                        <tr>
+                            <td class="header">Language</td>
+                            <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_language', '@display_value'])"> </td>
+                        </tr>
+                        <tr>
+                          <td class="header">Type</td>
+                          <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_type', '@display_value'])"> </td>
+                        </tr>
+                    </tbody>
+                </table>
+              <!-- /ko -->
+            </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Formation Statement: </td>
+            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_content', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Formation Statement Type: </td>
+            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_type', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Formation Statement Label: </td>
+            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_label', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Formation Statement Language: </td>
+            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_language', '@display_value'])"> </td>
+          </tr>
+        </table>
+        <!-- /ko -->
+        <!-- ko if: groupFormation.group_formation.group_formation_statement === undefined -->
+        No Formation Statement
+        <!-- /ko -->
+
+        <div>Group Formation Time Span</div>
+        <table class="table summary-table-left-header">
+          <tr style="overflow:scroll; height: 100px;">
+            <td class="header">Time Span Names</td>
+            <td>
+              <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_name, as: 'timespanName' } -->
+                <table style="margin: 0px;" class="table summary-table-left-header">
+                    <tbody>
+                        <tr>
+                            <td class="header">Content</td>
+                            <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_content', '@display_value'])"> </td>
+                        </tr>
+                        <tr>
+                            <td class="header">Label</td>
+                            <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_label', '@display_value'])"> </td>
+                        </tr>
+                        <tr>
+                            <td class="header">Language</td>
+                            <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_language', '@display_value'])"> </td>
+                        </tr>
+                        <tr>
+                          <td class="header">Type</td>
+                          <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_type', '@display_value'])"> </td>
+                        </tr>
+                    </tbody>
+                </table>
+              <!-- /ko -->
+            </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Earliest Start Date: </td>
+            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Latest Start Date: </td>
+            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_end_of_the_begin', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Earliest End Date: </td>
+            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_end', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Latest End Date: </td>
+            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_end_of_the_end', '@display_value'])"> </td>
+          </tr>
+          <!-- <tr>
+            <td class="header" style="padding: 8px">Time Span Type: </td>
+            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_statement_language', '@display_value'])"> </td>
+          </tr> -->
+          <tr>
+            <td class="header">Duration</td>
+            <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration -->
+            <td>
+              <table class="table summary-table-left-header">
+                <tr style="overflow:scroll; height: 100px;">
+                  <td class="header">Duration Names</td>
+                  <td>
+                    <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration.group_formation_timespan_duration_name, as: 'timespanDurationName' } -->
+                      <table style="margin: 0px;" class="table summary-table-left-header">
+                          <tbody>
+                              <tr>
+                                  <td class="header">Content</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_content', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Label</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_label', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Language</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_language', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                <td class="header">Type</td>
+                                <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_type', '@display_value'])"> </td>
+                              </tr>
+                          </tbody>
+                      </table>
+                    <!-- /ko -->
+                  </td>
+    
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Duration Value: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_value', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Unit: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_unit', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Duration Type: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_type', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Duration Label: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_label', '@display_value'])"> </td>
+                </tr>
+              </table>
+            </td>
+            <!-- /ko -->
+          </tr>
+          <tr>
+            <td class="header">Statement About Time Span</td>
+            <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement -->
+            <td>
+              <table class="table summary-table-left-header">
+                <tr style="overflow:scroll; height: 100px;">
+                  <td class="header">Statement About Time Span Names</td>
+                  <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name, as: 'timespanStatementName != undefined -->
+                  <td>
+                    <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name, as: 'timespanStatementName' } -->
+                      <table style="margin: 0px;" class="table summary-table-left-header">
+                          <tbody>
+                              <tr>
+                                  <td class="header">Content</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_content', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Label</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_label', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Language</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_language', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                <td class="header">Type</td>
+                                <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_type', '@display_value'])"> </td>
+                              </tr>
+                          </tbody>
+                      </table>
+                    <!-- /ko -->
+                  </td>
+                  <!-- /ko -->
+    
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Statement: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Statement Type: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_type', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Statement Language: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_language', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Statement Label: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_statement_label', '@display_value'])"> </td>
+                </tr>
+              </table>
+            </td>
+            <!-- /ko -->
+          </tr>
+        </table>
+        <!-- /ko -->
+      </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dissolution Modal -->
+    <div class="modal fade" id="dissolutionModal" role="dialog">
+        <div class="modal-dialog" style="position: absolute;left: 50vw;top: 50vh;bottom: -130vh;transform: translate(-35vw, -45vh);">
+          <div style="padding: 24px; width: fit-content;" class="rp-report-section">
+            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closedissolutionmodal" style="cursor:pointer">x</a></div>
+      <div class="summary-table-container">
+        <div class="table-label">Group Dissolution</div>
+        <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
+        <table class="table summary-table-left-header">
+            <tbody>
+                <tr style="overflow:scroll; height: 100px;">
+                  <td class="header">Group Dissolution Name</td>
+                  <td>
+                      <table style="margin: 0px;" class="table summary-table-left-header">
+                          <tbody>
+                              <tr>
+                                  <td class="header">Content</td>
+                                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_content', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Label</td>
+                                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_label', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Language</td>
+                                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_language', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                <td class="header">Type</td>
+                                <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_type', '@display_value'])"> </td>
+                              </tr>
+                          </tbody>
+                      </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Dissolution Label: </td>
+                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Dissolution Location: </td>
+                  <a data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'display_value']), attr: {href: '/report/' + $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'resourceId']), target: '_blank'}"></a> 
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Dissolution Type: </td>
+                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
+                </tr>
+            </tbody>
+        </table>
+  
+        <div>Group Dissolution Statement</div>
+        <!-- ko if: groupDissolution.group_dissolution.group_dissolution_statement != undefined -->
+        <table class="table summary-table-left-header">
+          <tr style="overflow:scroll; height: 100px;">
+            <td class="header">Statement Names</td>
+            <td>
+              <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_statement.group_dissolution_statement_name, as: 'statementName' } -->
+                <table style="margin: 0px;" class="table summary-table-left-header">
+                    <tbody>
+                        <tr>
+                            <td class="header">Content</td>
+                            <td data-bind="text: $parents[1].getValue(statementName, ['group_dissolution_statement_name_content', '@display_value'])"> </td>
+                        </tr>
+                        <tr>
+                            <td class="header">Label</td>
+                            <td data-bind="text: $parents[1].getValue(statementName, ['group_dissolution_statement_name_label', '@display_value'])"> </td>
+                        </tr>
+                        <tr>
+                            <td class="header">Language</td>
+                            <td data-bind="text: $parents[1].getValue(statementName, ['group_dissolution_statement_name_language', '@display_value'])"> </td>
+                        </tr>
+                        <tr>
+                          <td class="header">Type</td>
+                          <td data-bind="text: $parents[1].getValue(statementName, ['group_dissolution_statement_name_type', '@display_value'])"> </td>
+                        </tr>
+                    </tbody>
+                </table>
+              <!-- /ko -->
+            </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Dissolution Statement: </td>
+            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_content', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Dissolution Statement Type: </td>
+            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_type', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Dissolution Statement Label: </td>
+            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_label', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Dissolution Statement Language: </td>
+            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_language', '@display_value'])"> </td>
+          </tr>
+        </table>
+        <!-- /ko -->
+        <!-- ko if: groupDissolution.group_dissolution.group_dissolution_statement === undefined -->
+        No Dissolution Statement
+        <!-- /ko -->
+  
+        <div>Group Dissolution Time Span</div>
+        <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan != undefined -->
+        <table class="table summary-table-left-header">
+          <tr style="overflow:scroll; height: 100px;">
+            <td class="header">Time Span Names</td>
+            <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name != undefined -->
+            <td>
+              <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name, as: 'timespanName' } -->
+                <table style="margin: 0px;" class="table summary-table-left-header">
+                    <tbody>
+                        <tr>
+                            <td class="header">Content</td>
+                            <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_content', '@display_value'])"> </td>
+                        </tr>
+                        <tr>
+                            <td class="header">Label</td>
+                            <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_label', '@display_value'])"> </td>
+                        </tr>
+                        <tr>
+                            <td class="header">Language</td>
+                            <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_language', '@display_value'])"> </td>
+                        </tr>
+                        <tr>
+                          <td class="header">Type</td>
+                          <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_type', '@display_value'])"> </td>
+                        </tr>
+                    </tbody>
+                </table>
+              <!-- /ko -->
+            </td>
+            <!-- /ko -->
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Earliest Start Date: </td>
+            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'timespan_begin_of_the_begin', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Latest Start Date: </td>
+            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_end_of_the_begin', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Earliest End Date: </td>
+            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_begin_of_the_end', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Latest End Date: </td>
+            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_end_of_the_end', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <td class="header" style="padding: 8px">Time Span Type: </td>
+            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_statement_type', '@display_value'])"> </td>
+          </tr>
+          <tr>
+            <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration -->
+            <td class="header">Duration</td>
+            <td>
+              <table class="table summary-table-left-header">
+                <tr style="overflow:scroll; height: 100px;">
+                  <td class="header">Duration Names</td>
+                  <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration.group_dissolution_timespan_duration_name != undefined -->
+                  <td>
+                    <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration.group_dissolution_timespan_duration_name, as: 'timespanDurationName' } -->
+                      <table style="margin: 0px;" class="table summary-table-left-header">
+                          <tbody>
+                              <tr>
+                                  <td class="header">Content</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_content', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Label</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_label', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Language</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_language', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                <td class="header">Type</td>
+                                <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_type', '@display_value'])"> </td>
+                              </tr>
+                          </tbody>
+                      </table>
+                    <!-- /ko -->
+                  </td>
+                  <!-- /ko -->
+    
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Duration Value: </td>
+                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_value', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
+                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
+                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Unit: </td>
+                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_unit', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Duration Label: </td>
+                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_label', '@display_value'])"> </td>
+                </tr>
+              </table>
+            </td>
+            <!-- /ko -->
+          </tr>
+          <tr>
+            <td class="header">Statement About Time Span</td>
+            <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement -->
+            <td>
+              <table class="table summary-table-left-header">
+                <tr style="overflow:scroll; height: 100px;">
+                  <td class="header">Statement About Time Span Names</td>
+                  <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement.group_dissolution_timespan_statement_name, as: 'timespanStatementName != undefined -->
+                  <td>
+                    <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement.group_dissolution_timespan_statement_name, as: 'timespanStatementName' } -->
+                      <table style="margin: 0px;" class="table summary-table-left-header">
+                          <tbody>
+                              <tr>
+                                  <td class="header">Content</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_content', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Label</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_label', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Language</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_language', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                <td class="header">Type</td>
+                                <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_type', '@display_value'])"> </td>
+                              </tr>
+                          </tbody>
+                      </table>
+                    <!-- /ko -->
+                  </td>
+                  <!-- /ko -->
+    
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Statement: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Statement Type: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_type', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Statement Language: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_language', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td class="header" style="padding: 8px">Statement Label: </td>
+                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_statement_label', '@display_value'])"> </td>
+                </tr>
+              </table>
+            </td>
+            <!-- /ko -->
+          </tr>
+        </table>
+        <!-- /ko -->
+        <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan === undefined -->
+        No Group Dissolution Timespan
+        <!-- /ko -->
+        <!-- /ko -->
+      </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Establishment Modal -->
+    <div class="modal fade" id="establishmentModal" role="dialog">
+      <div class="modal-dialog" style="position: absolute;left: 50vw;top: 50vh;bottom: -130vh;transform: translate(-35vw, -45vh);">
+        <div style="padding: 24px; width: fit-content;" class="rp-report-section">
+          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeestablishmentmodal" style="cursor:pointer">x</a></div>
+        <div class="summary-table-container">
+          <div class="table-label">Group Establishment</div>
+          <!-- ko foreach: { data: groupEstablishmentData, as: 'sojourn' } -->
+          <table class="table summary-table-left-header">
+              <tbody>
+                  <tr style="overflow:scroll; height: 100px;">
+                    <td class="header">Group Establishment Name</td>
+                    <td>
+                        <table style="margin: 0px;" class="table summary-table-left-header">
+                            <tbody>
+                                <tr>
+                                    <td class="header">Content</td>
+                                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_name', 'sojourn_name_content', '@display_value'])"> </td>
+                                </tr>
+                                <tr>
+                                    <td class="header">Label</td>
+                                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_name', 'sojourn_name_label', '@display_value'])"> </td>
+                                </tr>
+                                <tr>
+                                    <td class="header">Language</td>
+                                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_name', 'sojourn_name_language', '@display_value'])"> </td>
+                                </tr>
+                                <tr>
+                                  <td class="header">Type</td>
+                                  <td data-bind="text: $parent.getValue(sojourn, ['sojourn_name', 'sojourn_name_type', '@display_value'])"> </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Establishment Label: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_label', '@display_value'])"> </td>
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Establishment Location: </td>
+                    <td><a data-bind="text: $parent.getValue(sojourn, ['sojourn_location', '@display_value']), attr: {href: '/report/' + $parent.getValue(sojourn, ['sojourn_location', 'resourceId']), target: '_blank'}"> </a></td>
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Establishment Type: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_type', '@display_value'])"> </td>
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Establishment Meta Type: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_type', 'sojourn_type_metatype', '@display_value'])"> </td>
+                  </tr>
+              </tbody>
+          </table>
+
+          <div>Group Establishment Statement</div>
+          <!-- ko if: sojourn.sojourn_statement != undefined -->
+          <table class="table summary-table-left-header">
+            <tr style="overflow:scroll; height: 100px;">
+              <td class="header">Statement Names</td>
+              <!-- ko if: sojourn.sojourn_statement.sojourn_statement_name != undefined -->
+              <td>
+                <!-- ko foreach: { data: sojourn.sojourn_statement.sojourn_statement_name, as: 'statementName' } -->
+                  <table style="margin: 0px;" class="table summary-table-left-header">
+                      <tbody>
+                          <tr>
+                              <td class="header">Content</td>
+                              <td data-bind="text: $parents[1].getValue(statementName, ['sojourn_statement_name_content', '@display_value'])"> </td>
+                          </tr>
+                          <tr>
+                              <td class="header">Label</td>
+                              <td data-bind="text: $parents[1].getValue(statementName, ['sojourn_statement_name_label', '@display_value'])"> </td>
+                          </tr>
+                          <tr>
+                              <td class="header">Language</td>
+                              <td data-bind="text: $parents[1].getValue(statementName, ['sojourn_statement_name_language', '@display_value'])"> </td>
+                          </tr>
+                          <tr>
+                            <td class="header">Type</td>
+                            <td data-bind="text: $parents[1].getValue(statementName, ['sojourn_statement_name_type', '@display_value'])"> </td>
+                          </tr>
+                      </tbody>
+                  </table>
+                <!-- /ko -->
+              </td>
+              <!-- /ko -->
+            </tr>
+            <tr>
+              <td class="header" style="padding: 8px">Establishment Statement: </td>
+              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_content', '@display_value'])"> </td>
+            </tr>
+            <tr>
+              <td class="header" style="padding: 8px">Establishment Statement Type: </td>
+              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_type', '@display_value'])"> </td>
+            </tr>
+            <tr>
+              <td class="header" style="padding: 8px">Establishment Statement Label: </td>
+              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_label', '@display_value'])"> </td>
+            </tr>
+            <tr>
+              <td class="header" style="padding: 8px">Establishment Statement Language: </td>
+              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_language', '@display_value'])"> </td>
+            </tr>
+          </table>
+          <!-- /ko -->
+          <!-- ko if: sojourn.sojourn_statement === undefined -->
+            No Establishment Statement
+          <!-- /ko -->
+
+          <div>Group Establishment Time Span</div>
+          <!-- ko if: sojourn.sojourn_activity_timespan != undefined -->
+          <table class="table summary-table-left-header">
+            <tr style="overflow:scroll; height: 100px;">
+              <td class="header">Time Span Names</td>
+              <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_name != undefined -->
+              <td>
+                <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_name, as: 'timespanName' } -->
+                  <table style="margin: 0px;" class="table summary-table-left-header">
+                      <tbody>
+                          <tr>
+                              <td class="header">Content</td>
+                              <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_content', '@display_value'])"> </td>
+                          </tr>
+                          <tr>
+                              <td class="header">Label</td>
+                              <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_label', '@display_value'])"> </td>
+                          </tr>
+                          <tr>
+                              <td class="header">Language</td>
+                              <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_language', '@display_value'])"> </td>
+                          </tr>
+                          <tr>
+                            <td class="header">Type</td>
+                            <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_type', '@display_value'])"> </td>
+                          </tr>
+                      </tbody>
+                  </table>
+                <!-- /ko -->
+              </td>
+              <!-- /ko -->
+            </tr>
+            <tr>
+              <td class="header" style="padding: 8px">Earliest Start Date: </td>
+              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_begin', '@display_value'])"> </td>
+            </tr>
+            <tr>
+              <td class="header" style="padding: 8px">Latest Start Date: </td>
+              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_end_of_the_begin', '@display_value'])"> </td>
+            </tr>
+            <tr>
+              <td class="header" style="padding: 8px">Earliest End Date: </td>
+              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_end', '@display_value'])"> </td>
+            </tr>
+            <tr>
+              <td class="header" style="padding: 8px">Latest End Date: </td>
+              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_end_of_the_end', '@display_value'])"> </td>
+            </tr>
+            <tr>
+              <td class="header" style="padding: 8px">Time Span Type: </td>
+              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timepsan_type', '@display_value'])"> </td>
+            </tr>
+            <tr>
+              <td class="header">Duration</td>
+              <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_duration -->
+              <td>
+                <table class="table summary-table-left-header">
+                  <tr style="overflow:scroll; height: 100px;">
+                    <td class="header">Duration Names</td>
+                    <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_duration.sojourn_timespan_duration_name -->
+                    <td>
+                      <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_duration.sojourn_timespan_duration_name, as: 'timespanDurationName' } -->
+                        <table style="margin: 0px;" class="table summary-table-left-header">
+                            <tbody>
+                                <tr>
+                                    <td class="header">Content</td>
+                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_content', '@display_value'])"> </td>
+                                </tr>
+                                <tr>
+                                    <td class="header">Label</td>
+                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_label', '@display_value'])"> </td>
+                                </tr>
+                                <tr>
+                                    <td class="header">Language</td>
+                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_language', '@display_value'])"> </td>
+                                </tr>
+                                <tr>
+                                  <td class="header">Type</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_type', '@display_value'])"> </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                      <!-- /ko -->
+                    </td>
+                    <!-- /ko -->
+      
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Duration Value: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_value', '@display_value'])"> </td>
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Unit: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_unit', '@display_value'])"> </td>
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Duration Type: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_type', '@display_value'])"> </td>
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Duration Label: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_label', '@display_value'])"> </td>
+                  </tr>
+                </table>
+              </td>
+              <!-- /ko -->
+            </tr>
+            <tr>
+              <td class="header">Statement About Time Span</td>
+              <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_statement != undefined -->
+              <td>
+                <table class="table summary-table-left-header">
+                  <tr style="overflow:scroll; height: 100px;">
+                    <td class="header">Statement About Time Span Names</td>
+                    <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_statement.sojourn_timespan_statement_name != undefined -->
+                    <td>
+                      <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_statement.sojourn_timespan_statement_name, as: 'timespanStatementName' } -->
+                        <table style="margin: 0px;" class="table summary-table-left-header">
+                            <tbody>
+                                <tr>
+                                    <td class="header">Content</td>
+                                    <td data-bind="text: $parent.getValue(timespanStatementName, ['sojourn_timespan_statement_name_content', '@display_value'])"> </td>
+                                </tr>
+                                <tr>
+                                    <td class="header">Label</td>
+                                    <td data-bind="text: $parent.getValue(timespanStatementName, ['sojourn_timespan_statement_name_label', '@display_value'])"> </td>
+                                </tr>
+                                <tr>
+                                    <td class="header">Language</td>
+                                    <td data-bind="text: $parent.getValue(timespanStatementName, ['sojourn_timespan_statement_name_language', '@display_value'])"> </td>
+                                </tr>
+                                <tr>
+                                  <td class="header">Type</td>
+                                  <td data-bind="text: $parent.getValue(timespanStatementName, ['sojourn_timespan_statement_name_type', '@display_value'])"> </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                      <!-- /ko -->
+                    </td>
+                  <!-- /ko -->
+      
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Statement: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_content', '@display_value'])"> </td>
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Statement Type: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_type', '@display_value'])"> </td>
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Statement Language: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_language', '@display_value'])"> </td>
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Statement Type Metatype: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_metatype', '@display_value'])"> </td>
+                  </tr>
+                  <tr>
+                    <td class="header" style="padding: 8px">Statement Label: </td>
+                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_statement_label', '@display_value'])"> </td>
+                  </tr>
+                </table>
+              </td>
+              <!-- /ko -->
+            </tr>
+          </table>
+          <!-- /ko -->
+          <!-- ko if: sojourn.sojourn_activity_timespan === undefined -->
+            No Establishment Time Span
+          <!-- /ko -->
+          <!-- /ko -->
+        </div>
+        </div>
+      </div>
+      </div>
+    
+    <!-- Professional Activity Modal -->
+    <div class="modal fade" id="professionalActivityModal" role="dialog">
+      <div class="modal-dialog" style="position: absolute;left: 50vw;top: 50vh;bottom: -130vh;transform: translate(-35vw, -45vh);">
+        <div style="padding: 24px; width: fit-content;" class="rp-report-section">
+          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closepreofessionalActivitymodal" style="cursor:pointer">x</a></div>
+          <div class="summary-table-container">
+            <div class="table-label">Group Professional Activity</div>
+            <!-- ko if: groupProfessionalActivityData != 'undefined' -->
+            <!-- ko foreach: { data: groupProfessionalActivityData, as: 'professionalActivity' } -->
+            <table class="table summary-table-left-header">
+                <tbody>
+                    <tr style="overflow:scroll; height: 100px;">
+                      <td class="header">Group Professional Activity Name</td>
+                      <td>
+                          <table style="margin: 0px;" class="table summary-table-left-header">
+                              <tbody>
+                                  <tr>
+                                      <td class="header">Content</td>
+                                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_content', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Label</td>
+                                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_label', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Language</td>
+                                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_language', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="header">Type</td>
+                                    <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_type', '@display_value'])"> </td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Professional Activity Label: </td>
+                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Professional Activity Location: </td>
+                      <a data-bind="text: $parents[1].getValue(professional_activity_location, ['display_value']), attr: {href: '/report/' + $parents[1].getValue(professional_activity_location, ['resourceId']), target: '_blank'}"></a> 
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Professional Activity Type: </td>
+                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_type', '@display_value'])"> </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div>Group Professional Activity Statement</div>
+            <!-- ko if: professionalActivity.professional_activity.professional_activity_statement -->
+            <table class="table summary-table-left-header">
+              <tr style="overflow:scroll; height: 100px;">
+                <td class="header">Statement Names</td>
+                <!-- ko if: professionalActivity.professional_activity.professional_activity_statement.professional_activity_statement_name -->
+                <td>
+                  <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_statement.professional_activity_statement_name, as: 'statementName' } -->
+                    <table style="margin: 0px;" class="table summary-table-left-header">
+                        <tbody>
+                            <tr>
+                                <td class="header">Content</td>
+                                <td data-bind="text: $parents[2].getValue(statementName, ['professional_activity_statement_name_content', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                                <td class="header">Label</td>
+                                <td data-bind="text: $parents[2].getValue(statementName, ['professional_activity_statement_name_label', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                                <td class="header">Language</td>
+                                <td data-bind="text: $parents[2].getValue(statementName, ['professional_activity_statement_name_language', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                              <td class="header">Type</td>
+                              <td data-bind="text: $parents[2].getValue(statementName, ['professional_activity_statement_name_type', '@display_value'])"> </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                  <!-- /ko -->
+                </td>
+                <!-- /ko --> 
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Professional Activity Statement: </td>
+                <td data-bind="text: $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_content', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Professional Activity Statement Type: </td>
+                <td data-bind="text: $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_type', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Professional Activity Statement Label: </td>
+                <td data-bind="text: $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_label', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Professional Activity Statement Language: </td>
+                <td data-bind="text: $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_language', '@display_value'])"> </td>
+              </tr>
+            </table>
+            <!-- /ko -->
+            <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_statement -->
+              No Group Professional Activity Statement
+            <!-- /ko -->
+
+            <div>Group Professional Activity Time Span</div>
+            <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan -->
+            <table class="table summary-table-left-header">
+              <tr style="overflow:scroll; height: 100px;">
+                <td class="header">Time Span Names</td>
+                <td>
+                  <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_name, as: 'timespanName' } -->
+                    <table style="margin: 0px;" class="table summary-table-left-header">
+                        <tbody>
+                            <tr>
+                                <td class="header">Content</td>
+                                <td data-bind="text: $parents[1].getValue(timespanName, ['professional_activity_timespan_name_content', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                                <td class="header">Label</td>
+                                <td data-bind="text: $parents[1].getValue(timespanName, ['professional_activity_timespan_name_label', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                                <td class="header">Language</td>
+                                <td data-bind="text: $parents[1].getValue(timespanName, ['professional_activity_timespan_name_language', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                              <td class="header">Type</td>
+                              <td data-bind="text: $parents[1].getValue(timespanName, ['professional_activity_timespan_name_type', '@display_value'])"> </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                  <!-- /ko -->
+                </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Earliest Start Date: </td>
+                <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_begin', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Latest Start Date: </td>
+                <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_end_of_the_begin', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Earliest End Date: </td>
+                <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_end', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Latest End Date: </td>
+                <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_end_of_the_end', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header">Duration</td>
+                <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration === undefined -->
+                <td>
+                  <table class="table summary-table-left-header">
+                    <tr style="overflow:scroll; height: 100px;">
+                      <td class="header">Duration Names</td>
+                      <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration.professional_activity_timespan_duration_name  -->
+                      <td>
+                        <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration.professional_activity_timespan_duration_name, as: 'timespanDurationName' } -->
+                          <table style="margin: 0px;" class="table summary-table-left-header">
+                              <tbody>
+                                  <tr>
+                                      <td class="header">Content</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['professional_activity_timespan_duration_name_content', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Label</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['professional_activity_timespan_duration_name_label', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Language</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['professional_activity_timespan_duration_name_language', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="header">Type</td>
+                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['professional_activity_timespan_duration_name_type', '@display_value'])"> </td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                        <!-- /ko -->
+                      </td>
+                      <!-- /ko -->
+        
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Value: </td>
+                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
+                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
+                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Unit: </td>
+                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_unit', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Label: </td>
+                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_label', '@display_value'])"> </td>
+                    </tr>
+                  </table>
+                </td>
+                <!-- /ko -->
+              </tr>
+              <tr>
+                <td class="header">Statement About Time Span</td>
+                <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_statement -->
+                <td>
+                  <table class="table summary-table-left-header">
+                    <tr style="overflow:scroll; height: 100px;">
+                      <td class="header">Statement About Time Span Names</td>
+                      <td>
+                        <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_statement.professional_activity_timespan_statement_name -->
+                        <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_statement.professional_activity_timespan_statement_name, as: 'timespanStatementName' } -->
+                          <table style="margin: 0px;" class="table summary-table-left-header">
+                              <tbody>
+                                  <tr>
+                                      <td class="header">Content</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanStatementName, ['professional_activity_timespan_statement_name_content', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Label</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanStatementName, ['professional_activity_timespan_statement_name_label', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Language</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanStatementName, ['professional_activity_timespan_statement_name_language', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="header">Type</td>
+                                    <td data-bind="text: $parents[1].getValue(timespanStatementName, ['professional_activity_timespan_statement_name_type', '@display_value'])"> </td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                        <!-- /ko -->
+                        <!-- /ko -->
+                      </td>
+        
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement: </td>
+                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_content', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement Type: </td>
+                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_type', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement Language: </td>
+                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_language', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement Type Metatype: </td>
+                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_metatype', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement Label: </td>
+                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_label', '@display_value'])"> </td>
+                    </tr>
+                  </table>
+                </td>
+                <!-- /ko -->
+              </tr>
+            </table>
+            <!-- /ko -->
+            <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan -->
+              No Professional Activity Time Span
+            <!-- /ko -->
+            <!-- /ko -->
+            <!-- /ko -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <div id="identifiers" class="anchor"></div>
+    <!-- identifier summary table -->
+    <div style="padding-top: 24px;" class="rp-report-section">
+      <div class="summary-table-container">
+        <div class="table-label" style="font-size:24px;">Identifiers & URIs</div>
+      </div>
+
+      <!-- Identifiers Summary Table -->
+      <div class="summary-table-container">
+        <div class="table-label">Identifiers</div>
+          <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
+              <table id="identifier-summary-table" class="table table-striped" cellspacing="0" width="100%;">
+                  <thead>
+                      <tr class="aher-table-header">
+                  </thead>
+                  <tbody data-bind="dataTablesForEach: {dataTableOptions: identifierAssignemntTableConfig}">
+                      <tr>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+      </div>
+
+      <!-- External URIs -->
+      <div class="summary-table-container">
+        <div class="table-label">External URIs</div>
+        <table class="table summary-table-left-header">
+            <tbody>
+                <tr>
+                  <td class="header" style="padding: 8px">URI: </td>
+                  <td style="display: grid; grid-template-columns: repeat(4, 3fr);">
+                  <!-- ko if: externalIdentifierData -->
+                  <!-- ko foreach: { data: externalIdentifierData, as: 'identifier' } -->
+                  <!-- ko if: identifier['exact_match']['url_label'] -->
+                  <a data-bind="text: identifier['exact_match']['url_label'], attr: {href: identifier['exact_match']['url'], target: '_blank'}"></a>
+                  <!-- /ko -->
+                  <!-- ko if: !identifier['exact_match']['url_label'] -->
+                  <a data-bind="text: identifier['exact_match']['url'], attr: {href: identifier['exact_match']['url'], target: '_blank'}"></a>
+                  <!-- /ko -->
+                  <!-- /ko -->
+                  <!-- /ko -->
+                  </td>
+            </tbody>
+        </table>
+      </div>
+
+    </div>
+    
+    <!-- Identifier Assignment Modal -->
+    <div class="modal fade" id="identifierModal" role="dialog">
+      <div class="modal-dialog" style="position: absolute;left: 50vw;top: 50vh;bottom: -130vh;transform: translate(-35vw, -45vh);">
+        <div style="padding: 24px; width: fit-content;" class="rp-report-section">
+          <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeindentifiermodal" style="cursor:pointer">x</a></div>
+          <div class="summary-table-container">
+            <div class="table-label">Group Identifier Assignment</div>
+            <!-- ko if: groupIdentifierAssignmentData != 'undefined' -->
+            <!-- ko foreach: { data: groupIdentifierAssignmentData, as: 'identifierAssignment' } -->
+            <table class="table summary-table-left-header">
+                <tbody>
+                    <tr>
+                      <td class="header" style="padding: 8px">Identifier Assignment Label: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_label', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Identifier Assignment Content: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_content', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Identifier Assignment Type: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_type', '@display_value'])"> </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div>Group Identifier Data Assignment</div>
+            <!-- ko if: identifierAssignment.identifier.identifier_data_assignment -->
+            <table class="table summary-table-left-header">
+              <tr style="overflow:scroll; height: 100px;">
+                <td class="header">Statement Names</td>
+                <td>
+                  <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_name -->
+                  <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_name, as: 'dataAssignmentName' } -->
+                    <table style="margin: 0px;" class="table summary-table-left-header">
+                        <tbody>
+                            <tr>
+                                <td class="header">Content</td>
+                                <td data-bind="text: $parents[1].getValue(dataAssignmentName, ['identifier_data_assignment_name_content', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                                <td class="header">Label</td>
+                                <td data-bind="text: $parents[1].getValue(dataAssignmentName, ['identifier_data_assignment_name_label', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                                <td class="header">Language</td>
+                                <td data-bind="text: $parents[1].getValue(dataAssignmentName, ['identifier_data_assignment_name_language', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                              <td class="header">Type</td>
+                              <td data-bind="text: $parents[1].getValue(dataAssignmentName, ['identifier_data_assignment_name_type', '@display_value'])"> </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                  <!-- /ko -->
+                  <!-- /ko -->
+                </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Identifier Data Assignment Actor: </td>
+                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_actor', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Identifier Data Assignment Statement Type: </td>
+                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_label', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Identifier Data Assignment Object Used: </td>
+                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_object_used', '@display_value'])"> </td>
+              </tr>
+            </table>
+
+            <div>Group Identifier Data Assignment Time Span</div>
+            <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan -->
+            <table class="table summary-table-left-header">
+              <tr style="overflow:scroll; height: 100px;">
+                <td class="header">Time Span Names</td>
+                <td>
+                  <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_name -->
+                  <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_name, as: 'timespanName' } -->
+                    <table style="margin: 0px;" class="table summary-table-left-header">
+                        <tbody>
+                            <tr>
+                                <td class="header">Content</td>
+                                <td data-bind="text: $parents[1].getValue(timespanName, ['identifier_data_assignment_timespan_name_content', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                                <td class="header">Label</td>
+                                <td data-bind="text: $parents[1].getValue(timespanName, ['identifier_data_assignment_timespan_name_label', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                                <td class="header">Language</td>
+                                <td data-bind="text: $parents[1].getValue(timespanName, ['identifier_data_assignment_timespan_name_language', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                              <td class="header">Type</td>
+                              <td data-bind="text: $parents[1].getValue(timespanName, ['identifier_data_assignment_timespan_name_type', '@display_value'])"> </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                  <!-- /ko -->
+                  <!-- /ko -->
+                </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Earliest Start Date: </td>
+                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_begin', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Latest Start Date: </td>
+                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_end_of_the_begin', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Earliest End Date: </td>
+                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_end', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Latest End Date: </td>
+                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_end_of_the_end', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header">Duration</td>
+                <td>
+                  <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_duration -->
+                  <table class="table summary-table-left-header">
+                    <tr style="overflow:scroll; height: 100px;">
+                      <td class="header">Duration Names</td>
+                      <td>
+                        <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_duration.identifier_data_assignment_timespan_duration_name -->
+                        <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_duration.identifier_data_assignment_timespan_duration_name, as: 'timespanDurationName' } -->
+                          <table style="margin: 0px;" class="table summary-table-left-header">
+                              <tbody>
+                                  <tr>
+                                      <td class="header">Content</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Label</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_label', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Language</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_language', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="header">Type</td>
+                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_type', '@display_value'])"> </td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                        <!-- /ko -->
+                        <!-- /ko -->
+                      </td>
+
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Value: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Unit: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_unit', '@display_value'])"> </td>
+                    </tr>
+                    <!-- <tr>
+                      <td class="header" style="padding: 8px">Duration Type: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                    </tr> -->
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Label: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_label', '@display_value'])"> </td>
+                    </tr>
+                  </table>
+                  <!-- /ko -->
+                </td>
+              </tr>
+              <tr>
+                <td class="header">Statement About Time Span</td>
+                <td>
+                  <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement -->
+                  <table class="table summary-table-left-header">
+                    <tr style="overflow:scroll; height: 100px;">
+                      <td class="header">Statement About Time Span Names</td>
+                      <td>
+                        <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement.identifier_data_assignment_timespan_statement_name -->
+                        <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement.identifier_data_assignment_timespan_statement_name, as: 'timespanDurationName' } -->
+                          <table style="margin: 0px;" class="table summary-table-left-header">
+                              <tbody>
+                                  <tr>
+                                      <td class="header">Content</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Label</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_label', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Language</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_language', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="header">Type</td>
+                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_type', '@display_value'])"> </td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                        <!-- /ko -->
+                        <!-- /ko -->
+                      </td>
+
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement Type: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement Language: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement Type Metatype: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_unit', '@display_value'])"> </td>
+                    </tr>
+                    <!-- <tr>
+                      <td class="header" style="padding: 8px">Duration Type: </td>
+                      <td data-bind="text: $parents[1].getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                    </tr> -->
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement Label: </td>
+                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_label', '@display_value'])"> </td>
+                    </tr>
+                  </table>
+                  <!--/ko -->
+                </td>
+              </tr>
+            </table>
+            <!-- /ko -->
+            <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan -->
+            No identifier timespan data assignment time span
+            <!-- /ko -->
+            <!-- /ko -->
+            <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment -->
+            No identifier data Assignment
+            <!-- /ko -->
+            <!-- /ko -->
+            <!-- /ko -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sources" class="anchor"></div>
+    <!-- sources -->
+    <div style="padding-top: 24px;" class="rp-report-section">
+      <div class="summary-table-container">
+        <div class="table-label" style="font-size:24px;">Sources</div>
+      </div>
+      <div class="summary-table-container">
+        <div class="table-label">Sources</div>
+        <table class="table summary-table-left-header">
+            <tbody>
+                <tr>
+                  <td class="header" style="padding: 8px">Sources: </td>
+                  <td style="display: grid; grid-template-columns: repeat(4, 3fr);">
+                    <!-- ko foreach: { data: sourceReference, as: 'instance' } -->
+                    <a data-bind="text: instance['display_value'], attr: {href: '/report/' + instance['resourceId'], target: '_blank'}"></a>
+                    <!-- /ko -->
+                  </td>  
+            </tbody>
+        </table>
+      </div>
+    </div>
+
+<!-- <div style="padding-top: 24px;" class="rp-report-section"> -->
+  <!-- <div class="summary-table-container">
+    <div class="table-label">Contact Summary</div>
+      <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
+          <table class="table table-striped" cellspacing="0" width="100%;">
+              <thead>
+                  <tr class="aher-table-header">
+              </thead>
+              <tbody data-bind="dataTablesForEach: {dataTableOptions: contact_pointTableConfig}">
+                  <tr>
+                  </tr>
+              </tbody>
+          </table>
+      </div>
+  </div> -->
+<!-- </div> -->
+    
+    <div id="related_resources" class="anchor"></div>
+    <!-- Related Resources -->
+    <div style="padding-top: 24px; background-color:#efefef;" class="rp-report-section">
+      <div class="summary-table-container">
+        <div class="table-label" style="font-size:24px;">Related Resources</div>
+      </div>
+      <!-- ko foreach: { data: relatedResourceConfigs, as: 'relatedResourceConfig' } -->
+      <div class="summary-table-container">
+        <div class="table-label" data-bind="text: relatedResourceConfig.tableName"></div>
+          <div class="table summary-table-standard related-resources-table" data-bind="" style="width: 100%; padding: 10px 15px; background-color: #fbfbfb">
+              <table class="table table-striped" cellspacing="0" width="100%;">
+                  <thead>
+                      <tr class="aher-table-header">
+                  </thead>
+                  <tbody data-bind="dataTablesForEach: {dataTableOptions: relatedResourceConfig}">
+                      <tr>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+      </div>
+      <!-- /ko -->
+
+
+
+
+    </div>
+  </div>
+
+
+    {% endblock body %}
+    {% endblock report %}
+
+{% block summary %}
+<div></div>
+{% endblock summary %}

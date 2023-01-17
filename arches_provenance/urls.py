@@ -13,6 +13,11 @@ from arches.app.models.system_settings import settings
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.data_management.resources.formats.rdffile import JsonLdWriter
 
+from arches_provenance.app.views.provenance_report import provenance_report
+from arches_provenance.app.views.provenance_report import ProvenanceSummaryTables
+from arches_provenance.app.views.provenance_report import ProvenanceRelatedResources
+from arches_provenance.app.views.provenance_report import ProvenanceGroupReportView
+
 uuid_regex = settings.UUID_REGEX
 @method_decorator(can_read_resource_instance, name="dispatch")
 class GraphResourceReportView(BaseManagerView):
@@ -189,7 +194,10 @@ class GraphResourceReportView(BaseManagerView):
 
 urlpatterns = [
     url(r'^', include('arches.urls')),
-	url(r"^graph_report/(?P<resourceid>%s|())$" % uuid_regex, GraphResourceReportView.as_view(), name="resource_graph_report"),    
+	url(r"^graph_report/(?P<resourceid>%s|())$" % uuid_regex, GraphResourceReportView.as_view(), name="resource_graph_report"), 
+    url(r"^provenance_report$", provenance_report.as_view(), name="provenance_report"),
+    url(r"^provenance_summary_table$", ProvenanceSummaryTables.as_view(), name="provenance_summary_table"),
+    url(r"^provenance_related_resources$", ProvenanceRelatedResources.as_view(), name="provenance_related_resources"),   
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.SHOW_LANGUAGE_SWITCH is True:

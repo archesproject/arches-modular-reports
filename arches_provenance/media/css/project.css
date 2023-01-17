@@ -14,5 +14,119 @@
     z-index:10000;
 }
 .machine-banner:before{
-    content: "PROVENANCE"
+    content: "STAGING"
 }
+
+div.rp-report-tile dl a[href] {
+    color: blue;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 400;
+}
+
+.summary-table-container {
+    padding-top: 5px;
+}
+
+.summary-table-container {
+    overflow-x: auto;
+    /* max-width: 1000px;
+    min-width: 600px; */
+    width: 70vw;
+    margin: auto;
+}
+
+.summary-table-top-header {
+    overflow-x: auto;
+    width: 100%;
+    border-collapse: unset;
+    border: solid 1px lightgray;
+}
+
+.summary-table-top-header th{
+    font-weight: 600;
+    background-color: #efefef;
+}
+
+.summary-table-top-header th a {
+    color: blue
+}
+
+.summary-table-left-header {
+    overflow-x: auto;
+    text-align: left;
+    width: 100%;
+    border-collapse: unset;
+    border: solid 1px lightgray;
+}
+
+.summary-table-left-header td:first-child{
+    text-align: right;
+    font-weight: 600;
+    background-color: #efefef;
+    width: 150px;
+}
+
+.summary-table-left-header td a {
+    color: blue
+}
+
+
+td {
+    border: solid 1px #ececec;
+    text-overflow: ellipsis;
+}
+
+.summary-table-standard {
+    border: solid 1px lightgray;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.summary-table-standard th {
+    background-color: #efefef;
+    text-align: left;
+}
+
+.table-label {
+    font-weight: 600;
+    padding-bottom: 4px;
+    font-size: 18px;
+}
+
+.ocr {
+    display: flex;
+    padding: 10px;
+    border: solid 1px #ececec;
+    flex-wrap: wrap;
+    align-content: space-around;
+    min-height: 35px;
+    margin-bottom: 20px;
+}
+
+.ocr div{
+    background-color: #f9f9f9;
+    margin: 5px;
+    padding: 15px;
+    border: solid 1px #ececec;
+}
+
+
+.dataTable th, .dataTable td {
+    max-width: 200px;
+    /* min-width: 70px; */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    }
+
+.anchor::before { 
+    display: block; 
+    content: " "; 
+    margin-top: -55px; 
+    height: 55px; 
+    visibility: hidden; 
+    pointer-events: none;
+    }
