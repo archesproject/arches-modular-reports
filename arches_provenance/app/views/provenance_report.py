@@ -23,6 +23,7 @@ from functools import reduce
 from arches.app.models import models
 from django.views.generic import View
 from arches.app.utils.response import JSONResponse
+from arches.app.models.models import CardXNodeXWidget, Node
 from arches.app.models.resource import Resource
 from arches.app.models.system_settings import settings
 from arches.app.models.tile import Tile
@@ -324,3 +325,11 @@ class ProvenanceGroupReportView(View):
         else:
             response = api.ResourceReport().get(request, resourceid=resourceid) 
             return response
+
+class ProvenanceEditorView(View):
+    def get(self, request):
+        nodeid = request.GET.get("nodeid")
+        cardwidget = CardXNodeXWidget.objects.prefetch_related("widget", "node").get(node_id=nodeid)
+        ret = {'cardwidget': cardwidget, 'node': cardwidget.node, 'widget': cardwidget.widget}
+
+        return JSONResponse(ret)
