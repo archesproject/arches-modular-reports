@@ -68,10 +68,12 @@
                 <tr>
                   <td class="header" style="padding: 8px">Role: </td>
                   <td data-bind="text: typeOfGroup"> </td>
+                  <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'><i class="fa fa-pencil"></i></button></td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Nationality: </td>
                   <td data-bind="text: nationality"> </td>
+                  <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#nationalityModal'><i class="fa fa-pencil"></i></button></td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Overall Dates: </td>
@@ -87,10 +89,55 @@
                         <!-- /ko -->
                       </div>
                   </td>
+                  <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#overallDatesModal'><i class="fa fa-pencil"></i></button></td>
             </tbody>
         </table>
       </div>
     </div>
+
+    <!-- Summary Table Modals -->
+      <!-- Role Modal -->
+      <div class="modal fade" id="summaryRoleModal" role="dialog">
+        <div class="modal-dialog" style="display: inline-flex;">
+          <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
+            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeSummaryRoleModal" style="cursor:pointer">x</a></div>
+            <div class="summary-table-container" style="width:unset">
+              <div style="font-weight: bold;">Role</div>
+              <!-- ko if: typeOfGroup -->
+              <div data-bind="text: typeOfGroup()"></div>
+              <!-- /ko -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Nationality Modal -->
+      <div class="modal fade" id="nationalityModal" role="dialog">
+        <div class="modal-dialog" style="display: inline-flex;">
+          <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
+            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closenationalityModal" style="cursor:pointer">x</a></div>
+            <div class="summary-table-container" style="width:unset">
+              <div style="font-weight: bold;">Nationality</div>
+              <!-- ko if: nationality -->
+              <div data-bind="text: nationality()"></div>
+              <!-- /ko -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Overall Dates Modal -->
+      <div class="modal fade" id="overallDatesModal" role="dialog">
+        <div class="modal-dialog" style="display: inline-flex;">
+          <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
+            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeoverallDatesModal" style="cursor:pointer">x</a></div>
+            <div class="summary-table-container" style="width:unset">
+              <div style="font-weight: bold;">Overall Dates</div>
+              <!-- ko if: groupFormationData() && groupFormationData().length > 0 -->
+              <div data-bind="text: groupFormationData()"></div>
+              <!-- /ko -->
+            </div>
+          </div>
+        </div>
+      </div>
 
     <!-- Navigation Buttons-->
     <div style="padding: 20px;" class="rp-report-section">

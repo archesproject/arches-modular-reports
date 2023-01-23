@@ -1,4 +1,9 @@
-define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-templates/provenance_group_report.htm'], function(arches, ko, datatable, provenanceGroupReportTemplate) {
+define([
+    'arches', 
+    'knockout', 
+    'bindings/datatable', 
+    'templates/views/report-templates/provenance_group_report.htm'
+], function(arches, ko, datatable, provenanceGroupReportTemplate) {
     return ko.components.register('provenance_group_report', {
         viewModel: function(params) {
             params.configKeys = [];
@@ -404,6 +409,20 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                 $('#nameModal').modal('hide');
             });
 
+            $('#closeSummaryRoleModal').click(function() {
+                $('#summaryRoleModal').modal('hide');
+            });
+
+            $('#closenationalityModal').click(function() {
+                $('#nationalityModal').modal('hide');
+            });
+
+            $('#closeoverallDatesModal').click(function() {
+                $('#overallDatesModal').modal('hide');
+            });
+
+            console.log(self);
+            console.log(params);
         },
         template: provenanceGroupReportTemplate
     });
