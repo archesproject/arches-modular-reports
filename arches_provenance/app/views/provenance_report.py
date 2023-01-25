@@ -40,6 +40,7 @@ class ProvenanceRelatedResources(View):
         resourcegraphto = request.GET.get("resourcegraphto")
         offset = request.GET.get("start") if request.GET.get("start") != None else 0
         limit = request.GET.get("length") if request.GET.get("length") != None else  5
+        search_value = request.GET.get("search[value]") if request.GET.get("search[value]") else None
         order_column = request.GET.get("columns[{0}][name]".format(int(request.GET.get("order[0][column]")))) if request.GET.get("order[0][column]") != None else "resourceinstanceidto"
         order_dir = request.GET.get("order[0][dir]") if request.GET.get("order[0][column]") != None else "ASC"
         
@@ -51,7 +52,7 @@ class ProvenanceRelatedResources(View):
             cursor.execute(sql)
             records_total = cursor.fetchone()[0]
 
-            sql = """
+            query_string = """
             WITH relations AS (
                 SELECT 
                     rx.*, 
@@ -71,12 +72,17 @@ class ProvenanceRelatedResources(View):
                 )
             SELECT *, COUNT(*) OVER() AS full_count FROM relations
             """.format(resourceid, resourcegraphto, resourceid, resourcegraphto)
+
+        if search_value != None:
+            search_string = 'name ILIKE \'%{0}%\' OR inverserelationshiptype ILIKE \'%{1}%\''.format(search_value, search_value)
+
+            query_string = query_string + ' WHERE ' + search_string
         
         with connection.cursor() as cursor:
             if order_column and order_dir:
-                sql = sql + ' ORDER BY {0} {1}'.format(order_column, order_dir)
-            sql = sql + ' OFFSET {0} LIMIT {1}'.format(offset, limit)
-            cursor.execute(sql)
+                query_string = query_string + ' ORDER BY {0} {1}'.format(order_column, order_dir)
+            query_string = query_string + ' OFFSET {0} LIMIT {1}'.format(offset, limit)
+            cursor.execute(query_string)
             queried_related_resources = cursor.fetchall()
 
         related_resources = []

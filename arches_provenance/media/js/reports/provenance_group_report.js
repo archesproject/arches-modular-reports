@@ -156,7 +156,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
             ];
 
             const professionalActivityColumns  = [
-                {"title": "Place", "orderable": true, targets: 0, "data": "0c3baf01-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
+                {"title": "Location", "orderable": true, targets: 0, "data": "0c3baf01-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
                         if (data) {
                             return JSON.parse(data).en.value;
@@ -166,7 +166,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                         }
                     }
                 },
-                {"title": "Time", "orderable": true, targets: 0, "data": "child_nodegroups.0c3baee7-e323-11eb-ba14-0a9473e82189.0.child_nodegroups.0c3baeea-e323-11eb-ba14-0a9473e82189.0.0c3baef5-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
+                {"title": "Time Span", "orderable": true, targets: 0, "data": "child_nodegroups.0c3baee7-e323-11eb-ba14-0a9473e82189.0.child_nodegroups.0c3baeea-e323-11eb-ba14-0a9473e82189.0.0c3baef5-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
                         if (data) {
                             return JSON.parse(data).en.value;
@@ -186,7 +186,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
             ];
 
             const establishmentColumns  = [
-                {"title": "Place", "orderable": true, targets: 0, "data": "e5f12154-17c1-11ec-b193-0a9473e82189", "defaultContent": "",
+                {"title": "Location", "orderable": true, targets: 0, "data": "e5f12154-17c1-11ec-b193-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
                         if (data) {
                             return JSON.parse(data).en.value;
@@ -196,7 +196,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                         }
                     }    
                 },
-                {"title": "Time", "orderable": true, name: "7c5867a1-eac9-11eb-ba14-0a9473e82189", targets: 0, "data": "child_nodegroups.7c58676a-eac9-11eb-ba14-0a9473e82189.0.child_nodegroups.7c586758-eac9-11eb-ba14-0a9473e82189.0.7c5867a1-eac9-11eb-ba14-0a9473e82189", "defaultContent": "",
+                {"title": "Time Span", "orderable": true, name: "7c5867a1-eac9-11eb-ba14-0a9473e82189", targets: 0, "data": "child_nodegroups.7c58676a-eac9-11eb-ba14-0a9473e82189.0.child_nodegroups.7c586758-eac9-11eb-ba14-0a9473e82189.0.7c5867a1-eac9-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
                         if (data) {
                             return JSON.parse(data).en.value;
