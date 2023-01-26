@@ -48,6 +48,10 @@ div.rp-report-tile dl a[href] {
     background-color: #efefef;
 }
 
+.statment-table th {
+    width: 30%;
+}
+
 .summary-table-top-header th a {
     color: blue
 }

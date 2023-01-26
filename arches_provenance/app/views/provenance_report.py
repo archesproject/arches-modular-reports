@@ -129,6 +129,15 @@ class ProvenanceSummaryTables(View):
         if nodes != '':
             nodes_string = ",".join(['__arches_get_node_display_value(tiledata, \'{0}\'::uuid) AS \"{1}\"'.format(n,n) for n in nodes.split(",")])
 
+        search_string = ''
+
+        if search_value != None:
+            search_string = " ".join(['__arches_get_node_display_value(tiledata, \'{0}\'::uuid) ILIKE \'%{1}%\' OR '.format(n, search_value) for n in nodes.split(",")])
+
+            search_string = search_string.rstrip(' OR')
+
+            search_string = 'AND ' + search_string
+
         query_string = """
                 WITH RECURSIVE
                     children AS ((
@@ -144,7 +153,7 @@ class ProvenanceSummaryTables(View):
                             WHERE 
                                 nodegroupid = '{0}'
                                 AND 
-                                resourceinstanceid = '{1}'
+                                resourceinstanceid = '{1}' {5}
                              OFFSET {2} LIMIT {3}
                         )
                         UNION
@@ -168,15 +177,7 @@ class ProvenanceSummaryTables(View):
                             {4}
                         FROM 
                             children
-            """.format(nodegroupid, resourceid, offset, limit, nodes_string)
-
-
-        if search_value != None:
-            search_string = " ".join(['__arches_get_node_display_value(tiledata, \'{0}\'::uuid) ILIKE \'%{1}%\' OR'.format(n, search_value) for n in nodes.split(",")])
-
-            search_string = search_string.rstrip(' OR')
-
-            query_string = query_string + ' WHERE ' + search_string
+            """.format(nodegroupid, resourceid, offset, limit, nodes_string, search_string)
 
         #execute query
         with connection.cursor() as cursor:
