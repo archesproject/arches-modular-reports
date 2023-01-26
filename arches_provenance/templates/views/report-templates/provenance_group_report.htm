@@ -129,7 +129,7 @@
       <!-- Statment Tables -->
       <div class="summary-table-container">
         <div class="table-label">Statements</div>
-        <!-- ko if: statementData.length > 0 -->
+        <!-- ko if: statementData().length > 0 -->
         <!-- ko foreach: { data: statementData, as: 'statement_data' } -->
           <table class="table summary-table-top-header statment-table">
               <tbody>
@@ -145,7 +145,7 @@
           </table>
           <!-- /ko -->
           <!-- /ko -->
-          <!-- ko if: statementData.length === 0 -->
+          <!-- ko if: statementData().length === 0 -->
           No Statement Data
           <!-- /ko -->
       </div>      
