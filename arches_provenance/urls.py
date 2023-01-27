@@ -18,6 +18,7 @@ from arches_provenance.app.views.provenance_report import ProvenanceSummaryTable
 from arches_provenance.app.views.provenance_report import ProvenanceRelatedResources
 from arches_provenance.app.views.provenance_report import ProvenanceGroupReportView
 from arches_provenance.app.views.provenance_report import ProvenanceEditorView
+from arches_provenance.app.views.provenance_report import ProvenanceSourceReferences
 
 uuid_regex = settings.UUID_REGEX
 @method_decorator(can_read_resource_instance, name="dispatch")
@@ -198,6 +199,7 @@ urlpatterns = [
 	url(r"^graph_report/(?P<resourceid>%s|())$" % uuid_regex, GraphResourceReportView.as_view(), name="resource_graph_report"), 
     url(r"^provenance_report$", provenance_report.as_view(), name="provenance_report"),
     url(r"^provenance_summary_table$", ProvenanceSummaryTables.as_view(), name="provenance_summary_table"),
+    url(r"^provenance_source_references$", ProvenanceSourceReferences.as_view(), name="provenance_source_references"),
     url(r"^provenance_related_resources$", ProvenanceRelatedResources.as_view(), name="provenance_related_resources"),   
     url(r"^provenance_editor$", ProvenanceEditorView.as_view(), name="provenance_editor"),   
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

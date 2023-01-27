@@ -173,11 +173,12 @@
           </div>
       </div>
 
-      <!-- Statment Tables -->
+      <!-- Statement Tables -->
       <div class="summary-table-container">
         <div class="table-label">Statements</div>
+        <!-- ko if: statementData().length > 0 -->
         <!-- ko foreach: { data: statementData, as: 'statement_data' } -->
-          <table class="table summary-table-top-header">
+          <table class="table summary-table-top-header statment-table">
               <tbody>
                 <th class="header" style="padding: 8px">Statement Type </td>
                 <th class="header" style="padding: 8px">Statement Confidentiality </td>
@@ -189,6 +190,10 @@
                     <td colspan=2 data-bind="text: $parent.getValue(statement_data, ['statement', 'statement_content', '@display_value'])"> </td>
               </tbody>
           </table>
+          <!-- /ko -->
+          <!-- /ko -->
+          <!-- ko if: statementData().length === 0 -->
+          No Statement Data
           <!-- /ko -->
       </div>      
 
@@ -232,7 +237,7 @@
         <table class="table summary-table-top-header">
           <tbody>
             <tr>
-              <th class="header" style="padding: 8px">Place</th>
+              <th class="header" style="padding: 8px">Location</th>
               <th class="header" style="padding: 8px">Time</th>
               <th class="header" style="padding: 8px">Type</th>
               <th class="header" style="padding: 8px"></th>
@@ -287,7 +292,7 @@
         <table class="table summary-table-top-header">
           <tbody>
             <tr>
-              <th class="header" style="padding: 8px">Place</th>
+              <th class="header" style="padding: 8px">Location</th>
               <th class="header" style="padding: 8px">Time</th>
               <th class="header" style="padding: 8px">Type</th>
               <th class="header" style="padding: 8px"></th>
@@ -1760,22 +1765,20 @@
     <div id="sources" class="anchor"></div>
     <!-- sources -->
     <div style="padding-top: 24px;" class="rp-report-section">
+      <!-- Source References Table -->
       <div class="summary-table-container">
-        <div class="table-label" style="font-size:24px;">Sources</div>
-      </div>
-      <div class="summary-table-container">
-        <div class="table-label">Sources</div>
-        <table class="table summary-table-left-header">
-            <tbody>
-                <tr>
-                  <td class="header" style="padding: 8px">Sources: </td>
-                  <td style="display: grid; grid-template-columns: repeat(4, 3fr);">
-                    <!-- ko foreach: { data: sourceReference, as: 'instance' } -->
-                    <a data-bind="text: instance['display_value'], attr: {href: '/report/' + instance['resourceId'], target: '_blank'}"></a>
-                    <!-- /ko -->
-                  </td>  
-            </tbody>
-        </table>
+        <div class="table-label">Source References</div>
+          <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
+              <table id="name-summary-table" class="table table-striped" cellspacing="0" width="100%;">
+                  <thead>
+                      <tr class="aher-table-header">
+                  </thead>
+                  <tbody data-bind="dataTablesForEach: {dataTableOptions: sourceReferenceTableConfig}">
+                      <tr>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
       </div>
     </div>
 

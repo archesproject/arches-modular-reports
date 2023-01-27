@@ -96,11 +96,14 @@ define([
                                     if (typeof value === 'object' && !value.hasOwnProperty('@display_value')) {
                                         value['@display_value'] = '';
                                     }
-
-
                                 }
                             }
-                            return json.data;
+                            if (name === 'source_reference') {
+                                return json.data[0].source_reference.instance_details
+                            }
+                            else {
+                                return json.data;
+                            }
                         }
                     },
                 };
@@ -153,6 +156,15 @@ define([
                     } 
                 },
             ];
+
+            const sourceReferenceColumns = [
+                {"title": "Source Reference", "orderable": true, targets: 0, "data": "reference", "name": "name", "defaultContent": "",
+                    "render": function(data) {
+                        var t = `<a href='/report/${data.resourceinstanceid}' target='_blank' style="color:blue;">${data.name}</a>`
+                        return t;
+                    }
+                },
+            ];
             
             const contactColumns = [
                 {"title": "Point of Contact", "orderable": false, targets: 0, "data": "contact_point.contact_point_content.@display_value", "defaultContent": ""},
@@ -161,7 +173,7 @@ define([
             ];
 
             const professionalActivityColumns  = [
-                {"title": "Place", "orderable": true, targets: 0, "data": "0c3baf01-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
+                {"title": "Location", "orderable": true, targets: 0, "data": "0c3baf01-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
                         if (data) {
                             return JSON.parse(data).en.value;
@@ -171,7 +183,7 @@ define([
                         }
                     }
                 },
-                {"title": "Time", "orderable": true, targets: 0, "data": "child_nodegroups.0c3baee7-e323-11eb-ba14-0a9473e82189.0.child_nodegroups.0c3baeea-e323-11eb-ba14-0a9473e82189.0.0c3baef5-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
+                {"title": "Time Span", "orderable": true, targets: 0, "data": "child_nodegroups.0c3baee7-e323-11eb-ba14-0a9473e82189.0.child_nodegroups.0c3baeea-e323-11eb-ba14-0a9473e82189.0.0c3baef5-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
                         if (data) {
                             return JSON.parse(data).en.value;
@@ -191,7 +203,7 @@ define([
             ];
 
             const establishmentColumns  = [
-                {"title": "Place", "orderable": true, targets: 0, "data": "e5f12154-17c1-11ec-b193-0a9473e82189", "defaultContent": "",
+                {"title": "Location", "orderable": true, targets: 0, "data": "e5f12154-17c1-11ec-b193-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
                         if (data) {
                             return JSON.parse(data).en.value;
@@ -201,7 +213,7 @@ define([
                         }
                     }    
                 },
-                {"title": "Time", "orderable": true, name: "7c5867a1-eac9-11eb-ba14-0a9473e82189", targets: 0, "data": "child_nodegroups.7c58676a-eac9-11eb-ba14-0a9473e82189.0.child_nodegroups.7c586758-eac9-11eb-ba14-0a9473e82189.0.7c5867a1-eac9-11eb-ba14-0a9473e82189", "defaultContent": "",
+                {"title": "Time Span", "orderable": true, name: "7c5867a1-eac9-11eb-ba14-0a9473e82189", targets: 0, "data": "child_nodegroups.7c58676a-eac9-11eb-ba14-0a9473e82189.0.child_nodegroups.7c586758-eac9-11eb-ba14-0a9473e82189.0.7c5867a1-eac9-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
                         if (data) {
                             return JSON.parse(data).en.value;
@@ -253,6 +265,28 @@ define([
             // create all table configs using columns defined above
             self.createTableConfig('name', nameColumns, nameNodegroupdId);
             // self.createTableConfig('contact_point', contactColumns, contactNodegroupId);
+
+            self.sourceReferenceTableConfig = {
+                tableName: 'sourceReferences',
+                paging: true,
+                searching: true,
+                scrollY: "250px",
+                // scrollY: 20,
+                columns: sourceReferenceColumns,
+                searchDelay: 400,
+                order: [],
+                processing: true,
+                serverSide: true,
+                scroller: true,
+                deferRender: true,
+                errMode: 'Ignore',
+                ajax: {
+                    url: arches.urls.provenance_source_references + '?resourceid=' + resourceid + '&nodegroupid=' + sourceReferenceNodegroupId,
+                    dataSrc: function(json) {
+                        return json.data
+                    }
+                },
+            };
 
             // create table configs for tables with columns at different levels of graph
             self.createSummaryTableConfig = function(name, columns, nodegroupId, nodes) {

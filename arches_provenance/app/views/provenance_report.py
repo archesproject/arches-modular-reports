@@ -41,6 +41,7 @@ class ProvenanceRelatedResources(View):
         resourcegraphto = request.GET.get("resourcegraphto")
         offset = request.GET.get("start") if request.GET.get("start") != None else 0
         limit = request.GET.get("length") if request.GET.get("length") != None else  5
+        search_value = request.GET.get("search[value]") if request.GET.get("search[value]") else None
         order_column = request.GET.get("columns[{0}][name]".format(int(request.GET.get("order[0][column]")))) if request.GET.get("order[0][column]") != None else "resourceinstanceidto"
         order_dir = request.GET.get("order[0][dir]") if request.GET.get("order[0][column]") != None else "ASC"
         
@@ -52,7 +53,7 @@ class ProvenanceRelatedResources(View):
             cursor.execute(sql)
             records_total = cursor.fetchone()[0]
 
-            sql = """
+            query_string = """
             WITH relations AS (
                 SELECT 
                     rx.*, 
@@ -72,12 +73,17 @@ class ProvenanceRelatedResources(View):
                 )
             SELECT *, COUNT(*) OVER() AS full_count FROM relations
             """.format(resourceid, resourcegraphto, resourceid, resourcegraphto)
+
+        if search_value != None:
+            search_string = 'name ILIKE \'%{0}%\' OR inverserelationshiptype ILIKE \'%{1}%\''.format(search_value, search_value)
+
+            query_string = query_string + ' WHERE ' + search_string
         
         with connection.cursor() as cursor:
             if order_column and order_dir:
-                sql = sql + ' ORDER BY {0} {1}'.format(order_column, order_dir)
-            sql = sql + ' OFFSET {0} LIMIT {1}'.format(offset, limit)
-            cursor.execute(sql)
+                query_string = query_string + ' ORDER BY {0} {1}'.format(order_column, order_dir)
+            query_string = query_string + ' OFFSET {0} LIMIT {1}'.format(offset, limit)
+            cursor.execute(query_string)
             queried_related_resources = cursor.fetchall()
 
         related_resources = []
@@ -124,6 +130,15 @@ class ProvenanceSummaryTables(View):
         if nodes != '':
             nodes_string = ",".join(['__arches_get_node_display_value(tiledata, \'{0}\'::uuid) AS \"{1}\"'.format(n,n) for n in nodes.split(",")])
 
+        search_string = ''
+
+        if search_value != None:
+            search_string = " ".join(['__arches_get_node_display_value(tiledata, \'{0}\'::uuid) ILIKE \'%{1}%\' OR '.format(n, search_value) for n in nodes.split(",")])
+
+            search_string = search_string.rstrip(' OR')
+
+            search_string = 'AND ' + search_string
+
         query_string = """
                 WITH RECURSIVE
                     children AS ((
@@ -139,7 +154,7 @@ class ProvenanceSummaryTables(View):
                             WHERE 
                                 nodegroupid = '{0}'
                                 AND 
-                                resourceinstanceid = '{1}'
+                                resourceinstanceid = '{1}' {5}
                              OFFSET {2} LIMIT {3}
                         )
                         UNION
@@ -163,15 +178,7 @@ class ProvenanceSummaryTables(View):
                             {4}
                         FROM 
                             children
-            """.format(nodegroupid, resourceid, offset, limit, nodes_string)
-
-
-        if search_value != None:
-            search_string = " ".join(['__arches_get_node_display_value(tiledata, \'{0}\'::uuid) ILIKE \'%{1}%\' OR'.format(n, search_value) for n in nodes.split(",")])
-
-            search_string = search_string.rstrip(' OR')
-
-            query_string = query_string + ' WHERE ' + search_string
+            """.format(nodegroupid, resourceid, offset, limit, nodes_string, search_string)
 
         #execute query
         with connection.cursor() as cursor:
@@ -313,7 +320,59 @@ class provenance_report(View):
             ret.append(LabelBasedGraph.from_tile(tile, lookup[0], lookup[1]))
         
         return JSONResponse({'data': ret, 'recordsTotal': records_total, 'recordsFiltered': filtered_tiles}, indent=4)
-    
+
+class ProvenanceSourceReferences(View):
+    def get(self, request):
+        resourceid = request.GET.get("resourceid")
+        nodegroupid = request.GET.get("nodegroupid")
+        tileid = request.GET.get("tileid") if request.GET.get("tileid") != '' else None
+        offset = request.GET.get("start") if request.GET.get("start") != None else 0
+        limit = request.GET.get("length") if request.GET.get("length") != None else  5
+        search_value = request.GET.get("search[value]") if request.GET.get("search[value]") else None
+        order_column = request.GET.get("columns[{0}][name]".format(int(request.GET.get("order[0][column]")))) if request.GET.get("order[0][column]") != None else None
+        order_dir = request.GET.get("order[0][dir]") if request.GET.get("order[0][column]") != None else None
+
+        #get total number of records
+        with connection.cursor() as cursor:
+            sql = """
+            SELECT jsonb_array_length(tiledata->'{0}') FROM tiles WHERE nodegroupid='{1}' AND resourceinstanceid = '{2}'""".format(nodegroupid, nodegroupid, resourceid)
+            cursor.execute(sql)
+            records_total = cursor.fetchone()[0]
+
+        search_string = ''
+        if search_value:
+            search_string = " WHERE CAST(__arches_get_resourceinstance_label(b::jsonb)::jsonb->'en'->'value' AS text) ILIKE '%{0}%'".format(search_value)
+
+        query_string= """
+            SELECT 
+                TRIM('"' from CAST(b::jsonb -> 'resourceId' AS text)),
+                TRIM('"' from CAST(__arches_get_resourceinstance_label(b::jsonb)::jsonb->'en'->'value' AS text)) as name,
+                count(*) OVER() AS full_count
+            FROM 
+                (SELECT jsonb_array_elements_text(tiledata->'{0}') AS b FROM tiles WHERE nodegroupid = '{1}' AND resourceinstanceid = '{2}') AS b {3}""".format(nodegroupid, nodegroupid, resourceid, search_string)
+
+        with connection.cursor() as cursor:
+            if order_column and order_dir:
+                query_string = query_string + " ORDER BY {0} {1}".format(order_column, order_dir)
+            sql = query_string + ' OFFSET {0} LIMIT {1}'.format(offset, limit)
+            cursor.execute(sql)
+            queried_tiles = cursor.fetchall()
+
+        tiles = []
+        filtered_tiles = 0
+        for tile in queried_tiles:
+            t = {
+                'reference': {
+                    'resourceinstanceid': tile[0],
+                    'name': tile[1],
+                }
+            }
+            filtered_tiles=tile[2]
+            tiles.append(t)
+        ret = tiles
+
+        return JSONResponse({'data': ret, 'recordsTotal': records_total, 'recordsFiltered': filtered_tiles}, indent=4)
+
 class ProvenanceGroupReportView(View):
     def get(self, request, resourceid):
         resource = Resource.objects.get(pk=resourceid)
