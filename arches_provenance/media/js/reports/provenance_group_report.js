@@ -91,11 +91,14 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                                     if (typeof value === 'object' && !value.hasOwnProperty('@display_value')) {
                                         value['@display_value'] = '';
                                     }
-
-
                                 }
                             }
-                            return json.data;
+                            if (name === 'source_reference') {
+                                return json.data[0].source_reference.instance_details
+                            }
+                            else {
+                                return json.data;
+                            }
                         }
                     },
                 };
@@ -146,6 +149,15 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                         var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#nameModal'>+</button>";
                         return t;
                     } 
+                },
+            ];
+
+            const sourceReferenceColumns = [
+                {"title": "Source Reference", "orderable": true, targets: 0, "data": "reference", "name": "name", "defaultContent": "",
+                    "render": function(data) {
+                        var t = `<a href='/report/${data.resourceinstanceid}' target='_blank' style="color:blue;">${data.name}</a>`
+                        return t;
+                    }
                 },
             ];
             
@@ -248,6 +260,28 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
             // create all table configs using columns defined above
             self.createTableConfig('name', nameColumns, nameNodegroupdId);
             // self.createTableConfig('contact_point', contactColumns, contactNodegroupId);
+
+            self.sourceReferenceTableConfig = {
+                tableName: 'sourceReferences',
+                paging: true,
+                searching: true,
+                scrollY: "250px",
+                // scrollY: 20,
+                columns: sourceReferenceColumns,
+                searchDelay: 400,
+                order: [],
+                processing: true,
+                serverSide: true,
+                scroller: true,
+                deferRender: true,
+                errMode: 'Ignore',
+                ajax: {
+                    url: arches.urls.provenance_source_references + '?resourceid=' + resourceid + '&nodegroupid=' + sourceReferenceNodegroupId,
+                    dataSrc: function(json) {
+                        return json.data
+                    }
+                },
+            };
 
             // create table configs for tables with columns at different levels of graph
             self.createSummaryTableConfig = function(name, columns, nodegroupId, nodes) {

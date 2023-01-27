@@ -319,7 +319,59 @@ class provenance_report(View):
             ret.append(LabelBasedGraph.from_tile(tile, lookup[0], lookup[1]))
         
         return JSONResponse({'data': ret, 'recordsTotal': records_total, 'recordsFiltered': filtered_tiles}, indent=4)
-    
+
+class ProvenanceSourceReferences(View):
+    def get(self, request):
+        resourceid = request.GET.get("resourceid")
+        nodegroupid = request.GET.get("nodegroupid")
+        tileid = request.GET.get("tileid") if request.GET.get("tileid") != '' else None
+        offset = request.GET.get("start") if request.GET.get("start") != None else 0
+        limit = request.GET.get("length") if request.GET.get("length") != None else  5
+        search_value = request.GET.get("search[value]") if request.GET.get("search[value]") else None
+        order_column = request.GET.get("columns[{0}][name]".format(int(request.GET.get("order[0][column]")))) if request.GET.get("order[0][column]") != None else None
+        order_dir = request.GET.get("order[0][dir]") if request.GET.get("order[0][column]") != None else None
+
+        #get total number of records
+        with connection.cursor() as cursor:
+            sql = """
+            SELECT jsonb_array_length(tiledata->'{0}') FROM tiles WHERE nodegroupid='{1}' AND resourceinstanceid = '{2}'""".format(nodegroupid, nodegroupid, resourceid)
+            cursor.execute(sql)
+            records_total = cursor.fetchone()[0]
+
+        search_string = ''
+        if search_value:
+            search_string = " WHERE CAST(__arches_get_resourceinstance_label(b::jsonb)::jsonb->'en'->'value' AS text) ILIKE '%{0}%'".format(search_value)
+
+        query_string= """
+            SELECT 
+                TRIM('"' from CAST(b::jsonb -> 'resourceId' AS text)),
+                TRIM('"' from CAST(__arches_get_resourceinstance_label(b::jsonb)::jsonb->'en'->'value' AS text)) as name,
+                count(*) OVER() AS full_count
+            FROM 
+                (SELECT jsonb_array_elements_text(tiledata->'{0}') AS b FROM tiles WHERE nodegroupid = '{1}' AND resourceinstanceid = '{2}') AS b {3}""".format(nodegroupid, nodegroupid, resourceid, search_string)
+
+        with connection.cursor() as cursor:
+            if order_column and order_dir:
+                query_string = query_string + " ORDER BY {0} {1}".format(order_column, order_dir)
+            sql = query_string + ' OFFSET {0} LIMIT {1}'.format(offset, limit)
+            cursor.execute(sql)
+            queried_tiles = cursor.fetchall()
+
+        tiles = []
+        filtered_tiles = 0
+        for tile in queried_tiles:
+            t = {
+                'reference': {
+                    'resourceinstanceid': tile[0],
+                    'name': tile[1],
+                }
+            }
+            filtered_tiles=tile[2]
+            tiles.append(t)
+        ret = tiles
+
+        return JSONResponse({'data': ret, 'recordsTotal': records_total, 'recordsFiltered': filtered_tiles}, indent=4)
+
 class ProvenanceGroupReportView(View):
     def get(self, request, resourceid):
         resource = Resource.objects.get(pk=resourceid)
