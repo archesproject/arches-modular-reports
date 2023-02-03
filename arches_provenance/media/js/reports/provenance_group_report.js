@@ -31,6 +31,8 @@ define([
 
             self.nationality = ko.observable();
             self.typeOfGroup = ko.observable();
+            self.typeOfGroupValue = ko.observable();
+
             self.externalIdentifierUrl = ko.observable();
             self.externalIdentifierLabel = ko.observable();
             self.sourceReference = ko.observable();
@@ -46,6 +48,12 @@ define([
             self.relatedResourceConfigs = ko.observableArray();
             self.nameRowData = ko.observable();
             self.externalIdentifierData = ko.observable();
+
+            self.cardwidget = ko.observable();
+            self.widget = ko.observable();
+            self.node = ko.observable();
+            self.newValue = ko.observable();
+            self.showModal = ko.observable(false);
             
             self.relatedResourceGraphs = {
                 "Activity":"734d1558-bfad-11ea-a62b-3af9d3b32b71",
@@ -142,6 +150,26 @@ define([
                     .catch(error => {
                         console.error('Error:', error);
                     });
+            };
+
+            // helper function to get widgets 
+            self.getWidget = async(value, nodeid) => {
+                try {
+                    self.showModal(false);
+
+                    let response = await fetch(`${arches.urls.provenance_editor}?nodeid=${nodeid}`);
+                    let result = await response.json();
+                    
+                    console.log(result);
+                    self.cardwidget(result.cardwidget);
+                    self.widget(result.widget);
+                    self.node(result.node);
+                    self.newValue(value);
+
+                    self.showModal(true);
+                } catch(error) {
+                    console.error('Error:', error);
+                };
             };
             
             // create columns for each table
@@ -317,11 +345,19 @@ define([
             };
             
             // get values for all cardinality "1" nodegroups
-            self.getSimpleBranchData(typeOfGroupNodegroupId, ['data', '0', 'type', '@display_value'], self.typeOfGroup);
-            self.getSimpleBranchData(nationalityNodegroupId, ['data', '0', 'nationality', '@display_value'], self.nationality);
-            self.getSimpleBranchData(sourceReferenceNodegroupId, ['data', '0', 'source_reference', 'instance_details'], self.sourceReference);
-            self.getSimpleBranchData(subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value'], self.subgroup);
-            self.getSimpleBranchData(labelNodegroupId, ['data', '0', '_label', '@display_value'], self.label);
+            // self.getSimpleBranchData(typeOfGroupNodegroupId, ['data', '0', 'type'], self.typeOfGroup);
+            // self.getSimpleBranchData(nationalityNodegroupId, ['data', '0', 'nationality', '@display_value'], self.nationality);
+            // self.getSimpleBranchData(sourceReferenceNodegroupId, ['data', '0', 'source_reference', 'instance_details'], self.sourceReference);
+            // self.getSimpleBranchData(subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value'], self.subgroup);
+            // self.getSimpleBranchData(labelNodegroupId, ['data', '0', '_label', '@display_value'], self.label);
+
+            self.getComplexBranchData(self.typeOfGroup, typeOfGroupNodegroupId);
+            self.getComplexBranchData(self.nationality, nationalityNodegroupId);
+            // self.getComplexBranchData(self.sourceReference, sourceReferenceNodegroupId);
+            // self.getComplexBranchData(self.subgroup, subGroupNodegroupId);
+            // self.getComplexBranchData(self.label, labelNodegroupId);
+            
+           
             
             // these had to be separated because of the datatype
             // self.getSimpleBranchData(externalIdentifierNodegroupId, ['data', '0', 'exact_match', 'url'], self.externalIdentifierUrl);
@@ -456,7 +492,10 @@ define([
             });
 
             console.log(self);
-            console.log(params);
+            // console.log(params);
+
+            self.getWidget(typeOfGroupNodegroupId);
+            self.typeOfGroupValue(self.typeOfGroup?.[0]?.['type']?.['@display_value']);
         },
         template: provenanceGroupReportTemplate
     });

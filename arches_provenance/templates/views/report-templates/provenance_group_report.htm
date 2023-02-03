@@ -59,6 +59,12 @@
 {% block body %}
 <div>
 
+  <span data-bind="text: console.log(typeOfGroup())"></span>
+  <!-- <span data-bind="text: console.log(nationality())"></span>
+  <span data-bind="text: console.log(sourceReference())"></span>
+  <span data-bind="text: console.log(subgroup())"></span>
+  <span data-bind="text: console.log(label())"></span> -->
+
     <!-- Summary Table-->
     <div style="padding-top: 80px;" class="rp-report-section">
       <div class="summary-table-container">
@@ -67,12 +73,16 @@
             <tbody>
                 <tr>
                   <td class="header" style="padding: 8px">Role: </td>
-                  <td data-bind="text: typeOfGroup"> </td>
-                  <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'><i class="fa fa-pencil"></i></button></td>
+                  <td data-bind="text: typeOfGroup()?.[0]?.['type']?.['@display_value']"> </td>
+                  <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='
+                    #summaryRoleModal' data-bind="
+                    click: function() { getWidget([typeOfGroup()?.[0]?.['type']?.['concept_details']?.['valueid']], typeOfGroup()?.[0]?.['type']?.['@node_id']) }">
+                    <i class="fa fa-pencil"></i></button>
+                  </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Nationality: </td>
-                  <td data-bind="text: nationality"> </td>
+                  <td data-bind="text: nationality()?.[0]?.['nationality']?.['@display_value']"> </td>
                   <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#nationalityModal'><i class="fa fa-pencil"></i></button></td>
                 </tr>
                 <tr>
@@ -97,19 +107,31 @@
 
     <!-- Summary Table Modals -->
       <!-- Role Modal -->
-      <div class="modal fade" id="summaryRoleModal" role="dialog">
-        <div class="modal-dialog" style="display: inline-flex;">
-          <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
-            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeSummaryRoleModal" style="cursor:pointer">x</a></div>
-            <div class="summary-table-container" style="width:unset">
-              <div style="font-weight: bold;">Role</div>
-              <!-- ko if: typeOfGroup -->
-              <div data-bind="text: typeOfGroup()"></div>
-              <!-- /ko -->
+      <!-- ko if: showModal() -->
+        <div class="modal fade" id="summaryRoleModal" role="dialog">
+          <div class="modal-dialog" style="display: inline-flex;">
+            <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
+              <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeSummaryRoleModal" style="cursor:pointer">x</a></div>
+              <div class="summary-table-container" style="width:unset">
+                <div style="font-weight: bold;">Role</div>
+                <!-- ko if: typeOfGroup() && typeOfGroup().length > 0 -->
+      
+                  <div style="display: inline;" data-bind="component: {
+                    name: widget().name,
+                    params: {
+                        node: node(),
+                        config: widget().defaultconfig,
+                        label: cardwidget().label,
+                        value: newValue
+                      }
+                    }"></div>
+    
+                <!-- /ko -->
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      <!-- /ko -->
       <!-- Nationality Modal -->
       <div class="modal fade" id="nationalityModal" role="dialog">
         <div class="modal-dialog" style="display: inline-flex;">
@@ -117,8 +139,8 @@
             <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closenationalityModal" style="cursor:pointer">x</a></div>
             <div class="summary-table-container" style="width:unset">
               <div style="font-weight: bold;">Nationality</div>
-              <!-- ko if: nationality -->
-              <div data-bind="text: nationality()"></div>
+              <!-- ko if: nationality() && nationality().length > 0 -->
+              <div data-bind="text: nationality()?.[0]?.['nationality']?.['@display_value']"></div>
               <!-- /ko -->
             </div>
           </div>
