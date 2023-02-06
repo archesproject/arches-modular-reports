@@ -59,12 +59,6 @@
 {% block body %}
 <div>
 
-  <span data-bind="text: console.log(typeOfGroup())"></span>
-  <!-- <span data-bind="text: console.log(nationality())"></span>
-  <span data-bind="text: console.log(sourceReference())"></span>
-  <span data-bind="text: console.log(subgroup())"></span>
-  <span data-bind="text: console.log(label())"></span> -->
-
     <!-- Summary Table-->
     <div style="padding-top: 80px;" class="rp-report-section">
       <div class="summary-table-container">
@@ -74,10 +68,12 @@
                 <tr>
                   <td class="header" style="padding: 8px">Role: </td>
                   <td data-bind="text: typeOfGroup()?.[0]?.['type']?.['@display_value']"> </td>
-                  <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='
-                    #summaryRoleModal' data-bind="
-                    click: function() { getWidget([typeOfGroup()?.[0]?.['type']?.['concept_details']?.['valueid']], typeOfGroup()?.[0]?.['type']?.['@node_id']) }">
-                    <i class="fa fa-pencil"></i></button>
+                  <span data-bind="text: console.log(typeOfGroup())"></span>
+                  <td><span data-bind="click: getWidget(typeOfGroup()?.[0]?.['type']?.['@node_id'])"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'>
+                    <i class="fa fa-pencil"></i></button></span>
+
+                  <!-- <td><span data-bind="click: console.log(typeOfGroup()?.[0]?.['type']?.['@node_id'])"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'>
+                    <i class="fa fa-pencil"></i></button></span> -->
                   </td>
                 </tr>
                 <tr>
@@ -126,40 +122,27 @@
                       }
                     }"></div>
     
+                <button 
+                    class="btn btn-success" 
+                    data-bind=""
+                >
+                    <i class="ion-android-cloud-done"></i>
+                    <span>Save</span>
+                </button>
+                <button 
+                    class="btn btn-danger" 
+                    data-bind=""
+                >
+                    <i class="ion-android-cancel}"></i>
+                    <span>Cancel</span>
+                </button>
                 <!-- /ko -->
               </div>
             </div>
           </div>
         </div>
       <!-- /ko -->
-      <!-- Nationality Modal -->
-      <div class="modal fade" id="nationalityModal" role="dialog">
-        <div class="modal-dialog" style="display: inline-flex;">
-          <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
-            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closenationalityModal" style="cursor:pointer">x</a></div>
-            <div class="summary-table-container" style="width:unset">
-              <div style="font-weight: bold;">Nationality</div>
-              <!-- ko if: nationality() && nationality().length > 0 -->
-              <div data-bind="text: nationality()?.[0]?.['nationality']?.['@display_value']"></div>
-              <!-- /ko -->
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Overall Dates Modal -->
-      <div class="modal fade" id="overallDatesModal" role="dialog">
-        <div class="modal-dialog" style="display: inline-flex;">
-          <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
-            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeoverallDatesModal" style="cursor:pointer">x</a></div>
-            <div class="summary-table-container" style="width:unset">
-              <div style="font-weight: bold;">Overall Dates</div>
-              <!-- ko if: groupFormationData() && groupFormationData().length > 0 -->
-              <div data-bind="text: groupFormationData()"></div>
-              <!-- /ko -->
-            </div>
-          </div>
-        </div>
-      </div>
+      
 
     <!-- Navigation Buttons-->
     <div style="padding: 20px;" class="rp-report-section">
@@ -183,6 +166,7 @@
       <div class="summary-table-container">
         <div class="table-label">Names</div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
+            <span data-bind="text: console.log(nameTableConfig)"></span>
               <table id="name-summary-table" class="table table-striped" cellspacing="0" width="100%;">
                   <thead>
                       <tr class="aher-table-header">

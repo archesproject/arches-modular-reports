@@ -31,8 +31,6 @@ define([
 
             self.nationality = ko.observable();
             self.typeOfGroup = ko.observable();
-            self.typeOfGroupValue = ko.observable();
-
             self.externalIdentifierUrl = ko.observable();
             self.externalIdentifierLabel = ko.observable();
             self.sourceReference = ko.observable();
@@ -174,6 +172,7 @@ define([
             
             // create columns for each table
             const nameColumns = [
+                {"title": "Name", "orderable": true, targets: 0, "name": "5bc66298-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_content.@display_value", "defaultContent": ""},
                 {"title": "Name", "orderable": true, targets: 0, "name": "5bc66298-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_content.@display_value", "defaultContent": ""},
                 {"title": "Type", "orderable": true, targets: 0, "name": "5bc66360-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_type.@display_value", "defaultContent": ""},
                 {"title": "Source", "orderable": false, targets: 0, "data": "name.name_source_reference.@display_value", "defaultContent": ""},
@@ -495,7 +494,6 @@ define([
             // console.log(params);
 
             self.getWidget(typeOfGroupNodegroupId);
-            self.typeOfGroupValue(self.typeOfGroup?.[0]?.['type']?.['@display_value']);
         },
         template: provenanceGroupReportTemplate
     });
