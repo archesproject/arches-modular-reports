@@ -152,7 +152,7 @@ define([
 
             // helper function to get widgets 
             // self.getWidget = async(value, nodeid) => {
-            self.getWidget = async(nodeid, value) => {
+            self.getWidget = async(nodeid, conceptDetails) => {
                 try {
                     self.showModal(false);
 
@@ -163,7 +163,11 @@ define([
                     self.cardwidget(result.cardwidget);
                     self.widget(result.widget);
                     self.node(result.node);
-                    self.newValue(value);
+                    self.newValue(conceptDetails.map(concept => {
+                        console.log(concept.valueid);
+                        return concept.valueid
+                    }));
+                    console.log(newValue())
 
                     self.showModal(true);
                 } catch(error) {
@@ -494,7 +498,7 @@ define([
             console.log(self);
             // console.log(params);
 
-            self.getWidget(typeOfGroupNodegroupId);
+            // self.getWidget(typeOfGroupNodegroupId);
         },
         template: provenanceGroupReportTemplate
     });
