@@ -151,7 +151,8 @@ define([
             };
 
             // helper function to get widgets 
-            self.getWidget = async(value, nodeid) => {
+            // self.getWidget = async(value, nodeid) => {
+            self.getWidget = async(nodeid, value) => {
                 try {
                     self.showModal(false);
 

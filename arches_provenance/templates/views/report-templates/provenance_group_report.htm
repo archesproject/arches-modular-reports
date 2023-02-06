@@ -69,7 +69,7 @@
                   <td class="header" style="padding: 8px">Role: </td>
                   <td data-bind="text: typeOfGroup()?.[0]?.['type']?.['@display_value']"> </td>
                   <span data-bind="text: console.log(typeOfGroup())"></span>
-                  <td><span data-bind="click: getWidget(typeOfGroup()?.[0]?.['type']?.['@node_id'])"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'>
+                  <td><span data-bind="click: getWidget(typeOfGroup()?.[0]?.['type']?.['@node_id'], typeOfGroup()?.[0]?.['type']?.['concept_details']?.[0]?.['valueid'])"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'>
                     <i class="fa fa-pencil"></i></button></span>
 
                   <!-- <td><span data-bind="click: console.log(typeOfGroup()?.[0]?.['type']?.['@node_id'])"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'>
@@ -103,7 +103,6 @@
 
     <!-- Summary Table Modals -->
       <!-- Role Modal -->
-      <!-- ko if: showModal() -->
         <div class="modal fade" id="summaryRoleModal" role="dialog">
           <div class="modal-dialog" style="display: inline-flex;">
             <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
@@ -141,7 +140,6 @@
             </div>
           </div>
         </div>
-      <!-- /ko -->
       
 
     <!-- Navigation Buttons-->
