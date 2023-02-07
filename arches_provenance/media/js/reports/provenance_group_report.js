@@ -50,8 +50,8 @@ define([
             self.cardwidget = ko.observable();
             self.widget = ko.observable();
             self.node = ko.observable();
-            self.newValue = ko.observable();
-            self.showModal = ko.observable(false);
+            self.currentNodeValue = ko.observable();
+            self.loadedWidget = ko.observable(false);
             
             self.relatedResourceGraphs = {
                 "Activity":"734d1558-bfad-11ea-a62b-3af9d3b32b71",
@@ -150,11 +150,9 @@ define([
                     });
             };
 
-            // helper function to get widgets 
-            // self.getWidget = async(value, nodeid) => {
             self.getWidget = async(nodeid, conceptDetails) => {
                 try {
-                    self.showModal(false);
+                    self.loadedWidget(false);
 
                     let response = await fetch(`${arches.urls.provenance_editor}?nodeid=${nodeid}`);
                     let result = await response.json();
@@ -163,16 +161,27 @@ define([
                     self.cardwidget(result.cardwidget);
                     self.widget(result.widget);
                     self.node(result.node);
-                    self.newValue(conceptDetails.map(concept => {
-                        console.log(concept.valueid);
+                    self.currentNodeValue(conceptDetails.map(concept => {
                         return concept.valueid
                     }));
-                    console.log(newValue())
 
-                    self.showModal(true);
+                    self.loadedWidget(true);
                 } catch(error) {
                     console.error('Error:', error);
                 };
+            };
+
+            self.saveNodeValue = function(nodeid, data, tileid) {
+                return fetch({
+                    url: arches.urls.api_node_value,
+                    type: 'POST',
+                    data: {
+                        'nodeid': nodeid,
+                        'data': data,
+                        'resourceinstanceid': params.resourceinstanceid,
+                        'tileid': tileid
+                    }
+                });
             };
             
             // create columns for each table
@@ -496,9 +505,7 @@ define([
             });
 
             console.log(self);
-            // console.log(params);
-
-            // self.getWidget(typeOfGroupNodegroupId);
+            console.log(params);
         },
         template: provenanceGroupReportTemplate
     });
