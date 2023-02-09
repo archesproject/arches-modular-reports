@@ -1,4 +1,15 @@
-define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-templates/provenance_group_report.htm'], function(arches, ko, datatable, provenanceGroupReportTemplate) {
+define([
+    'jquery',
+    'underscore',
+    'arches', 
+    'knockout',
+    'models/graph',
+    'viewmodels/card',
+    'viewmodels/tile',
+    'viewmodels/provisional-tile',
+    'bindings/datatable', 
+    'templates/views/report-templates/provenance_group_report.htm'
+], function($, _, arches, ko, GraphModel, CardViewModel, TileViewModel, ProvisionalTileViewModel, datatable, provenanceGroupReportTemplate) {
     return ko.components.register('provenance_group_report', {
         viewModel: function(params) {
             params.configKeys = [];
@@ -57,6 +68,107 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                 "Textual Work":"6dad61aa-b4b5-11ea-84f7-3af9d3b32b71",
                 "Visual Work":"933ee880-b4b5-11ea-84f7-3af9d3b32b71"
             };
+
+            // Tile Editor
+
+            this.resourceId = ko.observable();
+            this.card = ko.observable();
+            this.tile = ko.observable();
+            this.displayname = ko.observable();
+            this.showTileEditor = ko.observable(false);
+    
+            this.complete = params.complete || ko.observable();
+            this.loading = params.loading || ko.observable(false);
+            const handlers = {
+                'after-update': [],
+                'tile-reset': []
+            };
+            this.on = function(eventName, handler) {
+                if (handlers[eventName]) {
+                    handlers[eventName].push(handler);
+                }
+            },
+    
+            this.loading(true);
+  
+            this.close = function() {
+                console.log("cancel clicked");
+                self.showTileEditor(false);
+            };
+
+            this.editTile = function(tileid) {
+                console.log("editor clicked", self.showTileEditor());
+                const url = `${arches.urls.provenance_editor}?tileid=${tileid}`;
+                $.getJSON(url).then(function(data) {
+                    self.resourceId(data.resourceid);
+                    self.displayname(data.displayname);
+                    const createLookup = function(list, idKey) {
+                        return _.reduce(list, function(lookup, item) {
+                            lookup[item[idKey]] = item;
+                            return lookup;
+                        }, {});
+                    };
+                    const card = data.cards.find(card=>card.nodegroup_id == data.tile.nodegroup_id);
+                    const graphModel = new GraphModel({
+                        data: {
+                            nodes: data.nodes,
+                            nodegroups: data.nodegroups,
+                            edges: []
+                        },
+                        datatypes: data.datatypes
+                    });
+                    self.reviewer = data.userisreviewer;
+                    self.provisionalTileViewModel = new ProvisionalTileViewModel({
+                        tile: self.tile,
+                        reviewer: data.userisreviewer
+                    });
+    
+                    self.widgetLookup = createLookup(
+                        data.widgets,
+                        'widgetid'
+                    );
+                    self.cardComponentLookup = createLookup(
+                        data['card_components'],
+                        'componentid'
+                    );
+                    self.nodeLookup = createLookup(
+                        graphModel.get('nodes')(),
+                        'nodeid'
+                    );
+    
+                    self.card(new CardViewModel({
+                        card: card,
+                        graphModel: graphModel,
+                        tile: data.tile,
+                        resourceId: self.resourceId,
+                        displayname: self.displayname,
+                        handlers: handlers,
+                        cards: data.cards,
+                        tiles: data.tiles,
+                        provisionalTileViewModel: self.provisionalTileViewModel,
+                        cardwidgets: data.cardwidgets,
+                        userisreviewer: data.userisreviewer,
+                        loading: self.loading
+                    }));
+    
+                    self.tile(new TileViewModel({
+                        tile: data.tile,
+                        card: self.card(),
+                        graphModel: graphModel,
+                        resourceId: self.resourceId,
+                        displayname: self.displayname,
+                        handlers: handlers,
+                        userisreviewer: data.userisreviewer,
+                        provisionalTileViewModel: self.provisionalTileViewModel,
+                        loading: self.loading,
+                        cardwidgets: data.cardwidgets,
+                    }));
+                    self.showTileEditor(true);
+                    console.log("showing editor", self.showTileEditor());
+                });
+            };
+    
+            // End of Tile Editor
 
             self.resourceName = resourceName;
 
