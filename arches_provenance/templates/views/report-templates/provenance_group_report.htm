@@ -165,8 +165,10 @@
               <div data-bind="text: getValue(nameRowData(), ['name', 'name_type', '@display_value'])"></div>
             <div style="padding-top: 24px; font-weight: bold;">Sources</div>
             <div>
+              <!-- ko if: nameRowData().name.name_source_reference } -->
               <!-- ko foreach: {data: nameRowData().name.name_source_reference.instance_details, as: 'instance' } -->
                 <a style="cursor:pointer; color:blue; text-decoration:underline;" data-bind="text: instance['display_value'], attr: {href: '/report/' + instance['resourceId'], target: '_blank'}"></a>
+              <!-- /ko -->
               <!-- /ko -->
             </div>
 
@@ -254,7 +256,7 @@
             <tr>
               <!-- <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td> -->
               <td><a data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
-              <td data-bind="text: $parents.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"> </td>
+              <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
               <td style="width:40px;">
                 <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px;" data-toggle="modal" data-target="#dissolutionModal">+</button>

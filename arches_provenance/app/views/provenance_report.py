@@ -341,7 +341,7 @@ class ProvenanceSourceReferences(View):
             sql = """
             SELECT jsonb_array_length(tiledata->'{0}') FROM tiles WHERE nodegroupid='{1}' AND resourceinstanceid = '{2}'""".format(nodegroupid, nodegroupid, resourceid)
             cursor.execute(sql)
-            records_total = cursor.fetchone()[0] if cursor.fetchone() else 0
+            records_total = cursor.fetchone()[0]
 
         search_string = ''
         if search_value:
