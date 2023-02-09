@@ -161,22 +161,16 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                 },
             ];
             
-            const contactColumns = [
-                {"title": "Point of Contact", "orderable": false, targets: 0, "data": "contact_point.contact_point_content.@display_value", "defaultContent": ""},
-                {"title": "Type of Contact", "orderable": false, targets: 0, "data": "contact_point.contact_point_type.@display_value", "defaultContent": ""},
-                // {"title": "Statement Source", "orderable": false, targets: 0, "data": "contact_point.contact_point_label.@display_value", "defaultContent": ""},
-            ];
-
             const professionalActivityColumns  = [
-                {"title": "Location", "orderable": true, targets: 0, "data": "0c3baf01-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
+                {"title": "Location", "orderable": true, targets: 0, "data": "related_resource", "defaultContent": "",
                     "render": function(data) {
                         if (data) {
-                            return JSON.parse(data).en.value;
+                            return "<a href=/report/" + data.relatedresourceinstanceid + " target=_blank style='color:blue;'>" + data.name.en.value + "</a>";
                         }
                         else {
                             return '';
                         }
-                    }
+                    } 
                 },
                 {"title": "Time Span", "orderable": true, targets: 0, "data": "child_nodegroups.0c3baee7-e323-11eb-ba14-0a9473e82189.0.child_nodegroups.0c3baeea-e323-11eb-ba14-0a9473e82189.0.0c3baef5-e323-11eb-ba14-0a9473e82189", "defaultContent": "",
                     "render": function(data) {
@@ -198,10 +192,10 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
             ];
 
             const establishmentColumns  = [
-                {"title": "Location", "orderable": true, targets: 0, "data": "e5f12154-17c1-11ec-b193-0a9473e82189", "defaultContent": "",
+                {"title": "Location", "orderable": true, targets: 0, "data": "related_resource", "defaultContent": "",
                     "render": function(data) {
                         if (data) {
-                            return JSON.parse(data).en.value;
+                            return "<a href=/report/" + data.relatedresourceinstanceid + " target=_blank style='color:blue;'>" + data.name.en.value + "</a>";
                         }
                         else {
                             return '';
@@ -228,7 +222,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
             ];
 
             const identifierAssignmentColumns  = [
-                {"title": "Name", "orderable": true, targets: 0, "data": "42b0dbab-e319-11eb-ba14-0a9473e82189", "defaultContent": "",
+                {"title": "Name", "orderable": true, targets: 0, "data": "related_resource.name", "defaultContent": "",
                     "render": function(data) {
                         if (data) {
                             return JSON.parse(data).en.value;
@@ -339,7 +333,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                     columns: [
                         {"title": "Related Resource", "orderable": true, targets: 0, "name": "name", "data": 'resourceinstance_to',
                             "render": function(data) {
-                                return "<a href=/report/" + data.resourceid + " target=_blank>" + data.displayname + "</a>";
+                                return "<a href=/report/" + data.resourceid + " target=_blank style='color:blue;'>" + data.displayname + "</a>";
                             }
                         },
                         {"title": "Relationship Type", "orderable": true, targets: 0, "name": "relationshiptype", "data": "relationshiptype",

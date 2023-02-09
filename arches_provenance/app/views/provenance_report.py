@@ -18,6 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
 import operator
+import json
 from re import search
 from functools import reduce
 from arches.app.models import models
@@ -127,7 +128,8 @@ class ProvenanceSummaryTables(View):
         order_dir = request.GET.get("order[0][dir]") if request.GET.get("order[0][column]") != None else "ASC"
 
         if nodes != '':
-            nodes_string = ",".join(['__arches_get_node_display_value(tiledata, \'{0}\'::uuid) AS \"{1}\"'.format(n,n) for n in nodes.split(",")])
+            nodes_string = "tiledata -> '{}' -> 0 -> 'resourceId' AS relatedresourceid,".format(nodes.split(",")[0])
+            nodes_string = nodes_string + ",".join(['__arches_get_node_display_value(tiledata, \'{0}\'::uuid) AS \"{1}\"'.format(n,n) for n in nodes.split(",")])
 
         search_string = ''
 
@@ -188,11 +190,14 @@ class ProvenanceSummaryTables(View):
         queried_tiles.sort(key=lambda a: str(a[1]))
         queried_tiles = list(queried_tiles)
         
-        nodes = ['tileid', 'parenttileid', 'nodegroupid', 'count'] + nodes.split(",")
+        nodes = ['tileid', 'parenttileid', 'nodegroupid', 'count', 'relatedresourceid'] + nodes.split(",")
         tiles = [dict(zip(nodes,tile)) for tile in queried_tiles]
         ret = []
 
         for t in tiles:
+            related_resource_name = json.loads(t[nodes[5]]) if t[nodes[5]] != '' else ''
+            related_resourceid = json.loads(t['relatedresourceid']) if t['relatedresourceid'] is not None else ''
+            t['related_resource'] = {'relatedresourceinstanceid': related_resourceid, 'name': related_resource_name}
             t['child_nodegroups'] = {}
             if t['parenttileid'] is None:
                 ret.append(t)

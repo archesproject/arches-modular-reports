@@ -43,12 +43,12 @@
       <div>
       <span data-bind="text: resourceName "></span><span data-bind="text: ' [Group] '"></span>
       <div style="display:inline-flex;">
-        <!-- ko if: groupFormationData() && groupFormationData().length > 0 -->
-        <div data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value']"></div>
+        <!-- ko if: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value']) -->
+        <div data-bind="text: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value'])"></div>
         <!-- /ko -->
-        <!-- ko if: groupDissolutionData() && groupDissolutionData().length > 0 -->
+        <!-- ko if: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value']) -->
         <div> -- </div>
-        <div data-bind="text: groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value']"></div>
+        <div data-bind="text: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"></div>
         <!-- /ko -->
       </div>
     </div>
@@ -78,12 +78,12 @@
                   <!-- <td data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value'] + ' -- ' + groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value']">  -->
                     <td>
                       <div style="display:inline-flex;">
-                        <!-- ko if: groupFormationData() && groupFormationData().length > 0 -->
-                        <div data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value']"></div>
+                        <!-- ko if: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value']) -->
+                        <div data-bind="text: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value'])"></div>
                         <!-- /ko -->
-                        <!-- ko if: groupDissolutionData() && groupDissolutionData().length > 0 -->
+                        <!-- ko if: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value']) -->
                         <div> -- </div>
-                        <div data-bind="text: groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value']"></div>
+                        <div data-bind="text: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"></div>
                         <!-- /ko -->
                       </div>
                   </td>
@@ -197,7 +197,7 @@
             </tr>
             <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
             <tr>
-              <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', '@display_value'])"> </td>
+              <td><a data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
               <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan' ,'group_formation_timespan_name', '0', 'group_formation_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
               <td style="width:40px;">
@@ -252,7 +252,8 @@
             </tr>
             <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
             <tr>
-              <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td>
+              <!-- <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td> -->
+              <td><a data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
               <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name, as: 'timespanName' } -->
               <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_content', '@display_value'])"> </td>
               <!-- /ko -->
@@ -313,7 +314,7 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Formation Location: </td>
-                  <a data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'display_value']), attr: {href: '/report/' + $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'resourceId']), target: '_blank'}"></a> 
+                  <td><a data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: {href: '/report/' + $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Formation Type: </td>
@@ -591,7 +592,7 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Dissolution Location: </td>
-                  <a data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'display_value']), attr: {href: '/report/' + $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'resourceId']), target: '_blank'}"></a> 
+                  <td><a data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: {href: '/report/' + $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Dissolution Type: </td>
