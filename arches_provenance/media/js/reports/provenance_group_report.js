@@ -174,15 +174,29 @@ define([
                 };
             };
 
-            self.saveNodeValue = function(nodeid, data, tileid) {
-                return fetch({
+            self.saveNodeValue = function() {
+                console.log('POST REQEST IS BEING MADE');
+                console.log(self.node().nodeid);
+                console.log(self.widgetTileid());
+                console.log(self.currentNodeValue());
+
+                $.ajax({
                     url: arches.urls.api_node_value,
                     type: 'POST',
+                    contentType: "text/plain",
                     data: {
-                        'nodeid': nodeid,
-                        'data': data,
-                        'resourceinstanceid': params.resourceinstanceid,
-                        'tileid': tileid
+                        nodeid: self.node().nodeid,
+                        data: JSON.stringify(self.currentNodeValue()),
+                        resourceinstanceid: params.resourceinstanceid,
+                        tileid: self.widgetTileid()
+                    },
+                    dataType: 'json',
+                    error: function(e) {
+                        // eslint-disable-next-line no-console
+                        console.log('request failed', e);
+                    },
+                    success: function(response) {
+                        console.log(response);
                     }
                 });
             };
