@@ -50,6 +50,7 @@ define([
             self.cardwidget = ko.observable();
             self.widget = ko.observable();
             self.node = ko.observable();
+            self.widgetTileid = ko.observable();
             self.currentNodeValue = ko.observable();
             self.loadedWidget = ko.observable(false);
             
@@ -150,7 +151,7 @@ define([
                     });
             };
 
-            self.getWidget = async(nodeid, conceptDetails) => {
+            self.getWidget = async(nodeid, tileid, conceptDetails) => {
                 try {
                     self.loadedWidget(false);
 
@@ -164,6 +165,8 @@ define([
                     self.currentNodeValue(conceptDetails.map(concept => {
                         return concept.valueid
                     }));
+
+                    self.widgetTileid(tileid);
 
                     self.loadedWidget(true);
                 } catch(error) {
