@@ -198,7 +198,7 @@
             <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
             <tr>
               <td><a data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
-              <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan' ,'group_formation_timespan_name', '0', 'group_formation_timespan_name_content', '@display_value'])"> </td>
+              <td data-bind="text: $parent.getValue(groupFormation, ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
               <td style="width:40px;">
                 <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px" data-toggle="modal" data-target="#formationModal">+</button>
@@ -254,9 +254,7 @@
             <tr>
               <!-- <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td> -->
               <td><a data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
-              <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name, as: 'timespanName' } -->
-              <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_content', '@display_value'])"> </td>
-              <!-- /ko -->
+              <td data-bind="text: $parents.getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
               <td style="width:40px;">
                 <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px;" data-toggle="modal" data-target="#dissolutionModal">+</button>
