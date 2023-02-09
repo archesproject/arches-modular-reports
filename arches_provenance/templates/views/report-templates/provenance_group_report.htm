@@ -68,16 +68,20 @@
                 <tr>
                   <td class="header" style="padding: 8px">Role: </td>
                   <td data-bind="text: typeOfGroup()?.[0]?.['type']?.['@display_value']"> </td>
-                  <td><span data-bind="click: getWidget(typeOfGroup()?.[0]?.['type']?.['@node_id'], typeOfGroup()?.[0]?.['type']?.['concept_details'])"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'>
+                  <!-- ko if: typeOfGroup() -->
+                  <td><span data-bind="click: getWidget(typeOfGroup()[0]['type']['@node_id'], typeOfGroup()[0]['type']['@tile_id'], typeOfGroup()[0]['type']['concept_details'])"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'>
                     <i class="fa fa-pencil"></i></button></span>
                   </td>
+                  <!-- /ko -->
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Nationality: </td>
                   <td data-bind="text: nationality()?.[0]?.['nationality']?.['@display_value']"> </td>
-                  <td><span data-bind="click: getWidget(nationality()?.[0]?.['nationality']?.['@node_id'], nationality()?.[0]?.['nationality']?.['concept_details'])"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'>
+                  <!-- ko if: nationality() -->
+                  <td><span data-bind="click: getWidget(nationality()[0]['nationality']['@node_id'], nationality()[0]['nationality']['@tile_id'], nationality()[0]['nationality']['concept_details'])"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'>
                     <i class="fa fa-pencil"></i></button></span>
                   </td>
+                  <!-- /ko -->
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Overall Dates: </td>
@@ -117,7 +121,8 @@
                       }
                     }"></div>
     
-                  <button class="btn btn-success" data-bind="saveNodeValue(node().nodeid, data, 'NEED CALLBACK TO WHICH NODE/TILE MODAL WAS INITIALIZED FROM')" >
+                  <button class="btn btn-success" data-bind="click: saveNodeValue" >
+                  <!-- <button class="btn btn-success" data-bind="" > -->
                       <i class="ion-android-cloud-done"></i>
                       <span>Save</span>
                   </button>
