@@ -195,7 +195,7 @@ class ProvenanceSummaryTables(View):
         ret = []
 
         for t in tiles:
-            related_resource_name = json.loads(t[nodes[5]]) if t[nodes[5]] != '' else ''
+            related_resource_name = json.loads(t[nodes[5]]) if t[nodes[5]] != '' and t[nodes[5]] is not None else ''
             related_resourceid = json.loads(t['relatedresourceid']) if t['relatedresourceid'] is not None else ''
             t['related_resource'] = {'relatedresourceinstanceid': related_resourceid, 'name': related_resource_name}
             t['child_nodegroups'] = {}
