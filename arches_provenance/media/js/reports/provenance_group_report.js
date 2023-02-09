@@ -225,7 +225,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                 {"title": "Name", "orderable": true, targets: 0, "data": "related_resource.name", "defaultContent": "",
                     "render": function(data) {
                         if (data) {
-                            return JSON.parse(data).en.value;
+                            return data.en.value;
                         }
                         else {
                             return '';
