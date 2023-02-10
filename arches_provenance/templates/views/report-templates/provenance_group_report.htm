@@ -165,7 +165,7 @@
               <div data-bind="text: getValue(nameRowData(), ['name', 'name_type', '@display_value'])"></div>
             <div style="padding-top: 24px; font-weight: bold;">Sources</div>
             <div>
-              <!-- ko if: nameRowData().name.name_source_reference } -->
+              <!-- ko if: nameRowData().name.name_source_reference -->
               <!-- ko foreach: {data: nameRowData().name.name_source_reference.instance_details, as: 'instance' } -->
                 <a style="cursor:pointer; color:blue; text-decoration:underline;" data-bind="text: instance['display_value'], attr: {href: '/report/' + instance['resourceId'], target: '_blank'}"></a>
               <!-- /ko -->
@@ -1723,7 +1723,7 @@
       <div class="summary-table-container">
         <div class="table-label">Source References</div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
-              <table id="name-summary-table" class="table table-striped" cellspacing="0" width="100%;">
+              <table id="source-reference-summary-table" class="table table-striped" cellspacing="0" width="100%;">
                   <thead>
                       <tr class="aher-table-header">
                   </thead>

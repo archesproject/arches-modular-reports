@@ -93,12 +93,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                                     }
                                 }
                             }
-                            if (name === 'source_reference') {
-                                return json.data[0].source_reference.instance_details
-                            }
-                            else {
-                                return json.data;
-                            }
+                            return json.data;
                         }
                     },
                 };
@@ -399,6 +394,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                 var data = table.row( $(this).parents('tr') ).data();
                 self.getComplexBranchData(self.groupIdentifierAssignmentData, groupIdentifierAssignmentNodegroupId, data.tileid);
             } );
+
 
             $('#name-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#name-summary-table').DataTable();
