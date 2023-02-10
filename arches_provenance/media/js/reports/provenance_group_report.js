@@ -2,8 +2,9 @@ define([
     'arches', 
     'knockout', 
     'bindings/datatable', 
+    'js-cookie',
     'templates/views/report-templates/provenance_group_report.htm'
-], function(arches, ko, datatable, provenanceGroupReportTemplate) {
+], function(arches, ko, datatable, Cookies, provenanceGroupReportTemplate) {
     return ko.components.register('provenance_group_report', {
         viewModel: function(params) {
             params.configKeys = [];
@@ -175,29 +176,25 @@ define([
             };
 
             self.saveNodeValue = function() {
-                console.log('POST REQEST IS BEING MADE');
-                console.log(self.node().nodeid);
-                console.log(self.widgetTileid());
-                console.log(self.currentNodeValue());
+                let formData = new FormData();
+                formData.append('nodeid', self.node().nodeid);
+                formData.append('data', self.currentNodeValue());
+                formData.append('resourceinstanceid', params.resourceinstanceid);
+                formData.append('tileid', self.widgetTileid());
 
-                $.ajax({
-                    url: arches.urls.api_node_value,
-                    type: 'POST',
-                    contentType: "text/plain",
-                    data: {
-                        nodeid: self.node().nodeid,
-                        data: JSON.stringify(self.currentNodeValue()),
-                        resourceinstanceid: params.resourceinstanceid,
-                        tileid: self.widgetTileid()
-                    },
-                    dataType: 'json',
-                    error: function(e) {
-                        // eslint-disable-next-line no-console
-                        console.log('request failed', e);
-                    },
-                    success: function(response) {
-                        console.log(response);
+                window.fetch(arches.urls.api_node_value, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData,
+                    headers: {
+                        "X-CSRFToken": Cookies.get('csrftoken')
                     }
+                }).then(function(response) {
+                    if(response.ok){
+                        return response.json();
+                    }
+                }).then(function(data){
+                    console.log(data);
                 });
             };
             
