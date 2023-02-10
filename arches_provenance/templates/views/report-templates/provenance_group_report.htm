@@ -69,7 +69,7 @@
                   <td class="header" style="padding: 8px">Role: </td>
                   <td data-bind="text: typeOfGroup()?.[0]?.['type']?.['@display_value']"> </td>
                   <!-- ko if: typeOfGroup() -->
-                  <td><span data-bind="click: getWidget(typeOfGroup()[0]['type']['@node_id'], typeOfGroup()[0]['type']['@tile_id'], typeOfGroup()[0]['type']['concept_details'])"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'>
+                  <td><span data-bind="click: getWidget(typeOfGroup()[0]['type'])"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'>
                     <i class="fa fa-pencil"></i></button></span>
                   </td>
                   <!-- /ko -->
@@ -78,7 +78,7 @@
                   <td class="header" style="padding: 8px">Nationality: </td>
                   <td data-bind="text: nationality()?.[0]?.['nationality']?.['@display_value']"> </td>
                   <!-- ko if: nationality() -->
-                  <td><span data-bind="click: getWidget(nationality()[0]['nationality']['@node_id'], nationality()[0]['nationality']['@tile_id'], nationality()[0]['nationality']['concept_details'])"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'>
+                  <td><span data-bind="click: getWidget(nationality()[0]['nationality'])"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#summaryRoleModal'>
                     <i class="fa fa-pencil"></i></button></span>
                   </td>
                   <!-- /ko -->
@@ -103,38 +103,36 @@
       </div>
     </div>
 
-    <!-- Summary Table Modals -->
-      <!-- Role Modal -->
-        <div class="modal fade" id="summaryRoleModal" role="dialog">
-          <div class="modal-dialog" style="display: inline-flex;">
-            <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
-              <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeSummaryRoleModal" style="cursor:pointer">x</a></div>
-              <div class="summary-table-container" style="width:unset">
-                <!-- ko if: loadedWidget -->
-                  <div style="display: inline;" data-bind="component: {
-                    name: widget().name,
-                    params: {
-                        node: node(),
-                        config: widget().defaultconfig,
-                        label: cardwidget().label,
-                        value: currentNodeValue
-                      }
-                    }"></div>
-    
-                  <button class="btn btn-success" data-bind="click: saveNodeValue" >
-                  <!-- <button class="btn btn-success" data-bind="" > -->
-                      <i class="ion-android-cloud-done"></i>
-                      <span>Save</span>
-                  </button>
-                  <button class="btn btn-danger" data-bind="" >
-                      <i class="ion-android-cancel}"></i>
-                      <span>Cancel</span>
-                  </button>
-                <!-- /ko -->
-              </div>
+    <!-- Generic Cardinality 1 Editor Modal -->
+      <div class="modal fade" id="summaryRoleModal" role="dialog">
+        <div class="modal-dialog" style="display: inline-flex;">
+          <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
+            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeSummaryRoleModal" style="cursor:pointer">x</a></div>
+            <div class="summary-table-container" style="width:unset">
+              <!-- ko if: loadedWidget -->
+                <div style="display: inline;" data-bind="component: {
+                  name: widgetWidgetConfig().name,
+                  params: {
+                      node: nodeWidgetConfig(),
+                      config: cardwidgetWidgetConfig().config,
+                      label: cardwidgetWidgetConfig().label,
+                      value: currentNodeValue
+                    }
+                  }"></div>
+  
+                <button class="btn btn-success" data-bind="click: saveNodeValue" >
+                    <i class="ion-android-cloud-done"></i>
+                    <span>Save</span>
+                </button>
+                <button class="btn btn-danger" data-bind="" >
+                    <i class="ion-android-cancel}"></i>
+                    <span>Cancel</span>
+                </button>
+              <!-- /ko -->
             </div>
           </div>
         </div>
+      </div>
       
 
     <!-- Navigation Buttons-->

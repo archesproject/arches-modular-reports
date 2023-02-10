@@ -48,10 +48,11 @@ define([
             self.nameRowData = ko.observable();
             self.externalIdentifierData = ko.observable();
 
-            self.cardwidget = ko.observable();
-            self.widget = ko.observable();
-            self.node = ko.observable();
+            self.cardwidgetWidgetConfig = ko.observable();
+            self.widgetWidgetConfig = ko.observable();
+            self.nodeWidgetConfig = ko.observable();
             self.widgetTileid = ko.observable();
+            self.currentNodeRawValue = ko.observable();
             self.currentNodeValue = ko.observable();
             self.loadedWidget = ko.observable(false);
             
@@ -152,17 +153,20 @@ define([
                     });
             };
 
-            self.getWidget = async(nodeid, tileid, conceptDetails) => {
+            self.getWidget = async(rawNodeValue) => {
                 try {
                     self.loadedWidget(false);
+                    const nodeid = rawNodeValue['@node_id'];
+                    const tileid = rawNodeValue['@tile_id'];
+                    const conceptDetails = rawNodeValue['concept_details'];
 
                     let response = await fetch(`${arches.urls.provenance_editor}?nodeid=${nodeid}`);
                     let result = await response.json();
                     
                     console.log(result);
-                    self.cardwidget(result.cardwidget);
-                    self.widget(result.widget);
-                    self.node(result.node);
+                    self.cardwidgetWidgetConfig(result.cardwidget);
+                    self.widgetWidgetConfig(result.widget);
+                    self.nodeWidgetConfig(result.node);
                     self.currentNodeValue(conceptDetails.map(concept => {
                         return concept.valueid
                     }));
@@ -177,7 +181,7 @@ define([
 
             self.saveNodeValue = function() {
                 let formData = new FormData();
-                formData.append('nodeid', self.node().nodeid);
+                formData.append('nodeid', self.nodeWidgetConfig().nodeid);
                 formData.append('data', self.currentNodeValue());
                 formData.append('resourceinstanceid', params.resourceinstanceid);
                 formData.append('tileid', self.widgetTileid());
