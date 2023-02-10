@@ -106,7 +106,7 @@ class ProvenanceRelatedResources(View):
                 'resourceinstancefrom_graphid': related_resource[12],
                 'resourceinstanceto_graphid': related_resource[13],
                 'resourceinstance_to': {
-                    'resourceid': related_resource[6],
+                    'resourceid': related_resource[6] if related_resource[6] != resourceid else related_resource[5],
                     'displayname': related_resource[14]
                 }
             }
