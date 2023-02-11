@@ -334,7 +334,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                         {"title": "Relationship Type", "orderable": true, targets: 0, "name": "relationshiptype", "data": "relationshiptype",
                             "render": function(data) {
                                 if (data != null) {
-                                    return "<a href=" + data + " target=_blank>" + data + "</a>";
+                                    return "<a href=" + data + " target=_blank style='color:blue;'>" + data + "</a>";
                                 }
                                 else {
                                     return "No relationship type defined.";
