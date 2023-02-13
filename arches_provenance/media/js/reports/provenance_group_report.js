@@ -28,11 +28,11 @@ define([
             const subGroupNodegroupId = "df216a34-bb18-11ea-85a6-3af9d3b32b71";
             const labelNodegroupId = "97f15d22-bb18-11ea-85a6-3af9d3b32b71";
             const contactNodegroupId = "ace43c39-f43b-11eb-ba14-0a9473e82189";
-            const groupFormationNodegroupId = "c6dc61cc-bb18-11ea-85a6-3af9d3b32b71";
-            const groupDissolutionNodegroupId = "c0a136c4-bba0-11ea-ad92-3af9d3b32b71";   
-            const groupEstablishmentNodegroupId =  "7c586770-eac9-11eb-ba14-0a9473e82189";
-            const groupProfessionalActivityNodegroupId = "0c3baef0-e323-11eb-ba14-0a9473e82189";
-            const groupIdentifierAssignmentNodegroupId = "42b0db83-e319-11eb-ba14-0a9473e82189";
+            this.groupFormationNodegroupId = "c6dc61cc-bb18-11ea-85a6-3af9d3b32b71";
+            this.groupDissolutionNodegroupId = "c0a136c4-bba0-11ea-ad92-3af9d3b32b71";   
+            this.groupEstablishmentNodegroupId =  "7c586770-eac9-11eb-ba14-0a9473e82189";
+            this.groupProfessionalActivityNodegroupId = "0c3baef0-e323-11eb-ba14-0a9473e82189";
+            this.groupIdentifierAssignmentNodegroupId = "42b0db83-e319-11eb-ba14-0a9473e82189";
             const sourceReferenceNodegroupId = "30e30626-c798-11ea-b94e-3af9d3b32b71";
 
             self.nationality = ko.observable();
@@ -76,9 +76,21 @@ define([
             this.tile = ko.observable();
             this.displayname = ko.observable();
             this.showTileEditor = ko.observable(false);
-    
             this.complete = params.complete || ko.observable();
             this.loading = params.loading || ko.observable(false);
+            this.currentObservable = ko.observable();
+            this.currentNodegroupId = ko.observable();
+            this.mainTileId = ko.observable();
+
+            this.onSaveSuccess = () => {
+                self.getComplexBranchData(self.currentObservable(), self.currentNodegroupId(), self.mainTileId());
+                self.showTileEditor(false);
+            };
+
+            this.onSaveError = () => {};
+            this.onDeleteSuccess = () => {};
+            this.onDeleteError = () => {};
+
             const handlers = {
                 'after-update': [],
                 'tile-reset': []
@@ -88,16 +100,22 @@ define([
                     handlers[eventName].push(handler);
                 }
             },
-    
+
             this.loading(true);
   
             this.close = function() {
-                console.log("cancel clicked");
                 self.showTileEditor(false);
             };
 
-            this.editTile = function(tileid) {
-                console.log("editor clicked", self.showTileEditor());
+            this.editTile = function(tileid, mainTileId, currentObservable, currentNodegroupId) {
+                if (!tileid) {
+                    return;
+                }
+
+                self.currentObservable(currentObservable);
+                self.currentNodegroupId(currentNodegroupId);
+                self.mainTileId(mainTileId);
+
                 const url = `${arches.urls.provenance_editor}?tileid=${tileid}`;
                 $.getJSON(url).then(function(data) {
                     self.resourceId(data.resourceid);
@@ -150,7 +168,8 @@ define([
                         userisreviewer: data.userisreviewer,
                         loading: self.loading
                     }));
-    
+
+                    data.tile.noDefaults = true;
                     self.tile(new TileViewModel({
                         tile: data.tile,
                         card: self.card(),
@@ -164,7 +183,6 @@ define([
                         cardwidgets: data.cardwidgets,
                     }));
                     self.showTileEditor(true);
-                    console.log("showing editor", self.showTileEditor());
                 });
             };
     
@@ -437,8 +455,8 @@ define([
             self.getComplexBranchData(self.externalIdentifierData, externalIdentifierNodegroupId);
 
             // get complex branch data
-            self.getComplexBranchData(self.groupFormationData, groupFormationNodegroupId);
-            self.getComplexBranchData(self.groupDissolutionData, groupDissolutionNodegroupId);
+            self.getComplexBranchData(self.groupFormationData, self.groupFormationNodegroupId);
+            self.getComplexBranchData(self.groupDissolutionData, self.groupDissolutionNodegroupId);
             self.getComplexBranchData(self.statementData, statementNodegroupId);
             
             self.createRelatedResourceConfig = function(name, resourcegraphto) {
@@ -494,28 +512,28 @@ define([
                 self.relatedResourceConfigs.push(self.createRelatedResourceConfig(el, self.relatedResourceGraphs[el]));
             }
 
-            self.createSummaryTableConfig('professionalActivity', professionalActivityColumns, groupProfessionalActivityNodegroupId, ['0c3baf01-e323-11eb-ba14-0a9473e82189', '0c3baefb-e323-11eb-ba14-0a9473e82189', '0c3baef5-e323-11eb-ba14-0a9473e82189']);
-            self.createSummaryTableConfig('establishment', establishmentColumns, groupEstablishmentNodegroupId, ['e5f12154-17c1-11ec-b193-0a9473e82189', '7c5867a1-eac9-11eb-ba14-0a9473e82189', '7c58678a-eac9-11eb-ba14-0a9473e82189']);
-            self.createSummaryTableConfig('identifierAssignemnt', identifierAssignmentColumns, groupIdentifierAssignmentNodegroupId, ['42b0dbab-e319-11eb-ba14-0a9473e82189', '42b0db9e-e319-11eb-ba14-0a9473e82189', '42b0db8c-e319-11eb-ba14-0a9473e82189']);
+            self.createSummaryTableConfig('professionalActivity', professionalActivityColumns, self.groupProfessionalActivityNodegroupId, ['0c3baf01-e323-11eb-ba14-0a9473e82189', '0c3baefb-e323-11eb-ba14-0a9473e82189', '0c3baef5-e323-11eb-ba14-0a9473e82189']);
+            self.createSummaryTableConfig('establishment', establishmentColumns, self.groupEstablishmentNodegroupId, ['e5f12154-17c1-11ec-b193-0a9473e82189', '7c5867a1-eac9-11eb-ba14-0a9473e82189', '7c58678a-eac9-11eb-ba14-0a9473e82189']);
+            self.createSummaryTableConfig('identifierAssignemnt', identifierAssignmentColumns, self.groupIdentifierAssignmentNodegroupId, ['42b0dbab-e319-11eb-ba14-0a9473e82189', '42b0db9e-e319-11eb-ba14-0a9473e82189', '42b0db8c-e319-11eb-ba14-0a9473e82189']);
 
 
 
             $('#professional-activity-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#professional-activity-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
-                self.getComplexBranchData(self.groupProfessionalActivityData, groupProfessionalActivityNodegroupId, data.tileid);
+                self.getComplexBranchData(self.groupProfessionalActivityData, self.groupProfessionalActivityNodegroupId, data.tileid);
             } );
 
             $('#establishment-activity-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#establishment-activity-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
-                self.getComplexBranchData(self.groupEstablishmentData, groupEstablishmentNodegroupId, data.tileid);
+                self.getComplexBranchData(self.groupEstablishmentData, self.groupEstablishmentNodegroupId, data.tileid);
             } );
 
             $('#identifier-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#identifier-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
-                self.getComplexBranchData(self.groupIdentifierAssignmentData, groupIdentifierAssignmentNodegroupId, data.tileid);
+                self.getComplexBranchData(self.groupIdentifierAssignmentData, self.groupIdentifierAssignmentNodegroupId, data.tileid);
             } );
 
             $('#name-summary-table tbody').on( 'click', 'button', function() {
