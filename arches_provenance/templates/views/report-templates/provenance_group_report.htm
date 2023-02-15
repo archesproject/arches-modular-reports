@@ -215,7 +215,7 @@
       <!-- Formation Sumamry Table -->
       <div class="summary-table-container">
         <div class="table-label">Formation</div>
-        <table class="table summary-table-top-header">
+        <table id="formation-summary-table" class="table summary-table-top-header">
           <tbody>
             <tr>
               <th class="header" style="padding: 8px">Location</th>
@@ -270,7 +270,7 @@
       <!-- Dissolution Summary Table -->
       <div class="summary-table-container">
         <div class="table-label">Dissolution</div>
-        <table class="table summary-table-top-header">
+        <table id="dissolution-summary-table" class="table summary-table-top-header">
           <tbody>
             <tr>
               <th class="header" style="padding: 8px">Location</th>
@@ -308,9 +308,6 @@
             data-bind="click: function() {
               $parent.editTile(
                   $parent.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
-                  $parent.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
-                  $parent.groupFormationData,
-                  $parent.groupFormationNodegroupId
               )},
               clickBubble: false,
           ">
@@ -322,9 +319,6 @@
                           data-bind="click: function() {
                             $parent.editTile(
                                 $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_content', '@tile_id']),
-                                $parent.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
-                                $parent.groupFormationData,
-                                $parent.groupFormationNodegroupId
                             )},
                             clickBubble: false,
                         ">          
@@ -378,9 +372,6 @@
             data-bind="click: function() {
                 $parent.editTile(
                     $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_content', '@tile_id']),
-                    $parent.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
-                    $parent.groupFormationData,
-                    $parent.groupFormationNodegroupId
                 )},
                 clickBubble: false,
             ">
@@ -392,9 +383,6 @@
                       data-bind="click: function() {
                         $parents[1].editTile(
                             $parents[1].getValue(statementName, ['group_formation_statement_name_content', '@tile_id'])
-                            $parents[1].getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
-                            $parents[1].groupFormationData,
-                            $parents[1].groupFormationNodegroupId
                         )},
                         clickBubble: false,
                     ">
@@ -447,9 +435,6 @@
             data-bind="click: function() {
               $parent.editTile(
                   $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@tile_id']),
-                  $parent.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
-                  $parent.groupFormationData,
-                  $parent.groupFormationNodegroupId
               )},
               clickBubble: false,
           ">
@@ -461,9 +446,6 @@
                     data-bind="click: function() {
                         $parents[1].editTile(
                             $parents[1].getValue(timespanName, ['group_formation_timespan_name_content', '@tile_id']),
-                            $parents[1].getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
-                            $parents[1].groupFormationData,
-                            $parents[1].groupFormationNodegroupId
                         )},
                         clickBubble: false,
                     ">
@@ -517,9 +499,6 @@
                   data-bind="click: function() {
                       $parent.editTile(
                           $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_value', '@tile_id']),
-                          $parent.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
-                          $parent.groupFormationData,
-                          $parent.groupFormationNodegroupId
                       )},
                   clickBubble: false,
               ">
@@ -531,9 +510,6 @@
                           data-bind="click: function() {
                               $parents[1].editTile(
                                   $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_content', '@tile_id']),
-                                  $parents[1].getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
-                                  $parents[1].groupFormationData,
-                                  $parents[1].groupFormationNodegroupId
                               )},
                           clickBubble: false,
                       ">
@@ -596,24 +572,18 @@
                   data-bind="click: function() {
                       $parent.editTile(
                           $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@tile_id']),
-                          $parent.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
-                          $parent.groupFormationData,
-                          $parent.groupFormationNodegroupId
                       )},
                   clickBubble: false,
               ">
                 <tr style="overflow:scroll; height: 100px;">
                   <td class="header">Statement About Time Span Names</td>
-                  <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name, as: 'timespanStatementName != undefined -->
+                  <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name != undefined -->
                   <td>
                     <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name, as: 'timespanStatementName' } -->
                       <table style="margin: 0px;" class="table summary-table-left-header"
                           data-bind="click: function() {
                               $parents[1].editTile(
                                   $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_content', '@tile_id']),
-                                  $parents[1].getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
-                                  $parents[1].groupFormationData,
-                                  $parents[1].groupFormationNodegroupId
                               )},
                           clickBubble: false,
                       ">
@@ -680,9 +650,6 @@
             data-bind="click: function() {
                 $parent.editTile(
                     $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
-                    $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
-                    $parent.groupDissolutionData,
-                    $parent.groupDissolutionNodegroupId
                 )},
             clickBubble: false,
         ">
@@ -694,9 +661,6 @@
                           data-bind="click: function() {
                               $parent.editTile(
                                   $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_content', '@tile_id']),
-                                  $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
-                                  $parent.groupDissolutionData,
-                                  $parent.groupDissolutionNodegroupId
                               )},
                           clickBubble: false,
                       ">        
@@ -742,9 +706,6 @@
             data-bind="click: function() {
                 $parent.editTile(
                     $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_content', '@tile_id']),
-                    $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
-                    $parent.groupDissolutionData,
-                    $parent.groupDissolutionNodegroupId
                 )},
             clickBubble: false,
         ">
@@ -756,9 +717,6 @@
                     data-bind="click: function() {
                         $parents[1].editTile(
                             $parents[1].getValue(statementName, ['group_dissolution_statement_name_content', '@tile_id']),
-                            $parents[1].getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
-                            $parents[1].groupDissolutionData,
-                            $parents[1].groupDissolutionNodegroupId
                         )},
                     clickBubble: false,
                 ">  
@@ -812,9 +770,6 @@
             data-bind="click: function() {
                 $parent.editTile(
                     $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'timespan_begin_of_the_begin', '@tile_id']),
-                    $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
-                    $parent.groupDissolutionData,
-                    $parent.groupDissolutionNodegroupId
                 )},
             clickBubble: false,
         ">
@@ -827,9 +782,6 @@
                     data-bind="click: function() {
                         $parents[1].editTile(
                             $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_content', '@tile_id']),
-                            $parents[1].getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
-                            $parents[1].groupDissolutionData,
-                            $parents[1].groupDissolutionNodegroupId
                         )},
                     clickBubble: false,
                 ">
@@ -884,9 +836,6 @@
                   data-bind="click: function() {
                       $parent.editTile(
                           $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_value', '@tile_id']),
-                          $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
-                          $parent.groupDissolutionData,
-                          $parent.groupDissolutionNodegroupId
                       )},
                   clickBubble: false,
               ">
@@ -899,9 +848,6 @@
                           data-bind="click: function() {
                               $parents[1].editTile(
                                   $parents[1].getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_content', '@tile_id']),
-                                  $parents[1].getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
-                                  $parents[1].groupDissolutionData,
-                                  $parents[1].groupDissolutionNodegroupId
                               )},
                           clickBubble: false,
                       ">        
@@ -961,9 +907,6 @@
                     data-bind="click: function() {
                         $parent.editTile(
                             $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_content', '@tile_id']),
-                            $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
-                            $parent.groupDissolutionData,
-                            $parent.groupDissolutionNodegroupId
                         )},
                     clickBubble: false,
                 ">
@@ -976,9 +919,6 @@
                           data-bind="click: function() {
                               $parents[1].editTile(
                                   $parents[1].getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_content', '@tile_id']),
-                                  $parents[1].getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
-                                  $parents[1].groupDissolutionData,
-                                  $parents[1].groupDissolutionNodegroupId
                               )},
                           clickBubble: false,
                       ">  
@@ -1049,12 +989,9 @@
               data-bind="click: function() {
                   $parent.editTile(
                       $parent.getValue(sojourn, ['sojourn_label','@tile_id']),
-                      $parent.getValue(sojourn, ['sojourn_label','@tile_id']),
-                      $parent.groupEstablishmentData,
-                      $parent.groupEstablishmentNodegroupId
                   )},
                   clickBubble: false,
-              ">
+        ">
               <tbody>
                   <tr style="overflow:scroll; height: 100px;">
                     <td class="header">Group Establishment Name</td>
@@ -1063,9 +1000,6 @@
                             data-bind="click: function() {
                                 $parent.editTile(
                                     $parent.getValue(sojourn, ['sojourn_name', 'sojourn_name_content', '@tile_id']),
-                                    $parent.getValue(sojourn, ['sojourn_label','@tile_id']),
-                                    $parent.groupEstablishmentData,
-                                    $parent.groupEstablishmentNodegroupId
                                 )},
                             clickBubble: false,
                         ">
@@ -1115,9 +1049,6 @@
               data-bind="click: function() {
                   $parent.editTile(
                       $parent.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_content', '@tile_id']),
-                      $parent.getValue(sojourn, ['sojourn_label','@tile_id']),
-                      $parent.groupEstablishmentData,
-                      $parent.groupEstablishmentNodegroupId
                   )},
                   clickBubble: false,
               ">
@@ -1130,9 +1061,6 @@
                       data-bind="click: function() {
                           $parents[1].editTile(
                               $parents[1].getValue(statementName, ['sojourn_statement_name_content', '@tile_id']),
-                              $parents[1].getValue(sojourn, ['sojourn_label','@tile_id']),
-                              $parents[1].groupEstablishmentData,
-                              $parents[1].groupEstablishmentNodegroupId
                           )},
                           clickBubble: false,
                       ">
@@ -1187,9 +1115,6 @@
               data-bind="click: function() {
                   $parent.editTile(
                       $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_begin', '@tile_id']),
-                      $parent.getValue(sojourn, ['sojourn_label','@tile_id']),
-                      $parent.groupEstablishmentData,
-                      $parent.groupEstablishmentNodegroupId
                   )},
               clickBubble: false,
           ">
@@ -1203,9 +1128,6 @@
                         data-bind="click: function() {
                           $parents[1].editTile(
                               $parents[1].getValue(timespanName, ['sojourn_timespan_name_content', '@tile_id']),
-                              $parents[1].getValue(sojourn, ['sojourn_label','@tile_id']),
-                              $parents[1].groupEstablishmentData,
-                              $parents[1].groupEstablishmentNodegroupId
                           )},
                       clickBubble: false,
                   ">  
@@ -1260,9 +1182,6 @@
                     data-bind="click: function() {
                         $parent.editTile(
                             $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_value', '@tile_id']),
-                            $parent.getValue(sojourn, ['sojourn_label','@tile_id']),
-                            $parent.groupEstablishmentData,
-                            $parent.groupEstablishmentNodegroupId
                         )},
                     clickBubble: false,
                 ">
@@ -1275,9 +1194,6 @@
                             data-bind="click: function() {
                                 $parents[1].editTile(
                                     $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_content', '@tile_id']),
-                                    $parents[1].getValue(sojourn, ['sojourn_label','@tile_id']),
-                                    $parents[1].groupEstablishmentData,
-                                    $parents[1].groupEstablishmentNodegroupId
                                 )},
                             clickBubble: false,
                         ">
@@ -1341,9 +1257,6 @@
                     data-bind="click: function() {
                         $parent.editTile(
                             $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_content', '@tile_id']),
-                            $parent.getValue(sojourn, ['sojourn_label','@tile_id']),
-                            $parent.groupEstablishmentData,
-                            $parent.groupEstablishmentNodegroupId
                         )},
                     clickBubble: false,
                 ">
@@ -1356,9 +1269,6 @@
                             data-bind="click: function() {
                                 $parent.editTile(
                                     $parent.getValue(timespanStatementName, ['sojourn_timespan_statement_name_content', '@tile_id']),
-                                    $parent.getValue(sojourn, ['sojourn_label','@tile_id']),
-                                    $parent.groupEstablishmentData,
-                                    $parent.groupEstablishmentNodegroupId
                                 )},
                             clickBubble: false,
                         ">
@@ -1434,9 +1344,6 @@
                 data-bind="click: function() {
                     $parent.editTile(
                         $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
-                        $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
-                        $parent.groupProfessionalActivityData,
-                        $parent.groupProfessionalActivityNodegroupId
                     )},
                 clickBubble: false,
             ">
@@ -1448,9 +1355,6 @@
                               data-bind="click: function() {
                                   $parent.editTile(
                                       $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_content', '@tile_id']),
-                                      $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
-                                      $parent.groupProfessionalActivityData,
-                                      $parent.groupProfessionalActivityNodegroupId
                                   )},
                               clickBubble: false,
                           ">        
@@ -1496,9 +1400,6 @@
                 data-bind="click: function() {
                     $parents[1].editTile(
                         $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_content', '@tile_id']),
-                        $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
-                        $parents[1].groupProfessionalActivityData,
-                        $parents[1].groupProfessionalActivityNodegroupId
                     )},
                 clickBubble: false,
             ">
@@ -1511,9 +1412,6 @@
                         data-bind="click: function() {
                             $parents[2].editTile(
                                 $parents[2].getValue(statementName, ['professional_activity_statement_name_content',  '@tile_id']),
-                                $parents[2].getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
-                                $parents[2].groupProfessionalActivityData,
-                                $parents[2].groupProfessionalActivityNodegroupId
                             )},
                         clickBubble: false,
                     ">  
@@ -1568,9 +1466,6 @@
                 data-bind="click: function() {
                     $parent.editTile(
                         $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_begin', '@tile_id']),
-                        $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
-                        $parent.groupProfessionalActivityData,
-                        $parent.groupProfessionalActivityNodegroupId
                     )},
                 clickBubble: false,
             ">
@@ -1582,9 +1477,6 @@
                         data-bind="click: function() {
                             $parents[1].editTile(
                                 $parents[1].getValue(timespanName, ['professional_activity_timespan_name_content', '@tile_id']),
-                                $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
-                                $parents[1].groupProfessionalActivityData,
-                                $parents[1].groupProfessionalActivityNodegroupId
                             )},
                         clickBubble: false,
                     ">  
@@ -1634,9 +1526,6 @@
                       data-bind="click: function() {
                           $parent.editTile(
                               $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_value', '@tile_id']),
-                              $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
-                              $parent.groupProfessionalActivityData,
-                              $parent.groupProfessionalActivityNodegroupId
                           )},
                       clickBubble: false,
                   ">
@@ -1649,9 +1538,6 @@
                               data-bind="click: function() {
                                   $parents[1].editTile(
                                       $parents[1].getValue(timespanDurationName, ['professional_activity_timespan_duration_name_content', '@tile_id']),
-                                      $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
-                                      $parents[1].groupProfessionalActivityData,
-                                      $parents[1].groupProfessionalActivityNodegroupId
                                   )},
                               clickBubble: false,
                           ">        
@@ -1711,9 +1597,6 @@
                       data-bind="click: function() {
                           $parent.editTile(
                               $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_content', '@tile_id']),
-                              $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
-                              $parent.groupProfessionalActivityData,
-                              $parent.groupProfessionalActivityNodegroupId
                           )},
                       clickBubble: false,
                   ">
@@ -1726,9 +1609,6 @@
                               data-bind="click: function() {
                                   $parents[1].editTile(
                                       $parents[1].getValue(timespanStatementName, ['professional_activity_timespan_statement_name_content', '@tile_id']),
-                                      $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
-                                      $parents[1].groupProfessionalActivityData,
-                                      $parents[1].groupProfessionalActivityNodegroupId
                                   )},
                               clickBubble: false,
                           ">  
@@ -1855,9 +1735,6 @@
                 data-bind="click: function() {
                     $parent.editTile(
                         $parent.getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
-                        $parent.getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
-                        $parent.groupIdentifierAssignmentData,
-                        $parent.groupIdentifierAssignmentNodegroupId
                     )},
                 clickBubble: false,
             ">
@@ -1883,9 +1760,6 @@
                 data-bind="click: function() {
                     $parent.editTile(
                         $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_actor', '@tile_id']),
-                        $parent.getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
-                        $parent.groupIdentifierAssignmentData,
-                        $parent.groupIdentifierAssignmentNodegroupId
                     )},
                 clickBubble: false,
             ">
@@ -1898,9 +1772,6 @@
                         data-bind="click: function() {
                             $parents[1].editTile(
                                 $parents[1].getValue(dataAssignmentName, ['identifier_data_assignment_name_content', '@tile_id']),
-                                $parents[1].getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
-                                $parents[1].groupIdentifierAssignmentData,
-                                $parents[1].groupIdentifierAssignmentNodegroupId
                             )},
                         clickBubble: false,
                     ">  
@@ -1947,9 +1818,6 @@
                 data-bind="click: function() {
                     $parent.editTile(
                         $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_begin', '@tile_id']),
-                        $parent.getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
-                        $parent.groupIdentifierAssignmentData,
-                        $parent.groupIdentifierAssignmentNodegroupId
                     )},
                 clickBubble: false,
             ">
@@ -1962,9 +1830,6 @@
                         data-bind="click: function() {
                             $parents[1].editTile(
                                 $parents[1].getValue(timespanName, ['identifier_data_assignment_timespan_name_content', '@tile_id']),
-                                $parents[1].getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
-                                $parents[1].groupIdentifierAssignmentData,
-                                $parents[1].groupIdentifierAssignmentNodegroupId
                             )},
                         clickBubble: false,
                     ">
@@ -2015,9 +1880,6 @@
                       data-bind="click: function() {
                           $parent.editTile(
                               $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@tile_id']),
-                              $parent.getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
-                              $parent.groupIdentifierAssignmentData,
-                              $parent.groupIdentifierAssignmentNodegroupId
                           )},
                       clickBubble: false,
                   ">
@@ -2030,9 +1892,6 @@
                               data-bind="click: function() {
                                   $parents[1].editTile(
                                       $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@tile_id']),
-                                      $parents[1].getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
-                                      $parents[1].groupIdentifierAssignmentData,
-                                      $parents[1].groupIdentifierAssignmentNodegroupId
                                   )},
                               clickBubble: false,
                           ">        
@@ -2096,9 +1955,6 @@
                       data-bind="click: function() {
                           $parent.editTile(
                               $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@tile_id']),
-                              $parent.getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
-                              $parent.groupIdentifierAssignmentData,
-                              $parent.groupIdentifierAssignmentNodegroupId
                           )},
                       clickBubble: false,
                   ">
@@ -2112,9 +1968,6 @@
                               data-bind="click: function() {
                                   $parents[1].editTile(
                                       $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@tile_id']),
-                                      $parents[1].getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
-                                      $parents[1].groupIdentifierAssignmentData,
-                                      $parents[1].groupIdentifierAssignmentNodegroupId
                                   )},
                               clickBubble: false,
                           ">
