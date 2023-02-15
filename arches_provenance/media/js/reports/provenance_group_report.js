@@ -52,7 +52,7 @@ define([
             self.widgetWidgetConfig = ko.observable();
             self.nodeWidgetConfig = ko.observable();
             self.widgetTileid = ko.observable();
-            self.currentNodeRawValue = ko.observable();
+            let currentNodeBeingEdited;
             self.currentNodeValue = ko.observable();
             self.loadedWidget = ko.observable(false);
             
@@ -153,9 +153,12 @@ define([
                     });
             };
 
-            self.getWidget = async(rawNodeValue) => {
+            self.getWidget = async(rawNodeValue, cardData) => {
                 try {
                     self.loadedWidget(false);
+                    currentNodeBeingEdited = cardData;
+                    console.log(currentNodeBeingEdited());
+
                     const nodeid = rawNodeValue['@node_id'];
                     const tileid = rawNodeValue['@tile_id'];
                     const conceptDetails = rawNodeValue['concept_details'];
@@ -199,6 +202,7 @@ define([
                     }
                 }).then(function(data){
                     console.log(data);
+                    self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.tileid);
                 });
             };
             
