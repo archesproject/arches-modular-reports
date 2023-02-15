@@ -504,16 +504,8 @@ define([
                 $('#nameModal').modal('hide');
             });
 
-            $('#closeSummaryRoleModal').click(function() {
-                $('#summaryRoleModal').modal('hide');
-            });
-
-            $('#closenationalityModal').click(function() {
-                $('#nationalityModal').modal('hide');
-            });
-
-            $('#closeoverallDatesModal').click(function() {
-                $('#overallDatesModal').modal('hide');
+            $('#closeCardinality1EditorModal').click(function() {
+                $('#cardinality1EditorModal').modal('hide');
             });
 
             console.log(self);
