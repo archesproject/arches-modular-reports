@@ -107,12 +107,7 @@ define([
                                     }
                                 }
                             }
-                            if (name === 'source_reference') {
-                                return json.data[0].source_reference.instance_details
-                            }
-                            else {
-                                return json.data;
-                            }
+                            return json.data;
                         }
                     },
                 };
@@ -415,7 +410,7 @@ define([
                         {"title": "Relationship Type", "orderable": true, targets: 0, "name": "relationshiptype", "data": "relationshiptype",
                             "render": function(data) {
                                 if (data != null) {
-                                    return "<a href=" + data + " target=_blank>" + data + "</a>";
+                                    return "<a href=" + data + " target=_blank style='color:blue;'>" + data + "</a>";
                                 }
                                 else {
                                     return "No relationship type defined.";
@@ -475,6 +470,7 @@ define([
                 var data = table.row( $(this).parents('tr') ).data();
                 self.getComplexBranchData(self.groupIdentifierAssignmentData, groupIdentifierAssignmentNodegroupId, data.tileid);
             } );
+
 
             $('#name-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#name-summary-table').DataTable();
