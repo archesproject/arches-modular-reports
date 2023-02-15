@@ -55,6 +55,7 @@ define([
             let currentNodeBeingEdited;
             self.currentNodeValue = ko.observable();
             self.loadedWidget = ko.observable(false);
+            self.showNodeEditor = ko.observable(true);
             
             self.relatedResourceGraphs = {
                 "Activity":"734d1558-bfad-11ea-a62b-3af9d3b32b71",
@@ -148,6 +149,9 @@ define([
                     });
             };
 
+            self.openNodeEditor = function(){ self.showNodeEditor(true); console.log('node editor open: ' + self.showNodeEditor());}
+            self.closeNodeEditor = function(){ self.showNodeEditor(false); console.log('node editor open: ' + self.showNodeEditor());}
+
             self.getWidget = async(rawNodeValue, cardData) => {
                 try {
                     self.loadedWidget(false);
@@ -197,6 +201,7 @@ define([
                     }
                 }).then(function(data){
                     console.log(data);
+                    self.showNodeEditor(false);
                     self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.tileid);
                 });
             };
@@ -504,9 +509,9 @@ define([
                 $('#nameModal').modal('hide');
             });
 
-            $('#closeCardinality1EditorModal').click(function() {
-                $('#cardinality1EditorModal').modal('hide');
-            });
+            // $('#closeCardinality1EditorModal').click(function() {
+            //     $('#cardinality1EditorModal').modal('hide');
+            // });
 
             console.log(self);
             console.log(params);

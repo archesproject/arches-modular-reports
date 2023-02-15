@@ -69,8 +69,8 @@
                   <td class="header" style="padding: 8px">Role: </td>
                   <!-- ko if: typeOfGroup() -->
                     <td data-bind="text: typeOfGroup()?.[0]?.['type']?.['@display_value']"> </td>
-                    <td><span data-bind="click: function() {getWidget(typeOfGroup()[0]['type'], typeOfGroup)}"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#cardinality1EditorModal'>
-                      <i class="fa fa-pencil"></i></button></span>
+                    <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-bind="click: function() {getWidget(typeOfGroup()[0]['type'], typeOfGroup)}">
+                      <i class="fa fa-pencil" data-bind="click: openNodeEditor"></i></button>
                     </td>
                   <!-- /ko -->
                 </tr>
@@ -78,8 +78,8 @@
                   <td class="header" style="padding: 8px">Nationality: </td>
                   <!-- ko if: nationality() -->
                     <td data-bind="text: nationality()?.[0]?.['nationality']?.['@display_value']"> </td>
-                    <td><span data-bind="click: function() {getWidget(nationality()[0]['nationality'], nationality)}"><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#cardinality1EditorModal'>
-                      <i class="fa fa-pencil"></i></button></span>
+                    <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-bind="click: function() {getWidget(nationality()[0]['nationality'], nationality)}">
+                      <i class="fa fa-pencil" data-bind="click: openNodeEditor"></i></button>
                     </td>
                   <!-- /ko -->
                 </tr>
@@ -97,17 +97,22 @@
                         <!-- /ko -->
                       </div>
                   </td>
-                  <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#overallDatesModal'><i class="fa fa-pencil"></i></button></td>
-            </tbody>
+                  <!-- ko if: groupFormationData()-->
+                    <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-bind="click: function() {getWidget(nationality()[0]['nationality'], nationality); openNodeEditor}">
+                      <i class="fa fa-pencil"></i></button>
+                    </td>
+                  <!-- /ko -->
+                </tbody>
         </table>
       </div>
     </div>
 
     <!-- Generic Cardinality 1 Editor Modal -->
-      <div class="modal fade" id="cardinality1EditorModal" role="dialog">
+    <!-- ko if: showNodeEditor -->
+      <div class="modal fade" id="cardinality1EditorModal" role="dialog" data-bind="visible: showNodeEditor">
         <div class="modal-dialog" style="display: inline-flex;">
           <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
-            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeCardinality1EditorModal" style="cursor:pointer">x</a></div>
+            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeCardinality1EditorModal" style="cursor:pointer" data-bind="click: closeNodeEditor">x</a></div>
             <div class="summary-table-container" style="width:unset">
               <!-- ko if: loadedWidget -->
                 <div style="display: inline;" data-bind="component: {
@@ -124,8 +129,8 @@
                     <i class="ion-android-cloud-done"></i>
                     <span>Save</span>
                 </button>
-                <button class="btn btn-danger" data-bind="" >
-                    <i class="ion-android-cancel}"></i>
+                <button class="btn btn-danger" data-bind="click: closeNodeEditor">
+                    <i class="ion-android-cancel"></i>
                     <span>Cancel</span>
                 </button>
               <!-- /ko -->
@@ -133,6 +138,7 @@
           </div>
         </div>
       </div>
+    <!-- /ko -->
       
 
     <!-- Navigation Buttons-->
