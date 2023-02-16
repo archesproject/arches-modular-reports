@@ -55,7 +55,6 @@ define([
             let currentNodeBeingEdited;
             self.currentNodeValue = ko.observable();
             self.loadedWidget = ko.observable(false);
-            self.showNodeEditor = ko.observable(true);
             
             self.relatedResourceGraphs = {
                 "Activity":"734d1558-bfad-11ea-a62b-3af9d3b32b71",
@@ -149,18 +148,32 @@ define([
                     });
             };
 
-            self.openNodeEditor = function(){ self.showNodeEditor(true); console.log('node editor open: ' + self.showNodeEditor());}
-            self.closeNodeEditor = function(){ self.showNodeEditor(false); console.log('node editor open: ' + self.showNodeEditor());}
+            self.openNodeEditor = function(){ 
+                $('#cardinality1EditorModal').modal('show');
+            }
+            
+            self.closeNodeEditor = function(){ 
+                $('#cardinality1EditorModal').modal('hide');
+            }
+
+            self.buildStrObject = str => {
+                return {[arches.activeLanguage]: {
+                    'value': str,
+                    'direction': arches.activeLanguageDir
+                }};
+            };
 
             self.getWidget = async(rawNodeValue, cardData) => {
                 try {
                     self.loadedWidget(false);
                     currentNodeBeingEdited = cardData;
-                    console.log(currentNodeBeingEdited());
+                    console.log(rawNodeValue);
 
                     const nodeid = rawNodeValue['@node_id'];
                     const tileid = rawNodeValue['@tile_id'];
-                    const conceptDetails = rawNodeValue['concept_details'];
+                    const conceptDetails = rawNodeValue?.['concept_details'];
+                    const stringValue = rawNodeValue?.['@display_value'];
+                    console.log(stringValue);
 
                     let response = await fetch(`${arches.urls.provenance_editor}?nodeid=${nodeid}`);
                     let result = await response.json();
@@ -169,9 +182,16 @@ define([
                     self.cardwidgetWidgetConfig(result.cardwidget);
                     self.widgetWidgetConfig(result.widget);
                     self.nodeWidgetConfig(result.node);
-                    self.currentNodeValue(conceptDetails.map(concept => {
-                        return concept.valueid
-                    }));
+                    if (result.widget.name === 'concept-multiselect-widget') {
+                        self.currentNodeValue(conceptDetails.map(concept => {
+                            return concept.valueid
+                        }));
+                    } else if (result.widget.name === 'text-widget') {
+                        // console.log(self.buildStrObject(stringValue));
+                        // console.log(JSON.stringify(self.buildStrObject(stringValue)));
+                        // self.currentNodeValue(JSON.stringify(self.buildStrObject(stringValue)));
+                        self.currentNodeValue(self.buildStrObject(stringValue));
+                    }
 
                     self.widgetTileid(tileid);
 
@@ -184,7 +204,11 @@ define([
             self.saveNodeValue = function() {
                 let formData = new FormData();
                 formData.append('nodeid', self.nodeWidgetConfig().nodeid);
-                formData.append('data', self.currentNodeValue());
+                if (self.widgetWidgetConfig().name === 'concept-multiselect-widget'){
+                    formData.append('data', self.currentNodeValue());
+                } else if (self.widgetWidgetConfig().name === 'text-widget') {
+                    formData.append('data', JSON.stringify(self.currentNodeValue()));
+                }
                 formData.append('resourceinstanceid', params.resourceinstanceid);
                 formData.append('tileid', self.widgetTileid());
 
@@ -200,9 +224,12 @@ define([
                         return response.json();
                     }
                 }).then(function(data){
-                    console.log(data);
-                    self.showNodeEditor(false);
-                    self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.tileid);
+                    if (data.parenttile_id){ // if tile is a child tile, use parent tileid
+                        self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.parenttile_id);
+                    } else {
+                        self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.tileid);
+                    }
+                    self.closeNodeEditor();
                 });
             };
             
@@ -509,9 +536,9 @@ define([
                 $('#nameModal').modal('hide');
             });
 
-            // $('#closeCardinality1EditorModal').click(function() {
-            //     $('#cardinality1EditorModal').modal('hide');
-            // });
+            $('#closeCardinality1EditorModal').click(function() {
+                $('#cardinality1EditorModal').modal('hide');
+            });
 
             console.log(self);
             console.log(params);
@@ -519,4 +546,3 @@ define([
         template: provenanceGroupReportTemplate
     });
 });
-
