@@ -85,34 +85,33 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Overall Dates: </td>
+                  <!-- ko if: groupFormationData() -->
                   <!-- <td data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value'] + ' -- ' + groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value']">  -->
                     <td>
                       <div style="display:inline-flex;">
                         <!-- ko if: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value']) -->
-                        <div data-bind="text: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value'])"></div>
+                        <div data-bind="text: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', '0', 'group_formation_timespan_name_content', '@display_value'])"></div>
                         <!-- /ko -->
                         <!-- ko if: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value']) -->
                         <div> - </div>
-                        <div data-bind="text: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"></div>
+                        <div data-bind="text: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', '0', 'group_dissolution_timespan_name_content', '@display_value'])"></div>
                         <!-- /ko -->
                       </div>
                   </td>
-                  <!-- ko if: groupFormationData()-->
-                    <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-bind="click: function() {getWidget(nationality()[0]['nationality'], nationality); openNodeEditor}">
-                      <i class="fa fa-pencil"></i></button>
-                    </td>
+                  <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-bind="click: function() {getWidget(groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_name'][0]['group_formation_timespan_name_content'], groupFormationData)}">
+                    <i class="fa fa-pencil" data-bind="click: openNodeEditor"></i></button>
+                  </td>
                   <!-- /ko -->
-                </tbody>
+            </tbody>
         </table>
       </div>
     </div>
 
     <!-- Generic Cardinality 1 Editor Modal -->
-    <!-- ko if: showNodeEditor -->
-      <div class="modal fade" id="cardinality1EditorModal" role="dialog" data-bind="visible: showNodeEditor">
+      <div class="modal fade" id="cardinality1EditorModal" role="dialog">
         <div class="modal-dialog" style="display: inline-flex;">
           <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
-            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeCardinality1EditorModal" style="cursor:pointer" data-bind="click: closeNodeEditor">x</a></div>
+            <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeCardinality1EditorModal" style="cursor:pointer">x</a></div>
             <div class="summary-table-container" style="width:unset">
               <!-- ko if: loadedWidget -->
                 <div style="display: inline;" data-bind="component: {
@@ -138,7 +137,6 @@
           </div>
         </div>
       </div>
-    <!-- /ko -->
       
 
     <!-- Navigation Buttons-->
