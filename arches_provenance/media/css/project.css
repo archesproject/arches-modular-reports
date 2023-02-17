@@ -154,3 +154,9 @@ td {
     width: 75%;
     padding: 24px;
 }
+
+.modal table:hover {
+    cursor: pointer;
+    border: 1px solid blue;
+    background-color: #eeeeee;
+}
