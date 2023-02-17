@@ -43,12 +43,12 @@
       <div>
       <span data-bind="text: resourceName "></span><span data-bind="text: ' [Group] '"></span>
       <div style="display:inline-flex;">
-        <!-- ko if: groupFormationData() && groupFormationData().length > 0 -->
-        <div data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value']"></div>
+        <!-- ko if: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value']) -->
+        <div data-bind="text: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value'])"></div>
         <!-- /ko -->
-        <!-- ko if: groupDissolutionData() && groupDissolutionData().length > 0 -->
-        <div> -- </div>
-        <div data-bind="text: groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value']"></div>
+        <!-- ko if: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value']) -->
+        <div> - </div>
+        <div data-bind="text: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"></div>
         <!-- /ko -->
       </div>
     </div>
@@ -100,18 +100,12 @@
                   <!-- <td data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value'] + ' -- ' + groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value']">  -->
                     <td>
                       <div style="display:inline-flex;">
-                        <!-- ko if: groupFormationData() && groupFormationData().length > 0 -->
-                        <div data-bind="
-                          text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value'],
-                          click: function() {editTile(groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@tile_id'])}"
-                        ></div>
+                        <!-- ko if: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value']) -->
+                        <div data-bind="text: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value'])"></div>
                         <!-- /ko -->
-                        <!-- ko if: groupDissolutionData() && groupDissolutionData().length > 0 -->
-                        <div> -- </div>
-                        <div data-bind="
-                          text: groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value'],
-                          click: function() {editTile(groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@tile_id'])}"
-                        ></div>
+                        <!-- ko if: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value']) -->
+                        <div> - </div>
+                        <div data-bind="text: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"></div>
                         <!-- /ko -->
                       </div>
                   </td>
@@ -193,8 +187,10 @@
               <div data-bind="text: getValue(nameRowData(), ['name', 'name_type', '@display_value'])"></div>
             <div style="padding-top: 24px; font-weight: bold;">Sources</div>
             <div>
+              <!-- ko if: nameRowData().name.name_source_reference -->
               <!-- ko foreach: {data: nameRowData().name.name_source_reference.instance_details, as: 'instance' } -->
                 <a style="cursor:pointer; color:blue; text-decoration:underline;" data-bind="text: instance['display_value'], attr: {href: '/report/' + instance['resourceId'], target: '_blank'}"></a>
+              <!-- /ko -->
               <!-- /ko -->
             </div>
 
@@ -225,8 +221,8 @@
             </tr>
             <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
             <tr>
-              <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', '@display_value'])"> </td>
-              <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan' ,'group_formation_timespan_name', '0', 'group_formation_timespan_name_content', '@display_value'])"> </td>
+              <td><a data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
+              <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
               <td style="width:40px;">
                 <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px" data-toggle="modal" data-target="#formationModal">+</button>
@@ -280,10 +276,9 @@
             </tr>
             <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
             <tr>
-              <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td>
-              <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name, as: 'timespanName' } -->
-              <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_content', '@display_value'])"> </td>
-              <!-- /ko -->
+              <!-- <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td> -->
+              <td><a data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
+              <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
               <td style="width:40px;">
                 <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px;" data-toggle="modal" data-target="#dissolutionModal">+</button>
@@ -353,7 +348,7 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Formation Location: </td>
-                  <a data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'display_value']), attr: {href: '/report/' + $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'resourceId']), target: '_blank'}"></a> 
+                  <td><a data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: {href: '/report/' + $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Formation Type: </td>
@@ -691,7 +686,7 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Dissolution Location: </td>
-                  <a data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'display_value']), attr: {href: '/report/' + $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'resourceId']), target: '_blank'}"></a> 
+                  <td><a data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: {href: '/report/' + $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Dissolution Type: </td>
@@ -2047,7 +2042,7 @@
       <div class="summary-table-container">
         <div class="table-label">Source References</div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
-              <table id="name-summary-table" class="table table-striped" cellspacing="0" width="100%;">
+              <table id="source-reference-summary-table" class="table table-striped" cellspacing="0" width="100%;">
                   <thead>
                       <tr class="aher-table-header">
                   </thead>

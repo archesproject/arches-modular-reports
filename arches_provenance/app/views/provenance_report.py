@@ -18,6 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
 import operator
+import json
 from re import search
 from functools import reduce
 from arches.app.models import models
@@ -108,7 +109,7 @@ class ProvenanceRelatedResources(View):
                 'resourceinstancefrom_graphid': related_resource[12],
                 'resourceinstanceto_graphid': related_resource[13],
                 'resourceinstance_to': {
-                    'resourceid': related_resource[6],
+                    'resourceid': related_resource[5] if str(related_resource[5]) != resourceid else related_resource[6],
                     'displayname': related_resource[14]
                 }
             }
@@ -130,7 +131,8 @@ class ProvenanceSummaryTables(View):
         order_dir = request.GET.get("order[0][dir]") if request.GET.get("order[0][column]") != None else "ASC"
 
         if nodes != '':
-            nodes_string = ",".join(['__arches_get_node_display_value(tiledata, \'{0}\'::uuid) AS \"{1}\"'.format(n,n) for n in nodes.split(",")])
+            nodes_string = "tiledata -> '{}' -> 0 -> 'resourceId' AS relatedresourceid,".format(nodes.split(",")[0])
+            nodes_string = nodes_string + ",".join(['__arches_get_node_display_value(tiledata, \'{0}\'::uuid) AS \"{1}\"'.format(n,n) for n in nodes.split(",")])
 
         search_string = ''
 
@@ -191,11 +193,14 @@ class ProvenanceSummaryTables(View):
         queried_tiles.sort(key=lambda a: str(a[1]))
         queried_tiles = list(queried_tiles)
         
-        nodes = ['tileid', 'parenttileid', 'nodegroupid', 'count'] + nodes.split(",")
+        nodes = ['tileid', 'parenttileid', 'nodegroupid', 'count', 'relatedresourceid'] + nodes.split(",")
         tiles = [dict(zip(nodes,tile)) for tile in queried_tiles]
         ret = []
 
         for t in tiles:
+            related_resource_name = json.loads(t[nodes[5]]) if t[nodes[5]] != '' and t[nodes[5]] is not None else ''
+            related_resourceid = json.loads(t['relatedresourceid']) if t['relatedresourceid'] is not None else ''
+            t['related_resource'] = {'relatedresourceinstanceid': related_resourceid, 'name': related_resource_name}
             t['child_nodegroups'] = {}
             if t['parenttileid'] is None:
                 ret.append(t)
@@ -339,7 +344,8 @@ class ProvenanceSourceReferences(View):
             sql = """
             SELECT jsonb_array_length(tiledata->'{0}') FROM tiles WHERE nodegroupid='{1}' AND resourceinstanceid = '{2}'""".format(nodegroupid, nodegroupid, resourceid)
             cursor.execute(sql)
-            records_total = cursor.fetchone()[0]
+            records = cursor.fetchone()
+            records_total = records[0] if records != None else 0
 
         search_string = ''
         if search_value:
