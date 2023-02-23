@@ -1,10 +1,16 @@
 define([
+    'jquery',
+    'underscore',
     'arches', 
-    'knockout', 
+    'knockout',
+    'models/graph',
+    'viewmodels/card',
+    'viewmodels/tile',
+    'viewmodels/provisional-tile',
     'bindings/datatable', 
     'js-cookie',
     'templates/views/report-templates/provenance_group_report.htm'
-], function(arches, ko, datatable, Cookies, provenanceGroupReportTemplate) {
+], function($, _, arches, ko, GraphModel, CardViewModel, TileViewModel, ProvisionalTileViewModel, datatable, Cookies, provenanceGroupReportTemplate) {
     return ko.components.register('provenance_group_report', {
         viewModel: function(params) {
             params.configKeys = [];
@@ -24,7 +30,7 @@ define([
             const labelNodegroupId = "97f15d22-bb18-11ea-85a6-3af9d3b32b71";
             const contactNodegroupId = "ace43c39-f43b-11eb-ba14-0a9473e82189";
             const groupFormationNodegroupId = "c6dc61cc-bb18-11ea-85a6-3af9d3b32b71";
-            const groupDissolutionNodegroupId = "c0a136c4-bba0-11ea-ad92-3af9d3b32b71";   
+            const groupDissolutionNodegroupId = "c0a136c4-bba0-11ea-ad92-3af9d3b32b71";
             const groupEstablishmentNodegroupId =  "7c586770-eac9-11eb-ba14-0a9473e82189";
             const groupProfessionalActivityNodegroupId = "0c3baef0-e323-11eb-ba14-0a9473e82189";
             const groupIdentifierAssignmentNodegroupId = "42b0db83-e319-11eb-ba14-0a9473e82189";
@@ -71,6 +77,122 @@ define([
                 "Textual Work":"6dad61aa-b4b5-11ea-84f7-3af9d3b32b71",
                 "Visual Work":"933ee880-b4b5-11ea-84f7-3af9d3b32b71"
             };
+
+            // Tile Editor
+
+            this.resourceId = ko.observable();
+            this.card = ko.observable();
+            this.tile = ko.observable();
+            this.displayname = ko.observable();
+            this.showTileEditor = ko.observable(false);
+            this.complete = params.complete || ko.observable();
+            this.loading = params.loading || ko.observable(false);
+            this.currentObservable = ko.observable();
+            this.currentNodegroupId = ko.observable();
+            this.mainTileId = ko.observable();
+
+            this.onSaveSuccess = () => {
+                self.getComplexBranchData(self.currentObservable(), self.currentNodegroupId(), self.mainTileId());
+                self.showTileEditor(false);
+            };
+            this.onDeleteSuccess = () => {
+                self.getComplexBranchData(self.currentObservable(), self.currentNodegroupId(), self.mainTileId());
+                self.showTileEditor(false);
+            };
+            this.onSaveError = () => {};
+            this.onDeleteError = () => {};
+
+            const handlers = {
+                'after-update': [],
+                'tile-reset': []
+            };
+            this.on = function(eventName, handler) {
+                if (handlers[eventName]) {
+                    handlers[eventName].push(handler);
+                }
+            },
+
+            this.loading(true);
+  
+            this.close = function() {
+                self.showTileEditor(false);
+            };
+
+            this.editTile = function(tileid) {
+                if (!tileid) {
+                    return;
+                }
+                const url = `${arches.urls.provenance_editor}?tileid=${tileid}`;
+                $.getJSON(url).then(function(data) {
+                    self.resourceId(data.resourceid);
+                    self.displayname(data.displayname);
+                    const createLookup = function(list, idKey) {
+                        return _.reduce(list, function(lookup, item) {
+                            lookup[item[idKey]] = item;
+                            return lookup;
+                        }, {});
+                    };
+                    const card = data.cards.find(card=>card.nodegroup_id == data.tile.nodegroup_id);
+                    const graphModel = new GraphModel({
+                        data: {
+                            nodes: data.nodes,
+                            nodegroups: data.nodegroups,
+                            edges: []
+                        },
+                        datatypes: data.datatypes
+                    });
+                    self.reviewer = data.userisreviewer;
+                    self.provisionalTileViewModel = new ProvisionalTileViewModel({
+                        tile: self.tile,
+                        reviewer: data.userisreviewer
+                    });
+    
+                    self.widgetLookup = createLookup(
+                        data.widgets,
+                        'widgetid'
+                    );
+                    self.cardComponentLookup = createLookup(
+                        data['card_components'],
+                        'componentid'
+                    );
+                    self.nodeLookup = createLookup(
+                        graphModel.get('nodes')(),
+                        'nodeid'
+                    );
+    
+                    self.card(new CardViewModel({
+                        card: card,
+                        graphModel: graphModel,
+                        tile: data.tile,
+                        resourceId: self.resourceId,
+                        displayname: self.displayname,
+                        handlers: handlers,
+                        cards: data.cards,
+                        tiles: data.tiles,
+                        provisionalTileViewModel: self.provisionalTileViewModel,
+                        cardwidgets: data.cardwidgets,
+                        userisreviewer: data.userisreviewer,
+                        loading: self.loading
+                    }));
+
+                    data.tile.noDefaults = true;
+                    self.tile(new TileViewModel({
+                        tile: data.tile,
+                        card: self.card(),
+                        graphModel: graphModel,
+                        resourceId: self.resourceId,
+                        displayname: self.displayname,
+                        handlers: handlers,
+                        userisreviewer: data.userisreviewer,
+                        provisionalTileViewModel: self.provisionalTileViewModel,
+                        loading: self.loading,
+                        cardwidgets: data.cardwidgets,
+                    }));
+                    self.showTileEditor(true);
+                });
+            };
+    
+            // End of Tile Editor
 
             self.resourceName = resourceName;
 
@@ -484,23 +606,43 @@ define([
             self.createSummaryTableConfig('identifierAssignemnt', identifierAssignmentColumns, groupIdentifierAssignmentNodegroupId, ['42b0dbab-e319-11eb-ba14-0a9473e82189', '42b0db9e-e319-11eb-ba14-0a9473e82189', '42b0db8c-e319-11eb-ba14-0a9473e82189']);
 
 
+            $('#formation-summary-table tbody').on( 'click', 'button', function() {
+                self.currentObservable(self.groupFormationData);
+                self.currentNodegroupId(groupFormationNodegroupId);
+                self.mainTileId('');
+            } );
+
+            $('#dissolution-summary-table tbody').on( 'click', 'button', function() {
+                self.currentObservable(self.groupDissolutionData);
+                self.currentNodegroupId(groupDissolutionNodegroupId);
+                self.mainTileId('');
+            } );
 
             $('#professional-activity-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#professional-activity-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
                 self.getComplexBranchData(self.groupProfessionalActivityData, groupProfessionalActivityNodegroupId, data.tileid);
+                self.currentObservable(self.groupProfessionalActivityData);
+                self.currentNodegroupId(groupProfessionalActivityNodegroupId);
+                self.mainTileId(data.tileid);
             } );
 
             $('#establishment-activity-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#establishment-activity-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
                 self.getComplexBranchData(self.groupEstablishmentData, groupEstablishmentNodegroupId, data.tileid);
+                self.currentObservable(self.groupEstablishmentData);
+                self.currentNodegroupId(groupEstablishmentNodegroupId);
+                self.mainTileId(data.tileid);
             } );
 
             $('#identifier-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#identifier-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
                 self.getComplexBranchData(self.groupIdentifierAssignmentData, groupIdentifierAssignmentNodegroupId, data.tileid);
+                self.currentObservable(self.groupIdentifierAssignmentData);
+                self.currentNodegroupId(groupIdentifierAssignmentNodegroupId);
+                self.mainTileId(data.tileid);
             } );
 
 

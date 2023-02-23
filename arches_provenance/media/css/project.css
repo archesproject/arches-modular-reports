@@ -124,7 +124,7 @@ td {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    }
+}
 
 .anchor::before { 
     display: block; 
@@ -133,4 +133,30 @@ td {
     height: 55px; 
     visibility: hidden; 
     pointer-events: none;
-    }
+}
+
+.provenance-tile-editor {
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.75);
+    padding-top: 50px;
+}
+
+.provenance-tile-editor-content {
+    background-color: #fefefe;
+    margin: 3% 20%;
+    border: 1px solid #888;
+    width: 75%;
+    padding: 24px;
+}
+
+.modal table:hover {
+    cursor: pointer;
+    border: 1px solid blue;
+    background-color: #eeeeee;
+}

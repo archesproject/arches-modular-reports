@@ -35,6 +35,9 @@ from django.shortcuts import render
 from arches.app.views.base import BaseManagerView, MapBaseManagerView
 from arches.app.views import api
 from arches.app.models.graph import Graph
+from django.utils import translation
+from arches.app.utils.betterJSONSerializer import JSONSerializer
+from arches.app.utils.permission_backend import user_is_resource_reviewer
 
 class ProvenanceRelatedResources(View):
     def get(self, request):
@@ -394,7 +397,71 @@ class ProvenanceGroupReportView(View):
 class ProvenanceEditorView(View):
     def get(self, request):
         nodeid = request.GET.get("nodeid")
-        cardwidget = CardXNodeXWidget.objects.prefetch_related("widget", "node").get(node_id=nodeid)
-        ret = {'cardwidget': cardwidget, 'node': cardwidget.node, 'widget': cardwidget.widget}
+        tileid = request.GET.get("tileid")
+        if nodeid:
+            cardwidget = models.CardXNodeXWidget.objects.prefetch_related("widget", "node").get(node_id=nodeid)
+            ret = {'cardwidget': cardwidget, 'node': cardwidget.node, 'widget': cardwidget.widget}
+        elif tileid:
+            user_is_reviewer = user_is_resource_reviewer(request.user)
+
+            tile = Tile.objects.get(pk=tileid)
+            resourceid = tile.resourceinstance_id
+            nodegroupid = tile.nodegroup_id
+
+            resource_instance = Resource.objects.get(pk=resourceid)
+            graph = resource_instance.graph
+            displayname = resource_instance.displayname()
+
+            nodegroups = []
+            editable_nodegroups = []
+            nodes = graph.node_set.all().select_related("nodegroup")
+            for node in nodes:
+                if node.is_collector:
+                    added = False
+                    if request.user.has_perm("write_nodegroup", node.nodegroup):
+                        editable_nodegroups.append(node.nodegroup)
+                        nodegroups.append(node.nodegroup)
+                        added = True
+                    if not added and request.user.has_perm("read_nodegroup", node.nodegroup):
+                        nodegroups.append(node.nodegroup)
+
+            serialized_graph = None
+            if graph.publication:
+                user_language = translation.get_language()
+                published_graph = models.PublishedGraph.objects.get(publication=graph.publication, language=user_language)
+                serialized_graph = published_graph.serialized_graph
+
+            if serialized_graph:
+                serialized_cards = serialized_graph["cards"]
+                cardwidgets = [
+                    widget
+                    for widget in models.CardXNodeXWidget.objects.filter(
+                        pk__in=[widget_dict["id"] for widget_dict in serialized_graph["widgets"]]
+                    )
+                ]
+            else:
+                cards = graph.cardmodel_set.order_by("sortorder").filter(nodegroup__in=nodegroups).prefetch_related("cardxnodexwidget_set")
+                serialized_cards = JSONSerializer().serializeToPython(cards)
+                cardwidgets = [widget for widget in [card.cardxnodexwidget_set.order_by("sortorder").all() for card in cards]]
+
+            editable_nodegroup_ids = [str(nodegroup.pk) for nodegroup in editable_nodegroups]
+            for card in serialized_cards:
+                card["is_writable"] = False
+                if str(card["nodegroup_id"]) in editable_nodegroup_ids:
+                    card["is_writable"] = True
+
+            ret = {
+                "resourceid": resourceid,
+                "displayname": displayname,
+                "tile": tile,
+                "cards": serialized_cards,
+                "nodegroups": nodegroups,
+                "nodes": nodes.filter(nodegroup__in=nodegroups),
+                "cardwidgets": cardwidgets,
+                "datatypes": models.DDataType.objects.all(),
+                "userisreviewer": user_is_reviewer,
+                "widgets": models.Widget.objects.all(),
+                "card_components": models.CardComponent.objects.all(),
+            }
 
         return JSONResponse(ret)

@@ -58,6 +58,28 @@
 {% endblock group_report_title %}
 {% block body %}
 <div>
+    <!-- Tile Editor Popup -->
+    <!-- ko if: showTileEditor() -->
+    <!-- ko if: tile() && card() -->
+    <div class="provenance-tile-editor" data-bind="css: {'loading-mask': loading()}">
+        <div class="provenance-tile-editor-content">
+            <div data-bind="click: close" style="font-weight:1000;font-size:16px;position:relative;float:right;">x</div>
+            <!-- ko component: {
+              name: cardComponentLookup[card().model.component_id()].componentname,
+              params: {
+                  card: card(),
+                  tile: tile(),
+                  provisionalTileViewModel: provisionalTileViewModel,
+                  reviewer: reviewer,
+                  loading: loading,
+                  form: $data,
+                  pageVm: $root,
+              }
+          } --><!-- /ko -->
+        </div>
+    </div>
+    <!-- /ko -->
+    <!-- /ko -->
 
     <!-- Summary Table-->
     <div style="padding-top: 80px;" class="rp-report-section">
@@ -237,7 +259,7 @@
       <!-- Formation Sumamry Table -->
       <div class="summary-table-container">
         <div class="table-label">Formation</div>
-        <table class="table summary-table-top-header">
+        <table id="formation-summary-table" class="table summary-table-top-header">
           <tbody>
             <tr>
               <th class="header" style="padding: 8px">Location</th>
@@ -292,7 +314,7 @@
       <!-- Dissolution Summary Table -->
       <div class="summary-table-container">
         <div class="table-label">Dissolution</div>
-        <table class="table summary-table-top-header">
+        <table id="dissolution-summary-table" class="table summary-table-top-header">
           <tbody>
             <tr>
               <th class="header" style="padding: 8px">Location</th>
@@ -325,12 +347,24 @@
           <div class="summary-table-container">
         <div class="table-label">Group Formation</div>
         <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
-        <table class="table summary-table-left-header">
+        <table class="table summary-table-left-header"
+            data-bind="click: function() {
+              $parent.editTile(
+                  $parent.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
+              )},
+              clickBubble: false,
+          ">
             <tbody>
                 <tr style="overflow:scroll; height: 100px;">
                   <td class="header">Group Formation Name</td>
                   <td>
-                      <table style="margin: 0px;" class="table summary-table-left-header">
+                      <table style="margin: 0px;" class="table summary-table-left-header"
+                          data-bind="click: function() {
+                            $parent.editTile(
+                                $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_content', '@tile_id']),
+                            )},
+                            clickBubble: false,
+                        ">          
                           <tbody>
                               <tr>
                                   <td class="header">Content</td>
@@ -377,12 +411,24 @@
 
         <div>Group Formation Statement</div>
         <!-- ko if: groupFormation.group_formation.group_formation_statement != undefined -->
-        <table class="table summary-table-left-header">
+        <table class="table summary-table-left-header"
+            data-bind="click: function() {
+                $parent.editTile(
+                    $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_content', '@tile_id']),
+                )},
+                clickBubble: false,
+            ">
           <tr style="overflow:scroll; height: 100px;">
             <td class="header">Statement Names</td>
             <td>
               <!-- ko foreach: { data: groupFormation.group_formation.group_formation_statement.group_formation_statement_name, as: 'statementName' } -->
-                <table style="margin: 0px;" class="table summary-table-left-header">
+                  <table style="margin: 0px;" class="table summary-table-left-header"
+                      data-bind="click: function() {
+                        $parents[1].editTile(
+                            $parents[1].getValue(statementName, ['group_formation_statement_name_content', '@tile_id'])
+                        )},
+                        clickBubble: false,
+                    ">
                     <tbody>
                         <tr>
                             <td class="header">Content</td>
@@ -428,12 +474,24 @@
         <!-- /ko -->
 
         <div>Group Formation Time Span</div>
-        <table class="table summary-table-left-header">
+        <table class="table summary-table-left-header"
+            data-bind="click: function() {
+              $parent.editTile(
+                  $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@tile_id']),
+              )},
+              clickBubble: false,
+          ">
           <tr style="overflow:scroll; height: 100px;">
             <td class="header">Time Span Names</td>
             <td>
               <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_name, as: 'timespanName' } -->
-                <table style="margin: 0px;" class="table summary-table-left-header">
+                <table style="margin: 0px;" class="table summary-table-left-header"
+                    data-bind="click: function() {
+                        $parents[1].editTile(
+                            $parents[1].getValue(timespanName, ['group_formation_timespan_name_content', '@tile_id']),
+                        )},
+                        clickBubble: false,
+                    ">
                     <tbody>
                         <tr>
                             <td class="header">Content</td>
@@ -480,12 +538,24 @@
             <td class="header">Duration</td>
             <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration -->
             <td>
-              <table class="table summary-table-left-header">
+              <table class="table summary-table-left-header"
+                  data-bind="click: function() {
+                      $parent.editTile(
+                          $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_value', '@tile_id']),
+                      )},
+                  clickBubble: false,
+              ">
                 <tr style="overflow:scroll; height: 100px;">
                   <td class="header">Duration Names</td>
                   <td>
                     <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration.group_formation_timespan_duration_name, as: 'timespanDurationName' } -->
-                      <table style="margin: 0px;" class="table summary-table-left-header">
+                      <table style="margin: 0px;" class="table summary-table-left-header"
+                          data-bind="click: function() {
+                              $parents[1].editTile(
+                                  $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_content', '@tile_id']),
+                              )},
+                          clickBubble: false,
+                      ">
                           <tbody>
                               <tr>
                                   <td class="header">Content</td>
@@ -541,13 +611,25 @@
             <td class="header">Statement About Time Span</td>
             <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement -->
             <td>
-              <table class="table summary-table-left-header">
+              <table class="table summary-table-left-header"
+                  data-bind="click: function() {
+                      $parent.editTile(
+                          $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@tile_id']),
+                      )},
+                  clickBubble: false,
+              ">
                 <tr style="overflow:scroll; height: 100px;">
                   <td class="header">Statement About Time Span Names</td>
                   <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name, as: 'timespanStatementName' -->
                   <td>
                     <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name, as: 'timespanStatementName' } -->
-                      <table style="margin: 0px;" class="table summary-table-left-header">
+                      <table style="margin: 0px;" class="table summary-table-left-header"
+                          data-bind="click: function() {
+                              $parents[1].editTile(
+                                  $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_content', '@tile_id']),
+                              )},
+                          clickBubble: false,
+                      ">
                           <tbody>
                               <tr>
                                   <td class="header">Content</td>
@@ -607,12 +689,24 @@
       <div class="summary-table-container">
         <div class="table-label">Group Dissolution</div>
         <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
-        <table class="table summary-table-left-header">
+        <table class="table summary-table-left-header"
+            data-bind="click: function() {
+                $parent.editTile(
+                    $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
+                )},
+            clickBubble: false,
+        ">
             <tbody>
                 <tr style="overflow:scroll; height: 100px;">
                   <td class="header">Group Dissolution Name</td>
                   <td>
-                      <table style="margin: 0px;" class="table summary-table-left-header">
+                      <table style="margin: 0px;" class="table summary-table-left-header"
+                          data-bind="click: function() {
+                              $parent.editTile(
+                                  $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_content', '@tile_id']),
+                              )},
+                          clickBubble: false,
+                      ">        
                           <tbody>
                               <tr>
                                   <td class="header">Content</td>
@@ -651,12 +745,24 @@
   
         <div>Group Dissolution Statement</div>
         <!-- ko if: groupDissolution.group_dissolution.group_dissolution_statement != undefined -->
-        <table class="table summary-table-left-header">
+        <table class="table summary-table-left-header"
+            data-bind="click: function() {
+                $parent.editTile(
+                    $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_content', '@tile_id']),
+                )},
+            clickBubble: false,
+        ">
           <tr style="overflow:scroll; height: 100px;">
             <td class="header">Statement Names</td>
             <td>
               <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_statement.group_dissolution_statement_name, as: 'statementName' } -->
-                <table style="margin: 0px;" class="table summary-table-left-header">
+                <table style="margin: 0px;" class="table summary-table-left-header"
+                    data-bind="click: function() {
+                        $parents[1].editTile(
+                            $parents[1].getValue(statementName, ['group_dissolution_statement_name_content', '@tile_id']),
+                        )},
+                    clickBubble: false,
+                ">  
                     <tbody>
                         <tr>
                             <td class="header">Content</td>
@@ -703,13 +809,25 @@
   
         <div>Group Dissolution Time Span</div>
         <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan != undefined -->
-        <table class="table summary-table-left-header">
+        <table class="table summary-table-left-header"
+            data-bind="click: function() {
+                $parent.editTile(
+                    $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'timespan_begin_of_the_begin', '@tile_id']),
+                )},
+            clickBubble: false,
+        ">
           <tr style="overflow:scroll; height: 100px;">
             <td class="header">Time Span Names</td>
             <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name != undefined -->
             <td>
               <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name, as: 'timespanName' } -->
-                <table style="margin: 0px;" class="table summary-table-left-header">
+                <table style="margin: 0px;" class="table summary-table-left-header"
+                    data-bind="click: function() {
+                        $parents[1].editTile(
+                            $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_content', '@tile_id']),
+                        )},
+                    clickBubble: false,
+                ">
                     <tbody>
                         <tr>
                             <td class="header">Content</td>
@@ -757,13 +875,25 @@
             <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration -->
             <td class="header">Duration</td>
             <td>
-              <table class="table summary-table-left-header">
+              <table class="table summary-table-left-header"
+                  data-bind="click: function() {
+                      $parent.editTile(
+                          $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_value', '@tile_id']),
+                      )},
+                  clickBubble: false,
+              ">
                 <tr style="overflow:scroll; height: 100px;">
                   <td class="header">Duration Names</td>
                   <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration.group_dissolution_timespan_duration_name != undefined -->
                   <td>
                     <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration.group_dissolution_timespan_duration_name, as: 'timespanDurationName' } -->
-                      <table style="margin: 0px;" class="table summary-table-left-header">
+                      <table style="margin: 0px;" class="table summary-table-left-header"
+                          data-bind="click: function() {
+                              $parents[1].editTile(
+                                  $parents[1].getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_content', '@tile_id']),
+                              )},
+                          clickBubble: false,
+                      ">        
                           <tbody>
                               <tr>
                                   <td class="header">Content</td>
@@ -816,13 +946,25 @@
             <td class="header">Statement About Time Span</td>
             <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement -->
             <td>
-              <table class="table summary-table-left-header">
+                <table class="table summary-table-left-header"
+                    data-bind="click: function() {
+                        $parent.editTile(
+                            $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_content', '@tile_id']),
+                        )},
+                    clickBubble: false,
+                ">
                 <tr style="overflow:scroll; height: 100px;">
                   <td class="header">Statement About Time Span Names</td>
                   <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement.group_dissolution_timespan_statement_name, as: 'timespanStatementName != undefined -->
                   <td>
                     <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement.group_dissolution_timespan_statement_name, as: 'timespanStatementName' } -->
-                      <table style="margin: 0px;" class="table summary-table-left-header">
+                      <table style="margin: 0px;" class="table summary-table-left-header"
+                          data-bind="click: function() {
+                              $parents[1].editTile(
+                                  $parents[1].getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_content', '@tile_id']),
+                              )},
+                          clickBubble: false,
+                      ">  
                           <tbody>
                               <tr>
                                   <td class="header">Content</td>
@@ -849,19 +991,19 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Statement: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@display_value'])"> </td>
+                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_content', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Statement Type: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_type', '@display_value'])"> </td>
+                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_type', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Statement Language: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_language', '@display_value'])"> </td>
+                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_language', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Statement Label: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_statement_label', '@display_value'])"> </td>
+                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_statement_label', '@display_value'])"> </td>
                 </tr>
               </table>
             </td>
@@ -886,12 +1028,24 @@
         <div class="summary-table-container">
           <div class="table-label">Group Establishment</div>
           <!-- ko foreach: { data: groupEstablishmentData, as: 'sojourn' } -->
-          <table class="table summary-table-left-header">
+          <table class="table summary-table-left-header"
+              data-bind="click: function() {
+                  $parent.editTile(
+                      $parent.getValue(sojourn, ['sojourn_label','@tile_id']),
+                  )},
+                  clickBubble: false,
+        ">
               <tbody>
                   <tr style="overflow:scroll; height: 100px;">
                     <td class="header">Group Establishment Name</td>
                     <td>
-                        <table style="margin: 0px;" class="table summary-table-left-header">
+                        <table style="margin: 0px;" class="table summary-table-left-header"
+                            data-bind="click: function() {
+                                $parent.editTile(
+                                    $parent.getValue(sojourn, ['sojourn_name', 'sojourn_name_content', '@tile_id']),
+                                )},
+                            clickBubble: false,
+                        ">
                             <tbody>
                                 <tr>
                                     <td class="header">Content</td>
@@ -934,13 +1088,25 @@
 
           <div>Group Establishment Statement</div>
           <!-- ko if: sojourn.sojourn_statement != undefined -->
-          <table class="table summary-table-left-header">
+          <table class="table summary-table-left-header"
+              data-bind="click: function() {
+                  $parent.editTile(
+                      $parent.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_content', '@tile_id']),
+                  )},
+                  clickBubble: false,
+              ">
             <tr style="overflow:scroll; height: 100px;">
               <td class="header">Statement Names</td>
               <!-- ko if: sojourn.sojourn_statement.sojourn_statement_name != undefined -->
               <td>
                 <!-- ko foreach: { data: sojourn.sojourn_statement.sojourn_statement_name, as: 'statementName' } -->
-                  <table style="margin: 0px;" class="table summary-table-left-header">
+                  <table style="margin: 0px;" class="table summary-table-left-header"
+                      data-bind="click: function() {
+                          $parents[1].editTile(
+                              $parents[1].getValue(statementName, ['sojourn_statement_name_content', '@tile_id']),
+                          )},
+                          clickBubble: false,
+                      ">
                       <tbody>
                           <tr>
                               <td class="header">Content</td>
@@ -988,13 +1154,26 @@
 
           <div>Group Establishment Time Span</div>
           <!-- ko if: sojourn.sojourn_activity_timespan != undefined -->
-          <table class="table summary-table-left-header">
+          <table class="table summary-table-left-header"
+              data-bind="click: function() {
+                  $parent.editTile(
+                      $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_begin', '@tile_id']),
+                  )},
+              clickBubble: false,
+          ">
+
             <tr style="overflow:scroll; height: 100px;">
               <td class="header">Time Span Names</td>
               <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_name != undefined -->
               <td>
                 <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_name, as: 'timespanName' } -->
-                  <table style="margin: 0px;" class="table summary-table-left-header">
+                  <table style="margin: 0px;" class="table summary-table-left-header"
+                        data-bind="click: function() {
+                          $parents[1].editTile(
+                              $parents[1].getValue(timespanName, ['sojourn_timespan_name_content', '@tile_id']),
+                          )},
+                      clickBubble: false,
+                  ">  
                       <tbody>
                           <tr>
                               <td class="header">Content</td>
@@ -1042,13 +1221,25 @@
               <td class="header">Duration</td>
               <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_duration -->
               <td>
-                <table class="table summary-table-left-header">
+                <table class="table summary-table-left-header"
+                    data-bind="click: function() {
+                        $parent.editTile(
+                            $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_value', '@tile_id']),
+                        )},
+                    clickBubble: false,
+                ">
                   <tr style="overflow:scroll; height: 100px;">
                     <td class="header">Duration Names</td>
                     <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_duration.sojourn_timespan_duration_name -->
                     <td>
                       <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_duration.sojourn_timespan_duration_name, as: 'timespanDurationName' } -->
-                        <table style="margin: 0px;" class="table summary-table-left-header">
+                        <table style="margin: 0px;" class="table summary-table-left-header"
+                            data-bind="click: function() {
+                                $parents[1].editTile(
+                                    $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_content', '@tile_id']),
+                                )},
+                            clickBubble: false,
+                        ">
                             <tbody>
                                 <tr>
                                     <td class="header">Content</td>
@@ -1105,13 +1296,25 @@
               <td class="header">Statement About Time Span</td>
               <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_statement != undefined -->
               <td>
-                <table class="table summary-table-left-header">
+                <table class="table summary-table-left-header"
+                    data-bind="click: function() {
+                        $parent.editTile(
+                            $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_content', '@tile_id']),
+                        )},
+                    clickBubble: false,
+                ">
                   <tr style="overflow:scroll; height: 100px;">
                     <td class="header">Statement About Time Span Names</td>
                     <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_statement.sojourn_timespan_statement_name != undefined -->
                     <td>
                       <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_statement.sojourn_timespan_statement_name, as: 'timespanStatementName' } -->
-                        <table style="margin: 0px;" class="table summary-table-left-header">
+                        <table style="margin: 0px;" class="table summary-table-left-header"
+                            data-bind="click: function() {
+                                $parent.editTile(
+                                    $parent.getValue(timespanStatementName, ['sojourn_timespan_statement_name_content', '@tile_id']),
+                                )},
+                            clickBubble: false,
+                        ">
                             <tbody>
                                 <tr>
                                     <td class="header">Content</td>
@@ -1180,12 +1383,24 @@
             <div class="table-label">Group Professional Activity</div>
             <!-- ko if: groupProfessionalActivityData != 'undefined' -->
             <!-- ko foreach: { data: groupProfessionalActivityData, as: 'professionalActivity' } -->
-            <table class="table summary-table-left-header">
+            <table class="table summary-table-left-header"
+                data-bind="click: function() {
+                    $parent.editTile(
+                        $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
+                    )},
+                clickBubble: false,
+            ">
                 <tbody>
                     <tr style="overflow:scroll; height: 100px;">
                       <td class="header">Group Professional Activity Name</td>
                       <td>
-                          <table style="margin: 0px;" class="table summary-table-left-header">
+                          <table style="margin: 0px;" class="table summary-table-left-header"
+                              data-bind="click: function() {
+                                  $parent.editTile(
+                                      $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_content', '@tile_id']),
+                                  )},
+                              clickBubble: false,
+                          ">        
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
@@ -1224,13 +1439,25 @@
 
             <div>Group Professional Activity Statement</div>
             <!-- ko if: professionalActivity.professional_activity.professional_activity_statement -->
-            <table class="table summary-table-left-header">
+            <table class="table summary-table-left-header"
+                data-bind="click: function() {
+                    $parents[1].editTile(
+                        $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_content', '@tile_id']),
+                    )},
+                clickBubble: false,
+            ">
               <tr style="overflow:scroll; height: 100px;">
                 <td class="header">Statement Names</td>
                 <!-- ko if: professionalActivity.professional_activity.professional_activity_statement.professional_activity_statement_name -->
                 <td>
                   <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_statement.professional_activity_statement_name, as: 'statementName' } -->
-                    <table style="margin: 0px;" class="table summary-table-left-header">
+                    <table style="margin: 0px;" class="table summary-table-left-header"
+                        data-bind="click: function() {
+                            $parents[2].editTile(
+                                $parents[2].getValue(statementName, ['professional_activity_statement_name_content',  '@tile_id']),
+                            )},
+                        clickBubble: false,
+                    ">  
                         <tbody>
                             <tr>
                                 <td class="header">Content</td>
@@ -1278,12 +1505,24 @@
 
             <div>Group Professional Activity Time Span</div>
             <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan -->
-            <table class="table summary-table-left-header">
+            <table class="table summary-table-left-header"
+                data-bind="click: function() {
+                    $parent.editTile(
+                        $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_begin', '@tile_id']),
+                    )},
+                clickBubble: false,
+            ">
               <tr style="overflow:scroll; height: 100px;">
                 <td class="header">Time Span Names</td>
                 <td>
                   <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_name, as: 'timespanName' } -->
-                    <table style="margin: 0px;" class="table summary-table-left-header">
+                    <table style="margin: 0px;" class="table summary-table-left-header"
+                        data-bind="click: function() {
+                            $parents[1].editTile(
+                                $parents[1].getValue(timespanName, ['professional_activity_timespan_name_content', '@tile_id']),
+                            )},
+                        clickBubble: false,
+                    ">  
                         <tbody>
                             <tr>
                                 <td class="header">Content</td>
@@ -1326,13 +1565,25 @@
                 <td class="header">Duration</td>
                 <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration === undefined -->
                 <td>
-                  <table class="table summary-table-left-header">
+                  <table class="table summary-table-left-header"
+                      data-bind="click: function() {
+                          $parent.editTile(
+                              $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_value', '@tile_id']),
+                          )},
+                      clickBubble: false,
+                  ">
                     <tr style="overflow:scroll; height: 100px;">
                       <td class="header">Duration Names</td>
                       <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration.professional_activity_timespan_duration_name  -->
                       <td>
                         <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration.professional_activity_timespan_duration_name, as: 'timespanDurationName' } -->
-                          <table style="margin: 0px;" class="table summary-table-left-header">
+                          <table style="margin: 0px;" class="table summary-table-left-header"
+                              data-bind="click: function() {
+                                  $parents[1].editTile(
+                                      $parents[1].getValue(timespanDurationName, ['professional_activity_timespan_duration_name_content', '@tile_id']),
+                                  )},
+                              clickBubble: false,
+                          ">        
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
@@ -1385,13 +1636,25 @@
                 <td class="header">Statement About Time Span</td>
                 <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_statement -->
                 <td>
-                  <table class="table summary-table-left-header">
+                  <table class="table summary-table-left-header"
+                      data-bind="click: function() {
+                          $parent.editTile(
+                              $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_content', '@tile_id']),
+                          )},
+                      clickBubble: false,
+                  ">
                     <tr style="overflow:scroll; height: 100px;">
                       <td class="header">Statement About Time Span Names</td>
                       <td>
                         <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_statement.professional_activity_timespan_statement_name -->
                         <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_statement.professional_activity_timespan_statement_name, as: 'timespanStatementName' } -->
-                          <table style="margin: 0px;" class="table summary-table-left-header">
+                          <table style="margin: 0px;" class="table summary-table-left-header"
+                              data-bind="click: function() {
+                                  $parents[1].editTile(
+                                      $parents[1].getValue(timespanStatementName, ['professional_activity_timespan_statement_name_content', '@tile_id']),
+                                  )},
+                              clickBubble: false,
+                          ">  
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
@@ -1511,7 +1774,13 @@
             <div class="table-label">Group Identifier Assignment</div>
             <!-- ko if: groupIdentifierAssignmentData != 'undefined' -->
             <!-- ko foreach: { data: groupIdentifierAssignmentData, as: 'identifierAssignment' } -->
-            <table class="table summary-table-left-header">
+            <table class="table summary-table-left-header"
+                data-bind="click: function() {
+                    $parent.editTile(
+                        $parent.getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
+                    )},
+                clickBubble: false,
+            ">
                 <tbody>
                     <tr>
                       <td class="header" style="padding: 8px">Identifier Assignment Label: </td>
@@ -1530,13 +1799,25 @@
             
             <div>Group Identifier Data Assignment</div>
             <!-- ko if: identifierAssignment.identifier.identifier_data_assignment -->
-            <table class="table summary-table-left-header">
+            <table class="table summary-table-left-header"
+                data-bind="click: function() {
+                    $parent.editTile(
+                        $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_actor', '@tile_id']),
+                    )},
+                clickBubble: false,
+            ">
               <tr style="overflow:scroll; height: 100px;">
                 <td class="header">Statement Names</td>
                 <td>
                   <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_name -->
                   <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_name, as: 'dataAssignmentName' } -->
-                    <table style="margin: 0px;" class="table summary-table-left-header">
+                    <table style="margin: 0px;" class="table summary-table-left-header"
+                        data-bind="click: function() {
+                            $parents[1].editTile(
+                                $parents[1].getValue(dataAssignmentName, ['identifier_data_assignment_name_content', '@tile_id']),
+                            )},
+                        clickBubble: false,
+                    ">  
                         <tbody>
                             <tr>
                                 <td class="header">Content</td>
@@ -1576,13 +1857,25 @@
 
             <div>Group Identifier Data Assignment Time Span</div>
             <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan -->
-            <table class="table summary-table-left-header">
+            <table class="table summary-table-left-header"
+                data-bind="click: function() {
+                    $parent.editTile(
+                        $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_begin', '@tile_id']),
+                    )},
+                clickBubble: false,
+            ">
               <tr style="overflow:scroll; height: 100px;">
                 <td class="header">Time Span Names</td>
                 <td>
                   <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_name -->
                   <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_name, as: 'timespanName' } -->
-                    <table style="margin: 0px;" class="table summary-table-left-header">
+                    <table style="margin: 0px;" class="table summary-table-left-header"
+                        data-bind="click: function() {
+                            $parents[1].editTile(
+                                $parents[1].getValue(timespanName, ['identifier_data_assignment_timespan_name_content', '@tile_id']),
+                            )},
+                        clickBubble: false,
+                    ">
                         <tbody>
                             <tr>
                                 <td class="header">Content</td>
@@ -1626,13 +1919,25 @@
                 <td class="header">Duration</td>
                 <td>
                   <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_duration -->
-                  <table class="table summary-table-left-header">
+                  <table class="table summary-table-left-header"
+                      data-bind="click: function() {
+                          $parent.editTile(
+                              $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@tile_id']),
+                          )},
+                      clickBubble: false,
+                  ">
                     <tr style="overflow:scroll; height: 100px;">
                       <td class="header">Duration Names</td>
                       <td>
                         <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_duration.identifier_data_assignment_timespan_duration_name -->
                         <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_duration.identifier_data_assignment_timespan_duration_name, as: 'timespanDurationName' } -->
-                          <table style="margin: 0px;" class="table summary-table-left-header">
+                          <table style="margin: 0px;" class="table summary-table-left-header"
+                              data-bind="click: function() {
+                                  $parents[1].editTile(
+                                      $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@tile_id']),
+                                  )},
+                              clickBubble: false,
+                          ">        
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
@@ -1689,13 +1994,27 @@
                 <td class="header">Statement About Time Span</td>
                 <td>
                   <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement -->
-                  <table class="table summary-table-left-header">
+                  <table class="table summary-table-left-header"
+                      data-bind="click: function() {
+                          $parent.editTile(
+                              $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@tile_id']),
+                          )},
+                      clickBubble: false,
+                  ">
+
                     <tr style="overflow:scroll; height: 100px;">
                       <td class="header">Statement About Time Span Names</td>
                       <td>
                         <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement.identifier_data_assignment_timespan_statement_name -->
                         <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement.identifier_data_assignment_timespan_statement_name, as: 'timespanDurationName' } -->
-                          <table style="margin: 0px;" class="table summary-table-left-header">
+                          <table style="margin: 0px;" class="table summary-table-left-header"
+                              data-bind="click: function() {
+                                  $parents[1].editTile(
+                                      $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@tile_id']),
+                                  )},
+                              clickBubble: false,
+                          ">
+  
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
