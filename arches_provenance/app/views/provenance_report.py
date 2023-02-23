@@ -254,13 +254,12 @@ class ProvenanceSummaryTables(View):
 
             return sort_value
 
-
         if search_string:    
+            results = []
             for r in ret:
                 if (r[nodes[-1]] is not None and search_value.upper() in r[nodes[-1]].upper()) or (r['child_nodegroups'].values() is not None and search_value.upper() in str(r['child_nodegroups'].values()).upper()) or (r[nodes[-3]] is not None and search_value.upper() in r[nodes[-3]].upper()):
-                    continue
-                else:
-                    ret.pop(ret.index(r))
+                    results.append(r)
+            ret = results
 
         filtered_tiles = len(ret)
         if order_column and order_dir:
