@@ -159,7 +159,7 @@ class ProvenanceSummaryTables(View):
                             WHERE 
                                 nodegroupid = '{0}'
                                 AND 
-                                resourceinstanceid = '{1}' {5}
+                                resourceinstanceid = '{1}'
                              OFFSET {2} LIMIT {3}
                         )
                         UNION
@@ -175,15 +175,16 @@ class ProvenanceSummaryTables(View):
                             JOIN children c ON c.tileid = t.parenttileid
                             WHERE depth < 3
                         )
-                        SELECT
-                            tileid,
-                            parenttileid,
-                            nodegroupid,
-                            count,
-                            {4}
-                        FROM 
-                            children
-            """.format(nodegroupid, resourceid, offset, limit, nodes_string, search_string)
+                            SELECT
+                                tileid,
+                                tiledata,
+                                parenttileid,
+                                nodegroupid,
+                                count,
+                                {4}
+                            FROM 
+                                children
+            """.format(nodegroupid, resourceid, offset, limit, nodes_string)
 
         #execute query
         with connection.cursor() as cursor:
@@ -194,12 +195,12 @@ class ProvenanceSummaryTables(View):
         queried_tiles.sort(key=lambda a: str(a[1]))
         queried_tiles = list(queried_tiles)
         
-        nodes = ['tileid', 'parenttileid', 'nodegroupid', 'count', 'relatedresourceid'] + nodes.split(",")
+        nodes = ['tileid', 'tiledata', 'parenttileid', 'nodegroupid', 'count', 'relatedresourceid'] + nodes.split(",")
         tiles = [dict(zip(nodes,tile)) for tile in queried_tiles]
         ret = []
 
         for t in tiles:
-            related_resource_name = json.loads(t[nodes[5]]) if t[nodes[5]] != '' and t[nodes[5]] is not None else ''
+            related_resource_name = json.loads(t[nodes[6]]) if t[nodes[6]] != '' and t[nodes[6]] is not None else ''
             related_resourceid = json.loads(t['relatedresourceid']) if t['relatedresourceid'] is not None else ''
             t['related_resource'] = {'relatedresourceinstanceid': related_resourceid, 'name': related_resource_name}
             t['child_nodegroups'] = {}
@@ -257,7 +258,14 @@ class ProvenanceSummaryTables(View):
 
             return sort_value
 
+        if search_string:    
+            results = []
+            for r in ret:
+                if (r[nodes[-1]] is not None and search_value.upper() in r[nodes[-1]].upper()) or (r['child_nodegroups'].values() is not None and search_value.upper() in str(r['child_nodegroups'].values()).upper()) or (r[nodes[-3]] is not None and search_value.upper() in r[nodes[-3]].upper()):
+                    results.append(r)
+            ret = results
 
+        filtered_tiles = len(ret)
         if order_column and order_dir:
             # create path from data property from javascript columns array
             path = ['' + a + '' if check_string_or_int(a) == 'str' else int(a) for a in order_column.split('.')]
