@@ -146,14 +146,16 @@
                     }
                   }"></div>
   
-                <button class="btn btn-success" data-bind="click: saveNodeValue" >
-                    <i class="ion-android-cloud-done"></i>
-                    <span>Save</span>
+                  <!-- ko if: currentNodeValue() !== originalNodeValue() -->
+                  <button class="btn btn-success" data-bind="click: saveNodeValue" >
+                      <i class="ion-android-cloud-done"></i>
+                      <span>Save</span>
+                  </button>
+                  <button class="btn btn-danger" data-bind="click: closeNodeEditor">
+                      <i class="ion-android-cancel"></i>
+                      <span>Cancel</span>
                 </button>
-                <button class="btn btn-danger" data-bind="click: closeNodeEditor">
-                    <i class="ion-android-cancel"></i>
-                    <span>Cancel</span>
-                </button>
+                <!-- /ko -->
               <!-- /ko -->
             </div>
           </div>

@@ -60,7 +60,9 @@ define([
             self.widgetTileid = ko.observable();
             let currentNodeBeingEdited;
             self.currentNodeValue = ko.observable();
+            self.originalNodeValue = ko.observable();
             self.loadedWidget = ko.observable(false);
+            self.dirtyNode = ko.observable(false);
             
             self.relatedResourceGraphs = {
                 "Activity":"734d1558-bfad-11ea-a62b-3af9d3b32b71",
