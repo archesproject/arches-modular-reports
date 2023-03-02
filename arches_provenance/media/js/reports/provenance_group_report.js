@@ -289,31 +289,28 @@ define([
                 try {
                     self.loadedWidget(false);
                     currentNodeBeingEdited = cardData;
-                    console.log(rawNodeValue);
 
                     const nodeid = rawNodeValue['@node_id'];
                     const tileid = rawNodeValue['@tile_id'];
-                    const conceptDetails = rawNodeValue?.['concept_details'];
-                    const stringValue = rawNodeValue?.['@display_value'];
-                    console.log(stringValue);
 
                     let response = await fetch(`${arches.urls.provenance_editor}?nodeid=${nodeid}`);
                     let result = await response.json();
-                    
                     console.log(result);
                     self.cardwidgetWidgetConfig(result.cardwidget);
                     self.widgetWidgetConfig(result.widget);
                     self.nodeWidgetConfig(result.node);
-                    if (result.widget.name === 'concept-multiselect-widget') {
-                        self.currentNodeValue(conceptDetails.map(concept => {
-                            return concept.valueid
-                        }));
-                    } else if (result.widget.name === 'text-widget') {
-                        // console.log(self.buildStrObject(stringValue));
-                        // console.log(JSON.stringify(self.buildStrObject(stringValue)));
-                        // self.currentNodeValue(JSON.stringify(self.buildStrObject(stringValue)));
-                        self.currentNodeValue(self.buildStrObject(stringValue));
-                    }
+
+                    console.log(tileid);
+                    // tile = await fetch(`${arches.urls.tile}?tileid=${tileid}`);
+                    // tiledata = await tile.json();
+                    // console.log(tiledata);
+                    let tile = await fetch(`${arches.urls.provenance_editor}?tileid=${tileid}`);
+                    let tiledata = await tile.json();
+                    console.log(tiledata);
+                    
+                    self.currentNodeValue(tiledata.tile.data[nodeid]);
+                    self.originalNodeValue(self.currentNodeValue());
+                    console.log(self.currentNodeValue());
 
                     self.widgetTileid(tileid);
 
@@ -323,14 +320,17 @@ define([
                 };
             };
 
+            
+
             self.saveNodeValue = function() {
                 let formData = new FormData();
                 formData.append('nodeid', self.nodeWidgetConfig().nodeid);
-                if (self.widgetWidgetConfig().name === 'concept-multiselect-widget'){
-                    formData.append('data', self.currentNodeValue());
-                } else if (self.widgetWidgetConfig().name === 'text-widget') {
-                    formData.append('data', JSON.stringify(self.currentNodeValue()));
-                }
+                formData.append('data', self.currentNodeValue());
+                // if (self.widgetWidgetConfig().name === 'concept-multiselect-widget'){
+                //     formData.append('data', self.currentNodeValue());
+                // } else if (self.widgetWidgetConfig().name === 'text-widget') {
+                //     formData.append('data', JSON.stringify(self.currentNodeValue()));
+                // }
                 formData.append('resourceinstanceid', params.resourceinstanceid);
                 formData.append('tileid', self.widgetTileid());
 
