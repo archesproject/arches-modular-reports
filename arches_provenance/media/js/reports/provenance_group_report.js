@@ -289,6 +289,7 @@ define([
 
             self.getWidget = async(rawNodeValue, cardData) => {
                 try {
+                    this.loading(true);
                     self.loadedWidget(false);
                     currentNodeBeingEdited = cardData;
 
@@ -316,6 +317,7 @@ define([
 
                     self.widgetTileid(tileid);
 
+                    this.loading(false);
                     self.loadedWidget(true);
                 } catch(error) {
                     console.error('Error:', error);
@@ -325,6 +327,7 @@ define([
             
 
             self.saveNodeValue = function() {
+                this.loading(false);
                 let formData = new FormData();
                 formData.append('nodeid', self.nodeWidgetConfig().nodeid);
                 formData.append('data', self.currentNodeValue());
@@ -354,6 +357,7 @@ define([
                         self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.tileid);
                     }
                     self.closeNodeEditor();
+                    this.loading(false);
                 });
             };
             

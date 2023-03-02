@@ -91,8 +91,12 @@
                   <td class="header" style="padding: 8px">Role: </td>
                   <!-- ko if: typeOfGroup() -->
                     <td data-bind="text: typeOfGroup()?.[0]?.['type']?.['@display_value']"> </td>
-                    <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-bind="click: function() {getWidget(typeOfGroup()[0]['type'], typeOfGroup)}">
-                      <i class="fa fa-pencil" data-bind="click: openNodeEditor"></i></button>
+                    <td>
+                      <button type='button' class='btn' 
+                        style='font-weight:bold; font-size:large; width:5px;' 
+                        data-bind="click: function() {getWidget(typeOfGroup()[0]['type'], typeOfGroup)}">
+                        <span data-bind="click: openNodeEditor">+</span>
+                      </button>
                     </td>
                   <!-- /ko -->
                 </tr>
@@ -100,8 +104,12 @@
                   <td class="header" style="padding: 8px">Nationality: </td>
                   <!-- ko if: nationality() -->
                     <td data-bind="text: nationality()?.[0]?.['nationality']?.['@display_value']"> </td>
-                    <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-bind="click: function() {getWidget(nationality()[0]['nationality'], nationality)}">
-                      <i class="fa fa-pencil" data-bind="click: openNodeEditor"></i></button>
+                    <td>
+                      <button type='button' class='btn' 
+                        style='font-weight:bold; font-size:large; width:5px;' 
+                        data-bind="click: function() {getWidget(nationality()[0]['nationality'], nationality)}">
+                        <span data-bind="click: openNodeEditor">+</span>
+                      </button>
                     </td>
                   <!-- /ko -->
                 </tr>
@@ -120,8 +128,12 @@
                         <!-- /ko -->
                       </div>
                   </td>
-                  <td><button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-bind="click: function() {getWidget(groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_name'][0]['group_formation_timespan_name_content'], groupFormationData)}">
-                    <i class="fa fa-pencil" data-bind="click: openNodeEditor"></i></button>
+                  <td>
+                    <button type='button' class='btn'
+                      style='font-weight:bold; font-size:large; width:5px;' 
+                      data-bind="click: function() {getWidget(groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_name'][0]['group_formation_timespan_name_content'], groupFormationData)}">
+                      <span data-bind="click: openNodeEditor">+</span>
+                    </button>
                   </td>
                   <!-- /ko -->
             </tbody>
