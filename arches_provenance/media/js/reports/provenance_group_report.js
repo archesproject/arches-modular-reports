@@ -358,7 +358,6 @@ define([
             // create columns for each table
             const nameColumns = [
                 {"title": "Name", "orderable": true, targets: 0, "name": "5bc66298-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_content.@display_value", "defaultContent": ""},
-                {"title": "Name", "orderable": true, targets: 0, "name": "5bc66298-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_content.@display_value", "defaultContent": ""},
                 {"title": "Type", "orderable": true, targets: 0, "name": "5bc66360-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_type.@display_value", "defaultContent": ""},
                 {"title": "Source", "orderable": false, targets: 0, "data": "name.name_source_reference.@display_value", "defaultContent": ""},
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
