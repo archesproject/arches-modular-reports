@@ -62,7 +62,6 @@ define([
             self.currentNodeValue = ko.observable();
             self.originalNodeValue = ko.observable();
             self.loadedWidget = ko.observable(false);
-            self.dirtyNode = ko.observable(false);
             
             self.relatedResourceGraphs = {
                 "Activity":"734d1558-bfad-11ea-a62b-3af9d3b32b71",
@@ -291,28 +290,24 @@ define([
                 try {
                     this.loading(true);
                     self.loadedWidget(false);
-                    currentNodeBeingEdited = cardData;
+                    currentNodeBeingEdited = cardData; // store current card data to update on save
 
                     const nodeid = rawNodeValue['@node_id'];
                     const tileid = rawNodeValue['@tile_id'];
+                    self.widgetTileid(tileid);
 
+                    // get widget config
                     let response = await fetch(`${arches.urls.provenance_editor}?nodeid=${nodeid}`);
                     let result = await response.json();
-                    // console.log(result);
                     self.cardwidgetWidgetConfig(result.cardwidget);
                     self.widgetWidgetConfig(result.widget);
                     self.nodeWidgetConfig(result.node);
 
-                    console.log(tileid);
+                    // get current value of node via tile
                     let tile = await fetch(arches.urls.api_tiles(tileid));
                     let tiledata = await tile.json();
-                    // console.log(tiledata);
-                    
                     self.currentNodeValue(tiledata.data[nodeid]);
                     self.originalNodeValue(self.currentNodeValue());
-                    console.log(self.currentNodeValue());
-
-                    self.widgetTileid(tileid);
 
                     this.loading(false);
                     self.loadedWidget(true);
@@ -683,9 +678,6 @@ define([
             $('#closeCardinality1EditorModal').click(function() {
                 $('#cardinality1EditorModal').modal('hide');
             });
-
-            console.log(self);
-            console.log(params);
         },
         template: provenanceGroupReportTemplate
     });
