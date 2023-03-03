@@ -298,20 +298,17 @@ define([
 
                     let response = await fetch(`${arches.urls.provenance_editor}?nodeid=${nodeid}`);
                     let result = await response.json();
-                    console.log(result);
+                    // console.log(result);
                     self.cardwidgetWidgetConfig(result.cardwidget);
                     self.widgetWidgetConfig(result.widget);
                     self.nodeWidgetConfig(result.node);
 
                     console.log(tileid);
-                    // tile = await fetch(`${arches.urls.tile}?tileid=${tileid}`);
-                    // tiledata = await tile.json();
-                    // console.log(tiledata);
-                    let tile = await fetch(`${arches.urls.provenance_editor}?tileid=${tileid}`);
+                    let tile = await fetch(arches.urls.api_tiles(tileid));
                     let tiledata = await tile.json();
-                    console.log(tiledata);
+                    // console.log(tiledata);
                     
-                    self.currentNodeValue(tiledata.tile.data[nodeid]);
+                    self.currentNodeValue(tiledata.data[nodeid]);
                     self.originalNodeValue(self.currentNodeValue());
                     console.log(self.currentNodeValue());
 
