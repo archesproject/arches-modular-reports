@@ -322,12 +322,12 @@ define([
                 this.loading(false);
                 let formData = new FormData();
                 formData.append('nodeid', self.nodeWidgetConfig().nodeid);
-                formData.append('data', self.currentNodeValue());
-                // if (self.widgetWidgetConfig().name === 'concept-multiselect-widget'){
-                //     formData.append('data', self.currentNodeValue());
-                // } else if (self.widgetWidgetConfig().name === 'text-widget') {
-                //     formData.append('data', JSON.stringify(self.currentNodeValue()));
-                // }
+                // formData.append('data', self.currentNodeValue());
+                if (self.widgetWidgetConfig().name === 'text-widget') {
+                    formData.append('data', JSON.stringify(self.currentNodeValue()));
+                } else {
+                    formData.append('data', self.currentNodeValue());
+                } 
                 formData.append('resourceinstanceid', params.resourceinstanceid);
                 formData.append('tileid', self.widgetTileid());
 
