@@ -61,8 +61,9 @@
     <!-- Tile Editor Popup -->
     <!-- ko if: showTileEditor() -->
     <!-- ko if: tile() && card() -->
-    <div class="provenance-tile-editor" data-bind="css: {'loading-mask': loading()}">
+    <div class="provenance-tile-editor">
         <div class="provenance-tile-editor-content">
+            <div class='loading-mask' data-bind="visible: loading()"></div>
             <div data-bind="click: close" style="font-weight:1000;font-size:16px;position:relative;float:right;">x</div>
             <!-- ko component: {
               name: cardComponentLookup[card().model.component_id()].componentname,

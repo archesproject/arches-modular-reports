@@ -103,8 +103,6 @@ define([
                 }
             },
 
-            this.loading(true);
-  
             this.close = function() {
                 self.showTileEditor(false);
             };
