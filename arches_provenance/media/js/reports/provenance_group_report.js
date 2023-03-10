@@ -3,8 +3,6 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
         viewModel: function(params) {
             params.configKeys = [];
             var self = this;
-            // define params for custom report here
-            // ReportViewModel.apply(this, [params]);
 
             const resourceid = params.report.report_json.resourceinstanceid;
             const resourceName = params.report.report_json.displayname;
@@ -42,6 +40,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
             self.nameRowData = ko.observable();
             self.externalIdentifierData = ko.observable();
             
+            // graphids of all graphs in provenance/the ones that can be related to Groups
             self.relatedResourceGraphs = {
                 "Activity":"734d1558-bfad-11ea-a62b-3af9d3b32b71",
                 // "Bidding":"21d83275-e88f-11ea-9fb6-0a1706e75f30",
@@ -60,6 +59,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
 
             self.resourceName = resourceName;
 
+            // helper function for getting to the template
             self.getValue = function(obj, attrs, missingValue='') {
                 try {
                     return attrs.reduce(function index(obj, i) {return obj[i];}, obj) || missingValue;
@@ -67,10 +67,103 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                     return missingValue;
                 }
             };
-                        
-            self.createTableConfig = function(name, columns, nodegroupId) {
+
+
+
+        // ----------------- begin name table definition --------------------------
+
+            // create name table columns and name table tableconfig object
+            const nameColumns = [
+                {"title": "Name", "orderable": true, targets: 0, "name": "5bc66298-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_content.@display_value", "defaultContent": ""},
+                {"title": "Type", "orderable": true, targets: 0, "name": "5bc66360-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_type.@display_value", "defaultContent": ""},
+                {"title": "Source", "orderable": false, targets: 0, "data": "name.name_source_reference.@display_value", "defaultContent": ""},
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                    "render": function() {
+                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#nameModal'>+</button>";
+                        return t;
+                    } 
+                },
+            ];
+
+            // create name table tableconfig object using columns defined above
+            self.nameTableConfig = {
+                tableName: 'name',
+                paging: true,
+                searching: true,
+                scrollY: "250px",
+                columns: nameColumns,
+                searchDelay: 400,
+                order: [],
+                processing: true,
+                serverSide: true,
+                scroller: true,
+                deferRender: true,
+                errMode: 'Ignore',
+                ajax: {
+                    url: arches.urls.provenance_report + '?resourceid=' + resourceid + '&nodegroupid=' + nameNodegroupdId,
+                    dataSrc: function(json) {
+                        for (el of json.data) {
+                            for (const [key, value] of Object.entries(el['name'])) {
+                                if (typeof value === 'object' && !value.hasOwnProperty('@display_value')) {
+                                    value['@display_value'] = '';
+                                }
+                            }
+                        }
+                        return json.data;
+                    }
+                },
+            };
+
+        // ----------------- end name table definition --------------------------
+
+
+
+        // ----------------- begin source reference table definition --------------------------
+
+            // create source reference table columns and source reference table tableconfig object
+            const sourceReferenceColumns = [
+                {"title": "Source Reference", "orderable": true, targets: 0, "data": "reference", "name": "name", "defaultContent": "",
+                    "render": function(data) {
+                        var t = `<a href='/report/${data.resourceinstanceid}' target='_blank' style="color:blue;">${data.name}</a>`
+                        return t;
+                    }
+                },
+            ];
+
+            self.sourceReferenceTableConfig = {
+                tableName: 'sourceReferences',
+                paging: true,
+                searching: true,
+                scrollY: "250px",
+                columns: sourceReferenceColumns,
+                searchDelay: 400,
+                order: [],
+                processing: true,
+                serverSide: true,
+                scroller: true,
+                deferRender: true,
+                errMode: 'Ignore',
+                ajax: {
+                    url: arches.urls.provenance_source_references + '?resourceid=' + resourceid + '&nodegroupid=' + sourceReferenceNodegroupId,
+                    dataSrc: function(json) {
+                        return json.data
+                    }
+                },
+            };
+
+        // ----------------- end source reference table definition --------------------------
+
+
+
+        // ----------------- begin summary table definitions --------------------------
+
+            // create table configs for tables with columns at different levels of graph
+            // name (string) - name of the table config. will be appended with 'TableConfig'
+            // columns (array) - datatables columns array
+            // nodegroupId (string) - nodegroupid of the branch you would like to get data for
+            // nodes (array) - nodeids of the specific nodes you would like to get data for from within the branch
+            self.createSummaryTableConfig = function(name, columns, nodegroupId, nodes) {
                 self[name + "TableConfig"] = {
-                    tableName: name,
                     paging: true,
                     searching: true,
                     scrollY: "250px",
@@ -84,78 +177,18 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                     deferRender: true,
                     errMode: 'Ignore',
                     ajax: {
-                        url: arches.urls.provenance_report + '?resourceid=' + resourceid + '&nodegroupid=' + nodegroupId,
+                        url: arches.urls.provenance_summary_table + '?' + new URLSearchParams ({
+                            resourceid: resourceid,
+                            nodegroupid: nodegroupId,
+                            nodes: nodes
+                        }),
                         dataSrc: function(json) {
-                            for (el of json.data) {
-                                for (const [key, value] of Object.entries(el[name])) {
-                                    if (typeof value === 'object' && !value.hasOwnProperty('@display_value')) {
-                                        value['@display_value'] = '';
-                                    }
-                                }
-                            }
                             return json.data;
                         }
                     },
                 };
             };
 
-            // helper function to get values for a given nodegroup
-            self.getSimpleBranchData = function(nodegroupid, path, cardData) {
-                const searchParams = new URLSearchParams({
-                    resourceid: resourceid,
-                    nodegroupid: nodegroupid
-                });
-                fetch(`${arches.urls.provenance_report}?${searchParams}`)
-                    .then (response => response.json())
-                    .then(result => {
-                        if (result.data.length != 0) {
-                            cardData(path.reduce(function index(result, i) {return result[i];}, result));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-            };
-
-            // helper function to get values for a given nodegroup
-            self.getComplexBranchData = function(cardData, nodegroupid, tileid='') {
-                const searchParams = new URLSearchParams ({
-                    resourceid: resourceid,
-                    nodegroupid: nodegroupid,
-                    tileid: tileid
-                });
-                fetch(`${arches.urls.provenance_report}?${searchParams}`)
-                    .then (response => response.json())
-                    .then(result => {
-                        cardData(result.data);
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-            };
-            
-            // create columns for each table
-            const nameColumns = [
-                {"title": "Name", "orderable": true, targets: 0, "name": "5bc66298-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_content.@display_value", "defaultContent": ""},
-                {"title": "Type", "orderable": true, targets: 0, "name": "5bc66360-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_type.@display_value", "defaultContent": ""},
-                {"title": "Source", "orderable": false, targets: 0, "data": "name.name_source_reference.@display_value", "defaultContent": ""},
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
-                    "render": function() {
-                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#nameModal'>+</button>";
-                        return t;
-                    } 
-                },
-            ];
-
-            const sourceReferenceColumns = [
-                {"title": "Source Reference", "orderable": true, targets: 0, "data": "reference", "name": "name", "defaultContent": "",
-                    "render": function(data) {
-                        var t = `<a href='/report/${data.resourceinstanceid}' target='_blank' style="color:blue;">${data.name}</a>`
-                        return t;
-                    }
-                },
-            ];
-            
             const professionalActivityColumns  = [
                 {"title": "Location", "orderable": true, targets: 0, "data": "related_resource", "defaultContent": "",
                     "render": function(data) {
@@ -246,85 +279,93 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                 },
             ];
 
-            // create all table configs using columns defined above
-            self.createTableConfig('name', nameColumns, nameNodegroupdId);
-            // self.createTableConfig('contact_point', contactColumns, contactNodegroupId);
+            self.createSummaryTableConfig('professionalActivity', professionalActivityColumns, groupProfessionalActivityNodegroupId, ['0c3baf01-e323-11eb-ba14-0a9473e82189', '0c3baefb-e323-11eb-ba14-0a9473e82189', '0c3baef5-e323-11eb-ba14-0a9473e82189']);
+            self.createSummaryTableConfig('establishment', establishmentColumns, groupEstablishmentNodegroupId, ['e5f12154-17c1-11ec-b193-0a9473e82189', '7c5867a1-eac9-11eb-ba14-0a9473e82189', '7c58678a-eac9-11eb-ba14-0a9473e82189']);
+            self.createSummaryTableConfig('identifierAssignemnt', identifierAssignmentColumns, groupIdentifierAssignmentNodegroupId, ['42b0dbab-e319-11eb-ba14-0a9473e82189', '42b0db9e-e319-11eb-ba14-0a9473e82189', '42b0db8c-e319-11eb-ba14-0a9473e82189']);
+            
+        // ----------------- end summary table defitions --------------------------
+        
+        
 
-            self.sourceReferenceTableConfig = {
-                tableName: 'sourceReferences',
-                paging: true,
-                searching: true,
-                scrollY: "250px",
-                // scrollY: 20,
-                columns: sourceReferenceColumns,
-                searchDelay: 400,
-                order: [],
-                processing: true,
-                serverSide: true,
-                scroller: true,
-                deferRender: true,
-                errMode: 'Ignore',
-                ajax: {
-                    url: arches.urls.provenance_source_references + '?resourceid=' + resourceid + '&nodegroupid=' + sourceReferenceNodegroupId,
-                    dataSrc: function(json) {
-                        return json.data
-                    }
-                },
-            };
+        // ----------------- begin get simple branch data --------------------------
 
-            // create table configs for tables with columns at different levels of graph
-            self.createSummaryTableConfig = function(name, columns, nodegroupId, nodes) {
-                self[name + "TableConfig"] = {
-                    paging: true,
-                    searching: true,
-                    scrollY: "250px",
-                    // scrollY: 20,
-                    columns: columns,
-                    searchDelay: 400,
-                    order: [],
-                    processing: true,
-                    serverSide: true,
-                    scroller: true,
-                    deferRender: true,
-                    errMode: 'Ignore',
-                    ajax: {
-                        url: arches.urls.provenance_summary_table + '?' + new URLSearchParams ({
-                            resourceid: resourceid,
-                            nodegroupid: nodegroupId,
-                            nodes: nodes
-                        }),
-                        dataSrc: function(json) {
-                            return json.data;
+            // helper function to get values for a given nodegroup
+            // generally used to get a single value from a cardinality "1" node/ndoegroup
+            // cardData (ko.observable) - observable that will hold the final data
+            // nodegroupid (string) - nodegroupid of the branch you are interested in
+            // path (array) - path to data in the label_based_graph return
+            self.getSimpleBranchData = function(cardData, nodegroupid, path) {
+                const searchParams = new URLSearchParams({
+                    resourceid: resourceid,
+                    nodegroupid: nodegroupid
+                });
+                fetch(`${arches.urls.provenance_report}?${searchParams}`)
+                    .then (response => response.json())
+                    .then(result => {
+                        if (result.data.length != 0) {
+                            cardData(path.reduce(function index(result, i) {return result[i];}, result));
                         }
-                    },
-                };
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
             };
-            
+
             // get values for all cardinality "1" nodegroups
-            self.getSimpleBranchData(typeOfGroupNodegroupId, ['data', '0', 'type', '@display_value'], self.typeOfGroup);
-            self.getSimpleBranchData(nationalityNodegroupId, ['data', '0', 'nationality', '@display_value'], self.nationality);
-            self.getSimpleBranchData(sourceReferenceNodegroupId, ['data', '0', 'source_reference', 'instance_details'], self.sourceReference);
-            self.getSimpleBranchData(subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value'], self.subgroup);
-            self.getSimpleBranchData(labelNodegroupId, ['data', '0', '_label', '@display_value'], self.label);
-            
-            // these had to be separated because of the datatype
-            // self.getSimpleBranchData(externalIdentifierNodegroupId, ['data', '0', 'exact_match', 'url'], self.externalIdentifierUrl);
-            // self.getSimpleBranchData(externalIdentifierNodegroupId, ['data', '0', 'exact_match', 'url_label'], self.externalIdentifierLabel);
-            
-            self.getComplexBranchData(self.externalIdentifierData, externalIdentifierNodegroupId);
+            self.getSimpleBranchData(self.typeOfGroup, typeOfGroupNodegroupId, ['data', '0', 'type', '@display_value']);
+            self.getSimpleBranchData(self.nationality, nationalityNodegroupId, ['data', '0', 'nationality', '@display_value']);
+            self.getSimpleBranchData(self.sourceReference, sourceReferenceNodegroupId, ['data', '0', 'source_reference', 'instance_details']);
+            self.getSimpleBranchData(self.subgroup, subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value']);
+            self.getSimpleBranchData(self.label, labelNodegroupId, ['data', '0', '_label', '@display_value']);
+
+        // ----------------- end get simple branch data --------------------------
+
+
+
+        // ----------------- begin get complex branch data --------------------------
+
+            // helper function to get values for a given nodegroup
+            // generally used to get all the data of a deeply nested branch (ie formation, dissolution, etc)
+            // cardData (ko.observable) - observable that will hold the final data
+            // nodegroupid (string) - nodegroupid of the branch we are interested in
+            // tileid (string) - optional tileid of the specific tile you would like to get data for
+            self.getComplexBranchData = function(cardData, nodegroupid, tileid='') {
+                const searchParams = new URLSearchParams ({
+                    resourceid: resourceid,
+                    nodegroupid: nodegroupid,
+                    tileid: tileid
+                });
+                fetch(`${arches.urls.provenance_report}?${searchParams}`)
+                    .then (response => response.json())
+                    .then(result => {
+                        cardData(result.data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            };
 
             // get complex branch data
+            self.getComplexBranchData(self.externalIdentifierData, externalIdentifierNodegroupId);
             self.getComplexBranchData(self.groupFormationData, groupFormationNodegroupId);
             self.getComplexBranchData(self.groupDissolutionData, groupDissolutionNodegroupId);
             self.getComplexBranchData(self.statementData, statementNodegroupId);
-            
+
+        // ----------------- end get complex branch data --------------------------
+        
+        
+
+        // ----------------- begin get related resources data --------------------------
+
+            // create datatable table config object for related resource tables based on passed in params
+            // name (string)- this will be appeneded with TableConfig to define the table config
+            // resourcegraphto (string) - the graphid of the related resource graph you would like to create a table for
             self.createRelatedResourceConfig = function(name, resourcegraphto) {
                 self[name + "RelatedTableConfig"] = {
                     tableName: name,
                     paging: true,
                     searching: true,
                     scrollY: "250px",
-                    // scrollY: 20,
                     columns: [
                         {"title": "Related Resource", "orderable": true, targets: 0, "name": "name", "data": 'resourceinstance_to',
                             "render": function(data) {
@@ -341,8 +382,6 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                                 }
                             }
                         }
-                    // {"title": "Identifier Content", "orderable": false, targets: 0, "data": "identifier.identifier_content.@display_value"},
-                    // {"title": "Statement Source", "orderable": false, targets: 0, "data": "identifier.identifier_type.@display_value"},
                     ],
                     searchDelay: 400,
                     order: [],
@@ -367,16 +406,16 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                 return self[name + "RelatedTableConfig"];
             };
 
+            // iterate over list of related resource graphids and create related resource table config objects
             for (var el in self.relatedResourceGraphs) { 
                 self.relatedResourceConfigs.push(self.createRelatedResourceConfig(el, self.relatedResourceGraphs[el]));
             }
 
-            self.createSummaryTableConfig('professionalActivity', professionalActivityColumns, groupProfessionalActivityNodegroupId, ['0c3baf01-e323-11eb-ba14-0a9473e82189', '0c3baefb-e323-11eb-ba14-0a9473e82189', '0c3baef5-e323-11eb-ba14-0a9473e82189']);
-            self.createSummaryTableConfig('establishment', establishmentColumns, groupEstablishmentNodegroupId, ['e5f12154-17c1-11ec-b193-0a9473e82189', '7c5867a1-eac9-11eb-ba14-0a9473e82189', '7c58678a-eac9-11eb-ba14-0a9473e82189']);
-            self.createSummaryTableConfig('identifierAssignemnt', identifierAssignmentColumns, groupIdentifierAssignmentNodegroupId, ['42b0dbab-e319-11eb-ba14-0a9473e82189', '42b0db9e-e319-11eb-ba14-0a9473e82189', '42b0db8c-e319-11eb-ba14-0a9473e82189']);
+        // ----------------- end get related resources data --------------------------
 
 
 
+            // jquery logic for buttons that expose modals
             $('#professional-activity-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#professional-activity-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
@@ -395,19 +434,17 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                 self.getComplexBranchData(self.groupIdentifierAssignmentData, groupIdentifierAssignmentNodegroupId, data.tileid);
             } );
 
-
             $('#name-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#name-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
                 self.nameRowData(data);
             } );
 
-            $.fn.dataTable.ext.errMode = 'ignore';
-
+            // jquery logic for closing modals
             $('#closeformationmodal').click(function() {
                 $('#formationModal').modal('hide');
             });
-
+            
             $('#closedissolutionmodal').click(function() {
                 $('#dissolutionModal').modal('hide');
             });
@@ -415,19 +452,21 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
             $('#closeestablishmentmodal').click(function() {
                 $('#establishmentModal').modal('hide');
             });
-
+            
             $('#closepreofessionalActivitymodal').click(function() {
                 $('#professionalActivityModal').modal('hide');
             });
-
+            
             $('#closeindentifiermodal').click(function() {
                 $('#identifierModal').modal('hide');
             });
-
+            
             $('#closenamemodal').click(function() {
                 $('#nameModal').modal('hide');
             });
-
+            
+            // suppress error that pops up when tables fail to load. This information can still be found in developer tools
+            $.fn.dataTable.ext.errMode = 'ignore';
         },
         template: provenanceGroupReportTemplate
     });
