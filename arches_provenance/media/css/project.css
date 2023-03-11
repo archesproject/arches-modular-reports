@@ -155,6 +155,10 @@ td {
     padding: 24px;
 }
 
+.provenance-tile-editor-content .loading-mask {
+    background-color: rgba(192,192,192, 0.6);
+}
+
 .modal table:hover {
     cursor: pointer;
     border: 1px solid blue;
