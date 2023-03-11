@@ -141,6 +141,7 @@
         <div class="modal-dialog" style="display: inline-flex;">
           <div style="padding:24px; width:70vw; position: center;" class="rp-report-section">
             <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeCardinality1EditorModal" style="cursor:pointer">x</a></div>
+            <div class='loading-mask' data-bind="visible: loading()"></div>
             <div class="summary-table-container" style="width:unset">
               <!-- ko if: loadedWidget -->
                 <div style="display: inline;" data-bind="component: {

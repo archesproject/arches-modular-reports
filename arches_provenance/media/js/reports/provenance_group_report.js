@@ -317,7 +317,7 @@ define([
             
 
             self.saveNodeValue = function() {
-                this.loading(false);
+                this.loading(true);
                 let formData = new FormData();
                 formData.append('nodeid', self.nodeWidgetConfig().nodeid);
                 // formData.append('data', self.currentNodeValue());
