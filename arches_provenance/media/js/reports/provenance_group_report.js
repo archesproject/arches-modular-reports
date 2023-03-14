@@ -521,27 +521,15 @@ define([
             };
             
             // get values for all cardinality "1" nodegroups
-            // self.getSimpleBranchData(typeOfGroupNodegroupId, ['data', '0', 'type'], self.typeOfGroup);
-            // self.getSimpleBranchData(nationalityNodegroupId, ['data', '0', 'nationality', '@display_value'], self.nationality);
-            // self.getSimpleBranchData(sourceReferenceNodegroupId, ['data', '0', 'source_reference', 'instance_details'], self.sourceReference);
-            // self.getSimpleBranchData(subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value'], self.subgroup);
-            // self.getSimpleBranchData(labelNodegroupId, ['data', '0', '_label', '@display_value'], self.label);
-
-            self.getComplexBranchData(self.typeOfGroup, typeOfGroupNodegroupId);
-            self.getComplexBranchData(self.nationality, nationalityNodegroupId);
-            // self.getComplexBranchData(self.sourceReference, sourceReferenceNodegroupId);
-            // self.getComplexBranchData(self.subgroup, subGroupNodegroupId);
-            // self.getComplexBranchData(self.label, labelNodegroupId);
-            
-           
-            
-            // these had to be separated because of the datatype
-            // self.getSimpleBranchData(externalIdentifierNodegroupId, ['data', '0', 'exact_match', 'url'], self.externalIdentifierUrl);
-            // self.getSimpleBranchData(externalIdentifierNodegroupId, ['data', '0', 'exact_match', 'url_label'], self.externalIdentifierLabel);
-            
-            self.getComplexBranchData(self.externalIdentifierData, externalIdentifierNodegroupId);
+            self.getSimpleBranchData(sourceReferenceNodegroupId, ['data', '0', 'source_reference', 'instance_details'], self.sourceReference);
+            self.getSimpleBranchData(subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value'], self.subgroup);
+            self.getSimpleBranchData(labelNodegroupId, ['data', '0', '_label', '@display_value'], self.label);
 
             // get complex branch data
+            self.getComplexBranchData(self.typeOfGroup, typeOfGroupNodegroupId);
+            self.getComplexBranchData(self.nationality, nationalityNodegroupId);           
+            self.getComplexBranchData(self.externalIdentifierData, externalIdentifierNodegroupId);
+
             self.getComplexBranchData(self.groupFormationData, groupFormationNodegroupId);
             self.getComplexBranchData(self.groupDissolutionData, groupDissolutionNodegroupId);
             self.getComplexBranchData(self.statementData, statementNodegroupId);
