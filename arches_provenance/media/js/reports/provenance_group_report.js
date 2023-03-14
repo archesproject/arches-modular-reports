@@ -53,15 +53,6 @@ define([
             self.relatedResourceConfigs = ko.observableArray();
             self.nameRowData = ko.observable();
             self.externalIdentifierData = ko.observable();
-
-            self.cardwidgetWidgetConfig = ko.observable();
-            self.widgetWidgetConfig = ko.observable();
-            self.nodeWidgetConfig = ko.observable();
-            self.widgetTileid = ko.observable();
-            let currentNodeBeingEdited;
-            self.currentNodeValue = ko.observable();
-            self.originalNodeValue = ko.observable();
-            self.loadedWidget = ko.observable(false);
             
             self.relatedResourceGraphs = {
                 "Activity":"734d1558-bfad-11ea-a62b-3af9d3b32b71",
@@ -193,6 +184,100 @@ define([
     
             // End of Tile Editor
 
+            // Node Editor
+            self.cardwidgetWidgetConfig = ko.observable();
+            self.widgetWidgetConfig = ko.observable();
+            self.nodeWidgetConfig = ko.observable();
+            self.widgetTileid = ko.observable();
+            let currentNodeBeingEdited;
+            self.currentNodeValue = ko.observable();
+            self.originalNodeValue = ko.observable();
+            self.loadedWidget = ko.observable(false);
+
+            self.openNodeEditor = function(){ 
+                $('#cardinality1EditorModal').modal('show');
+            }
+            
+            self.closeNodeEditor = function(){ 
+                $('#cardinality1EditorModal').modal('hide');
+            }
+
+            self.buildStrObject = str => {
+                return {[arches.activeLanguage]: {
+                    'value': str,
+                    'direction': arches.activeLanguageDir
+                }};
+            };
+
+            self.getWidget = async(rawNodeValue, cardData) => {
+                try {
+                    // this.loading(true);
+                    self.loadedWidget(false);
+                    currentNodeBeingEdited = cardData; // store current card data to update on save
+
+                    const nodeid = rawNodeValue['@node_id'];
+                    const tileid = rawNodeValue['@tile_id'];
+                    self.widgetTileid(tileid);
+
+                    // get widget config
+                    let response = await fetch(`${arches.urls.provenance_editor}?nodeid=${nodeid}`);
+                    let result = await response.json();
+                    self.cardwidgetWidgetConfig(result.cardwidget);
+                    self.widgetWidgetConfig(result.widget);
+                    self.nodeWidgetConfig(result.node);
+
+                    // get current value of node via tile
+                    let tile = await fetch(arches.urls.api_tiles(tileid));
+                    let tiledata = await tile.json();
+                    self.currentNodeValue(tiledata.data[nodeid]);
+                    self.originalNodeValue(self.currentNodeValue());
+
+                    // this.loading(false);
+                    self.loadedWidget(true);
+                } catch(error) {
+                    console.error('Error:', error);
+                };
+            };
+
+            
+
+            self.saveNodeValue = function() {
+                this.loading(true);
+                let formData = new FormData();
+                formData.append('nodeid', self.nodeWidgetConfig().nodeid);
+                // formData.append('data', self.currentNodeValue());
+                if (self.widgetWidgetConfig().name === 'text-widget') {
+                    formData.append('data', JSON.stringify(self.currentNodeValue()));
+                } else {
+                    formData.append('data', self.currentNodeValue());
+                } 
+                formData.append('resourceinstanceid', params.resourceinstanceid);
+                formData.append('tileid', self.widgetTileid());
+
+                window.fetch(arches.urls.api_node_value, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData,
+                    headers: {
+                        "X-CSRFToken": Cookies.get('csrftoken')
+                    }
+                }).then(function(response) {
+                    if(response.ok){
+                        return response.json();
+                    }
+                }).then(function(data){
+                    if (data.parenttile_id){ // if tile is a child tile, use parent tileid
+                        self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.parenttile_id);
+                    } else {
+                        self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.tileid);
+                    }
+                    self.closeNodeEditor();
+                    this.loading(false);
+                });
+            };
+
+            // End of Node Editor
+
             self.resourceName = resourceName;
 
             self.getValue = function(obj, attrs, missingValue='') {
@@ -267,88 +352,6 @@ define([
                     .catch(error => {
                         console.error('Error:', error);
                     });
-            };
-
-            self.openNodeEditor = function(){ 
-                $('#cardinality1EditorModal').modal('show');
-            }
-            
-            self.closeNodeEditor = function(){ 
-                $('#cardinality1EditorModal').modal('hide');
-            }
-
-            self.buildStrObject = str => {
-                return {[arches.activeLanguage]: {
-                    'value': str,
-                    'direction': arches.activeLanguageDir
-                }};
-            };
-
-            self.getWidget = async(rawNodeValue, cardData) => {
-                try {
-                    this.loading(true);
-                    self.loadedWidget(false);
-                    currentNodeBeingEdited = cardData; // store current card data to update on save
-
-                    const nodeid = rawNodeValue['@node_id'];
-                    const tileid = rawNodeValue['@tile_id'];
-                    self.widgetTileid(tileid);
-
-                    // get widget config
-                    let response = await fetch(`${arches.urls.provenance_editor}?nodeid=${nodeid}`);
-                    let result = await response.json();
-                    self.cardwidgetWidgetConfig(result.cardwidget);
-                    self.widgetWidgetConfig(result.widget);
-                    self.nodeWidgetConfig(result.node);
-
-                    // get current value of node via tile
-                    let tile = await fetch(arches.urls.api_tiles(tileid));
-                    let tiledata = await tile.json();
-                    self.currentNodeValue(tiledata.data[nodeid]);
-                    self.originalNodeValue(self.currentNodeValue());
-
-                    this.loading(false);
-                    self.loadedWidget(true);
-                } catch(error) {
-                    console.error('Error:', error);
-                };
-            };
-
-            
-
-            self.saveNodeValue = function() {
-                this.loading(true);
-                let formData = new FormData();
-                formData.append('nodeid', self.nodeWidgetConfig().nodeid);
-                // formData.append('data', self.currentNodeValue());
-                if (self.widgetWidgetConfig().name === 'text-widget') {
-                    formData.append('data', JSON.stringify(self.currentNodeValue()));
-                } else {
-                    formData.append('data', self.currentNodeValue());
-                } 
-                formData.append('resourceinstanceid', params.resourceinstanceid);
-                formData.append('tileid', self.widgetTileid());
-
-                window.fetch(arches.urls.api_node_value, {
-                    method: 'POST',
-                    credentials: 'include',
-                    body: formData,
-                    headers: {
-                        "X-CSRFToken": Cookies.get('csrftoken')
-                    }
-                }).then(function(response) {
-                    if(response.ok){
-                        return response.json();
-                    }
-                }).then(function(data){
-                    if (data.parenttile_id){ // if tile is a child tile, use parent tileid
-                        self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.parenttile_id);
-                    } else {
-                        self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.tileid);
-                    }
-                    self.closeNodeEditor();
-                    this.loading(false);
-                });
             };
             
             // create columns for each table
