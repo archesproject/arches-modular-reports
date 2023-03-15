@@ -107,12 +107,12 @@ define([
                 self.showTileEditor(false);
             };
 
-            this.editTile = function(tileid) {
-                if (!tileid) {
-                    return;
-                }
-                const url = `${arches.urls.provenance_editor}?tileid=${tileid}`;
+            this.editTile = function(tileid, nodegroupid, parenttileid) {
+                const url = tileid ?
+                    `${arches.urls.provenance_editor}?tileid=${tileid}` :
+                    `${arches.urls.provenance_editor}?nodegroupid=${nodegroupid}&resourceid=${resourceid}&parenttileid=${parenttileid}`;
                 $.getJSON(url).then(function(data) {
+                    console.log(data);
                     self.resourceId(data.resourceid);
                     self.displayname(data.displayname);
                     const createLookup = function(list, idKey) {

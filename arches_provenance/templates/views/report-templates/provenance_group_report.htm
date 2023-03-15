@@ -1052,7 +1052,9 @@
                             data-bind="click: function() {
                                 $parent.editTile(
                                     $parent.getValue(sojourn, ['sojourn_name', 'sojourn_name_content', '@tile_id']),
-                                )},
+                                    '7c586764-eac9-11eb-ba14-0a9473e82189',
+                                    $parent.getValue(sojourn, ['sojourn_label','@tile_id']),
+                                    )},
                             clickBubble: false,
                         ">
                             <tbody>
