@@ -210,7 +210,6 @@ define([
 
             self.getWidget = async(rawNodeValue, cardData) => {
                 try {
-                    // this.loading(true);
                     self.loadedWidget(false);
                     currentNodeBeingEdited = cardData; // store current card data to update on save
 
@@ -231,7 +230,6 @@ define([
                     self.currentNodeValue(tiledata.data[nodeid]);
                     self.originalNodeValue(self.currentNodeValue());
 
-                    // this.loading(false);
                     self.loadedWidget(true);
                 } catch(error) {
                     console.error('Error:', error);
@@ -240,7 +238,7 @@ define([
 
             
 
-            self.saveNodeValue = function() {
+            self.saveNodeValue = async function() {
                 this.loading(true);
                 let formData = new FormData();
                 formData.append('nodeid', self.nodeWidgetConfig().nodeid);
@@ -253,7 +251,7 @@ define([
                 formData.append('resourceinstanceid', params.resourceinstanceid);
                 formData.append('tileid', self.widgetTileid());
 
-                window.fetch(arches.urls.api_node_value, {
+                let postNewNode = await fetch(arches.urls.api_node_value, {
                     method: 'POST',
                     credentials: 'include',
                     body: formData,
@@ -271,8 +269,8 @@ define([
                         self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.tileid);
                     }
                     self.closeNodeEditor();
-                    this.loading(false);
                 });
+                this.loading(false);
             };
 
             // End of Node Editor
