@@ -430,16 +430,23 @@ class ProvenanceEditorView(View):
     def get(self, request):
         nodeid = request.GET.get("nodeid")
         tileid = request.GET.get("tileid")
+        resourceid = request.GET.get("resourceid")
+        nodegroupid = request.GET.get("nodegroupid")
+        parenttileid = request.GET.get("parenttileid")
+        print(nodeid, tileid, resourceid, nodegroupid, parenttileid)
         if nodeid:
             cardwidget = models.CardXNodeXWidget.objects.prefetch_related("widget", "node").get(node_id=nodeid)
             ret = {'cardwidget': cardwidget, 'node': cardwidget.node, 'widget': cardwidget.widget}
-        elif tileid:
+        elif tileid or nodegroupid:
             user_is_reviewer = user_is_resource_reviewer(request.user)
-
-            tile = Tile.objects.get(pk=tileid)
-            resourceid = tile.resourceinstance_id
-            nodegroupid = tile.nodegroup_id
-
+            if tileid:
+                tile = Tile.objects.get(pk=tileid)
+                resourceid = tile.resourceinstance_id
+                nodegroupid = tile.nodegroup_id
+            elif nodegroupid and resourceid:
+                parenttile = Tile.objects.get(pk=parenttileid)
+                tile = Tile.get_blank_tile_from_nodegroup_id(nodegroup_id=nodegroupid, resourceid=resourceid, parenttile=parenttile)
+            print(tile, tile.nodegroup_id)
             resource_instance = Resource.objects.get(pk=resourceid)
             graph = resource_instance.graph
             displayname = resource_instance.displayname()
