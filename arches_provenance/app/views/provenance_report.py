@@ -445,6 +445,7 @@ class ProvenanceEditorView(View):
             elif nodegroupid and resourceid:
                 parenttile = Tile.objects.get(pk=parenttileid)
                 tile = Tile.get_blank_tile_from_nodegroup_id(nodegroup_id=nodegroupid, resourceid=resourceid, parenttile=parenttile)
+                tile.tileid = None
             resource_instance = Resource.objects.get(pk=resourceid)
             graph = resource_instance.graph
             displayname = resource_instance.displayname()
