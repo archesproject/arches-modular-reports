@@ -52,6 +52,17 @@ define([
             self.nameRowData = ko.observable();
             self.externalIdentifierData = ko.observable();
             
+            let selectedElement = null;
+            self.handleMouseover = function(data, evt){
+                if(selectedElement){
+                    $(selectedElement).removeClass("hovered");
+                }
+                selectedElement = evt.currentTarget;
+                if(evt.type == "mouseover"){
+                    $(evt.currentTarget).addClass("hovered");
+                }
+            };
+            
             // graphids of all graphs in provenance/the ones that can be related to Groups
             self.relatedResourceGraphs = {
                 "Activity":"734d1558-bfad-11ea-a62b-3af9d3b32b71",
@@ -676,7 +687,7 @@ define([
 
             $('#name-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#name-summary-table').DataTable();
-                var data = table.row( $(this).parents('tr') ).data();
+                var data = table.row($(this).parents('tr') ).data();
                 self.nameRowData(data);
             } );
 
