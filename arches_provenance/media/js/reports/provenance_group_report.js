@@ -34,6 +34,16 @@ define([
             const groupIdentifierAssignmentNodegroupId = "42b0db83-e319-11eb-ba14-0a9473e82189";
             const sourceReferenceNodegroupId = "30e30626-c798-11ea-b94e-3af9d3b32b71";
 
+            this.sojournNameNodegroupId = '7c586764-eac9-11eb-ba14-0a9473e82189';
+            this.sojournStatementNodegroupId = '7c58675b-eac9-11eb-ba14-0a9473e82189';
+            this.sojournStatementNameNodegroupId = '7c58675e-eac9-11eb-ba14-0a9473e82189';
+            this.sojournTimespanNodegroupId = '7c58676a-eac9-11eb-ba14-0a9473e82189';
+            this.sojournTimespanNameNodegroupId = '7c586758-eac9-11eb-ba14-0a9473e82189';
+            this.sojournTimespanStatementNodegroupId = '7c586755-eac9-11eb-ba14-0a9473e82189';
+            this.sojournTimespanStatementNameNodegroupId = '7c58676d-eac9-11eb-ba14-0a9473e82189';
+            this.sojournTimespanDurationNodegroupId = '7c586761-eac9-11eb-ba14-0a9473e82189';
+            this.sojournTimespanDurationNameNodegroupId = '7c586767-eac9-11eb-ba14-0a9473e82189';
+
             self.nationality = ko.observable();
             self.typeOfGroup = ko.observable();
             self.externalIdentifierUrl = ko.observable();

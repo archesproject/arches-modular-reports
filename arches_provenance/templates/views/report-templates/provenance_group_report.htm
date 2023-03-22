@@ -211,16 +211,25 @@
         <div class="table-label">Statements</div>
         <!-- ko if: statementData().length > 0 -->
         <!-- ko foreach: { data: statementData, as: 'statement_data' } -->
-          <table class="table summary-table-top-header statment-table">
+          <table class="table summary-table-top-header">
               <tbody>
                 <th class="header" style="padding: 8px">Statement Type </td>
-                <th class="header" style="padding: 8px">Statement Confidentiality </td>
-                  <tr>
-                    <td data-bind="text: $parent.getValue(statement_data, ['statement', 'statement_type', '@display_value'])"> </td>
-                    <td data-bind="text: $parent.getValue(statement_data, ['statement', 'statement_confidentiality', '@display_value'])"> </td>
-                  </tr>
-                  <tr>
-                    <td colspan=2 data-bind="text: $parent.getValue(statement_data, ['statement', 'statement_content', '@display_value'])"> </td>
+                <th colspan=2 class="header" style="padding: 8px">Statement Confidentiality </td>
+                <tr>
+                  <td data-bind="text: self.getValue(statement_data, ['statement', 'statement_type', '@display_value'])"> </td>
+                  <td colspan=2 data-bind="text: self.getValue(statement_data, ['statement', 'statement_confidentiality', '@display_value'])"> </td>
+                </tr>
+                <tr>
+                  <td colspan=2 data-bind="text: self.getValue(statement_data, ['statement', 'statement_content', '@display_value'])"> </td>
+                  <td style="width: 40px;">
+                    <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px"
+                        data-bind="click: function() {
+                            self.editTile(
+                                self.getValue(statement_data, ['statement', '@tile_id']),
+                        )},
+                    ">+</button>
+                  </td>
+                </tr>
               </tbody>
           </table>
           <!-- /ko -->
@@ -239,19 +248,37 @@
           <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closenamemodal" style="cursor:pointer">x</a></div>
           <div class="summary-table-container" style="width:unset">
             <!-- ko if: nameRowData -->
-            <div style="font-weight: bold;">Name</div>
-              <div data-bind="text: getValue(nameRowData(), ['name', 'name_content', '@display_value'])"></div>
-            <div style="padding-top: 24px; font-weight: bold;">Type</div>
-              <div data-bind="text: getValue(nameRowData(), ['name', 'name_type', '@display_value'])"></div>
-            <div style="padding-top: 24px; font-weight: bold;">Sources</div>
-            <div>
-              <!-- ko if: nameRowData().name.name_source_reference -->
-              <!-- ko foreach: {data: nameRowData().name.name_source_reference.instance_details, as: 'instance' } -->
-                <a style="cursor:pointer; color:blue; text-decoration:underline;" data-bind="text: instance['display_value'], attr: {href: '/report/' + instance['resourceId'], target: '_blank'}"></a>
-              <!-- /ko -->
-              <!-- /ko -->
-            </div>
-
+            <div class="table-label">Name</div>
+            <table class="table summary-table-left-header"
+                data-bind="click: function() {
+                    editTile(
+                        getValue(nameRowData(), ['name', '@tile_id']),
+                    )},
+                    clickBubble: false,
+                    mouseoverBubble: false,
+                    event: { mouseover: handleMouseover, mouseout: self.handleMouseover},
+                ">
+                <tbody>
+                    <tr>
+                        <td class="header">Name</td>
+                        <td data-bind="text: getValue(nameRowData(), ['name', 'name_content', '@display_value'])"></td>
+                    </tr>
+                    <tr>
+                        <td class="header" style="padding: 8px">Type</td>
+                        <td data-bind="text: getValue(nameRowData(), ['name', 'name_type', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                        <td class="header" style="padding: 8px">Sources</td>
+                        <td>
+                            <!-- ko if: nameRowData().name.name_source_reference -->
+                            <!-- ko foreach: {data: nameRowData().name.name_source_reference.instance_details, as: 'instance' } -->
+                            <a style="cursor:pointer; color:blue; text-decoration:underline;" data-bind="text: instance['display_value'], attr: {href: '/report/' + instance['resourceId'], target: '_blank'}"></a>
+                            <!-- /ko -->
+                            <!-- /ko -->
+                        </td>  
+                    </tr>
+                </tbody>
+            </table>
             <!-- /ko -->
           </div>
         </div>
@@ -1093,11 +1120,11 @@
                     <td>
                         <table style="margin: 0px;" class="table summary-table-left-header"
                             data-bind="click: function() {
-                                $parent.editTile(
-                                    $parent.getValue(sojourn, ['sojourn_name', 'sojourn_name_content', '@tile_id']),
-                                    '7c586764-eac9-11eb-ba14-0a9473e82189',
-                                    $parent.getValue(sojourn, ['sojourn_label','@tile_id']),
-                                    )},
+                                self.editTile(
+                                    self.getValue(sojourn, ['sojourn_name', 'sojourn_name_content', '@tile_id']),
+                                    self.sojournNameNodegroupId,
+                                    self.getValue(sojourn, ['sojourn_label','@tile_id']),
+                                )},
                             event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
                             clickBubble: false,
                             mouseoverBubble: false,
@@ -1155,17 +1182,17 @@
               ">
             <tr style="overflow:scroll; height: 100px;">
               <td class="header">Statement Names</td>
-              <!-- ko if: sojourn.sojourn_statement.sojourn_statement_name != undefined -->
               <td>
-                <!-- ko foreach: { data: sojourn.sojourn_statement.sojourn_statement_name, as: 'statementName' } -->
+                  <!-- ko if: sojourn.sojourn_statement.sojourn_statement_name != undefined -->
+                  <!-- ko foreach: { data: sojourn.sojourn_statement.sojourn_statement_name, as: 'statementName' } -->
                   <table style="margin: 0px;" class="table summary-table-left-header"
                       data-bind="click: function() {
-                          $parents[1].editTile(
-                              $parents[1].getValue(statementName, ['sojourn_statement_name_content', '@tile_id']),
+                          self.editTile(
+                              self.getValue(statementName, ['sojourn_statement_name_content', '@tile_id']),
                           )},
                           clickBubble: false,
                           mouseoverBubble: false,
-                          event: { mouseover: $parents[1].handleMouseover, mouseout: $parents[1].handleMouseover},
+                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
                       ">
                       <tbody>
                           <tr>
@@ -1186,9 +1213,22 @@
                           </tr>
                       </tbody>
                   </table>
-                <!-- /ko -->
+                  <!-- /ko -->
+                  <!-- /ko -->
+                  <!-- ko if: sojourn.sojourn_statement.sojourn_statement_name == undefined -->
+                    <div style = 'cursor: pointer; color: steelblue;'
+                        data-bind="click: function() {
+                            self.editTile(
+                                null,
+                                self.sojournStatementNameNodegroupId,
+                                self.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_content', '@tile_id']),
+                            )},
+                            clickBubble: false,
+                            mouseoverBubble: false,
+                            event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                        ">Add New Statement Name</div>
+                  <!-- /ko -->
               </td>
-              <!-- /ko -->
             </tr>
             <tr>
               <td class="header" style="padding: 8px">Establishment Statement: </td>
@@ -1209,7 +1249,20 @@
           </table>
           <!-- /ko -->
           <!-- ko if: sojourn.sojourn_statement === undefined -->
-            No Establishment Statement
+          <div>
+              <span>No Establishment Statement</span>
+              <span style = 'cursor: pointer; color: steelblue;'
+                  data-bind="click: function() {
+                      self.editTile(
+                          self.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_content', '@tile_id']),
+                          self.sojournStatementNodegroupId,
+                          self.getValue(sojourn, ['sojourn_label','@tile_id']),
+                      )},
+                      clickBubble: false,
+                      mouseoverBubble: false,
+                      event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+              ">Add New Statement</span>
+          </div>
           <!-- /ko -->
 
           <div>Group Establishment Time Span</div>
@@ -1226,40 +1279,53 @@
 
             <tr style="overflow:scroll; height: 100px;">
               <td class="header">Time Span Names</td>
-              <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_name != undefined -->
               <td>
-                <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_name, as: 'timespanName' } -->
-                  <table style="margin: 0px;" class="table summary-table-left-header"
-                        data-bind="click: function() {
-                          $parents[1].editTile(
-                              $parents[1].getValue(timespanName, ['sojourn_timespan_name_content', '@tile_id']),
-                          )},
-                      clickBubble: false,
-                      mouseoverBubble: false,
-                      event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                  ">  
-                      <tbody>
-                          <tr>
-                              <td class="header">Content</td>
-                              <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_content', '@display_value'])"> </td>
-                          </tr>
-                          <tr>
-                              <td class="header">Label</td>
-                              <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_label', '@display_value'])"> </td>
-                          </tr>
-                          <tr>
-                              <td class="header">Language</td>
-                              <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_language', '@display_value'])"> </td>
-                          </tr>
-                          <tr>
-                            <td class="header">Type</td>
-                            <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_type', '@display_value'])"> </td>
-                          </tr>
-                      </tbody>
-                  </table>
-                <!-- /ko -->
+                  <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_name -->
+                      <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_name, as: 'timespanName' } -->
+                      <table style="margin: 0px;" class="table summary-table-left-header"
+                            data-bind="click: function() {
+                              self.editTile(
+                                  self.getValue(timespanName, ['sojourn_timespan_name_content', '@tile_id']),
+                              )},
+                          clickBubble: false,
+                          mouseoverBubble: false,
+                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                      ">  
+                          <tbody>
+                              <tr>
+                                  <td class="header">Content</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_content', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Label</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_label', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                  <td class="header">Language</td>
+                                  <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_language', '@display_value'])"> </td>
+                              </tr>
+                              <tr>
+                                <td class="header">Type</td>
+                                <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_type', '@display_value'])"> </td>
+                              </tr>
+                          </tbody>
+                      </table>
+                      <!-- /ko -->
+                  <!-- /ko -->
+                  <!-- ko ifnot: sojourn.sojourn_activity_timespan.sojourn_timespan_name -->
+                      <div style = 'cursor: pointer; color: steelblue;'
+                          data-bind="click: function() {
+                              self.editTile(
+                                  null,
+                                  self.sojournTimespanNameNodegroupId,
+                                  self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_begin', '@tile_id']),
+                              )},
+                              clickBubble: false,
+                              mouseoverBubble: false,
+                              event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                          ">Add New Time Span Name</div>
+                  <!-- /ko -->          
               </td>
-              <!-- /ko -->
             </tr>
             <tr>
               <td class="header" style="padding: 8px">Earliest Start Date: </td>
@@ -1283,87 +1349,113 @@
             </tr>
             <tr>
               <td class="header">Duration</td>
-              <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_duration -->
               <td>
+                <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_duration -->
                 <table class="table summary-table-left-header"
-                    data-bind="click: function() {
-                        $parent.editTile(
-                            $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_value', '@tile_id']),
-                        )},
-                    clickBubble: false,
-                    mouseoverBubble: false,
-                    event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                ">
-                  <tr style="overflow:scroll; height: 100px;">
-                    <td class="header">Duration Names</td>
-                    <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_duration.sojourn_timespan_duration_name -->
-                    <td>
-                      <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_duration.sojourn_timespan_duration_name, as: 'timespanDurationName' } -->
-                        <table style="margin: 0px;" class="table summary-table-left-header"
-                            data-bind="click: function() {
-                                $parents[1].editTile(
-                                    $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_content', '@tile_id']),
-                                )},
-                            clickBubble: false,
-                            mouseoverBubble: false,
-                            event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                        ">
-                            <tbody>
-                                <tr>
-                                    <td class="header">Content</td>
-                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_content', '@display_value'])"> </td>
-                                </tr>
-                                <tr>
-                                    <td class="header">Label</td>
-                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_label', '@display_value'])"> </td>
-                                </tr>
-                                <tr>
-                                    <td class="header">Language</td>
-                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_language', '@display_value'])"> </td>
-                                </tr>
-                                <tr>
-                                  <td class="header">Type</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_type', '@display_value'])"> </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                      <!-- /ko -->
-                    </td>
-                    <!-- /ko -->
-      
-                  </tr>
-                  <tr>
-                    <td class="header" style="padding: 8px">Duration Value: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_value', '@display_value'])"> </td>
-                  </tr>
-                  <tr>
-                    <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
-                  </tr>
-                  <tr>
-                    <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_highest_possible_value', '@display_value'])"> </td>
-                  </tr>
-                  <tr>
-                    <td class="header" style="padding: 8px">Unit: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_unit', '@display_value'])"> </td>
-                  </tr>
-                  <tr>
-                    <td class="header" style="padding: 8px">Duration Type: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_type', '@display_value'])"> </td>
-                  </tr>
-                  <tr>
-                    <td class="header" style="padding: 8px">Duration Label: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_label', '@display_value'])"> </td>
-                  </tr>
+                      data-bind="click: function() {
+                          self.editTile(
+                              self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_value', '@tile_id']),
+                          )},
+                      clickBubble: false,
+                      mouseoverBubble: false,
+                      event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                  ">
+                    <tr style="overflow:scroll; height: 100px;">
+                      <td class="header">Duration Names</td>
+                      <td>
+                        <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_duration.sojourn_timespan_duration_name -->
+                        <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_duration.sojourn_timespan_duration_name, as: 'timespanDurationName' } -->
+                          <table style="margin: 0px;" class="table summary-table-left-header"
+                              data-bind="click: function() {
+                                  $parents[1].editTile(
+                                      $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_content', '@tile_id']),
+                                  )},
+                              clickBubble: false,
+                              mouseoverBubble: false,
+                              event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                          ">
+                              <tbody>
+                                  <tr>
+                                      <td class="header">Content</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_content', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Label</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_label', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Language</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_language', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="header">Type</td>
+                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_type', '@display_value'])"> </td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                        <!-- /ko -->
+                        <!-- /ko -->
+                        <!-- ko ifnot: sojourn.sojourn_activity_timespan.sojourn_timespan_duration.sojourn_timespan_duration_name -->
+                            <div style = 'cursor: pointer; color: steelblue;'
+                                data-bind="click: function() {
+                                    self.editTile(
+                                        null,
+                                        self.sojournTimespanDurationNameNodegroupId,
+                                        self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_value', '@tile_id']),
+                                    )},
+                                    clickBubble: false,
+                                    mouseoverBubble: false,
+                                    event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                                ">Add New Time Span Name</div>
+                        <!-- /ko -->
+                      </td>
+        
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Value: </td>
+                      <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
+                      <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
+                      <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Unit: </td>
+                      <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_unit', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Type: </td>
+                      <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_type', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Label: </td>
+                      <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_label', '@display_value'])"> </td>
+                    </tr>
                 </table>
-              </td>
-              <!-- /ko -->
+                <!-- /ko -->
+                <!-- ko ifnot: sojourn.sojourn_activity_timespan.sojourn_timespan_duration -->
+                <div style = 'cursor: pointer; color: steelblue;'
+                    data-bind="click: function() {
+                        self.editTile(
+                            null,
+                            self.sojournTimespanDurationNodegroupId,
+                            self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_begin', '@tile_id']),
+                        )},
+                        clickBubble: false,
+                        mouseoverBubble: false,
+                        event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                ">Add New Time Span Duration</div>
+                <!-- /ko -->
+            </td>
             </tr>
             <tr>
               <td class="header">Statement About Time Span</td>
-              <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_statement != undefined -->
               <td>
+                <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_statement != undefined -->
                 <table class="table summary-table-left-header"
                     data-bind="click: function() {
                         $parent.editTile(
@@ -1375,9 +1467,9 @@
                 ">
                   <tr style="overflow:scroll; height: 100px;">
                     <td class="header">Statement About Time Span Names</td>
-                    <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_statement.sojourn_timespan_statement_name != undefined -->
                     <td>
-                      <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_statement.sojourn_timespan_statement_name, as: 'timespanStatementName' } -->
+                        <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_statement.sojourn_timespan_statement_name != undefined -->
+                        <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_statement.sojourn_timespan_statement_name, as: 'timespanStatementName' } -->
                         <table style="margin: 0px;" class="table summary-table-left-header"
                             data-bind="click: function() {
                                 $parent.editTile(
@@ -1406,9 +1498,22 @@
                                 </tr>
                             </tbody>
                         </table>
+                        <!-- /ko -->
+                        <!-- /ko -->
+                        <!-- ko ifnot: sojourn.sojourn_activity_timespan.sojourn_timespan_statement.sojourn_timespan_statement_name -->
+                          <div style = 'cursor: pointer; color: steelblue;'
+                              data-bind="click: function() {
+                                  self.editTile(
+                                      null,
+                                      self.sojournTimespanStatementNameNodegroupId,
+                                      self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_begin', '@tile_id']),
+                                  )},
+                                  clickBubble: false,
+                                  mouseoverBubble: false,
+                                  event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                          ">Add New Time Span Statement Name</div>
                       <!-- /ko -->
-                    </td>
-                  <!-- /ko -->
+                  </td>
       
                   </tr>
                   <tr>
@@ -1432,13 +1537,40 @@
                     <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_statement_label', '@display_value'])"> </td>
                   </tr>
                 </table>
+                <!-- /ko -->
+                <!-- ko ifnot: sojourn.sojourn_activity_timespan.sojourn_timespan_statement -->
+                    <div style = 'cursor: pointer; color: steelblue;'
+                        data-bind="click: function() {
+                            self.editTile(
+                                null,
+                                self.sojournTimespanStatementNodegroupId,
+                                self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_begin', '@tile_id']),
+                            )},
+                            clickBubble: false,
+                            mouseoverBubble: false,
+                            event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                    ">Add New Time Span Statement</div>
+                <!-- /ko -->
               </td>
-              <!-- /ko -->
             </tr>
           </table>
           <!-- /ko -->
-          <!-- ko if: sojourn.sojourn_activity_timespan === undefined -->
-            No Establishment Time Span
+          <!-- ko ifnot: sojourn.sojourn_activity_timespan -->
+          <div>
+              <span>No Establishment Time Span</span>
+              <span style = 'cursor: pointer; color: steelblue;'
+                  data-bind="click: function() {
+                      self.editTile(
+                          self.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_content', '@tile_id']),
+                          self.sojournTimespanNodegroupId,
+                          self.getValue(sojourn, ['sojourn_label','@tile_id']),
+                      )},
+                      clickBubble: false,
+                      mouseoverBubble: false,
+                      event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+              ">Add New Time Span</span>
+          </div>
+
           <!-- /ko -->
           <!-- /ko -->
         </div>
