@@ -44,6 +44,45 @@ define([
             this.sojournTimespanDurationNodegroupId = '7c586761-eac9-11eb-ba14-0a9473e82189';
             this.sojournTimespanDurationNameNodegroupId = '7c586767-eac9-11eb-ba14-0a9473e82189';
 
+            this.groupFormationStatementNodegroupId = 'c6dc7090-bb18-11ea-85a6-3af9d3b32b71';
+            this.groupFormationStatementNameNodegroupId = 'c6dc734c-bb18-11ea-85a6-3af9d3b32b71';
+            this.groupFormationNameNodegroupId = 'c6dc75f4-bb18-11ea-85a6-3af9d3b32b71';
+            this.groupFormationTimespanNodegroupId = '32fdfc1d-e324-11eb-ba14-0a9473e82189';
+            this.groupFormationTimespanNameNodegroupId = '32fdfc20-e324-11eb-ba14-0a9473e82189';
+            this.groupFormationTimespanStatementNodegroupId = '32fdfc1a-e324-11eb-ba14-0a9473e82189';
+            this.groupFormationTimespanStatementNameNodegroupId = '32fdfc14-e324-11eb-ba14-0a9473e82189';
+            this.groupFormationTimespanDurationNodegroupId = '32fdfc17-e324-11eb-ba14-0a9473e82189';
+            this.groupFormationTimespanDurationNameNodegroupId = '32fdfc11-e324-11eb-ba14-0a9473e82189';
+
+            this.groupDissolutionnameNodegroupId = 'c0a1247c-bba0-11ea-ad92-3af9d3b32b71';
+            this.groupDissolutionstatementNodegroupId = 'c0a121b6-bba0-11ea-ad92-3af9d3b32b71';
+            this.groupDissolutionstatementNameNodegroupId = 'c0a129b8-bba0-11ea-ad92-3af9d3b32b71';
+            this.groupDissolutionTimespanNodegroupId = 'c77b5163-17bf-11ec-b193-0a9473e82189';
+            this.groupDissolutionTimespanNameNodegroupId = 'c77b5166-17bf-11ec-b193-0a9473e82189';
+            this.groupDissolutionTimespanStatementNodegroupId = 'c77b5160-17bf-11ec-b193-0a9473e82189';
+            this.groupDissolutionTimespanStatementNameNodegroupId = 'c77b515a-17bf-11ec-b193-0a9473e82189';
+            this.groupDissolutionTimespanDurationNodegroupId = 'c77b515d-17bf-11ec-b193-0a9473e82189';
+            this.groupDissolutionTimespanDurationNameNodegroupId = 'c77b5157-17bf-11ec-b193-0a9473e82189';
+
+            this.professionalActivitynameNodegroupId = '0c3baed8-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivitystatementNodegroupId = '0c3baed5-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivitystatementNameNodegroupId = '0c3baeed-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityTimespanNodegroupId = '0c3baee7-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityTimespanNameNodegroupId = '0c3baeea-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityTimespanStatementNodegroupId = '0c3baee1-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityTimespanStatementNameNodegroupId = '0c3baee4-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityTimespanDurationNodegroupId = '0c3baede-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityTimespanDurationNameNodegroupId = '0c3baedb-e323-11eb-ba14-0a9473e82189';
+
+            this.identifierDataAssignmentNodegroupId = '42b0db6b-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentNameNodegroupId = '42b0db7a-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentTimespanNodegroupId = '42b0db80-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentTimespanNameNodegroupId = '42b0db77-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentTimespanStatementNodegroupId = '42b0db74-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentTimespanStatementNameNodegroupId = '42b0db71-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentTimespanDurationNodegroupId = '42b0db7d-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentTimespanDurationNameNodegroupId = '42b0db6e-e319-11eb-ba14-0a9473e82189';
+
             self.nationality = ko.observable();
             self.typeOfGroup = ko.observable();
             self.externalIdentifierUrl = ko.observable();

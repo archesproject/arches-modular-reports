@@ -382,357 +382,474 @@
         <div style="padding: 24px; width: fit-content;" class="rp-report-section">
           <div style="font-weight:1000;font-size:16px;position:relative;float:right;"><a id="closeformationmodal" style="cursor:pointer">x</a></div>
           <div class="summary-table-container">
-        <div class="table-label">Group Formation</div>
-        <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
-        <table class="table summary-table-left-header"
-            data-bind="click: function() {
-              $parent.editTile(
-                  $parent.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
-              )},
-              clickBubble: false,
-              mouseoverBubble: false,
-              event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-          ">
-            <tbody>
-                <tr style="overflow:scroll; height: 100px;">
-                  <td class="header">Group Formation Name</td>
-                  <td>
+            <div class="table-label">Group Formation</div>
+            <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
+            <table class="table summary-table-left-header"
+                data-bind="click: function() {
+                  self.editTile(
+                      self.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
+                  )},
+                  clickBubble: false,
+                  mouseoverBubble: false,
+                  event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+              ">
+                <tbody>
+                    <tr style="overflow:scroll; height: 100px;">
+                      <td class="header">Group Formation Name</td>
+                      <td>
+                          <table style="margin: 0px;" class="table summary-table-left-header"
+                              data-bind="click: function() {
+                                self.editTile(
+                                    self.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_content', '@tile_id']),
+                                    self.groupFormationNameNodegroupId,
+                                    self.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
+                                )},
+                                clickBubble: false,
+                                mouseoverBubble: false,
+                                event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                            ">          
+                              <tbody>
+                                  <tr>
+                                      <td class="header">Content</td>
+                                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_content', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Label</td>
+                                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_label', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Language</td>
+                                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_language', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="header">Type</td>
+                                    <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_type', '@display_value'])"> </td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Formation Actor: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Formation Influence: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_influence', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Formation Location: </td>
+                      <td><a data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: {href: '/report/' + $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Formation Type: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Formation Label: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_label', '@display_value'])"> </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div>Group Formation Statement</div>
+            <!-- ko if: groupFormation.group_formation.group_formation_statement != undefined -->
+            <table class="table summary-table-left-header"
+                data-bind="click: function() {
+                    $parent.editTile(
+                        $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_content', '@tile_id']),
+                    )},
+                    clickBubble: false,
+                    mouseoverBubble: false,
+                    event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                ">
+              <tr style="overflow:scroll; height: 100px;">
+                <td class="header">Statement Names</td>
+                <td>
+                  <!-- ko if: groupFormation.group_formation.group_formation_statement.group_formation_statement_name -->
+                  <!-- ko foreach: { data: groupFormation.group_formation.group_formation_statement.group_formation_statement_name, as: 'statementName' } -->
                       <table style="margin: 0px;" class="table summary-table-left-header"
                           data-bind="click: function() {
-                            $parent.editTile(
-                                $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_content', '@tile_id']),
+                            $parents[1].editTile(
+                                $parents[1].getValue(statementName, ['group_formation_statement_name_content', '@tile_id'])
                             )},
                             clickBubble: false,
                             mouseoverBubble: false,
                             event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                        ">          
-                          <tbody>
-                              <tr>
-                                  <td class="header">Content</td>
-                                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_content', '@display_value'])"> </td>
-                              </tr>
-                              <tr>
-                                  <td class="header">Label</td>
-                                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_label', '@display_value'])"> </td>
-                              </tr>
-                              <tr>
-                                  <td class="header">Language</td>
-                                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_language', '@display_value'])"> </td>
-                              </tr>
-                              <tr>
-                                <td class="header">Type</td>
-                                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_type', '@display_value'])"> </td>
-                              </tr>
-                          </tbody>
-                      </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Formation Actor: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@display_value'])"> </td>
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Formation Influence: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_influence', '@display_value'])"> </td>
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Formation Location: </td>
-                  <td><a data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: {href: '/report/' + $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Formation Type: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Formation Label: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_label', '@display_value'])"> </td>
-                </tr>
-            </tbody>
-        </table>
+                        ">
+                        <tbody>
+                            <tr>
+                                <td class="header">Content</td>
+                                <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_content', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                                <td class="header">Label</td>
+                                <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_label', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                                <td class="header">Language</td>
+                                <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_language', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                              <td class="header">Type</td>
+                              <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_type', '@display_value'])"> </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                  <!-- /ko -->
+                  <!-- /ko -->
+                  <!-- ko ifnot: groupFormation.group_formation.group_formation_statement.group_formation_statement_name -->
+                      <div style = 'cursor: pointer; color: steelblue;'
+                          data-bind="click: function() {
+                              self.editTile(
+                                  null,
+                                  self.groupFormationStatementNameNodegroupId,
+                                  self.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_content', '@tile_id']),
+                              )},
+                              clickBubble: false,
+                              mouseoverBubble: false,
+                              event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                      ">Add New Statement Name</div>
+                  <!-- /ko -->
+                </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Formation Statement: </td>
+                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_content', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Formation Statement Type: </td>
+                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_type', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Formation Statement Label: </td>
+                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_label', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Formation Statement Language: </td>
+                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_language', '@display_value'])"> </td>
+              </tr>
+            </table>
+            <!-- /ko -->
+            <!-- ko ifnot: groupFormation.group_formation.group_formation_statement -->
+            <div>
+                <span>No Formation Statement</span>
+                <span style = 'cursor: pointer; color: steelblue;'
+                    data-bind="click: function() {
+                        self.editTile(
+                            null,
+                            self.groupFormationStatementNodegroupId,
+                            self.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
+                        )},
+                        clickBubble: false,
+                        mouseoverBubble: false,
+                        event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                ">Add New Statement</span>
+            </div>
+            <!-- /ko -->
 
-        <div>Group Formation Statement</div>
-        <!-- ko if: groupFormation.group_formation.group_formation_statement != undefined -->
-        <table class="table summary-table-left-header"
-            data-bind="click: function() {
+            <div>Group Formation Time Span</div>
+            <!-- ko if: groupFormation.group_formation.group_formation_timespan -->
+            <table class="table summary-table-left-header"
+              data-bind="click: function() {
                 $parent.editTile(
-                    $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_content', '@tile_id']),
+                    $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@tile_id']),
                 )},
                 clickBubble: false,
                 mouseoverBubble: false,
                 event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
             ">
-          <tr style="overflow:scroll; height: 100px;">
-            <td class="header">Statement Names</td>
-            <td>
-              <!-- ko foreach: { data: groupFormation.group_formation.group_formation_statement.group_formation_statement_name, as: 'statementName' } -->
-                  <table style="margin: 0px;" class="table summary-table-left-header"
-                      data-bind="click: function() {
-                        $parents[1].editTile(
-                            $parents[1].getValue(statementName, ['group_formation_statement_name_content', '@tile_id'])
-                        )},
-                        clickBubble: false,
-                        mouseoverBubble: false,
-                        event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                    ">
-                    <tbody>
-                        <tr>
-                            <td class="header">Content</td>
-                            <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_content', '@display_value'])"> </td>
-                        </tr>
-                        <tr>
-                            <td class="header">Label</td>
-                            <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_label', '@display_value'])"> </td>
-                        </tr>
-                        <tr>
-                            <td class="header">Language</td>
-                            <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_language', '@display_value'])"> </td>
-                        </tr>
-                        <tr>
-                          <td class="header">Type</td>
-                          <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_type', '@display_value'])"> </td>
-                        </tr>
-                    </tbody>
-                </table>
-              <!-- /ko -->
-            </td>
-          </tr>
-          <tr>
-            <td class="header" style="padding: 8px">Formation Statement: </td>
-            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_content', '@display_value'])"> </td>
-          </tr>
-          <tr>
-            <td class="header" style="padding: 8px">Formation Statement Type: </td>
-            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_type', '@display_value'])"> </td>
-          </tr>
-          <tr>
-            <td class="header" style="padding: 8px">Formation Statement Label: </td>
-            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_label', '@display_value'])"> </td>
-          </tr>
-          <tr>
-            <td class="header" style="padding: 8px">Formation Statement Language: </td>
-            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_language', '@display_value'])"> </td>
-          </tr>
-        </table>
-        <!-- /ko -->
-        <!-- ko if: groupFormation.group_formation.group_formation_statement === undefined -->
-        No Formation Statement
-        <!-- /ko -->
-
-        <div>Group Formation Time Span</div>
-        <table class="table summary-table-left-header"
-            data-bind="click: function() {
-              $parent.editTile(
-                  $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@tile_id']),
-              )},
-              clickBubble: false,
-              mouseoverBubble: false,
-              event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-          ">
-          <tr style="overflow:scroll; height: 100px;">
-            <td class="header">Time Span Names</td>
-            <td>
-              <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_name, as: 'timespanName' } -->
-                <table style="margin: 0px;" class="table summary-table-left-header"
-                    data-bind="click: function() {
-                        $parents[1].editTile(
-                            $parents[1].getValue(timespanName, ['group_formation_timespan_name_content', '@tile_id']),
-                        )},
-                        clickBubble: false,
-                        mouseoverBubble: false,
-                        event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                    ">
-                    <tbody>
-                        <tr>
-                            <td class="header">Content</td>
-                            <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_content', '@display_value'])"> </td>
-                        </tr>
-                        <tr>
-                            <td class="header">Label</td>
-                            <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_label', '@display_value'])"> </td>
-                        </tr>
-                        <tr>
-                            <td class="header">Language</td>
-                            <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_language', '@display_value'])"> </td>
-                        </tr>
-                        <tr>
-                          <td class="header">Type</td>
-                          <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_type', '@display_value'])"> </td>
-                        </tr>
-                    </tbody>
-                </table>
-              <!-- /ko -->
-            </td>
-          </tr>
-          <tr>
-            <td class="header" style="padding: 8px">Earliest Start Date: </td>
-            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@display_value'])"> </td>
-          </tr>
-          <tr>
-            <td class="header" style="padding: 8px">Latest Start Date: </td>
-            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_end_of_the_begin', '@display_value'])"> </td>
-          </tr>
-          <tr>
-            <td class="header" style="padding: 8px">Earliest End Date: </td>
-            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_end', '@display_value'])"> </td>
-          </tr>
-          <tr>
-            <td class="header" style="padding: 8px">Latest End Date: </td>
-            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_end_of_the_end', '@display_value'])"> </td>
-          </tr>
-          <!-- <tr>
-            <td class="header" style="padding: 8px">Time Span Type: </td>
-            <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_statement_language', '@display_value'])"> </td>
-          </tr> -->
-          <tr>
-            <td class="header">Duration</td>
-            <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration -->
-            <td>
-              <table class="table summary-table-left-header"
-                  data-bind="click: function() {
-                      $parent.editTile(
-                          $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_value', '@tile_id']),
-                      )},
-                  clickBubble: false,
-                  mouseoverBubble: false,
-                  event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-              ">
-                <tr style="overflow:scroll; height: 100px;">
-                  <td class="header">Duration Names</td>
-                  <td>
-                    <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration.group_formation_timespan_duration_name, as: 'timespanDurationName' } -->
-                      <table style="margin: 0px;" class="table summary-table-left-header"
-                          data-bind="click: function() {
-                              $parents[1].editTile(
-                                  $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_content', '@tile_id']),
-                              )},
-                          clickBubble: false,
-                          mouseoverBubble: false,
-                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                      ">
-                          <tbody>
-                              <tr>
-                                  <td class="header">Content</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_content', '@display_value'])"> </td>
-                              </tr>
-                              <tr>
-                                  <td class="header">Label</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_label', '@display_value'])"> </td>
-                              </tr>
-                              <tr>
-                                  <td class="header">Language</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_language', '@display_value'])"> </td>
-                              </tr>
-                              <tr>
-                                <td class="header">Type</td>
-                                <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_type', '@display_value'])"> </td>
-                              </tr>
-                          </tbody>
-                      </table>
-                    <!-- /ko -->
-                  </td>
-    
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Duration Value: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_value', '@display_value'])"> </td>
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_highest_possible_value', '@display_value'])"> </td>
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Unit: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_unit', '@display_value'])"> </td>
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Duration Type: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_type', '@display_value'])"> </td>
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Duration Label: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_label', '@display_value'])"> </td>
-                </tr>
-              </table>
-            </td>
-            <!-- /ko -->
-          </tr>
-          <tr>
-            <td class="header">Statement About Time Span</td>
-            <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement -->
-            <td>
-              <table class="table summary-table-left-header"
-                  data-bind="click: function() {
-                      $parent.editTile(
-                          $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@tile_id']),
-                      )},
-                  clickBubble: false,
-                  mouseoverBubble: false,
-                  event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-              ">
-                <tr style="overflow:scroll; height: 100px;">
-                  <td class="header">Statement About Time Span Names</td>
-                  <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name, as: 'timespanStatementName' -->
-                  <td>
-                    <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name, as: 'timespanStatementName' } -->
-                      <table style="margin: 0px;" class="table summary-table-left-header"
-                          data-bind="click: function() {
-                              $parents[1].editTile(
-                                  $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_content', '@tile_id']),
-                              )},
-                          clickBubble: false,
-                          mouseoverBubble: false,
-                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                      ">
-                          <tbody>
-                              <tr>
-                                  <td class="header">Content</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_content', '@display_value'])"> </td>
-                              </tr>
-                              <tr>
-                                  <td class="header">Label</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_label', '@display_value'])"> </td>
-                              </tr>
-                              <tr>
-                                  <td class="header">Language</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_language', '@display_value'])"> </td>
-                              </tr>
-                              <tr>
-                                <td class="header">Type</td>
-                                <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_type', '@display_value'])"> </td>
-                              </tr>
-                          </tbody>
-                      </table>
-                    <!-- /ko -->
-                  </td>
+            <tr style="overflow:scroll; height: 100px;">
+                <td class="header">Time Span Names</td>
+                <td>
+                  <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_name -->
+                  <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_name, as: 'timespanName' } -->
+                    <table style="margin: 0px;" class="table summary-table-left-header"
+                        data-bind="click: function() {
+                            $parents[1].editTile(
+                                $parents[1].getValue(timespanName, ['group_formation_timespan_name_content', '@tile_id']),
+                            )},
+                            clickBubble: false,
+                            mouseoverBubble: false,
+                            event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                        ">
+                        <tbody>
+                            <tr>
+                                <td class="header">Content</td>
+                                <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_content', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                                <td class="header">Label</td>
+                                <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_label', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                                <td class="header">Language</td>
+                                <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_language', '@display_value'])"> </td>
+                            </tr>
+                            <tr>
+                              <td class="header">Type</td>
+                              <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_type', '@display_value'])"> </td>
+                            </tr>
+                        </tbody>
+                    </table>
                   <!-- /ko -->
-    
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Statement: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@display_value'])"> </td>
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Statement Type: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_type', '@display_value'])"> </td>
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Statement Language: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_language', '@display_value'])"> </td>
-                </tr>
-                <tr>
-                  <td class="header" style="padding: 8px">Statement Label: </td>
-                  <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_statement_label', '@display_value'])"> </td>
-                </tr>
-              </table>
-            </td>
+                  <!-- /ko -->
+                  <!-- ko ifnot: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_name -->
+                      <div style = 'cursor: pointer; color: steelblue;'
+                          data-bind="click: function() {
+                              self.editTile(
+                                  null,
+                                  self.groupFormationTimespanNameNodegroupId,
+                                  self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@tile_id']),
+                              )},
+                              clickBubble: false,
+                              mouseoverBubble: false,
+                              event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                      ">Add New Time Span Name</div>
+                  <!-- /ko -->
+                </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Earliest Start Date: </td>
+                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Latest Start Date: </td>
+                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_end_of_the_begin', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Earliest End Date: </td>
+                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_end', '@display_value'])"> </td>
+              </tr>
+              <tr>
+                <td class="header" style="padding: 8px">Latest End Date: </td>
+                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_end_of_the_end', '@display_value'])"> </td>
+              </tr>
+              <!-- <tr>
+                <td class="header" style="padding: 8px">Time Span Type: </td>
+                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_statement_language', '@display_value'])"> </td>
+              </tr> -->
+              <tr>
+                <td class="header">Duration</td>
+                <td>
+                  <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration -->
+                  <table class="table summary-table-left-header"
+                      data-bind="click: function() {
+                          $parent.editTile(
+                              $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_value', '@tile_id']),
+                          )},
+                      clickBubble: false,
+                      mouseoverBubble: false,
+                      event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                  ">
+                    <tr style="overflow:scroll; height: 100px;">
+                      <td class="header">Duration Names</td>
+                      <td>
+                        <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration.group_formation_timespan_duration_name -->
+                        <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration.group_formation_timespan_duration_name, as: 'timespanDurationName' } -->
+                          <table style="margin: 0px;" class="table summary-table-left-header"
+                              data-bind="click: function() {
+                                  $parents[1].editTile(
+                                      $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_content', '@tile_id']),
+                                  )},
+                              clickBubble: false,
+                              mouseoverBubble: false,
+                              event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                          ">
+                              <tbody>
+                                  <tr>
+                                      <td class="header">Content</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_content', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Label</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_label', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Language</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_language', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="header">Type</td>
+                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_type', '@display_value'])"> </td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                        <!-- /ko -->
+                        <!-- /ko -->
+                        <!-- ko ifnot: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration.group_formation_timespan_duration_name -->
+                            <div style = 'cursor: pointer; color: steelblue;'
+                                data-bind="click: function() {
+                                    self.editTile(
+                                        null,
+                                        self.groupFormationTimespanDurationNameNodegroupId,
+                                        self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_value', '@tile_id']),
+                                    )},
+                                    clickBubble: false,
+                                    mouseoverBubble: false,
+                                    event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                            ">Add New Time Span Duration Name</div>
+                        <!-- /ko -->
+                      </td>
+        
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Value: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Unit: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_unit', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Type: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_type', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Duration Label: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_label', '@display_value'])"> </td>
+                    </tr>
+                  </table>
+                  <!-- /ko -->
+                  <!-- ko ifnot: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration -->
+                  <div style = 'cursor: pointer; color: steelblue;'
+                      data-bind="click: function() {
+                          self.editTile(
+                              null,
+                              self.groupFormationTimespanDurationNodegroupId,
+                              self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@tile_id']),
+                          )},
+                          clickBubble: false,
+                          mouseoverBubble: false,
+                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                      ">Add New Time Span Duration</div>
+                  <!-- /ko -->
+                </td>
+              </tr>
+              <tr>
+                <td class="header">Statement About Time Span</td>
+                <td>
+                  <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement -->
+                  <table class="table summary-table-left-header"
+                      data-bind="click: function() {
+                          $parent.editTile(
+                              $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@tile_id']),
+                          )},
+                      clickBubble: false,
+                      mouseoverBubble: false,
+                      event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                  ">
+                    <tr style="overflow:scroll; height: 100px;">
+                      <td class="header">Statement About Time Span Names</td>
+                      <td>
+                        <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name -->
+                        <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name, as: 'timespanStatementName' } -->
+                          <table style="margin: 0px;" class="table summary-table-left-header"
+                              data-bind="click: function() {
+                                  $parents[1].editTile(
+                                      $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_content', '@tile_id']),
+                                  )},
+                              clickBubble: false,
+                              mouseoverBubble: false,
+                              event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                          ">
+                              <tbody>
+                                  <tr>
+                                      <td class="header">Content</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_content', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Label</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_label', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                      <td class="header">Language</td>
+                                      <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_language', '@display_value'])"> </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="header">Type</td>
+                                    <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_type', '@display_value'])"> </td>
+                                  </tr>
+                              </tbody>
+                          </table>
+                        <!-- /ko -->
+                        <!-- /ko -->
+                        <!-- ko ifnot: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name -->
+                        <div style = 'cursor: pointer; color: steelblue;'
+                            data-bind="click: function() {
+                                self.editTile(
+                                    null,
+                                    self.groupFormationTimespanStatementNameNodegroupId,
+                                    self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@tile_id']),
+                                )},
+                                clickBubble: false,
+                                mouseoverBubble: false,
+                                event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                            ">Add New Time Span Statement Name</div>
+                        <!-- /ko -->
+                    
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement Type: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_type', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement Language: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_language', '@display_value'])"> </td>
+                    </tr>
+                    <tr>
+                      <td class="header" style="padding: 8px">Statement Label: </td>
+                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_statement_label', '@display_value'])"> </td>
+                    </tr>
+                  </table>
+                <!-- /ko -->
+                <!-- ko ifnot: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement -->
+                    <div style = 'cursor: pointer; color: steelblue;'
+                        data-bind="click: function() {
+                            self.editTile(
+                                null,
+                                self.groupFormationTimespanStatementNodegroupId,
+                                self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@tile_id']),
+                            )},
+                            clickBubble: false,
+                            mouseoverBubble: false,
+                            event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                      ">Add New Time Span Statement</div>
+                <!-- /ko -->
+              </td>
+              </tr>
+            </table>
             <!-- /ko -->
-          </tr>
-        </table>
-        <!-- /ko -->
+            <!-- ko ifnot: groupFormation.group_formation.group_formation_timespan -->
+              <div>
+                <span>No Formation Time Span</span>
+                <span style = 'cursor: pointer; color: steelblue;'
+                    data-bind="click: function() {
+                        self.editTile(
+                            null,
+                            self.groupFormationTimespanNodegroupId,
+                            self.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
+                        )},
+                        clickBubble: false,
+                        mouseoverBubble: false,
+                        event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                  ">Add New Time Span</span>
+              </div>
+            <!-- /ko -->
+            <!-- /ko -->
           </div>
         </div>
       </div>
@@ -1248,13 +1365,13 @@
             </tr>
           </table>
           <!-- /ko -->
-          <!-- ko if: sojourn.sojourn_statement === undefined -->
+          <!-- ko if: sojourn.sojourn_statement -->
           <div>
               <span>No Establishment Statement</span>
               <span style = 'cursor: pointer; color: steelblue;'
                   data-bind="click: function() {
                       self.editTile(
-                          self.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_content', '@tile_id']),
+                          null,
                           self.sojournStatementNodegroupId,
                           self.getValue(sojourn, ['sojourn_label','@tile_id']),
                       )},
@@ -1506,7 +1623,7 @@
                                   self.editTile(
                                       null,
                                       self.sojournTimespanStatementNameNodegroupId,
-                                      self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_begin', '@tile_id']),
+                                      self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_content', '@tile_id']),
                                   )},
                                   clickBubble: false,
                                   mouseoverBubble: false,
