@@ -1696,8 +1696,8 @@
                         <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_statement.sojourn_timespan_statement_name, as: 'timespanStatementName' } -->
                         <table style="margin: 0px;" class="table summary-table-left-header"
                             data-bind="click: function() {
-                                $parent.editTile(
-                                    $parent.getValue(timespanStatementName, ['sojourn_timespan_statement_name_content', '@tile_id']),
+                                self.editTile(
+                                    self.getValue(timespanStatementName, ['sojourn_timespan_statement_name_content', '@tile_id']),
                                 )},
                             clickBubble: false,
                             mouseoverBubble: false,
@@ -1706,19 +1706,19 @@
                             <tbody>
                                 <tr>
                                     <td class="header">Content</td>
-                                    <td data-bind="text: $parent.getValue(timespanStatementName, ['sojourn_timespan_statement_name_content', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(timespanStatementName, ['sojourn_timespan_statement_name_content', '@display_value'])"> </td>
                                 </tr>
                                 <tr>
                                     <td class="header">Label</td>
-                                    <td data-bind="text: $parent.getValue(timespanStatementName, ['sojourn_timespan_statement_name_label', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(timespanStatementName, ['sojourn_timespan_statement_name_label', '@display_value'])"> </td>
                                 </tr>
                                 <tr>
                                     <td class="header">Language</td>
-                                    <td data-bind="text: $parent.getValue(timespanStatementName, ['sojourn_timespan_statement_name_language', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(timespanStatementName, ['sojourn_timespan_statement_name_language', '@display_value'])"> </td>
                                 </tr>
                                 <tr>
                                   <td class="header">Type</td>
-                                  <td data-bind="text: $parent.getValue(timespanStatementName, ['sojourn_timespan_statement_name_type', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(timespanStatementName, ['sojourn_timespan_statement_name_type', '@display_value'])"> </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -2096,8 +2096,8 @@
                         <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_statement.professional_activity_timespan_statement_name, as: 'timespanStatementName' } -->
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
-                                  $parents[1].editTile(
-                                      $parents[1].getValue(timespanStatementName, ['professional_activity_timespan_statement_name_content', '@tile_id']),
+                                  self.editTile(
+                                      self.getValue(timespanStatementName, ['professional_activity_timespan_statement_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
                               mouseoverBubble: false,
