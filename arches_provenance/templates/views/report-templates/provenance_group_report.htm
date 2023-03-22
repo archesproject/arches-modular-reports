@@ -878,9 +878,11 @@
                   <td>
                       <table style="margin: 0px;" class="table summary-table-left-header"
                           data-bind="click: function() {
-                              $parent.editTile(
-                                  $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_content', '@tile_id']),
-                              )},
+                              self.editTile(
+                                  self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_content', '@tile_id']),
+                                  self.groupDissolutionNameNodegroupId,
+                                  self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
+                          )},
                           clickBubble: false,
                           mouseoverBubble: false,
                           event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
@@ -935,6 +937,7 @@
           <tr style="overflow:scroll; height: 100px;">
             <td class="header">Statement Names</td>
             <td>
+              <!-- ko if: groupDissolution.group_dissolution.group_dissolution_statement.group_dissolution_statement_name -->
               <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_statement.group_dissolution_statement_name, as: 'statementName' } -->
                 <table style="margin: 0px;" class="table summary-table-left-header"
                     data-bind="click: function() {
@@ -965,6 +968,20 @@
                     </tbody>
                 </table>
               <!-- /ko -->
+              <!-- /ko -->
+              <!-- ko ifnot: groupDissolution.group_dissolution.group_dissolution_statement.group_dissolution_statement_name -->
+                  <div style = 'cursor: pointer; color: steelblue;'
+                      data-bind="click: function() {
+                          self.editTile(
+                              null,
+                              self.groupDissolutionStatementNameNodegroupId,
+                              self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_content', '@tile_id']),
+                          )},
+                          clickBubble: false,
+                          mouseoverBubble: false,
+                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                      ">Add New Statement Name</div>
+              <!-- /ko -->
             </td>
           </tr>
           <tr>
@@ -986,7 +1003,20 @@
         </table>
         <!-- /ko -->
         <!-- ko if: groupDissolution.group_dissolution.group_dissolution_statement === undefined -->
-        No Dissolution Statement
+        <div>
+          <span>No Dissolution Statement</span>
+          <span style = 'cursor: pointer; color: steelblue;'
+              data-bind="click: function() {
+                  self.editTile(
+                      null,
+                      self.groupDissolutionStatementNodegroupId,
+                      self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
+                  )},
+                  clickBubble: false,
+                  mouseoverBubble: false,
+                  event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+          ">Add New Statement</span>
+        </div>
         <!-- /ko -->
   
         <div>Group Dissolution Time Span</div>
@@ -1002,8 +1032,8 @@
         ">
           <tr style="overflow:scroll; height: 100px;">
             <td class="header">Time Span Names</td>
-            <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name != undefined -->
             <td>
+              <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name != undefined -->
               <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name, as: 'timespanName' } -->
                 <table style="margin: 0px;" class="table summary-table-left-header"
                     data-bind="click: function() {
@@ -1034,8 +1064,21 @@
                     </tbody>
                 </table>
               <!-- /ko -->
+              <!-- /ko -->
+              <!-- ko ifnot: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name -->
+                  <div style = 'cursor: pointer; color: steelblue;'
+                      data-bind="click: function() {
+                          self.editTile(
+                              null,
+                              self.groupDissolutionTimespanNameNodegroupId,
+                              self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'timespan_begin_of_the_begin', '@tile_id']),
+                          )},
+                          clickBubble: false,
+                          mouseoverBubble: false,
+                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                      ">Add New Time Span Name</div>
+              <!-- /ko -->          
             </td>
-            <!-- /ko -->
           </tr>
           <tr>
             <td class="header" style="padding: 8px">Earliest Start Date: </td>
@@ -1058,9 +1101,9 @@
             <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_statement_type', '@display_value'])"> </td>
           </tr>
           <tr>
-            <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration -->
             <td class="header">Duration</td>
             <td>
+              <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration -->
               <table class="table summary-table-left-header"
                   data-bind="click: function() {
                       $parent.editTile(
@@ -1072,8 +1115,8 @@
               ">
                 <tr style="overflow:scroll; height: 100px;">
                   <td class="header">Duration Names</td>
-                  <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration.group_dissolution_timespan_duration_name != undefined -->
                   <td>
+                    <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration.group_dissolution_timespan_duration_name != undefined -->
                     <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration.group_dissolution_timespan_duration_name, as: 'timespanDurationName' } -->
                       <table style="margin: 0px;" class="table summary-table-left-header"
                           data-bind="click: function() {
@@ -1104,8 +1147,21 @@
                           </tbody>
                       </table>
                     <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko ifnot: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration.group_dissolution_timespan_duration_name -->
+                        <div style = 'cursor: pointer; color: steelblue;'
+                            data-bind="click: function() {
+                                self.editTile(
+                                    null,
+                                    self.groupDissolutionTimespanDurationNameNodegroupId,
+                                    self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_value', '@tile_id']),
+                                )},
+                                clickBubble: false,
+                                mouseoverBubble: false,
+                                event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                            ">Add New Time Span Duration Name</div>
+                    <!-- /ko -->
                   </td>
-                  <!-- /ko -->
     
                 </tr>
                 <tr>
@@ -1129,14 +1185,27 @@
                   <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_label', '@display_value'])"> </td>
                 </tr>
               </table>
-            </td>
-            <!-- /ko -->
+              <!-- /ko -->
+              <!-- ko ifnot: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration -->
+              <div style = 'cursor: pointer; color: steelblue;'
+                  data-bind="click: function() {
+                      self.editTile(
+                          null,
+                          self.groupDissolutionTimespanDurationNodegroupId,
+                          self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'timespan_begin_of_the_begin', '@tile_id']),
+                      )},
+                      clickBubble: false,
+                      mouseoverBubble: false,
+                      event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+              ">Add New Time Span Duration</div>
+              <!-- /ko -->
+          </td>
           </tr>
           <tr>
             <td class="header">Statement About Time Span</td>
-            <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement -->
             <td>
-                <table class="table summary-table-left-header"
+              <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement -->
+              <table class="table summary-table-left-header"
                     data-bind="click: function() {
                         $parent.editTile(
                             $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_content', '@tile_id']),
@@ -1147,8 +1216,8 @@
                 ">
                 <tr style="overflow:scroll; height: 100px;">
                   <td class="header">Statement About Time Span Names</td>
-                  <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement.group_dissolution_timespan_statement_name, as: 'timespanStatementName != undefined -->
                   <td>
+                    <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement.group_dissolution_timespan_statement_name -->
                     <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement.group_dissolution_timespan_statement_name, as: 'timespanStatementName' } -->
                       <table style="margin: 0px;" class="table summary-table-left-header"
                           data-bind="click: function() {
@@ -1179,9 +1248,21 @@
                           </tbody>
                       </table>
                     <!-- /ko -->
-                  </td>
-                  <!-- /ko -->
-    
+                    <!-- /ko -->
+                    <!-- ko ifnot: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement.group_dissolution_timespan_statement_name -->
+                    <div style = 'cursor: pointer; color: steelblue;'
+                        data-bind="click: function() {
+                            self.editTile(
+                                null,
+                                self.groupDissolutionTimespanStatementNameNodegroupId,
+                                self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_content', '@tile_id']),
+                            )},
+                            clickBubble: false,
+                            mouseoverBubble: false,
+                            event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                    ">Add New Time Span Statement Name</div>
+                    <!-- /ko -->
+                  </td>    
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Statement: </td>
@@ -1200,13 +1281,39 @@
                   <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_statement_label', '@display_value'])"> </td>
                 </tr>
               </table>
-            </td>
+              <!-- /ko -->
+              <!-- ko ifnot: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement -->
+                <div style = 'cursor: pointer; color: steelblue;'
+                    data-bind="click: function() {
+                        self.editTile(
+                            null,
+                            self.groupDissolutionTimespanStatementNodegroupId,
+                            self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'timespan_begin_of_the_begin', '@tile_id']),
+                        )},
+                        clickBubble: false,
+                        mouseoverBubble: false,
+                        event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                ">Add New Time Span Statement</div>
             <!-- /ko -->
+          </td>
           </tr>
         </table>
         <!-- /ko -->
-        <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan === undefined -->
-        No Group Dissolution Timespan
+        <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan === undefined -->        
+        <div>
+          <span>No Group Dissolution Timespan</span>
+          <span style = 'cursor: pointer; color: steelblue;'
+              data-bind="click: function() {
+                  self.editTile(
+                      null,
+                      self.groupDissolutionTimespanNodegroupId,
+                      self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
+                  )},
+                  clickBubble: false,
+                  mouseoverBubble: false,
+                  event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+          ">Add New Time Span</span>
+        </div>
         <!-- /ko -->
         <!-- /ko -->
       </div>

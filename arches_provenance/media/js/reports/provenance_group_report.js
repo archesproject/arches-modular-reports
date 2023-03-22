@@ -54,9 +54,9 @@ define([
             this.groupFormationTimespanDurationNodegroupId = '32fdfc17-e324-11eb-ba14-0a9473e82189';
             this.groupFormationTimespanDurationNameNodegroupId = '32fdfc11-e324-11eb-ba14-0a9473e82189';
 
-            this.groupDissolutionnameNodegroupId = 'c0a1247c-bba0-11ea-ad92-3af9d3b32b71';
-            this.groupDissolutionstatementNodegroupId = 'c0a121b6-bba0-11ea-ad92-3af9d3b32b71';
-            this.groupDissolutionstatementNameNodegroupId = 'c0a129b8-bba0-11ea-ad92-3af9d3b32b71';
+            this.groupDissolutionNameNodegroupId = 'c0a1247c-bba0-11ea-ad92-3af9d3b32b71';
+            this.groupDissolutionStatementNodegroupId = 'c0a121b6-bba0-11ea-ad92-3af9d3b32b71';
+            this.groupDissolutionStatementNameNodegroupId = 'c0a129b8-bba0-11ea-ad92-3af9d3b32b71';
             this.groupDissolutionTimespanNodegroupId = 'c77b5163-17bf-11ec-b193-0a9473e82189';
             this.groupDissolutionTimespanNameNodegroupId = 'c77b5166-17bf-11ec-b193-0a9473e82189';
             this.groupDissolutionTimespanStatementNodegroupId = 'c77b5160-17bf-11ec-b193-0a9473e82189';
