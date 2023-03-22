@@ -16,8 +16,8 @@ define([
             params.configKeys = [];
             var self = this;
 
-            const resourceid = params.report.report_json.resourceinstanceid;
-            const resourceName = params.report.report_json.displayname;
+            const resourceid = params.report.report_json?.resourceinstanceid;
+            const resourceName = params.report.report_json?.displayname;
 
             const nameNodegroupdId = "5bc65fd2-bb18-11ea-85a6-3af9d3b32b71";
             const nationalityNodegroupId = "a5cff5a3-e317-11eb-ba14-0a9473e82189";
@@ -96,6 +96,7 @@ define([
             this.onSaveSuccess = () => {
                 self.getComplexBranchData(self.currentObservable(), self.currentNodegroupId(), self.mainTileId());
                 self.showTileEditor(false);
+                $('#name-summary-table').DataTable().ajax.reload();
             };
             this.onDeleteSuccess = () => {
                 self.getComplexBranchData(self.currentObservable(), self.currentNodegroupId(), self.mainTileId());
