@@ -95,7 +95,6 @@ define([
             self.groupDissolutionData = ko.observable();
             self.groupEstablishmentData = ko.observable();
             self.groupProfessionalActivityData = ko.observable();
-            self.groupProfessionalActivityData.subscribe(x=>console.log(x));
             self.groupIdentifierAssignmentData = ko.observable();
             self.proActivity = ko.observable();
             self.relatedResourceConfigs = ko.observableArray();

@@ -2367,7 +2367,7 @@
                 event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
             ">
               <tr style="overflow:scroll; height: 100px;">
-                <td class="header">Statement Names</td>
+                <td class="header">Identifier Data Assignment Names</td>
                 <td>
                   <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_name -->
                   <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_name, as: 'dataAssignmentName' } -->
@@ -2375,7 +2375,7 @@
                         data-bind="click: function() {
                             self.editTile(
                                 self.getValue(dataAssignmentName, ['identifier_data_assignment_name_content', '@tile_id']),
-                            )},
+                                )},
                         clickBubble: false,
                         mouseoverBubble: false,
                         event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
@@ -2400,6 +2400,19 @@
                         </tbody>
                     </table>
                   <!-- /ko -->
+                  <!-- /ko -->
+                  <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_name -->
+                  <div style = 'cursor: pointer; color: steelblue;'
+                      data-bind="click: function() {
+                          self.editTile(
+                              null,
+                              self.identifierDataAssignmentNameNodegroupId,
+                              self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_actor', '@tile_id']),
+                          )},
+                          clickBubble: false,
+                          mouseoverBubble: false,
+                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                  ">Add New Name</div>
                   <!-- /ko -->
                 </td>
               </tr>
@@ -2462,6 +2475,19 @@
                         </tbody>
                     </table>
                   <!-- /ko -->
+                  <!-- /ko -->
+                  <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_name -->
+                  <div style = 'cursor: pointer; color: steelblue;'
+                      data-bind="click: function() {
+                          self.editTile(
+                              null,
+                              self.identifierDataAssignmentTimespanNameNodegroupId,
+                              self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_begin', '@tile_id']),
+                          )},
+                          clickBubble: false,
+                          mouseoverBubble: false,
+                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                      ">Add New Time Span Name</div>
                   <!-- /ko -->
                 </td>
               </tr>
@@ -2529,6 +2555,19 @@
                           </table>
                         <!-- /ko -->
                         <!-- /ko -->
+                        <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_duration.identifier_data_assignment_timespan_duration_name -->
+                        <div style = 'cursor: pointer; color: steelblue;'
+                            data-bind="click: function() {
+                                self.editTile(
+                                    null,
+                                    self.identifierDataAssignmentTimespanDurationNameNodegroupId,
+                                    self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@tile_id']),
+                                )},
+                                clickBubble: false,
+                                mouseoverBubble: false,
+                                event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                            ">Add New Time Span Duration Name</div>
+                        <!-- /ko -->
                       </td>
 
                     </tr>
@@ -2558,6 +2597,19 @@
                     </tr>
                   </table>
                   <!-- /ko -->
+                  <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_duration -->
+                  <div style = 'cursor: pointer; color: steelblue;'
+                      data-bind="click: function() {
+                          self.editTile(
+                              null,
+                              self.identifierDataAssignmentTimespanDurationNodegroupId,
+                              self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_begin', '@tile_id']),
+                          )},
+                          clickBubble: false,
+                          mouseoverBubble: false,
+                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                  ">Add New Time Span Duration</div>
+                  <!-- /ko -->
                 </td>
               </tr>
               <tr>
@@ -2567,7 +2619,7 @@
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
                           self.editTile(
-                              self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@tile_id']),
+                              self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_statement', 'identifier_data_assignment_timespan_statement_content', '@tile_id']),
                           )},
                       clickBubble: false,
                       mouseoverBubble: false,
@@ -2578,11 +2630,11 @@
                       <td class="header">Statement About Time Span Names</td>
                       <td>
                         <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement.identifier_data_assignment_timespan_statement_name -->
-                        <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement.identifier_data_assignment_timespan_statement_name, as: 'timespanDurationName' } -->
+                        <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement.identifier_data_assignment_timespan_statement_name, as: 'timespanStatementName' } -->
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
                                   self.editTile(
-                                      self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@tile_id']),
+                                      self.getValue(timespanStatementName, ['identifier_data_assignment_timespan_statement_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
                               mouseoverBubble: false,
@@ -2592,63 +2644,115 @@
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
-                                      <td data-bind="text: self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanStatementName, ['identifier_data_assignment_timespan_statement_name_content', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Label</td>
-                                      <td data-bind="text: self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_label', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanStatementName, ['identifier_data_assignment_timespan_statement_name_label', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Language</td>
-                                      <td data-bind="text: self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_language', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanStatementName, ['identifier_data_assignment_timespan_statement_name_language', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                     <td class="header">Type</td>
-                                    <td data-bind="text: self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_type', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(timespanStatementName, ['identifier_data_assignment_timespan_statement_name_type', '@display_value'])"> </td>
                                   </tr>
                               </tbody>
                           </table>
                         <!-- /ko -->
+                        <!-- /ko -->
+                        <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement.identifier_data_assignment_timespan_statement_name -->
+                        <div style = 'cursor: pointer; color: steelblue;'
+                            data-bind="click: function() {
+                                self.editTile(
+                                    null,
+                                    self.identifierDataAssignmentTimespanStatementNameNodegroupId,
+                                    self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_statement', 'identifier_data_assignment_timespan_statement_content', '@tile_id']),
+                                )},
+                                clickBubble: false,
+                                mouseoverBubble: false,
+                                event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                            ">Add New Time Span Statement Name</div>
                         <!-- /ko -->
                       </td>
 
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement: </td>
-                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_statement', 'identifier_data_assignment_timespan_statement_content', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement Type: </td>
-                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_statement', 'identifier_data_assignment_timespan_statement_type', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement Language: </td>
-                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_statement', 'identifier_data_assignment_timespan_statement_language', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement Type Metatype: </td>
-                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_unit', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_statement', 'identifier_data_assignment_timespan_statement_type_metatype', '@display_value'])"> </td>
                     </tr>
                     <!-- <tr>
                       <td class="header" style="padding: 8px">Duration Type: </td>
-                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_statement', 'identifier_data_assignment_timespan_statement', '@display_value'])"> </td>
                     </tr> -->
                     <tr>
                       <td class="header" style="padding: 8px">Statement Label: </td>
-                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_label', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_statement', 'identifier_data_assignment_timespan_statement_label', '@display_value'])"> </td>
                     </tr>
                   </table>
+                  <!--/ko -->
+                  <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement -->
+                  <div style = 'cursor: pointer; color: steelblue;'
+                      data-bind="click: function() {
+                          self.editTile(
+                              null,
+                              self.identifierDataAssignmentTimespanStatementNodegroupId,
+                              self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_begin', '@tile_id']),
+                          )},
+                          clickBubble: false,
+                          mouseoverBubble: false,
+                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                      ">Add New Time Span Statement</div>
                   <!--/ko -->
                 </td>
               </tr>
             </table>
             <!-- /ko -->
             <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan -->
-            No identifier timespan data assignment time span
+            <div>
+              <span>No identifier data assignment time span</span>
+              <span style = 'cursor: pointer; color: steelblue;'
+                  data-bind="click: function() {
+                      self.editTile(
+                          null,
+                          self.identifierDataAssignmentTimespanNodegroupId,
+                          self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_actor', '@tile_id']),
+                      )},
+                      clickBubble: false,
+                      mouseoverBubble: false,
+                      event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+              ">Add New identifier data assignment time span</span>
+            </div>
             <!-- /ko -->
             <!-- /ko -->
             <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment -->
-            No identifier data Assignment
+            <div>
+              <span>No identifier data Assignment</span>
+              <span style = 'cursor: pointer; color: steelblue;'
+                  data-bind="click: function() {
+                      self.editTile(
+                          null,
+                          self.identifierDataAssignmentNodegroupId,
+                          self.getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
+                      )},
+                      clickBubble: false,
+                      mouseoverBubble: false,
+                      event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+              ">Add New identifier data Assignment</span>
+          </div>
             <!-- /ko -->
             <!-- /ko -->
             <!-- /ko -->
