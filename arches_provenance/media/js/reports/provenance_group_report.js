@@ -471,7 +471,7 @@ define([
             const professionalActivityColumns  = [
                 {"title": "Location", "orderable": true, targets: 0, "data": "related_resource", "defaultContent": "",
                     "render": function(data) {
-                        if (data) {
+                        if (data?.name?.en?.value) {
                             return "<a href=/report/" + data.relatedresourceinstanceid + " target=_blank style='color:blue;'>" + data.name.en.value + "</a>";
                         }
                         else {
@@ -501,7 +501,7 @@ define([
             const establishmentColumns  = [
                 {"title": "Location", "orderable": true, targets: 0, "data": "related_resource", "defaultContent": "",
                     "render": function(data) {
-                        if (data) {
+                        if (data?.name?.en?.value) {
                             return "<a href=/report/" + data.relatedresourceinstanceid + " target=_blank style='color:blue;'>" + data.name.en.value + "</a>";
                         }
                         else {

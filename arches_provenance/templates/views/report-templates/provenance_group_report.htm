@@ -306,9 +306,9 @@
             </tr>
             <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
             <tr>
-              <td><a data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
-              <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value'])"> </td>
-              <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
+              <td><a data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
+              <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value'])"> </td>
+              <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
               <td style="width:40px;">
                 <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px" data-toggle="modal" data-target="#formationModal">+</button>
               </td>
@@ -361,10 +361,10 @@
             </tr>
             <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
             <tr>
-              <!-- <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td> -->
-              <td><a data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
-              <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"> </td>
-              <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
+              <!-- <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td> -->
+              <td><a data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
+              <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"> </td>
+              <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
               <td style="width:40px;">
                 <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px;" data-toggle="modal" data-target="#dissolutionModal">+</button>
               </td>
@@ -411,19 +411,19 @@
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
-                                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_content', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_content', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Label</td>
-                                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_label', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_label', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Language</td>
-                                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_language', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_language', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                     <td class="header">Type</td>
-                                    <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_type', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_type', '@display_value'])"> </td>
                                   </tr>
                               </tbody>
                           </table>
@@ -431,23 +431,23 @@
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Formation Actor: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Formation Influence: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_influence', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_influence', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Formation Location: </td>
-                      <td><a data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: {href: '/report/' + $parent.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
+                      <td><a data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: {href: '/report/' + self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Formation Type: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Formation Label: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_label', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_label', '@display_value'])"> </td>
                     </tr>
                 </tbody>
             </table>
@@ -457,7 +457,7 @@
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
                     $parent.editTile(
-                        $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_content', '@tile_id']),
+                        self.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_content', '@tile_id']),
                     )},
                     clickBubble: false,
                     mouseoverBubble: false,
@@ -471,7 +471,7 @@
                       <table style="margin: 0px;" class="table summary-table-left-header"
                           data-bind="click: function() {
                             $parents[1].editTile(
-                                $parents[1].getValue(statementName, ['group_formation_statement_name_content', '@tile_id'])
+                                self.getValue(statementName, ['group_formation_statement_name_content', '@tile_id'])
                             )},
                             clickBubble: false,
                             mouseoverBubble: false,
@@ -480,19 +480,19 @@
                         <tbody>
                             <tr>
                                 <td class="header">Content</td>
-                                <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_content', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(statementName, ['group_formation_statement_name_content', '@display_value'])"> </td>
                             </tr>
                             <tr>
                                 <td class="header">Label</td>
-                                <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_label', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(statementName, ['group_formation_statement_name_label', '@display_value'])"> </td>
                             </tr>
                             <tr>
                                 <td class="header">Language</td>
-                                <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_language', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(statementName, ['group_formation_statement_name_language', '@display_value'])"> </td>
                             </tr>
                             <tr>
                               <td class="header">Type</td>
-                              <td data-bind="text: $parents[1].getValue(statementName, ['group_formation_statement_name_type', '@display_value'])"> </td>
+                              <td data-bind="text: self.getValue(statementName, ['group_formation_statement_name_type', '@display_value'])"> </td>
                             </tr>
                         </tbody>
                     </table>
@@ -515,19 +515,19 @@
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Formation Statement: </td>
-                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_content', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_content', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Formation Statement Type: </td>
-                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_type', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_type', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Formation Statement Label: </td>
-                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_label', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_label', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Formation Statement Language: </td>
-                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_language', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_language', '@display_value'])"> </td>
               </tr>
             </table>
             <!-- /ko -->
@@ -553,7 +553,7 @@
             <table class="table summary-table-left-header"
               data-bind="click: function() {
                 $parent.editTile(
-                    $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@tile_id']),
+                    self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@tile_id']),
                 )},
                 clickBubble: false,
                 mouseoverBubble: false,
@@ -567,7 +567,7 @@
                     <table style="margin: 0px;" class="table summary-table-left-header"
                         data-bind="click: function() {
                             $parents[1].editTile(
-                                $parents[1].getValue(timespanName, ['group_formation_timespan_name_content', '@tile_id']),
+                                self.getValue(timespanName, ['group_formation_timespan_name_content', '@tile_id']),
                             )},
                             clickBubble: false,
                             mouseoverBubble: false,
@@ -576,19 +576,19 @@
                         <tbody>
                             <tr>
                                 <td class="header">Content</td>
-                                <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_content', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(timespanName, ['group_formation_timespan_name_content', '@display_value'])"> </td>
                             </tr>
                             <tr>
                                 <td class="header">Label</td>
-                                <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_label', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(timespanName, ['group_formation_timespan_name_label', '@display_value'])"> </td>
                             </tr>
                             <tr>
                                 <td class="header">Language</td>
-                                <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_language', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(timespanName, ['group_formation_timespan_name_language', '@display_value'])"> </td>
                             </tr>
                             <tr>
                               <td class="header">Type</td>
-                              <td data-bind="text: $parents[1].getValue(timespanName, ['group_formation_timespan_name_type', '@display_value'])"> </td>
+                              <td data-bind="text: self.getValue(timespanName, ['group_formation_timespan_name_type', '@display_value'])"> </td>
                             </tr>
                         </tbody>
                     </table>
@@ -611,23 +611,23 @@
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Earliest Start Date: </td>
-                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Latest Start Date: </td>
-                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_end_of_the_begin', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_end_of_the_begin', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Earliest End Date: </td>
-                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_end', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_end', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Latest End Date: </td>
-                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_end_of_the_end', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_end_of_the_end', '@display_value'])"> </td>
               </tr>
               <!-- <tr>
                 <td class="header" style="padding: 8px">Time Span Type: </td>
-                <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_statement_language', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_statement_language', '@display_value'])"> </td>
               </tr> -->
               <tr>
                 <td class="header">Duration</td>
@@ -636,7 +636,7 @@
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
                           $parent.editTile(
-                              $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_value', '@tile_id']),
+                              self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_value', '@tile_id']),
                           )},
                       clickBubble: false,
                       mouseoverBubble: false,
@@ -650,7 +650,7 @@
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
                                   $parents[1].editTile(
-                                      $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_content', '@tile_id']),
+                                      self.getValue(timespanDurationName, ['group_formation_timespan_duration_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
                               mouseoverBubble: false,
@@ -659,19 +659,19 @@
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_content', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['group_formation_timespan_duration_name_content', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Label</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_label', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['group_formation_timespan_duration_name_label', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Language</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_language', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['group_formation_timespan_duration_name_language', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                     <td class="header">Type</td>
-                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_formation_timespan_duration_name_type', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(timespanDurationName, ['group_formation_timespan_duration_name_type', '@display_value'])"> </td>
                                   </tr>
                               </tbody>
                           </table>
@@ -695,27 +695,27 @@
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Value: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_highest_possible_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Unit: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_unit', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_unit', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Type: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_type', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_type', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Label: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_label', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_label', '@display_value'])"> </td>
                     </tr>
                   </table>
                   <!-- /ko -->
@@ -741,7 +741,7 @@
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
                           $parent.editTile(
-                              $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@tile_id']),
+                              self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@tile_id']),
                           )},
                       clickBubble: false,
                       mouseoverBubble: false,
@@ -755,7 +755,7 @@
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
                                   $parents[1].editTile(
-                                      $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_content', '@tile_id']),
+                                      self.getValue(timespanStatementName, ['group_formation_timespan_statement_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
                               mouseoverBubble: false,
@@ -764,19 +764,19 @@
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_content', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanStatementName, ['group_formation_timespan_statement_name_content', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Label</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_label', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanStatementName, ['group_formation_timespan_statement_name_label', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Language</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_language', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanStatementName, ['group_formation_timespan_statement_name_language', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                     <td class="header">Type</td>
-                                    <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_formation_timespan_statement_name_type', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(timespanStatementName, ['group_formation_timespan_statement_name_type', '@display_value'])"> </td>
                                   </tr>
                               </tbody>
                           </table>
@@ -800,19 +800,19 @@
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement Type: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_type', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_type', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement Language: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_language', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_language', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement Label: </td>
-                      <td data-bind="text: $parent.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_statement_label', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_statement_label', '@display_value'])"> </td>
                     </tr>
                   </table>
                 <!-- /ko -->
@@ -866,7 +866,7 @@
         <table class="table summary-table-left-header"
             data-bind="click: function() {
                 $parent.editTile(
-                    $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
+                    self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
                 )},
             clickBubble: false,
             mouseoverBubble: false,
@@ -890,19 +890,19 @@
                           <tbody>
                               <tr>
                                   <td class="header">Content</td>
-                                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_content', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_content', '@display_value'])"> </td>
                               </tr>
                               <tr>
                                   <td class="header">Label</td>
-                                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_label', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_label', '@display_value'])"> </td>
                               </tr>
                               <tr>
                                   <td class="header">Language</td>
-                                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_language', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_language', '@display_value'])"> </td>
                               </tr>
                               <tr>
                                 <td class="header">Type</td>
-                                <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_type', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_name', 'group_dissolution_name_type', '@display_value'])"> </td>
                               </tr>
                           </tbody>
                       </table>
@@ -910,15 +910,15 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Dissolution Label: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@display_value'])"> </td>
+                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Dissolution Location: </td>
-                  <td><a data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: {href: '/report/' + $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
+                  <td><a data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: {href: '/report/' + self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Dissolution Type: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
+                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
                 </tr>
             </tbody>
         </table>
@@ -928,7 +928,7 @@
         <table class="table summary-table-left-header"
             data-bind="click: function() {
                 $parent.editTile(
-                    $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_content', '@tile_id']),
+                    self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_content', '@tile_id']),
                 )},
             clickBubble: false,
             mouseoverBubble: false,
@@ -942,7 +942,7 @@
                 <table style="margin: 0px;" class="table summary-table-left-header"
                     data-bind="click: function() {
                         $parents[1].editTile(
-                            $parents[1].getValue(statementName, ['group_dissolution_statement_name_content', '@tile_id']),
+                            self.getValue(statementName, ['group_dissolution_statement_name_content', '@tile_id']),
                         )},
                     clickBubble: false,
                     mouseoverBubble: false,
@@ -951,19 +951,19 @@
                     <tbody>
                         <tr>
                             <td class="header">Content</td>
-                            <td data-bind="text: $parents[1].getValue(statementName, ['group_dissolution_statement_name_content', '@display_value'])"> </td>
+                            <td data-bind="text: self.getValue(statementName, ['group_dissolution_statement_name_content', '@display_value'])"> </td>
                         </tr>
                         <tr>
                             <td class="header">Label</td>
-                            <td data-bind="text: $parents[1].getValue(statementName, ['group_dissolution_statement_name_label', '@display_value'])"> </td>
+                            <td data-bind="text: self.getValue(statementName, ['group_dissolution_statement_name_label', '@display_value'])"> </td>
                         </tr>
                         <tr>
                             <td class="header">Language</td>
-                            <td data-bind="text: $parents[1].getValue(statementName, ['group_dissolution_statement_name_language', '@display_value'])"> </td>
+                            <td data-bind="text: self.getValue(statementName, ['group_dissolution_statement_name_language', '@display_value'])"> </td>
                         </tr>
                         <tr>
                           <td class="header">Type</td>
-                          <td data-bind="text: $parents[1].getValue(statementName, ['group_dissolution_statement_name_type', '@display_value'])"> </td>
+                          <td data-bind="text: self.getValue(statementName, ['group_dissolution_statement_name_type', '@display_value'])"> </td>
                         </tr>
                     </tbody>
                 </table>
@@ -986,19 +986,19 @@
           </tr>
           <tr>
             <td class="header" style="padding: 8px">Dissolution Statement: </td>
-            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_content', '@display_value'])"> </td>
+            <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_content', '@display_value'])"> </td>
           </tr>
           <tr>
             <td class="header" style="padding: 8px">Dissolution Statement Type: </td>
-            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_type', '@display_value'])"> </td>
+            <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_type', '@display_value'])"> </td>
           </tr>
           <tr>
             <td class="header" style="padding: 8px">Dissolution Statement Label: </td>
-            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_label', '@display_value'])"> </td>
+            <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_label', '@display_value'])"> </td>
           </tr>
           <tr>
             <td class="header" style="padding: 8px">Dissolution Statement Language: </td>
-            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_language', '@display_value'])"> </td>
+            <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_language', '@display_value'])"> </td>
           </tr>
         </table>
         <!-- /ko -->
@@ -1024,7 +1024,7 @@
         <table class="table summary-table-left-header"
             data-bind="click: function() {
                 $parent.editTile(
-                    $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'timespan_begin_of_the_begin', '@tile_id']),
+                    self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'timespan_begin_of_the_begin', '@tile_id']),
                 )},
             clickBubble: false,
             mouseoverBubble: false,
@@ -1038,7 +1038,7 @@
                 <table style="margin: 0px;" class="table summary-table-left-header"
                     data-bind="click: function() {
                         $parents[1].editTile(
-                            $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_content', '@tile_id']),
+                            self.getValue(timespanName, ['group_dissolution_timespan_name_content', '@tile_id']),
                         )},
                     clickBubble: false,
                     mouseoverBubble: false,
@@ -1047,19 +1047,19 @@
                     <tbody>
                         <tr>
                             <td class="header">Content</td>
-                            <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_content', '@display_value'])"> </td>
+                            <td data-bind="text: self.getValue(timespanName, ['group_dissolution_timespan_name_content', '@display_value'])"> </td>
                         </tr>
                         <tr>
                             <td class="header">Label</td>
-                            <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_label', '@display_value'])"> </td>
+                            <td data-bind="text: self.getValue(timespanName, ['group_dissolution_timespan_name_label', '@display_value'])"> </td>
                         </tr>
                         <tr>
                             <td class="header">Language</td>
-                            <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_language', '@display_value'])"> </td>
+                            <td data-bind="text: self.getValue(timespanName, ['group_dissolution_timespan_name_language', '@display_value'])"> </td>
                         </tr>
                         <tr>
                           <td class="header">Type</td>
-                          <td data-bind="text: $parents[1].getValue(timespanName, ['group_dissolution_timespan_name_type', '@display_value'])"> </td>
+                          <td data-bind="text: self.getValue(timespanName, ['group_dissolution_timespan_name_type', '@display_value'])"> </td>
                         </tr>
                     </tbody>
                 </table>
@@ -1082,23 +1082,23 @@
           </tr>
           <tr>
             <td class="header" style="padding: 8px">Earliest Start Date: </td>
-            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'timespan_begin_of_the_begin', '@display_value'])"> </td>
+            <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'timespan_begin_of_the_begin', '@display_value'])"> </td>
           </tr>
           <tr>
             <td class="header" style="padding: 8px">Latest Start Date: </td>
-            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_end_of_the_begin', '@display_value'])"> </td>
+            <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_end_of_the_begin', '@display_value'])"> </td>
           </tr>
           <tr>
             <td class="header" style="padding: 8px">Earliest End Date: </td>
-            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_begin_of_the_end', '@display_value'])"> </td>
+            <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_begin_of_the_end', '@display_value'])"> </td>
           </tr>
           <tr>
             <td class="header" style="padding: 8px">Latest End Date: </td>
-            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_end_of_the_end', '@display_value'])"> </td>
+            <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_end_of_the_end', '@display_value'])"> </td>
           </tr>
           <tr>
             <td class="header" style="padding: 8px">Time Span Type: </td>
-            <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_statement_type', '@display_value'])"> </td>
+            <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_statement_type', '@display_value'])"> </td>
           </tr>
           <tr>
             <td class="header">Duration</td>
@@ -1107,7 +1107,7 @@
               <table class="table summary-table-left-header"
                   data-bind="click: function() {
                       $parent.editTile(
-                          $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_value', '@tile_id']),
+                          self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_value', '@tile_id']),
                       )},
                   clickBubble: false,
                   mouseoverBubble: false,
@@ -1121,7 +1121,7 @@
                       <table style="margin: 0px;" class="table summary-table-left-header"
                           data-bind="click: function() {
                               $parents[1].editTile(
-                                  $parents[1].getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_content', '@tile_id']),
+                                  self.getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_content', '@tile_id']),
                               )},
                           clickBubble: false,
                           mouseoverBubble: false,
@@ -1130,19 +1130,19 @@
                           <tbody>
                               <tr>
                                   <td class="header">Content</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_content', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_content', '@display_value'])"> </td>
                               </tr>
                               <tr>
                                   <td class="header">Label</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_label', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_label', '@display_value'])"> </td>
                               </tr>
                               <tr>
                                   <td class="header">Language</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_language', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_language', '@display_value'])"> </td>
                               </tr>
                               <tr>
                                 <td class="header">Type</td>
-                                <td data-bind="text: $parents[1].getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_type', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_type', '@display_value'])"> </td>
                               </tr>
                           </tbody>
                       </table>
@@ -1166,23 +1166,23 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Duration Value: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_value', '@display_value'])"> </td>
+                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_value', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_highest_possible_value', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Unit: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_unit', '@display_value'])"> </td>
+                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_unit', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Duration Label: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_label', '@display_value'])"> </td>
+                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_label', '@display_value'])"> </td>
                 </tr>
               </table>
               <!-- /ko -->
@@ -1208,7 +1208,7 @@
               <table class="table summary-table-left-header"
                     data-bind="click: function() {
                         $parent.editTile(
-                            $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_content', '@tile_id']),
+                            self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_content', '@tile_id']),
                         )},
                     clickBubble: false,
                     mouseoverBubble: false,
@@ -1222,7 +1222,7 @@
                       <table style="margin: 0px;" class="table summary-table-left-header"
                           data-bind="click: function() {
                               $parents[1].editTile(
-                                  $parents[1].getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_content', '@tile_id']),
+                                  self.getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_content', '@tile_id']),
                               )},
                           clickBubble: false,
                           mouseoverBubble: false,
@@ -1231,19 +1231,19 @@
                           <tbody>
                               <tr>
                                   <td class="header">Content</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_content', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_content', '@display_value'])"> </td>
                               </tr>
                               <tr>
                                   <td class="header">Label</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_label', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_label', '@display_value'])"> </td>
                               </tr>
                               <tr>
                                   <td class="header">Language</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_language', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_language', '@display_value'])"> </td>
                               </tr>
                               <tr>
                                 <td class="header">Type</td>
-                                <td data-bind="text: $parents[1].getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_type', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_type', '@display_value'])"> </td>
                               </tr>
                           </tbody>
                       </table>
@@ -1266,19 +1266,19 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Statement: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_content', '@display_value'])"> </td>
+                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_content', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Statement Type: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_type', '@display_value'])"> </td>
+                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_type', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Statement Language: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_language', '@display_value'])"> </td>
+                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_language', '@display_value'])"> </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Statement Label: </td>
-                  <td data-bind="text: $parent.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_statement_label', '@display_value'])"> </td>
+                  <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_statement_label', '@display_value'])"> </td>
                 </tr>
               </table>
               <!-- /ko -->
@@ -1332,7 +1332,7 @@
           <table class="table summary-table-left-header"
               data-bind="click: function() {
                   $parent.editTile(
-                      $parent.getValue(sojourn, ['sojourn_label','@tile_id']),
+                      self.getValue(sojourn, ['sojourn_label','@tile_id']),
                   )},
                   event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
                   clickBubble: false,
@@ -1356,19 +1356,19 @@
                             <tbody>
                                 <tr>
                                     <td class="header">Content</td>
-                                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_name', 'sojourn_name_content', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(sojourn, ['sojourn_name', 'sojourn_name_content', '@display_value'])"> </td>
                                 </tr>
                                 <tr>
                                     <td class="header">Label</td>
-                                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_name', 'sojourn_name_label', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(sojourn, ['sojourn_name', 'sojourn_name_label', '@display_value'])"> </td>
                                 </tr>
                                 <tr>
                                     <td class="header">Language</td>
-                                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_name', 'sojourn_name_language', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(sojourn, ['sojourn_name', 'sojourn_name_language', '@display_value'])"> </td>
                                 </tr>
                                 <tr>
                                   <td class="header">Type</td>
-                                  <td data-bind="text: $parent.getValue(sojourn, ['sojourn_name', 'sojourn_name_type', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(sojourn, ['sojourn_name', 'sojourn_name_type', '@display_value'])"> </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1376,19 +1376,19 @@
                   </tr>
                   <tr>
                     <td class="header" style="padding: 8px">Establishment Label: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_label', '@display_value'])"> </td>
+                    <td data-bind="text: self.getValue(sojourn, ['sojourn_label', '@display_value'])"> </td>
                   </tr>
                   <tr>
                     <td class="header" style="padding: 8px">Establishment Location: </td>
-                    <td><a data-bind="text: $parent.getValue(sojourn, ['sojourn_location', '@display_value']), attr: {href: '/report/' + $parent.getValue(sojourn, ['sojourn_location', 'resourceId']), target: '_blank'}"> </a></td>
+                    <td><a data-bind="text: self.getValue(sojourn, ['sojourn_location', '@display_value']), attr: {href: '/report/' + self.getValue(sojourn, ['sojourn_location', 'resourceId']), target: '_blank'}"> </a></td>
                   </tr>
                   <tr>
                     <td class="header" style="padding: 8px">Establishment Type: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_type', '@display_value'])"> </td>
+                    <td data-bind="text: self.getValue(sojourn, ['sojourn_type', '@display_value'])"> </td>
                   </tr>
                   <tr>
                     <td class="header" style="padding: 8px">Establishment Meta Type: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_type', 'sojourn_type_metatype', '@display_value'])"> </td>
+                    <td data-bind="text: self.getValue(sojourn, ['sojourn_type', 'sojourn_type_metatype', '@display_value'])"> </td>
                   </tr>
               </tbody>
           </table>
@@ -1398,7 +1398,7 @@
           <table class="table summary-table-left-header"
               data-bind="click: function() {
                   $parent.editTile(
-                      $parent.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_content', '@tile_id']),
+                      self.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_content', '@tile_id']),
                   )},
                   clickBubble: false,
                   mouseoverBubble: false,
@@ -1421,19 +1421,19 @@
                       <tbody>
                           <tr>
                               <td class="header">Content</td>
-                              <td data-bind="text: $parents[1].getValue(statementName, ['sojourn_statement_name_content', '@display_value'])"> </td>
+                              <td data-bind="text: self.getValue(statementName, ['sojourn_statement_name_content', '@display_value'])"> </td>
                           </tr>
                           <tr>
                               <td class="header">Label</td>
-                              <td data-bind="text: $parents[1].getValue(statementName, ['sojourn_statement_name_label', '@display_value'])"> </td>
+                              <td data-bind="text: self.getValue(statementName, ['sojourn_statement_name_label', '@display_value'])"> </td>
                           </tr>
                           <tr>
                               <td class="header">Language</td>
-                              <td data-bind="text: $parents[1].getValue(statementName, ['sojourn_statement_name_language', '@display_value'])"> </td>
+                              <td data-bind="text: self.getValue(statementName, ['sojourn_statement_name_language', '@display_value'])"> </td>
                           </tr>
                           <tr>
                             <td class="header">Type</td>
-                            <td data-bind="text: $parents[1].getValue(statementName, ['sojourn_statement_name_type', '@display_value'])"> </td>
+                            <td data-bind="text: self.getValue(statementName, ['sojourn_statement_name_type', '@display_value'])"> </td>
                           </tr>
                       </tbody>
                   </table>
@@ -1456,19 +1456,19 @@
             </tr>
             <tr>
               <td class="header" style="padding: 8px">Establishment Statement: </td>
-              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_content', '@display_value'])"> </td>
+              <td data-bind="text: self.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_content', '@display_value'])"> </td>
             </tr>
             <tr>
               <td class="header" style="padding: 8px">Establishment Statement Type: </td>
-              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_type', '@display_value'])"> </td>
+              <td data-bind="text: self.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_type', '@display_value'])"> </td>
             </tr>
             <tr>
               <td class="header" style="padding: 8px">Establishment Statement Label: </td>
-              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_label', '@display_value'])"> </td>
+              <td data-bind="text: self.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_label', '@display_value'])"> </td>
             </tr>
             <tr>
               <td class="header" style="padding: 8px">Establishment Statement Language: </td>
-              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_language', '@display_value'])"> </td>
+              <td data-bind="text: self.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_language', '@display_value'])"> </td>
             </tr>
           </table>
           <!-- /ko -->
@@ -1494,7 +1494,7 @@
           <table class="table summary-table-left-header"
               data-bind="click: function() {
                   $parent.editTile(
-                      $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_begin', '@tile_id']),
+                      self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_begin', '@tile_id']),
                   )},
               clickBubble: false,
               mouseoverBubble: false,
@@ -1518,19 +1518,19 @@
                           <tbody>
                               <tr>
                                   <td class="header">Content</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_content', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(timespanName, ['sojourn_timespan_name_content', '@display_value'])"> </td>
                               </tr>
                               <tr>
                                   <td class="header">Label</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_label', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(timespanName, ['sojourn_timespan_name_label', '@display_value'])"> </td>
                               </tr>
                               <tr>
                                   <td class="header">Language</td>
-                                  <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_language', '@display_value'])"> </td>
+                                  <td data-bind="text: self.getValue(timespanName, ['sojourn_timespan_name_language', '@display_value'])"> </td>
                               </tr>
                               <tr>
                                 <td class="header">Type</td>
-                                <td data-bind="text: $parents[1].getValue(timespanName, ['sojourn_timespan_name_type', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(timespanName, ['sojourn_timespan_name_type', '@display_value'])"> </td>
                               </tr>
                           </tbody>
                       </table>
@@ -1553,23 +1553,23 @@
             </tr>
             <tr>
               <td class="header" style="padding: 8px">Earliest Start Date: </td>
-              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_begin', '@display_value'])"> </td>
+              <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_begin', '@display_value'])"> </td>
             </tr>
             <tr>
               <td class="header" style="padding: 8px">Latest Start Date: </td>
-              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_end_of_the_begin', '@display_value'])"> </td>
+              <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_end_of_the_begin', '@display_value'])"> </td>
             </tr>
             <tr>
               <td class="header" style="padding: 8px">Earliest End Date: </td>
-              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_end', '@display_value'])"> </td>
+              <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_end', '@display_value'])"> </td>
             </tr>
             <tr>
               <td class="header" style="padding: 8px">Latest End Date: </td>
-              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_end_of_the_end', '@display_value'])"> </td>
+              <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_end_of_the_end', '@display_value'])"> </td>
             </tr>
             <tr>
               <td class="header" style="padding: 8px">Time Span Type: </td>
-              <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timepsan_type', '@display_value'])"> </td>
+              <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timepsan_type', '@display_value'])"> </td>
             </tr>
             <tr>
               <td class="header">Duration</td>
@@ -1592,7 +1592,7 @@
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
                                   $parents[1].editTile(
-                                      $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_content', '@tile_id']),
+                                      self.getValue(timespanDurationName, ['sojourn_timespan_duration_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
                               mouseoverBubble: false,
@@ -1601,19 +1601,19 @@
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_content', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['sojourn_timespan_duration_name_content', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Label</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_label', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['sojourn_timespan_duration_name_label', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Language</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_language', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['sojourn_timespan_duration_name_language', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                     <td class="header">Type</td>
-                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['sojourn_timespan_duration_name_type', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(timespanDurationName, ['sojourn_timespan_duration_name_type', '@display_value'])"> </td>
                                   </tr>
                               </tbody>
                           </table>
@@ -1637,27 +1637,27 @@
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Value: </td>
-                      <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
-                      <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
-                      <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_highest_possible_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Unit: </td>
-                      <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_unit', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_unit', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Type: </td>
-                      <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_type', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_type', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Label: </td>
-                      <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_label', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_duration_label', '@display_value'])"> </td>
                     </tr>
                 </table>
                 <!-- /ko -->
@@ -1683,7 +1683,7 @@
                 <table class="table summary-table-left-header"
                     data-bind="click: function() {
                         $parent.editTile(
-                            $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_content', '@tile_id']),
+                            self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_content', '@tile_id']),
                         )},
                     clickBubble: false,
                     mouseoverBubble: false,
@@ -1742,23 +1742,23 @@
                   </tr>
                   <tr>
                     <td class="header" style="padding: 8px">Statement: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_content', '@display_value'])"> </td>
+                    <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_content', '@display_value'])"> </td>
                   </tr>
                   <tr>
                     <td class="header" style="padding: 8px">Statement Type: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_type', '@display_value'])"> </td>
+                    <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_type', '@display_value'])"> </td>
                   </tr>
                   <tr>
                     <td class="header" style="padding: 8px">Statement Language: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_language', '@display_value'])"> </td>
+                    <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_language', '@display_value'])"> </td>
                   </tr>
                   <tr>
                     <td class="header" style="padding: 8px">Statement Type Metatype: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_metatype', '@display_value'])"> </td>
+                    <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_metatype', '@display_value'])"> </td>
                   </tr>
                   <tr>
                     <td class="header" style="padding: 8px">Statement Label: </td>
-                    <td data-bind="text: $parent.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_statement_label', '@display_value'])"> </td>
+                    <td data-bind="text: self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_duration', 'sojourn_timespan_statement_label', '@display_value'])"> </td>
                   </tr>
                 </table>
                 <!-- /ko -->
@@ -1814,7 +1814,7 @@
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
                     $parent.editTile(
-                        $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
+                        self.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
                     )},
                 clickBubble: false,
                 mouseoverBubble: false,
@@ -1827,7 +1827,7 @@
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
                                   $parent.editTile(
-                                      $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_content', '@tile_id']),
+                                      self.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
                               mouseoverBubble: false,
@@ -1836,19 +1836,19 @@
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
-                                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_content', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_content', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Label</td>
-                                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_label', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_label', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Language</td>
-                                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_language', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_language', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                     <td class="header">Type</td>
-                                    <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_type', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_type', '@display_value'])"> </td>
                                   </tr>
                               </tbody>
                           </table>
@@ -1856,15 +1856,15 @@
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Professional Activity Label: </td>
-                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Professional Activity Location: </td>
-                      <a data-bind="text: $parents[1].getValue(professional_activity_location, ['display_value']), attr: {href: '/report/' + $parents[1].getValue(professional_activity_location, ['resourceId']), target: '_blank'}"></a> 
+                      <a data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_location', '@display_value']), attr: {href: '/report/' + self.getValue(professionalActivity, ['professional_activity', 'professional_activity_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a> 
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Professional Activity Type: </td>
-                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_type', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_type', '@display_value'])"> </td>
                     </tr>
                 </tbody>
             </table>
@@ -1874,7 +1874,7 @@
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
                     $parents[1].editTile(
-                        $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_content', '@tile_id']),
+                        self.getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_content', '@tile_id']),
                     )},
                 clickBubble: false,
                 mouseoverBubble: false,
@@ -1887,8 +1887,8 @@
                   <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_statement.professional_activity_statement_name, as: 'statementName' } -->
                     <table style="margin: 0px;" class="table summary-table-left-header"
                         data-bind="click: function() {
-                            $parents[2].editTile(
-                                $parents[2].getValue(statementName, ['professional_activity_statement_name_content',  '@tile_id']),
+                            self.editTile(
+                                self.getValue(statementName, ['professional_activity_statement_name_content',  '@tile_id']),
                             )},
                         clickBubble: false,
                         mouseoverBubble: false,
@@ -1897,19 +1897,19 @@
                         <tbody>
                             <tr>
                                 <td class="header">Content</td>
-                                <td data-bind="text: $parents[2].getValue(statementName, ['professional_activity_statement_name_content', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(statementName, ['professional_activity_statement_name_content', '@display_value'])"> </td>
                             </tr>
                             <tr>
                                 <td class="header">Label</td>
-                                <td data-bind="text: $parents[2].getValue(statementName, ['professional_activity_statement_name_label', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(statementName, ['professional_activity_statement_name_label', '@display_value'])"> </td>
                             </tr>
                             <tr>
                                 <td class="header">Language</td>
-                                <td data-bind="text: $parents[2].getValue(statementName, ['professional_activity_statement_name_language', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(statementName, ['professional_activity_statement_name_language', '@display_value'])"> </td>
                             </tr>
                             <tr>
                               <td class="header">Type</td>
-                              <td data-bind="text: $parents[2].getValue(statementName, ['professional_activity_statement_name_type', '@display_value'])"> </td>
+                              <td data-bind="text: self.getValue(statementName, ['professional_activity_statement_name_type', '@display_value'])"> </td>
                             </tr>
                         </tbody>
                     </table>
@@ -1919,19 +1919,19 @@
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Professional Activity Statement: </td>
-                <td data-bind="text: $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_content', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_content', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Professional Activity Statement Type: </td>
-                <td data-bind="text: $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_type', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_type', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Professional Activity Statement Label: </td>
-                <td data-bind="text: $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_label', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_label', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Professional Activity Statement Language: </td>
-                <td data-bind="text: $parents[1].getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_language', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_language', '@display_value'])"> </td>
               </tr>
             </table>
             <!-- /ko -->
@@ -1944,7 +1944,7 @@
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
                     $parent.editTile(
-                        $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_begin', '@tile_id']),
+                        self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_begin', '@tile_id']),
                     )},
                 clickBubble: false,
                 mouseoverBubble: false,
@@ -1957,7 +1957,7 @@
                     <table style="margin: 0px;" class="table summary-table-left-header"
                         data-bind="click: function() {
                             $parents[1].editTile(
-                                $parents[1].getValue(timespanName, ['professional_activity_timespan_name_content', '@tile_id']),
+                                self.getValue(timespanName, ['professional_activity_timespan_name_content', '@tile_id']),
                             )},
                         clickBubble: false,
                         mouseoverBubble: false,
@@ -1966,19 +1966,19 @@
                         <tbody>
                             <tr>
                                 <td class="header">Content</td>
-                                <td data-bind="text: $parents[1].getValue(timespanName, ['professional_activity_timespan_name_content', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(timespanName, ['professional_activity_timespan_name_content', '@display_value'])"> </td>
                             </tr>
                             <tr>
                                 <td class="header">Label</td>
-                                <td data-bind="text: $parents[1].getValue(timespanName, ['professional_activity_timespan_name_label', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(timespanName, ['professional_activity_timespan_name_label', '@display_value'])"> </td>
                             </tr>
                             <tr>
                                 <td class="header">Language</td>
-                                <td data-bind="text: $parents[1].getValue(timespanName, ['professional_activity_timespan_name_language', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(timespanName, ['professional_activity_timespan_name_language', '@display_value'])"> </td>
                             </tr>
                             <tr>
                               <td class="header">Type</td>
-                              <td data-bind="text: $parents[1].getValue(timespanName, ['professional_activity_timespan_name_type', '@display_value'])"> </td>
+                              <td data-bind="text: self.getValue(timespanName, ['professional_activity_timespan_name_type', '@display_value'])"> </td>
                             </tr>
                         </tbody>
                     </table>
@@ -1987,19 +1987,19 @@
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Earliest Start Date: </td>
-                <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_begin', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_begin', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Latest Start Date: </td>
-                <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_end_of_the_begin', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_end_of_the_begin', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Earliest End Date: </td>
-                <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_end', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_end', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Latest End Date: </td>
-                <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_end_of_the_end', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_end_of_the_end', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header">Duration</td>
@@ -2008,7 +2008,7 @@
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
                           $parent.editTile(
-                              $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_value', '@tile_id']),
+                              self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_value', '@tile_id']),
                           )},
                       clickBubble: false,
                       mouseoverBubble: false,
@@ -2022,7 +2022,7 @@
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
                                   $parents[1].editTile(
-                                      $parents[1].getValue(timespanDurationName, ['professional_activity_timespan_duration_name_content', '@tile_id']),
+                                      self.getValue(timespanDurationName, ['professional_activity_timespan_duration_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
                               mouseoverBubble: false,
@@ -2031,19 +2031,19 @@
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['professional_activity_timespan_duration_name_content', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['professional_activity_timespan_duration_name_content', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Label</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['professional_activity_timespan_duration_name_label', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['professional_activity_timespan_duration_name_label', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Language</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['professional_activity_timespan_duration_name_language', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['professional_activity_timespan_duration_name_language', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                     <td class="header">Type</td>
-                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['professional_activity_timespan_duration_name_type', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(timespanDurationName, ['professional_activity_timespan_duration_name_type', '@display_value'])"> </td>
                                   </tr>
                               </tbody>
                           </table>
@@ -2054,23 +2054,23 @@
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Value: </td>
-                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
-                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
-                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_highest_possible_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Unit: </td>
-                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_unit', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_unit', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Label: </td>
-                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_label', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_label', '@display_value'])"> </td>
                     </tr>
                   </table>
                 </td>
@@ -2083,7 +2083,7 @@
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
                           $parent.editTile(
-                              $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_content', '@tile_id']),
+                              self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_content', '@tile_id']),
                           )},
                       clickBubble: false,
                       mouseoverBubble: false,
@@ -2106,19 +2106,19 @@
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanStatementName, ['professional_activity_timespan_statement_name_content', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanStatementName, ['professional_activity_timespan_statement_name_content', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Label</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanStatementName, ['professional_activity_timespan_statement_name_label', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanStatementName, ['professional_activity_timespan_statement_name_label', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Language</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanStatementName, ['professional_activity_timespan_statement_name_language', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanStatementName, ['professional_activity_timespan_statement_name_language', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                     <td class="header">Type</td>
-                                    <td data-bind="text: $parents[1].getValue(timespanStatementName, ['professional_activity_timespan_statement_name_type', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(timespanStatementName, ['professional_activity_timespan_statement_name_type', '@display_value'])"> </td>
                                   </tr>
                               </tbody>
                           </table>
@@ -2129,23 +2129,23 @@
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement: </td>
-                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_content', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_content', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement Type: </td>
-                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_type', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_type', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement Language: </td>
-                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_language', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_language', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement Type Metatype: </td>
-                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_metatype', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_metatype', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement Label: </td>
-                      <td data-bind="text: $parent.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_label', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_label', '@display_value'])"> </td>
                     </tr>
                   </table>
                 </td>
@@ -2225,7 +2225,7 @@
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
                     $parent.editTile(
-                        $parent.getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
+                        self.getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
                     )},
                 clickBubble: false,
                 mouseoverBubble: false,
@@ -2234,15 +2234,15 @@
                 <tbody>
                     <tr>
                       <td class="header" style="padding: 8px">Identifier Assignment Label: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_label', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_label', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Identifier Assignment Content: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_content', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_content', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Identifier Assignment Type: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_type', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_type', '@display_value'])"> </td>
                     </tr>
                 </tbody>
             </table>
@@ -2252,7 +2252,7 @@
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
                     $parent.editTile(
-                        $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_actor', '@tile_id']),
+                        self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_actor', '@tile_id']),
                     )},
                 clickBubble: false,
                 mouseoverBubble: false,
@@ -2266,7 +2266,7 @@
                     <table style="margin: 0px;" class="table summary-table-left-header"
                         data-bind="click: function() {
                             $parents[1].editTile(
-                                $parents[1].getValue(dataAssignmentName, ['identifier_data_assignment_name_content', '@tile_id']),
+                                self.getValue(dataAssignmentName, ['identifier_data_assignment_name_content', '@tile_id']),
                             )},
                         clickBubble: false,
                         mouseoverBubble: false,
@@ -2275,19 +2275,19 @@
                         <tbody>
                             <tr>
                                 <td class="header">Content</td>
-                                <td data-bind="text: $parents[1].getValue(dataAssignmentName, ['identifier_data_assignment_name_content', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(dataAssignmentName, ['identifier_data_assignment_name_content', '@display_value'])"> </td>
                             </tr>
                             <tr>
                                 <td class="header">Label</td>
-                                <td data-bind="text: $parents[1].getValue(dataAssignmentName, ['identifier_data_assignment_name_label', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(dataAssignmentName, ['identifier_data_assignment_name_label', '@display_value'])"> </td>
                             </tr>
                             <tr>
                                 <td class="header">Language</td>
-                                <td data-bind="text: $parents[1].getValue(dataAssignmentName, ['identifier_data_assignment_name_language', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(dataAssignmentName, ['identifier_data_assignment_name_language', '@display_value'])"> </td>
                             </tr>
                             <tr>
                               <td class="header">Type</td>
-                              <td data-bind="text: $parents[1].getValue(dataAssignmentName, ['identifier_data_assignment_name_type', '@display_value'])"> </td>
+                              <td data-bind="text: self.getValue(dataAssignmentName, ['identifier_data_assignment_name_type', '@display_value'])"> </td>
                             </tr>
                         </tbody>
                     </table>
@@ -2297,15 +2297,15 @@
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Identifier Data Assignment Actor: </td>
-                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_actor', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_actor', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Identifier Data Assignment Statement Type: </td>
-                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_label', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_label', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Identifier Data Assignment Object Used: </td>
-                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_object_used', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_object_used', '@display_value'])"> </td>
               </tr>
             </table>
 
@@ -2314,7 +2314,7 @@
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
                     $parent.editTile(
-                        $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_begin', '@tile_id']),
+                        self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_begin', '@tile_id']),
                     )},
                 clickBubble: false,
                 mouseoverBubble: false,
@@ -2328,7 +2328,7 @@
                     <table style="margin: 0px;" class="table summary-table-left-header"
                         data-bind="click: function() {
                             $parents[1].editTile(
-                                $parents[1].getValue(timespanName, ['identifier_data_assignment_timespan_name_content', '@tile_id']),
+                                self.getValue(timespanName, ['identifier_data_assignment_timespan_name_content', '@tile_id']),
                             )},
                         clickBubble: false,
                         mouseoverBubble: false,
@@ -2337,19 +2337,19 @@
                         <tbody>
                             <tr>
                                 <td class="header">Content</td>
-                                <td data-bind="text: $parents[1].getValue(timespanName, ['identifier_data_assignment_timespan_name_content', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(timespanName, ['identifier_data_assignment_timespan_name_content', '@display_value'])"> </td>
                             </tr>
                             <tr>
                                 <td class="header">Label</td>
-                                <td data-bind="text: $parents[1].getValue(timespanName, ['identifier_data_assignment_timespan_name_label', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(timespanName, ['identifier_data_assignment_timespan_name_label', '@display_value'])"> </td>
                             </tr>
                             <tr>
                                 <td class="header">Language</td>
-                                <td data-bind="text: $parents[1].getValue(timespanName, ['identifier_data_assignment_timespan_name_language', '@display_value'])"> </td>
+                                <td data-bind="text: self.getValue(timespanName, ['identifier_data_assignment_timespan_name_language', '@display_value'])"> </td>
                             </tr>
                             <tr>
                               <td class="header">Type</td>
-                              <td data-bind="text: $parents[1].getValue(timespanName, ['identifier_data_assignment_timespan_name_type', '@display_value'])"> </td>
+                              <td data-bind="text: self.getValue(timespanName, ['identifier_data_assignment_timespan_name_type', '@display_value'])"> </td>
                             </tr>
                         </tbody>
                     </table>
@@ -2359,19 +2359,19 @@
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Earliest Start Date: </td>
-                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_begin', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_begin', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Latest Start Date: </td>
-                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_end_of_the_begin', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_end_of_the_begin', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Earliest End Date: </td>
-                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_end', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_end', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Latest End Date: </td>
-                <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_end_of_the_end', '@display_value'])"> </td>
+                <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_end_of_the_end', '@display_value'])"> </td>
               </tr>
               <tr>
                 <td class="header">Duration</td>
@@ -2380,7 +2380,7 @@
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
                           $parent.editTile(
-                              $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@tile_id']),
+                              self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@tile_id']),
                           )},
                       clickBubble: false,
                       mouseoverBubble: false,
@@ -2394,7 +2394,7 @@
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
                                   $parents[1].editTile(
-                                      $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@tile_id']),
+                                      self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
                               mouseoverBubble: false,
@@ -2403,19 +2403,19 @@
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Label</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_label', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_label', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Language</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_language', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_language', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                     <td class="header">Type</td>
-                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_type', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_type', '@display_value'])"> </td>
                                   </tr>
                               </tbody>
                           </table>
@@ -2426,27 +2426,27 @@
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Value: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Lowest Possible Value: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Duration Highest Possible Value: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_highest_possible_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Unit: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_unit', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_unit', '@display_value'])"> </td>
                     </tr>
                     <!-- <tr>
                       <td class="header" style="padding: 8px">Duration Type: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
                     </tr> -->
                     <tr>
                       <td class="header" style="padding: 8px">Duration Label: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_label', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_label', '@display_value'])"> </td>
                     </tr>
                   </table>
                   <!-- /ko -->
@@ -2459,7 +2459,7 @@
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
                           $parent.editTile(
-                              $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@tile_id']),
+                              self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@tile_id']),
                           )},
                       clickBubble: false,
                       mouseoverBubble: false,
@@ -2474,7 +2474,7 @@
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
                                   $parents[1].editTile(
-                                      $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@tile_id']),
+                                      self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
                               mouseoverBubble: false,
@@ -2484,19 +2484,19 @@
                               <tbody>
                                   <tr>
                                       <td class="header">Content</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Label</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_label', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_label', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                       <td class="header">Language</td>
-                                      <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_language', '@display_value'])"> </td>
+                                      <td data-bind="text: self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_language', '@display_value'])"> </td>
                                   </tr>
                                   <tr>
                                     <td class="header">Type</td>
-                                    <td data-bind="text: $parents[1].getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_type', '@display_value'])"> </td>
+                                    <td data-bind="text: self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_type', '@display_value'])"> </td>
                                   </tr>
                               </tbody>
                           </table>
@@ -2507,27 +2507,27 @@
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement Type: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement Language: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_highest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_highest_possible_value', '@display_value'])"> </td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Statement Type Metatype: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_unit', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_unit', '@display_value'])"> </td>
                     </tr>
                     <!-- <tr>
                       <td class="header" style="padding: 8px">Duration Type: </td>
-                      <td data-bind="text: $parents[1].getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_lowest_possible_value', '@display_value'])"> </td>
                     </tr> -->
                     <tr>
                       <td class="header" style="padding: 8px">Statement Label: </td>
-                      <td data-bind="text: $parent.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_label', '@display_value'])"> </td>
+                      <td data-bind="text: self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_label', '@display_value'])"> </td>
                     </tr>
                   </table>
                   <!--/ko -->
