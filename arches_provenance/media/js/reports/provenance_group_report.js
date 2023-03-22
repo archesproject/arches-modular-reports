@@ -64,9 +64,9 @@ define([
             this.groupDissolutionTimespanDurationNodegroupId = 'c77b515d-17bf-11ec-b193-0a9473e82189';
             this.groupDissolutionTimespanDurationNameNodegroupId = 'c77b5157-17bf-11ec-b193-0a9473e82189';
 
-            this.professionalActivitynameNodegroupId = '0c3baed8-e323-11eb-ba14-0a9473e82189';
-            this.professionalActivitystatementNodegroupId = '0c3baed5-e323-11eb-ba14-0a9473e82189';
-            this.professionalActivitystatementNameNodegroupId = '0c3baeed-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityNameNodegroupId = '0c3baed8-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityStatementNodegroupId = '0c3baed5-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityStatementNameNodegroupId = '0c3baeed-e323-11eb-ba14-0a9473e82189';
             this.professionalActivityTimespanNodegroupId = '0c3baee7-e323-11eb-ba14-0a9473e82189';
             this.professionalActivityTimespanNameNodegroupId = '0c3baeea-e323-11eb-ba14-0a9473e82189';
             this.professionalActivityTimespanStatementNodegroupId = '0c3baee1-e323-11eb-ba14-0a9473e82189';
@@ -95,6 +95,7 @@ define([
             self.groupDissolutionData = ko.observable();
             self.groupEstablishmentData = ko.observable();
             self.groupProfessionalActivityData = ko.observable();
+            self.groupProfessionalActivityData.subscribe(x=>console.log(x));
             self.groupIdentifierAssignmentData = ko.observable();
             self.proActivity = ko.observable();
             self.relatedResourceConfigs = ko.observableArray();
@@ -173,7 +174,6 @@ define([
                     `${arches.urls.provenance_editor}?tileid=${tileid}` :
                     `${arches.urls.provenance_editor}?nodegroupid=${nodegroupid}&resourceid=${resourceid}&parenttileid=${parenttileid}`;
                 $.getJSON(url).then(function(data) {
-                    console.log(data);
                     self.resourceId(data.resourceid);
                     self.displayname(data.displayname);
                     const createLookup = function(list, idKey) {

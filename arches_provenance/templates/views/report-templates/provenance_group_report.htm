@@ -1785,7 +1785,7 @@
               <span style = 'cursor: pointer; color: steelblue;'
                   data-bind="click: function() {
                       self.editTile(
-                          self.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_content', '@tile_id']),
+                          null,
                           self.sojournTimespanNodegroupId,
                           self.getValue(sojourn, ['sojourn_label','@tile_id']),
                       )},
@@ -1828,6 +1828,8 @@
                               data-bind="click: function() {
                                   self.editTile(
                                       self.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_content', '@tile_id']),
+                                      self.professionalActivityNameNodegroupId,
+                                      self.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
                                   )},
                               clickBubble: false,
                               mouseoverBubble: false,
@@ -1882,8 +1884,8 @@
             ">
               <tr style="overflow:scroll; height: 100px;">
                 <td class="header">Statement Names</td>
-                <!-- ko if: professionalActivity.professional_activity.professional_activity_statement.professional_activity_statement_name -->
                 <td>
+                  <!-- ko if: professionalActivity.professional_activity.professional_activity_statement.professional_activity_statement_name -->
                   <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_statement.professional_activity_statement_name, as: 'statementName' } -->
                     <table style="margin: 0px;" class="table summary-table-left-header"
                         data-bind="click: function() {
@@ -1914,8 +1916,21 @@
                         </tbody>
                     </table>
                   <!-- /ko -->
+                  <!-- /ko -->
+                  <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_statement.professional_activity_statement_name -->
+                  <div style = 'cursor: pointer; color: steelblue;'
+                      data-bind="click: function() {
+                          self.editTile(
+                              null,
+                              self.professionalActivityStatementNameNodegroupId,
+                              self.getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_content', '@tile_id']),
+                          )},
+                          clickBubble: false,
+                          mouseoverBubble: false,
+                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                      ">Add New Statement Name</div>
+                  <!-- /ko -->
                 </td>
-                <!-- /ko --> 
               </tr>
               <tr>
                 <td class="header" style="padding: 8px">Professional Activity Statement: </td>
@@ -1936,7 +1951,20 @@
             </table>
             <!-- /ko -->
             <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_statement -->
-              No Group Professional Activity Statement
+            <div>
+              <span>No Group Professional Activity Statement</span>
+              <span style = 'cursor: pointer; color: steelblue;'
+                  data-bind="click: function() {
+                      self.editTile(
+                          null,
+                          self.professionalActivityStatementNodegroupId,
+                          self.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
+                      )},
+                      clickBubble: false,
+                      mouseoverBubble: false,
+                      event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+              ">Add New Statement</span>
+            </div>
             <!-- /ko -->
 
             <div>Group Professional Activity Time Span</div>
@@ -1953,6 +1981,7 @@
               <tr style="overflow:scroll; height: 100px;">
                 <td class="header">Time Span Names</td>
                 <td>
+                  <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_name -->
                   <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_name, as: 'timespanName' } -->
                     <table style="margin: 0px;" class="table summary-table-left-header"
                         data-bind="click: function() {
@@ -1983,6 +2012,20 @@
                         </tbody>
                     </table>
                   <!-- /ko -->
+                  <!-- /ko -->
+                  <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_name -->
+                  <div style = 'cursor: pointer; color: steelblue;'
+                      data-bind="click: function() {
+                          self.editTile(
+                              null,
+                              self.professionalActivityTimespanNameNodegroupId,
+                              self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_begin', '@tile_id']),
+                          )},
+                          clickBubble: false,
+                          mouseoverBubble: false,
+                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                      ">Add New Time Span Name</div>
+                  <!-- /ko -->
                 </td>
               </tr>
               <tr>
@@ -2003,8 +2046,8 @@
               </tr>
               <tr>
                 <td class="header">Duration</td>
-                <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration === undefined -->
                 <td>
+                <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration === undefined -->
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
                           self.editTile(
@@ -2016,8 +2059,8 @@
                   ">
                     <tr style="overflow:scroll; height: 100px;">
                       <td class="header">Duration Names</td>
-                      <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration.professional_activity_timespan_duration_name  -->
                       <td>
+                        <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration.professional_activity_timespan_duration_name  -->
                         <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration.professional_activity_timespan_duration_name, as: 'timespanDurationName' } -->
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
@@ -2048,8 +2091,21 @@
                               </tbody>
                           </table>
                         <!-- /ko -->
+                        <!-- /ko -->
+                        <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration.professional_activity_timespan_duration_name  -->
+                        <div style = 'cursor: pointer; color: steelblue;'
+                            data-bind="click: function() {
+                                self.editTile(
+                                    null,
+                                    self.professionalActivityTimespanDurationNameNodegroupId,
+                                    self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_value', '@tile_id']),
+                                )},
+                                clickBubble: false,
+                                mouseoverBubble: false,
+                                event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                            ">Add New Statement Name</div>
+                        <!-- /ko -->
                       </td>
-                      <!-- /ko -->
         
                     </tr>
                     <tr>
@@ -2073,13 +2129,26 @@
                       <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_label', '@display_value'])"> </td>
                     </tr>
                   </table>
-                </td>
                 <!-- /ko -->
+                <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration -->
+                <div style = 'cursor: pointer; color: steelblue;'
+                    data-bind="click: function() {
+                        self.editTile(
+                            null,
+                            self.professionalActivityTimespanDurationNodegroupId,
+                            self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_begin', '@tile_id']),
+                        )},
+                        clickBubble: false,
+                        mouseoverBubble: false,
+                        event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                    ">Add New Time Span Duration</div>
+                <!-- /ko -->
+              </td>
               </tr>
               <tr>
                 <td class="header">Statement About Time Span</td>
-                <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_statement -->
                 <td>
+                  <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_statement -->
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
                           self.editTile(
@@ -2124,6 +2193,19 @@
                           </table>
                         <!-- /ko -->
                         <!-- /ko -->
+                        <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_statement.professional_activity_timespan_statement_name -->
+                        <div style = 'cursor: pointer; color: steelblue;'
+                            data-bind="click: function() {
+                                self.editTile(
+                                    null,
+                                    self.professionalActivityTimespanStatementNameNodegroupId,
+                                    self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_content', '@tile_id']),
+                                )},
+                                clickBubble: false,
+                                mouseoverBubble: false,
+                                event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                            ">Add New Time Span Statement Name</div>
+                        <!-- /ko -->
                       </td>
         
                     </tr>
@@ -2148,13 +2230,39 @@
                       <td data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_label', '@display_value'])"> </td>
                     </tr>
                   </table>
+                  <!-- /ko -->
+                  <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_statement -->
+                  <div style = 'cursor: pointer; color: steelblue;'
+                      data-bind="click: function() {
+                          self.editTile(
+                              null,
+                              self.professionalActivityTimespanStatementNameNodegroupId,
+                              self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_begin', '@tile_id']),
+                          )},
+                          clickBubble: false,
+                          mouseoverBubble: false,
+                          event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+                      ">Add New Time Span Statement</div>
+                  <!-- /ko -->
                 </td>
-                <!-- /ko -->
               </tr>
             </table>
             <!-- /ko -->
-            <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan -->
-              No Professional Activity Time Span
+            <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan -->              
+            <div>
+              <span>No Professional Activity Time Span</span>
+              <span style = 'cursor: pointer; color: steelblue;'
+                  data-bind="click: function() {
+                      self.editTile(
+                          null,
+                          self.professionalActivityTimespanNodegroupId,
+                          self.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
+                      )},
+                      clickBubble: false,
+                      mouseoverBubble: false,
+                      event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
+              ">Add New Time Span</span>
+            </div>
             <!-- /ko -->
             <!-- /ko -->
             <!-- /ko -->
