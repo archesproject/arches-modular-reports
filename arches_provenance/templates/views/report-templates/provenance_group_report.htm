@@ -456,7 +456,7 @@
             <!-- ko if: groupFormation.group_formation.group_formation_statement != undefined -->
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
-                    $parent.editTile(
+                    self.editTile(
                         self.getValue(groupFormation, ['group_formation', 'group_formation_statement', 'group_formation_statement_content', '@tile_id']),
                     )},
                     clickBubble: false,
@@ -470,7 +470,7 @@
                   <!-- ko foreach: { data: groupFormation.group_formation.group_formation_statement.group_formation_statement_name, as: 'statementName' } -->
                       <table style="margin: 0px;" class="table summary-table-left-header"
                           data-bind="click: function() {
-                            $parents[1].editTile(
+                            self.editTile(
                                 self.getValue(statementName, ['group_formation_statement_name_content', '@tile_id'])
                             )},
                             clickBubble: false,
@@ -552,7 +552,7 @@
             <!-- ko if: groupFormation.group_formation.group_formation_timespan -->
             <table class="table summary-table-left-header"
               data-bind="click: function() {
-                $parent.editTile(
+                self.editTile(
                     self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_begin_of_the_begin', '@tile_id']),
                 )},
                 clickBubble: false,
@@ -566,7 +566,7 @@
                   <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_name, as: 'timespanName' } -->
                     <table style="margin: 0px;" class="table summary-table-left-header"
                         data-bind="click: function() {
-                            $parents[1].editTile(
+                            self.editTile(
                                 self.getValue(timespanName, ['group_formation_timespan_name_content', '@tile_id']),
                             )},
                             clickBubble: false,
@@ -635,7 +635,7 @@
                   <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration -->
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
-                          $parent.editTile(
+                          self.editTile(
                               self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_duration', 'group_formation_timespan_duration_value', '@tile_id']),
                           )},
                       clickBubble: false,
@@ -649,7 +649,7 @@
                         <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration.group_formation_timespan_duration_name, as: 'timespanDurationName' } -->
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
-                                  $parents[1].editTile(
+                                  self.editTile(
                                       self.getValue(timespanDurationName, ['group_formation_timespan_duration_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
@@ -740,7 +740,7 @@
                   <!-- ko if: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement -->
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
-                          $parent.editTile(
+                          self.editTile(
                               self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_statement', 'group_formation_timespan_statement_content', '@tile_id']),
                           )},
                       clickBubble: false,
@@ -754,7 +754,7 @@
                         <!-- ko foreach: { data: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name, as: 'timespanStatementName' } -->
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
-                                  $parents[1].editTile(
+                                  self.editTile(
                                       self.getValue(timespanStatementName, ['group_formation_timespan_statement_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
@@ -865,7 +865,7 @@
         <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
         <table class="table summary-table-left-header"
             data-bind="click: function() {
-                $parent.editTile(
+                self.editTile(
                     self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_label', '@tile_id']),
                 )},
             clickBubble: false,
@@ -927,7 +927,7 @@
         <!-- ko if: groupDissolution.group_dissolution.group_dissolution_statement != undefined -->
         <table class="table summary-table-left-header"
             data-bind="click: function() {
-                $parent.editTile(
+                self.editTile(
                     self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_statement', 'group_dissolution_statement_content', '@tile_id']),
                 )},
             clickBubble: false,
@@ -941,7 +941,7 @@
               <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_statement.group_dissolution_statement_name, as: 'statementName' } -->
                 <table style="margin: 0px;" class="table summary-table-left-header"
                     data-bind="click: function() {
-                        $parents[1].editTile(
+                        self.editTile(
                             self.getValue(statementName, ['group_dissolution_statement_name_content', '@tile_id']),
                         )},
                     clickBubble: false,
@@ -1023,7 +1023,7 @@
         <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan != undefined -->
         <table class="table summary-table-left-header"
             data-bind="click: function() {
-                $parent.editTile(
+                self.editTile(
                     self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'timespan_begin_of_the_begin', '@tile_id']),
                 )},
             clickBubble: false,
@@ -1037,7 +1037,7 @@
               <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name, as: 'timespanName' } -->
                 <table style="margin: 0px;" class="table summary-table-left-header"
                     data-bind="click: function() {
-                        $parents[1].editTile(
+                        self.editTile(
                             self.getValue(timespanName, ['group_dissolution_timespan_name_content', '@tile_id']),
                         )},
                     clickBubble: false,
@@ -1106,7 +1106,7 @@
               <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration -->
               <table class="table summary-table-left-header"
                   data-bind="click: function() {
-                      $parent.editTile(
+                      self.editTile(
                           self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_duration', 'group_dissolution_timespan_duration_value', '@tile_id']),
                       )},
                   clickBubble: false,
@@ -1120,7 +1120,7 @@
                     <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration.group_dissolution_timespan_duration_name, as: 'timespanDurationName' } -->
                       <table style="margin: 0px;" class="table summary-table-left-header"
                           data-bind="click: function() {
-                              $parents[1].editTile(
+                              self.editTile(
                                   self.getValue(timespanDurationName, ['group_dissolution_timespan_duration_name_content', '@tile_id']),
                               )},
                           clickBubble: false,
@@ -1207,7 +1207,7 @@
               <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement -->
               <table class="table summary-table-left-header"
                     data-bind="click: function() {
-                        $parent.editTile(
+                        self.editTile(
                             self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_statement', 'group_dissolution_timespan_statement_content', '@tile_id']),
                         )},
                     clickBubble: false,
@@ -1221,7 +1221,7 @@
                     <!-- ko foreach: { data: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement.group_dissolution_timespan_statement_name, as: 'timespanStatementName' } -->
                       <table style="margin: 0px;" class="table summary-table-left-header"
                           data-bind="click: function() {
-                              $parents[1].editTile(
+                              self.editTile(
                                   self.getValue(timespanStatementName, ['group_dissolution_timespan_statement_name_content', '@tile_id']),
                               )},
                           clickBubble: false,
@@ -1331,7 +1331,7 @@
           <!-- ko foreach: { data: groupEstablishmentData, as: 'sojourn' } -->
           <table class="table summary-table-left-header"
               data-bind="click: function() {
-                  $parent.editTile(
+                  self.editTile(
                       self.getValue(sojourn, ['sojourn_label','@tile_id']),
                   )},
                   event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
@@ -1397,7 +1397,7 @@
           <!-- ko if: sojourn.sojourn_statement != undefined -->
           <table class="table summary-table-left-header"
               data-bind="click: function() {
-                  $parent.editTile(
+                  self.editTile(
                       self.getValue(sojourn, ['sojourn_statement', 'sojourn_statement_content', '@tile_id']),
                   )},
                   clickBubble: false,
@@ -1493,7 +1493,7 @@
           <!-- ko if: sojourn.sojourn_activity_timespan != undefined -->
           <table class="table summary-table-left-header"
               data-bind="click: function() {
-                  $parent.editTile(
+                  self.editTile(
                       self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_begin_of_the_begin', '@tile_id']),
                   )},
               clickBubble: false,
@@ -1591,7 +1591,7 @@
                         <!-- ko foreach: { data: sojourn.sojourn_activity_timespan.sojourn_timespan_duration.sojourn_timespan_duration_name, as: 'timespanDurationName' } -->
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
-                                  $parents[1].editTile(
+                                  self.editTile(
                                       self.getValue(timespanDurationName, ['sojourn_timespan_duration_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
@@ -1682,7 +1682,7 @@
                 <!-- ko if: sojourn.sojourn_activity_timespan.sojourn_timespan_statement != undefined -->
                 <table class="table summary-table-left-header"
                     data-bind="click: function() {
-                        $parent.editTile(
+                        self.editTile(
                             self.getValue(sojourn, ['sojourn_activity_timespan', 'sojourn_timespan_statement', 'sojourn_timespan_statement_content', '@tile_id']),
                         )},
                     clickBubble: false,
@@ -1813,7 +1813,7 @@
             <!-- ko foreach: { data: groupProfessionalActivityData, as: 'professionalActivity' } -->
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
-                    $parent.editTile(
+                    self.editTile(
                         self.getValue(professionalActivity, ['professional_activity', 'professional_activity_label', '@tile_id']),
                     )},
                 clickBubble: false,
@@ -1826,7 +1826,7 @@
                       <td>
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
-                                  $parent.editTile(
+                                  self.editTile(
                                       self.getValue(professionalActivity, ['professional_activity', 'professional_activity_name', 'professional_activity_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
@@ -1873,7 +1873,7 @@
             <!-- ko if: professionalActivity.professional_activity.professional_activity_statement -->
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
-                    $parents[1].editTile(
+                    self.editTile(
                         self.getValue(professionalActivity, ['professional_activity', 'professional_activity_statement', 'professional_activity_statement_content', '@tile_id']),
                     )},
                 clickBubble: false,
@@ -1943,7 +1943,7 @@
             <!-- ko if: professionalActivity.professional_activity.professional_activity_timespan -->
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
-                    $parent.editTile(
+                    self.editTile(
                         self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_begin_of_the_begin', '@tile_id']),
                     )},
                 clickBubble: false,
@@ -1956,7 +1956,7 @@
                   <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_name, as: 'timespanName' } -->
                     <table style="margin: 0px;" class="table summary-table-left-header"
                         data-bind="click: function() {
-                            $parents[1].editTile(
+                            self.editTile(
                                 self.getValue(timespanName, ['professional_activity_timespan_name_content', '@tile_id']),
                             )},
                         clickBubble: false,
@@ -2007,7 +2007,7 @@
                 <td>
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
-                          $parent.editTile(
+                          self.editTile(
                               self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_duration', 'professional_activity_timespan_duration_value', '@tile_id']),
                           )},
                       clickBubble: false,
@@ -2021,7 +2021,7 @@
                         <!-- ko foreach: { data: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration.professional_activity_timespan_duration_name, as: 'timespanDurationName' } -->
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
-                                  $parents[1].editTile(
+                                  self.editTile(
                                       self.getValue(timespanDurationName, ['professional_activity_timespan_duration_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
@@ -2082,7 +2082,7 @@
                 <td>
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
-                          $parent.editTile(
+                          self.editTile(
                               self.getValue(professionalActivity, ['professional_activity', 'professional_activity_timespan', 'professional_activity_timespan_statement', 'professional_activity_timespan_statement_content', '@tile_id']),
                           )},
                       clickBubble: false,
@@ -2224,7 +2224,7 @@
             <!-- ko foreach: { data: groupIdentifierAssignmentData, as: 'identifierAssignment' } -->
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
-                    $parent.editTile(
+                    self.editTile(
                         self.getValue(identifierAssignment, ['identifier', 'identifier_content', '@tile_id']),
                     )},
                 clickBubble: false,
@@ -2251,7 +2251,7 @@
             <!-- ko if: identifierAssignment.identifier.identifier_data_assignment -->
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
-                    $parent.editTile(
+                    self.editTile(
                         self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_actor', '@tile_id']),
                     )},
                 clickBubble: false,
@@ -2265,7 +2265,7 @@
                   <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_name, as: 'dataAssignmentName' } -->
                     <table style="margin: 0px;" class="table summary-table-left-header"
                         data-bind="click: function() {
-                            $parents[1].editTile(
+                            self.editTile(
                                 self.getValue(dataAssignmentName, ['identifier_data_assignment_name_content', '@tile_id']),
                             )},
                         clickBubble: false,
@@ -2313,7 +2313,7 @@
             <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan -->
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
-                    $parent.editTile(
+                    self.editTile(
                         self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_begin_of_the_begin', '@tile_id']),
                     )},
                 clickBubble: false,
@@ -2327,7 +2327,7 @@
                   <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_name, as: 'timespanName' } -->
                     <table style="margin: 0px;" class="table summary-table-left-header"
                         data-bind="click: function() {
-                            $parents[1].editTile(
+                            self.editTile(
                                 self.getValue(timespanName, ['identifier_data_assignment_timespan_name_content', '@tile_id']),
                             )},
                         clickBubble: false,
@@ -2379,7 +2379,7 @@
                   <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_duration -->
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
-                          $parent.editTile(
+                          self.editTile(
                               self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@tile_id']),
                           )},
                       clickBubble: false,
@@ -2393,7 +2393,7 @@
                         <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_duration.identifier_data_assignment_timespan_duration_name, as: 'timespanDurationName' } -->
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
-                                  $parents[1].editTile(
+                                  self.editTile(
                                       self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
@@ -2458,7 +2458,7 @@
                   <!-- ko if: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement -->
                   <table class="table summary-table-left-header"
                       data-bind="click: function() {
-                          $parent.editTile(
+                          self.editTile(
                               self.getValue(identifierAssignment, ['identifier', 'identifier_data_assignment', 'identifier_data_assignment_timespan', 'identifier_data_assignment_timespan_duration', 'identifier_data_assignment_timespan_duration_value', '@tile_id']),
                           )},
                       clickBubble: false,
@@ -2473,7 +2473,7 @@
                         <!-- ko foreach: { data: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement.identifier_data_assignment_timespan_statement_name, as: 'timespanDurationName' } -->
                           <table style="margin: 0px;" class="table summary-table-left-header"
                               data-bind="click: function() {
-                                  $parents[1].editTile(
+                                  self.editTile(
                                       self.getValue(timespanDurationName, ['identifier_data_assignment_timespan_duration_name_content', '@tile_id']),
                                   )},
                               clickBubble: false,
