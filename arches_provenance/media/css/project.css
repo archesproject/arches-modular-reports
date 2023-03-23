@@ -164,3 +164,9 @@ td {
     border: 1px solid blue;
     background-color: #eeeeee;
 }
+
+.report-add-tile-text {
+    cursor: pointer;
+    color: steelblue;
+    padding-left: 25px;
+}

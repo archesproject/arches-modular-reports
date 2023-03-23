@@ -194,7 +194,7 @@
       <div class="summary-table-container">
         <div>
           <span class="table-label">Names</span>
-          <span style = 'cursor: pointer; color: steelblue;'
+          <span class = "report-add-tile-text"
               data-bind="click: function() { self.editTile( null, self.nameNodegroupdId, null )},
             ">Add New Name</span>
         </div>
@@ -215,7 +215,7 @@
       <div class="summary-table-container">
         <div>
           <span class="table-label">Statements</span>
-          <span style = 'cursor: pointer; color: steelblue;'
+          <span class = "report-add-tile-text"
               data-bind="click: function() { self.editTile( null, self.statementNodegroupId, null )},
             ">Add New Statement</span>
         </div>
@@ -308,7 +308,7 @@
         <div>
           <span class="table-label">Formation</span>
           <!-- ko if: groupFormationData.length === 0 -->
-          <span style = 'cursor: pointer; color: steelblue;'
+          <span class = "report-add-tile-text"
               data-bind="click: function() { self.editTile( null, self.groupFormationNodegroupId, null )},
             ">Add New Formation</span>
           <!-- /ko -->
@@ -346,7 +346,7 @@
       <div class="summary-table-container">
         <div>
           <span class="table-label">Professional Activity</span>
-          <span style = 'cursor: pointer; color: steelblue;'
+          <span class = "report-add-tile-text"
               data-bind="click: function() { self.editTile( null, self.groupProfessionalActivityNodegroupId, null )},
             ">Add New Professional Activity</span>
         </div>
@@ -365,7 +365,7 @@
       <div class="summary-table-container">
         <div>
           <span class="table-label">Establishment</span>
-          <span style = 'cursor: pointer; color: steelblue;'
+          <span class = "report-add-tile-text"
               data-bind="click: function() { self.editTile( null, self.groupEstablishmentNodegroupId, null )},
             ">Add New Establishment</span>
         </div>
@@ -387,7 +387,7 @@
         <div>
           <span class="table-label">Dissolution</span>
           <!-- ko if: groupDissolutionData.length === 0 -->
-          <span style = 'cursor: pointer; color: steelblue;'
+          <span class = "report-add-tile-text"
             data-bind="click: function() { self.editTile( null, self.groupDissolutionNodegroupId, null )},
           ">Add New Dissolution</span>
           <!-- /ko -->
@@ -547,7 +547,7 @@
                   <!-- /ko -->
                   <!-- /ko -->
                   <!-- ko ifnot: groupFormation.group_formation.group_formation_statement.group_formation_statement_name -->
-                      <div style = 'cursor: pointer; color: steelblue;'
+                      <div class = "report-add-tile-text"
                           data-bind="click: function() {
                               self.editTile(
                                   null,
@@ -582,7 +582,7 @@
             <!-- ko ifnot: groupFormation.group_formation.group_formation_statement -->
             <div>
                 <span>No Formation Statement</span>
-                <span style = 'cursor: pointer; color: steelblue;'
+                <span class = "report-add-tile-text"
                     data-bind="click: function() {
                         self.editTile(
                             null,
@@ -643,7 +643,7 @@
                   <!-- /ko -->
                   <!-- /ko -->
                   <!-- ko ifnot: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_name -->
-                      <div style = 'cursor: pointer; color: steelblue;'
+                      <div class = "report-add-tile-text"
                           data-bind="click: function() {
                               self.editTile(
                                   null,
@@ -726,7 +726,7 @@
                         <!-- /ko -->
                         <!-- /ko -->
                         <!-- ko ifnot: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration.group_formation_timespan_duration_name -->
-                            <div style = 'cursor: pointer; color: steelblue;'
+                            <div class = "report-add-tile-text"
                                 data-bind="click: function() {
                                     self.editTile(
                                         null,
@@ -768,7 +768,7 @@
                   </table>
                   <!-- /ko -->
                   <!-- ko ifnot: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_duration -->
-                  <div style = 'cursor: pointer; color: steelblue;'
+                  <div class = "report-add-tile-text"
                       data-bind="click: function() {
                           self.editTile(
                               null,
@@ -831,7 +831,7 @@
                         <!-- /ko -->
                         <!-- /ko -->
                         <!-- ko ifnot: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement.group_formation_timespan_statement_name -->
-                        <div style = 'cursor: pointer; color: steelblue;'
+                        <div class = "report-add-tile-text"
                             data-bind="click: function() {
                                 self.editTile(
                                     null,
@@ -865,7 +865,7 @@
                   </table>
                 <!-- /ko -->
                 <!-- ko ifnot: groupFormation.group_formation.group_formation_timespan.group_formation_timespan_statement -->
-                    <div style = 'cursor: pointer; color: steelblue;'
+                    <div class = "report-add-tile-text"
                         data-bind="click: function() {
                             self.editTile(
                                 null,
@@ -884,7 +884,7 @@
             <!-- ko ifnot: groupFormation.group_formation.group_formation_timespan -->
               <div>
                 <span>No Formation Time Span</span>
-                <span style = 'cursor: pointer; color: steelblue;'
+                <span class = "report-add-tile-text"
                     data-bind="click: function() {
                         self.editTile(
                             null,
@@ -1018,7 +1018,7 @@
               <!-- /ko -->
               <!-- /ko -->
               <!-- ko ifnot: groupDissolution.group_dissolution.group_dissolution_statement.group_dissolution_statement_name -->
-                  <div style = 'cursor: pointer; color: steelblue;'
+                  <div class = "report-add-tile-text"
                       data-bind="click: function() {
                           self.editTile(
                               null,
@@ -1053,7 +1053,7 @@
         <!-- ko if: groupDissolution.group_dissolution.group_dissolution_statement === undefined -->
         <div>
           <span>No Dissolution Statement</span>
-          <span style = 'cursor: pointer; color: steelblue;'
+          <span class = "report-add-tile-text"
               data-bind="click: function() {
                   self.editTile(
                       null,
@@ -1114,7 +1114,7 @@
               <!-- /ko -->
               <!-- /ko -->
               <!-- ko ifnot: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_name -->
-                  <div style = 'cursor: pointer; color: steelblue;'
+                  <div class = "report-add-tile-text"
                       data-bind="click: function() {
                           self.editTile(
                               null,
@@ -1197,7 +1197,7 @@
                     <!-- /ko -->
                     <!-- /ko -->
                     <!-- ko ifnot: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration.group_dissolution_timespan_duration_name -->
-                        <div style = 'cursor: pointer; color: steelblue;'
+                        <div class = "report-add-tile-text"
                             data-bind="click: function() {
                                 self.editTile(
                                     null,
@@ -1235,7 +1235,7 @@
               </table>
               <!-- /ko -->
               <!-- ko ifnot: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_duration -->
-              <div style = 'cursor: pointer; color: steelblue;'
+              <div class = "report-add-tile-text"
                   data-bind="click: function() {
                       self.editTile(
                           null,
@@ -1298,7 +1298,7 @@
                     <!-- /ko -->
                     <!-- /ko -->
                     <!-- ko ifnot: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement.group_dissolution_timespan_statement_name -->
-                    <div style = 'cursor: pointer; color: steelblue;'
+                    <div class = "report-add-tile-text"
                         data-bind="click: function() {
                             self.editTile(
                                 null,
@@ -1331,7 +1331,7 @@
               </table>
               <!-- /ko -->
               <!-- ko ifnot: groupDissolution.group_dissolution.group_dissolution_timespan.group_dissolution_timespan_statement -->
-                <div style = 'cursor: pointer; color: steelblue;'
+                <div class = "report-add-tile-text"
                     data-bind="click: function() {
                         self.editTile(
                             null,
@@ -1350,7 +1350,7 @@
         <!-- ko if: groupDissolution.group_dissolution.group_dissolution_timespan === undefined -->        
         <div>
           <span>No Group Dissolution Timespan</span>
-          <span style = 'cursor: pointer; color: steelblue;'
+          <span class = "report-add-tile-text"
               data-bind="click: function() {
                   self.editTile(
                       null,
@@ -1488,7 +1488,7 @@
                   <!-- /ko -->
                   <!-- /ko -->
                   <!-- ko if: sojourn.sojourn_statement.sojourn_statement_name == undefined -->
-                    <div style = 'cursor: pointer; color: steelblue;'
+                    <div class = "report-add-tile-text"
                         data-bind="click: function() {
                             self.editTile(
                                 null,
@@ -1523,7 +1523,7 @@
           <!-- ko ifnot: sojourn.sojourn_statement -->
           <div>
               <span>No Establishment Statement</span>
-              <span style = 'cursor: pointer; color: steelblue;'
+              <span class = "report-add-tile-text"
                   data-bind="click: function() {
                       self.editTile(
                           null,
@@ -1585,7 +1585,7 @@
                       <!-- /ko -->
                   <!-- /ko -->
                   <!-- ko ifnot: sojourn.sojourn_activity_timespan.sojourn_timespan_name -->
-                      <div style = 'cursor: pointer; color: steelblue;'
+                      <div class = "report-add-tile-text"
                           data-bind="click: function() {
                               self.editTile(
                                   null,
@@ -1668,7 +1668,7 @@
                         <!-- /ko -->
                         <!-- /ko -->
                         <!-- ko ifnot: sojourn.sojourn_activity_timespan.sojourn_timespan_duration.sojourn_timespan_duration_name -->
-                            <div style = 'cursor: pointer; color: steelblue;'
+                            <div class = "report-add-tile-text"
                                 data-bind="click: function() {
                                     self.editTile(
                                         null,
@@ -1710,7 +1710,7 @@
                 </table>
                 <!-- /ko -->
                 <!-- ko ifnot: sojourn.sojourn_activity_timespan.sojourn_timespan_duration -->
-                <div style = 'cursor: pointer; color: steelblue;'
+                <div class = "report-add-tile-text"
                     data-bind="click: function() {
                         self.editTile(
                             null,
@@ -1773,7 +1773,7 @@
                         <!-- /ko -->
                         <!-- /ko -->
                         <!-- ko ifnot: sojourn.sojourn_activity_timespan.sojourn_timespan_statement.sojourn_timespan_statement_name -->
-                          <div style = 'cursor: pointer; color: steelblue;'
+                          <div class = "report-add-tile-text"
                               data-bind="click: function() {
                                   self.editTile(
                                       null,
@@ -1811,7 +1811,7 @@
                 </table>
                 <!-- /ko -->
                 <!-- ko ifnot: sojourn.sojourn_activity_timespan.sojourn_timespan_statement -->
-                    <div style = 'cursor: pointer; color: steelblue;'
+                    <div class = "report-add-tile-text"
                         data-bind="click: function() {
                             self.editTile(
                                 null,
@@ -1830,7 +1830,7 @@
           <!-- ko ifnot: sojourn.sojourn_activity_timespan -->
           <div>
               <span>No Establishment Time Span</span>
-              <span style = 'cursor: pointer; color: steelblue;'
+              <span class = "report-add-tile-text"
                   data-bind="click: function() {
                       self.editTile(
                           null,
@@ -1966,7 +1966,7 @@
                   <!-- /ko -->
                   <!-- /ko -->
                   <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_statement.professional_activity_statement_name -->
-                  <div style = 'cursor: pointer; color: steelblue;'
+                  <div class = "report-add-tile-text"
                       data-bind="click: function() {
                           self.editTile(
                               null,
@@ -2001,7 +2001,7 @@
             <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_statement -->
             <div>
               <span>No Group Professional Activity Statement</span>
-              <span style = 'cursor: pointer; color: steelblue;'
+              <span class = "report-add-tile-text"
                   data-bind="click: function() {
                       self.editTile(
                           null,
@@ -2062,7 +2062,7 @@
                   <!-- /ko -->
                   <!-- /ko -->
                   <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_name -->
-                  <div style = 'cursor: pointer; color: steelblue;'
+                  <div class = "report-add-tile-text"
                       data-bind="click: function() {
                           self.editTile(
                               null,
@@ -2141,7 +2141,7 @@
                         <!-- /ko -->
                         <!-- /ko -->
                         <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration.professional_activity_timespan_duration_name  -->
-                        <div style = 'cursor: pointer; color: steelblue;'
+                        <div class = "report-add-tile-text"
                             data-bind="click: function() {
                                 self.editTile(
                                     null,
@@ -2179,7 +2179,7 @@
                   </table>
                 <!-- /ko -->
                 <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_duration -->
-                <div style = 'cursor: pointer; color: steelblue;'
+                <div class = "report-add-tile-text"
                     data-bind="click: function() {
                         self.editTile(
                             null,
@@ -2242,7 +2242,7 @@
                         <!-- /ko -->
                         <!-- /ko -->
                         <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_statement.professional_activity_timespan_statement_name -->
-                        <div style = 'cursor: pointer; color: steelblue;'
+                        <div class = "report-add-tile-text"
                             data-bind="click: function() {
                                 self.editTile(
                                     null,
@@ -2280,7 +2280,7 @@
                   </table>
                   <!-- /ko -->
                   <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan.professional_activity_timespan_statement -->
-                  <div style = 'cursor: pointer; color: steelblue;'
+                  <div class = "report-add-tile-text"
                       data-bind="click: function() {
                           self.editTile(
                               null,
@@ -2299,7 +2299,7 @@
             <!-- ko ifnot: professionalActivity.professional_activity.professional_activity_timespan -->              
             <div>
               <span>No Professional Activity Time Span</span>
-              <span style = 'cursor: pointer; color: steelblue;'
+              <span class = "report-add-tile-text"
                   data-bind="click: function() {
                       self.editTile(
                           null,
@@ -2332,7 +2332,7 @@
       <div class="summary-table-container">
         <div>
           <span class="table-label">Identifiers</span>
-          <span style = 'cursor: pointer; color: steelblue;'
+          <span class = "report-add-tile-text"
             data-bind="click: function() { self.editTile( null, self.groupIdentifierAssignmentNodegroupId, null )},
           ">Add New Identifiers</span>
         </div>
@@ -2353,7 +2353,7 @@
       <div class="summary-table-container">
         <div>
           <span class="table-label">External URIs</span>
-          <span style = 'cursor: pointer; color: steelblue;'
+          <span class = "report-add-tile-text"
             data-bind="click: function() { self.editTile( null, self.externalIdentifierNodegroupId, null )},
           ">Add New External URIs</span>
         </div>
@@ -2460,7 +2460,7 @@
                   <!-- /ko -->
                   <!-- /ko -->
                   <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_name -->
-                  <div style = 'cursor: pointer; color: steelblue;'
+                  <div class = "report-add-tile-text"
                       data-bind="click: function() {
                           self.editTile(
                               null,
@@ -2535,7 +2535,7 @@
                   <!-- /ko -->
                   <!-- /ko -->
                   <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_name -->
-                  <div style = 'cursor: pointer; color: steelblue;'
+                  <div class = "report-add-tile-text"
                       data-bind="click: function() {
                           self.editTile(
                               null,
@@ -2614,7 +2614,7 @@
                         <!-- /ko -->
                         <!-- /ko -->
                         <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_duration.identifier_data_assignment_timespan_duration_name -->
-                        <div style = 'cursor: pointer; color: steelblue;'
+                        <div class = "report-add-tile-text"
                             data-bind="click: function() {
                                 self.editTile(
                                     null,
@@ -2656,7 +2656,7 @@
                   </table>
                   <!-- /ko -->
                   <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_duration -->
-                  <div style = 'cursor: pointer; color: steelblue;'
+                  <div class = "report-add-tile-text"
                       data-bind="click: function() {
                           self.editTile(
                               null,
@@ -2721,7 +2721,7 @@
                         <!-- /ko -->
                         <!-- /ko -->
                         <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement.identifier_data_assignment_timespan_statement_name -->
-                        <div style = 'cursor: pointer; color: steelblue;'
+                        <div class = "report-add-tile-text"
                             data-bind="click: function() {
                                 self.editTile(
                                     null,
@@ -2763,7 +2763,7 @@
                   </table>
                   <!--/ko -->
                   <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan.identifier_data_assignment_timespan_statement -->
-                  <div style = 'cursor: pointer; color: steelblue;'
+                  <div class = "report-add-tile-text"
                       data-bind="click: function() {
                           self.editTile(
                               null,
@@ -2782,7 +2782,7 @@
             <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment.identifier_data_assignment_timespan -->
             <div>
               <span>No identifier data assignment time span</span>
-              <span style = 'cursor: pointer; color: steelblue;'
+              <span class = "report-add-tile-text"
                   data-bind="click: function() {
                       self.editTile(
                           null,
@@ -2799,7 +2799,7 @@
             <!-- ko ifnot: identifierAssignment.identifier.identifier_data_assignment -->
             <div>
               <span>No identifier data Assignment</span>
-              <span style = 'cursor: pointer; color: steelblue;'
+              <span class = "report-add-tile-text"
                   data-bind="click: function() {
                       self.editTile(
                           null,
@@ -2826,7 +2826,7 @@
       <div class="summary-table-container">
         <div>
           <span class="table-label">Source References</span>
-          <span style = 'cursor: pointer; color: steelblue;'
+          <span class = "report-add-tile-text"
             data-bind="click: function() { self.editTile( null, self.sourceReferenceNodegroupId, null )},
           ">Add New Source References</span>
         </div>
