@@ -19,20 +19,20 @@ define([
             const resourceid = params.report.report_json?.resourceinstanceid;
             const resourceName = params.report.report_json?.displayname;
 
-            const nameNodegroupdId = "5bc65fd2-bb18-11ea-85a6-3af9d3b32b71";
-            const nationalityNodegroupId = "a5cff5a3-e317-11eb-ba14-0a9473e82189";
-            const typeOfGroupNodegroupId = "7275d2fe-2a65-11ec-b195-0a9473e82189";
-            const statementNodegroupId = "9285a4ba-bb18-11ea-85a6-3af9d3b32b71";
-            const externalIdentifierNodegroupId = "f5930746-bb18-11ea-85a6-3af9d3b32b71";
-            const subGroupNodegroupId = "df216a34-bb18-11ea-85a6-3af9d3b32b71";
-            const labelNodegroupId = "97f15d22-bb18-11ea-85a6-3af9d3b32b71";
-            const contactNodegroupId = "ace43c39-f43b-11eb-ba14-0a9473e82189";
-            const groupFormationNodegroupId = "c6dc61cc-bb18-11ea-85a6-3af9d3b32b71";
-            const groupDissolutionNodegroupId = "c0a136c4-bba0-11ea-ad92-3af9d3b32b71";
-            const groupEstablishmentNodegroupId =  "7c586770-eac9-11eb-ba14-0a9473e82189";
-            const groupProfessionalActivityNodegroupId = "0c3baef0-e323-11eb-ba14-0a9473e82189";
-            const groupIdentifierAssignmentNodegroupId = "42b0db83-e319-11eb-ba14-0a9473e82189";
-            const sourceReferenceNodegroupId = "30e30626-c798-11ea-b94e-3af9d3b32b71";
+            this.nameNodegroupdId = "5bc65fd2-bb18-11ea-85a6-3af9d3b32b71";
+            this.nationalityNodegroupId = "a5cff5a3-e317-11eb-ba14-0a9473e82189";
+            this.typeOfGroupNodegroupId = "7275d2fe-2a65-11ec-b195-0a9473e82189";
+            this.statementNodegroupId = "9285a4ba-bb18-11ea-85a6-3af9d3b32b71";
+            this.externalIdentifierNodegroupId = "f5930746-bb18-11ea-85a6-3af9d3b32b71";
+            this.subGroupNodegroupId = "df216a34-bb18-11ea-85a6-3af9d3b32b71";
+            this.labelNodegroupId = "97f15d22-bb18-11ea-85a6-3af9d3b32b71";
+            this.contactNodegroupId = "ace43c39-f43b-11eb-ba14-0a9473e82189";
+            this.groupFormationNodegroupId = "c6dc61cc-bb18-11ea-85a6-3af9d3b32b71";
+            this.groupDissolutionNodegroupId = "c0a136c4-bba0-11ea-ad92-3af9d3b32b71";
+            this.groupEstablishmentNodegroupId =  "7c586770-eac9-11eb-ba14-0a9473e82189";
+            this.groupProfessionalActivityNodegroupId = "0c3baef0-e323-11eb-ba14-0a9473e82189";
+            this.groupIdentifierAssignmentNodegroupId = "42b0db83-e319-11eb-ba14-0a9473e82189";
+            this.sourceReferenceNodegroupId = "30e30626-c798-11ea-b94e-3af9d3b32b71";
 
             this.sojournNameNodegroupId = '7c586764-eac9-11eb-ba14-0a9473e82189';
             this.sojournStatementNodegroupId = '7c58675b-eac9-11eb-ba14-0a9473e82189';
@@ -378,7 +378,7 @@ define([
                 deferRender: true,
                 errMode: 'Ignore',
                 ajax: {
-                    url: arches.urls.provenance_report + '?resourceid=' + resourceid + '&nodegroupid=' + nameNodegroupdId,
+                    url: arches.urls.provenance_report + '?resourceid=' + resourceid + '&nodegroupid=' + self.nameNodegroupdId,
                     dataSrc: function(json) {
                         for (el of json.data) {
                             for (const [key, value] of Object.entries(el['name'])) {
@@ -422,9 +422,9 @@ define([
                 deferRender: true,
                 errMode: 'Ignore',
                 ajax: {
-                    url: arches.urls.provenance_source_references + '?resourceid=' + resourceid + '&nodegroupid=' + sourceReferenceNodegroupId,
+                    url: arches.urls.provenance_source_references + '?resourceid=' + resourceid + '&nodegroupid=' + self.sourceReferenceNodegroupId,
                     dataSrc: function(json) {
-                        return json.data
+                        return json.data;
                     }
                 },
             };
@@ -557,9 +557,9 @@ define([
                 },
             ];
 
-            self.createSummaryTableConfig('professionalActivity', professionalActivityColumns, groupProfessionalActivityNodegroupId, ['0c3baf01-e323-11eb-ba14-0a9473e82189', '0c3baefb-e323-11eb-ba14-0a9473e82189', '0c3baef5-e323-11eb-ba14-0a9473e82189']);
-            self.createSummaryTableConfig('establishment', establishmentColumns, groupEstablishmentNodegroupId, ['e5f12154-17c1-11ec-b193-0a9473e82189', '7c5867a1-eac9-11eb-ba14-0a9473e82189', '7c58678a-eac9-11eb-ba14-0a9473e82189']);
-            self.createSummaryTableConfig('identifierAssignemnt', identifierAssignmentColumns, groupIdentifierAssignmentNodegroupId, ['42b0dbab-e319-11eb-ba14-0a9473e82189', '42b0db9e-e319-11eb-ba14-0a9473e82189', '42b0db8c-e319-11eb-ba14-0a9473e82189']);
+            self.createSummaryTableConfig('professionalActivity', professionalActivityColumns, self.groupProfessionalActivityNodegroupId, ['0c3baf01-e323-11eb-ba14-0a9473e82189', '0c3baefb-e323-11eb-ba14-0a9473e82189', '0c3baef5-e323-11eb-ba14-0a9473e82189']);
+            self.createSummaryTableConfig('establishment', establishmentColumns, self.groupEstablishmentNodegroupId, ['e5f12154-17c1-11ec-b193-0a9473e82189', '7c5867a1-eac9-11eb-ba14-0a9473e82189', '7c58678a-eac9-11eb-ba14-0a9473e82189']);
+            self.createSummaryTableConfig('identifierAssignemnt', identifierAssignmentColumns, self.groupIdentifierAssignmentNodegroupId, ['42b0dbab-e319-11eb-ba14-0a9473e82189', '42b0db9e-e319-11eb-ba14-0a9473e82189', '42b0db8c-e319-11eb-ba14-0a9473e82189']);
             
         // ----------------- end summary table defitions --------------------------
         
@@ -590,11 +590,11 @@ define([
             };
 
             // get values for all cardinality "1" nodegroups
-            // self.getSimpleBranchData(self.typeOfGroup, typeOfGroupNodegroupId, ['data', '0', 'type', '@display_value']);
-            // self.getSimpleBranchData(self.nationality, nationalityNodegroupId, ['data', '0', 'nationality', '@display_value']);
-            self.getSimpleBranchData(self.sourceReference, sourceReferenceNodegroupId, ['data', '0', 'source_reference', 'instance_details']);
-            self.getSimpleBranchData(self.subgroup, subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value']);
-            self.getSimpleBranchData(self.label, labelNodegroupId, ['data', '0', '_label', '@display_value']);
+            // self.getSimpleBranchData(self.typeOfGroup, self.typeOfGroupNodegroupId, ['data', '0', 'type', '@display_value']);
+            // self.getSimpleBranchData(self.nationality, self.nationalityNodegroupId, ['data', '0', 'nationality', '@display_value']);
+            self.getSimpleBranchData(self.sourceReference, self.sourceReferenceNodegroupId, ['data', '0', 'source_reference', 'instance_details']);
+            self.getSimpleBranchData(self.subgroup, self.subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value']);
+            self.getSimpleBranchData(self.label, self.labelNodegroupId, ['data', '0', '_label', '@display_value']);
 
         // ----------------- end get simple branch data --------------------------
 
@@ -624,12 +624,12 @@ define([
             };
 
             // get complex branch data
-            self.getComplexBranchData(self.typeOfGroup, typeOfGroupNodegroupId);
-            self.getComplexBranchData(self.nationality, nationalityNodegroupId);
-            self.getComplexBranchData(self.externalIdentifierData, externalIdentifierNodegroupId);
-            self.getComplexBranchData(self.groupFormationData, groupFormationNodegroupId);
-            self.getComplexBranchData(self.groupDissolutionData, groupDissolutionNodegroupId);
-            self.getComplexBranchData(self.statementData, statementNodegroupId);
+            self.getComplexBranchData(self.typeOfGroup, self.typeOfGroupNodegroupId);
+            self.getComplexBranchData(self.nationality, self.nationalityNodegroupId);
+            self.getComplexBranchData(self.externalIdentifierData, self.externalIdentifierNodegroupId);
+            self.getComplexBranchData(self.groupFormationData, self.groupFormationNodegroupId);
+            self.getComplexBranchData(self.groupDissolutionData, self.groupDissolutionNodegroupId);
+            self.getComplexBranchData(self.statementData, self.statementNodegroupId);
 
         // ----------------- end get complex branch data --------------------------
         
@@ -696,13 +696,13 @@ define([
 
             $('#formation-summary-table tbody').on( 'click', 'button', function() {
                 self.currentObservable(self.groupFormationData);
-                self.currentNodegroupId(groupFormationNodegroupId);
+                self.currentNodegroupId(self.groupFormationNodegroupId);
                 self.mainTileId('');
             } );
 
             $('#dissolution-summary-table tbody').on( 'click', 'button', function() {
                 self.currentObservable(self.groupDissolutionData);
-                self.currentNodegroupId(groupDissolutionNodegroupId);
+                self.currentNodegroupId(self.groupDissolutionNodegroupId);
                 self.mainTileId('');
             } );
 
@@ -710,27 +710,27 @@ define([
             $('#professional-activity-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#professional-activity-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
-                self.getComplexBranchData(self.groupProfessionalActivityData, groupProfessionalActivityNodegroupId, data.tileid);
+                self.getComplexBranchData(self.groupProfessionalActivityData, self.groupProfessionalActivityNodegroupId, data.tileid);
                 self.currentObservable(self.groupProfessionalActivityData);
-                self.currentNodegroupId(groupProfessionalActivityNodegroupId);
+                self.currentNodegroupId(self.groupProfessionalActivityNodegroupId);
                 self.mainTileId(data.tileid);
             } );
 
             $('#establishment-activity-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#establishment-activity-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
-                self.getComplexBranchData(self.groupEstablishmentData, groupEstablishmentNodegroupId, data.tileid);
+                self.getComplexBranchData(self.groupEstablishmentData, self.groupEstablishmentNodegroupId, data.tileid);
                 self.currentObservable(self.groupEstablishmentData);
-                self.currentNodegroupId(groupEstablishmentNodegroupId);
+                self.currentNodegroupId(self.groupEstablishmentNodegroupId);
                 self.mainTileId(data.tileid);
             } );
 
             $('#identifier-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#identifier-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
-                self.getComplexBranchData(self.groupIdentifierAssignmentData, groupIdentifierAssignmentNodegroupId, data.tileid);
+                self.getComplexBranchData(self.groupIdentifierAssignmentData, self.groupIdentifierAssignmentNodegroupId, data.tileid);
                 self.currentObservable(self.groupIdentifierAssignmentData);
-                self.currentNodegroupId(groupIdentifierAssignmentNodegroupId);
+                self.currentNodegroupId(self.groupIdentifierAssignmentNodegroupId);
                 self.mainTileId(data.tileid);
             } );
 

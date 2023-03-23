@@ -192,7 +192,12 @@
 
       <!-- Name Summary Table -->
       <div class="summary-table-container">
-        <div class="table-label">Names</div>
+        <div>
+          <span class="table-label">Names</span>
+          <span style = 'cursor: pointer; color: steelblue;'
+              data-bind="click: function() { self.editTile( null, self.nameNodegroupdId, null )},
+            ">Add New Name</span>
+        </div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
               <table id="name-summary-table" class="table table-striped" cellspacing="0" width="100%;">
                   <thead>
@@ -208,19 +213,24 @@
 
       <!-- Statement Tables -->
       <div class="summary-table-container">
-        <div class="table-label">Statements</div>
+        <div>
+          <span class="table-label">Statements</span>
+          <span style = 'cursor: pointer; color: steelblue;'
+              data-bind="click: function() { self.editTile( null, self.statementNodegroupId, null )},
+            ">Add New Statement</span>
+        </div>
         <!-- ko if: statementData().length > 0 -->
         <!-- ko foreach: { data: statementData, as: 'statement_data' } -->
           <table class="table summary-table-top-header">
               <tbody>
-                <th class="header" style="padding: 8px">Statement Type </td>
-                <th colspan=2 class="header" style="padding: 8px">Statement Confidentiality </td>
+                <th class="header" style="padding: 8px; width: 50%;">Statement Type </td>
+                <th colspan=2 class="header" style="padding: 8px; width: 50%;">Statement Confidentiality </td>
                 <tr>
                   <td data-bind="text: self.getValue(statement_data, ['statement', 'statement_type', '@display_value'])"> </td>
                   <td colspan=2 data-bind="text: self.getValue(statement_data, ['statement', 'statement_confidentiality', '@display_value'])"> </td>
                 </tr>
                 <tr>
-                  <td colspan=2 data-bind="text: self.getValue(statement_data, ['statement', 'statement_content', '@display_value'])"> </td>
+                  <td colspan=2 data-bind="html: self.getValue(statement_data, ['statement', 'statement_content', '@display_value'])"> </td>
                   <td style="width: 40px;">
                     <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px"
                         data-bind="click: function() {
@@ -295,7 +305,14 @@
 
       <!-- Formation Sumamry Table -->
       <div class="summary-table-container">
-        <div class="table-label">Formation</div>
+        <div>
+          <span class="table-label">Formation</span>
+          <!-- ko if: groupFormationData.length === 0 -->
+          <span style = 'cursor: pointer; color: steelblue;'
+              data-bind="click: function() { self.editTile( null, self.groupFormationNodegroupId, null )},
+            ">Add New Formation</span>
+          <!-- /ko -->
+        </div>
         <table id="formation-summary-table" class="table summary-table-top-header">
           <tbody>
             <tr>
@@ -304,6 +321,7 @@
               <th class="header" style="padding: 8px">Type</th>
               <th class="header" style="padding: 8px"></th>
             </tr>
+            <!-- ko if: groupFormationData.length > 0 -->
             <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
             <tr>
               <td><a data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
@@ -314,13 +332,24 @@
               </td>
             </tr>
             <!-- /ko -->
-            </tbody>
+            <!-- /ko -->
+            <!-- ko if: groupFormationData.length === 0 -->
+            <tr>
+              <td colspan="4" style="background: #f1f3f5; text-align: center;">No data available in table</td>         
+            </tr>
+            <!-- /ko -->
+          </tbody>
         </table>
       </div>
 
       <!-- Professional Activity Summary Table -->
       <div class="summary-table-container">
-        <div class="table-label">Professional Activity</div>
+        <div>
+          <span class="table-label">Professional Activity</span>
+          <span style = 'cursor: pointer; color: steelblue;'
+              data-bind="click: function() { self.editTile( null, self.groupProfessionalActivityNodegroupId, null )},
+            ">Add New Professional Activity</span>
+        </div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
               <table id="professional-activity-summary-table" class="table table-striped" cellspacing="0" width="100%;">
                   <thead>
@@ -334,7 +363,12 @@
 
       <!-- Establishment Summary Table -->
       <div class="summary-table-container">
-        <div class="table-label">Establishment</div>
+        <div>
+          <span class="table-label">Establishment</span>
+          <span style = 'cursor: pointer; color: steelblue;'
+              data-bind="click: function() { self.editTile( null, self.groupEstablishmentNodegroupId, null )},
+            ">Add New Establishment</span>
+        </div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
               <table id="establishment-activity-summary-table" class="table table-striped" cellspacing="0" width="100%;">
                   <thead>
@@ -350,7 +384,14 @@
 
       <!-- Dissolution Summary Table -->
       <div class="summary-table-container">
-        <div class="table-label">Dissolution</div>
+        <div>
+          <span class="table-label">Dissolution</span>
+          <!-- ko if: groupDissolutionData.length === 0 -->
+          <span style = 'cursor: pointer; color: steelblue;'
+            data-bind="click: function() { self.editTile( null, self.groupDissolutionNodegroupId, null )},
+          ">Add New Dissolution</span>
+          <!-- /ko -->
+        </div>
         <table id="dissolution-summary-table" class="table summary-table-top-header">
           <tbody>
             <tr>
@@ -359,6 +400,7 @@
               <th class="header" style="padding: 8px">Type</th>
               <th class="header" style="padding: 8px"></th>
             </tr>
+            <!-- ko if: groupDissolutionData.length > 0 -->
             <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
             <tr>
               <!-- <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td> -->
@@ -370,6 +412,12 @@
               </td>
             </tr>
             <!-- /ko -->
+            <!-- /ko -->
+            <!-- ko if: groupDissolutionData.length === 0 -->
+            <tr>
+              <td colspan="4" style="background: #f1f3f5; text-align: center;">No data available in table</td>         
+            </tr>
+            <!-- /ko -->            
             </tbody>
         </table>
       </div>
@@ -1472,7 +1520,7 @@
             </tr>
           </table>
           <!-- /ko -->
-          <!-- ko if: sojourn.sojourn_statement -->
+          <!-- ko ifnot: sojourn.sojourn_statement -->
           <div>
               <span>No Establishment Statement</span>
               <span style = 'cursor: pointer; color: steelblue;'
@@ -2282,7 +2330,12 @@
 
       <!-- Identifiers Summary Table -->
       <div class="summary-table-container">
-        <div class="table-label">Identifiers</div>
+        <div>
+          <span class="table-label">Identifiers</span>
+          <span style = 'cursor: pointer; color: steelblue;'
+            data-bind="click: function() { self.editTile( null, self.groupIdentifierAssignmentNodegroupId, null )},
+          ">Add New Identifiers</span>
+        </div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
               <table id="identifier-summary-table" class="table table-striped" cellspacing="0" width="100%;">
                   <thead>
@@ -2298,7 +2351,12 @@
 
       <!-- External URIs -->
       <div class="summary-table-container">
-        <div class="table-label">External URIs</div>
+        <div>
+          <span class="table-label">External URIs</span>
+          <span style = 'cursor: pointer; color: steelblue;'
+            data-bind="click: function() { self.editTile( null, self.externalIdentifierNodegroupId, null )},
+          ">Add New External URIs</span>
+        </div>
         <table class="table summary-table-left-header">
             <tbody>
                 <tr>
@@ -2766,7 +2824,12 @@
     <div style="padding-top: 24px;" class="rp-report-section">
       <!-- Source References Table -->
       <div class="summary-table-container">
-        <div class="table-label">Source References</div>
+        <div>
+          <span class="table-label">Source References</span>
+          <span style = 'cursor: pointer; color: steelblue;'
+            data-bind="click: function() { self.editTile( null, self.sourceReferenceNodegroupId, null )},
+          ">Add New Source References</span>
+        </div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
               <table id="source-reference-summary-table" class="table table-striped" cellspacing="0" width="100%;">
                   <thead>

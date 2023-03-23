@@ -443,7 +443,10 @@ class ProvenanceEditorView(View):
                 resourceid = tile.resourceinstance_id
                 nodegroupid = tile.nodegroup_id
             elif nodegroupid and resourceid:
-                parenttile = Tile.objects.get(pk=parenttileid)
+                try:
+                    parenttile = Tile.objects.get(pk=parenttileid)
+                except:
+                    parenttile = None
                 tile = Tile.get_blank_tile_from_nodegroup_id(nodegroup_id=nodegroupid, resourceid=resourceid, parenttile=parenttile)
                 tile.tileid = None
             resource_instance = Resource.objects.get(pk=resourceid)
