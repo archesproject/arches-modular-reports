@@ -91,8 +91,8 @@ define([
             self.subgroup = ko.observable();
             self.label = ko.observable();
             self.statementData = ko.observableArray();
-            self.groupFormationData = ko.observable();
-            self.groupDissolutionData = ko.observable();
+            self.groupFormationData = ko.observableArray();
+            self.groupDissolutionData = ko.observableArray();
             self.groupEstablishmentData = ko.observable();
             self.groupProfessionalActivityData = ko.observable();
             self.groupIdentifierAssignmentData = ko.observable();
@@ -142,14 +142,46 @@ define([
             this.currentNodegroupId = ko.observable();
             this.mainTileId = ko.observable();
 
-            this.onSaveSuccess = () => {
-                self.getComplexBranchData(self.currentObservable(), self.currentNodegroupId(), self.mainTileId());
-                self.showTileEditor(false);
+            this.reloadAllTableAjax = () => {
                 $('#name-summary-table').DataTable().ajax.reload();
+                $('#source-reference-summary-table').DataTable().ajax.reload();
+                $('#professional-activity-summary-table').DataTable().ajax.reload();
+                $('#establishment-activity-summary-table').DataTable().ajax.reload();
+                $('#identifier-summary-table').DataTable().ajax.reload();
+                $('#source-reference-summary-table').DataTable().ajax.reload();
+            };
+
+            self.getAllSimpleBranchData = () => {
+                // self.getSimpleBranchData(self.typeOfGroup, self.typeOfGroupNodegroupId, ['data', '0', 'type', '@display_value']);
+                // self.getSimpleBranchData(self.nationality, self.nationalityNodegroupId, ['data', '0', 'nationality', '@display_value']);
+                self.getSimpleBranchData(self.sourceReference, self.sourceReferenceNodegroupId, ['data', '0', 'source_reference', 'instance_details']);
+                self.getSimpleBranchData(self.subgroup, self.subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value']);
+                self.getSimpleBranchData(self.label, self.labelNodegroupId, ['data', '0', '_label', '@display_value']);
+            };
+
+            self.getAllComplexBranchData = () => {
+                self.getComplexBranchData(self.typeOfGroup, self.typeOfGroupNodegroupId);
+                self.getComplexBranchData(self.nationality, self.nationalityNodegroupId);
+                self.getComplexBranchData(self.externalIdentifierData, self.externalIdentifierNodegroupId);
+                self.getComplexBranchData(self.groupFormationData, self.groupFormationNodegroupId);
+                self.getComplexBranchData(self.groupDissolutionData, self.groupDissolutionNodegroupId);
+                self.getComplexBranchData(self.statementData, self.statementNodegroupId);    
+            };
+
+            this.refeshEverything = () => {
+                self.getComplexBranchData(self.currentObservable(), self.currentNodegroupId(), self.mainTileId());
+                self.getAllSimpleBranchData();
+                self.getAllComplexBranchData();
+                self.reloadAllTableAjax();
+                self.showTileEditor(false);
+                $('#nameModal').modal('hide');
+            };
+
+            this.onSaveSuccess = () => {
+                self.refeshEverything();
             };
             this.onDeleteSuccess = () => {
-                self.getComplexBranchData(self.currentObservable(), self.currentNodegroupId(), self.mainTileId());
-                self.showTileEditor(false);
+                self.refeshEverything();
             };
             this.onSaveError = () => {};
             this.onDeleteError = () => {};
@@ -590,11 +622,7 @@ define([
             };
 
             // get values for all cardinality "1" nodegroups
-            // self.getSimpleBranchData(self.typeOfGroup, self.typeOfGroupNodegroupId, ['data', '0', 'type', '@display_value']);
-            // self.getSimpleBranchData(self.nationality, self.nationalityNodegroupId, ['data', '0', 'nationality', '@display_value']);
-            self.getSimpleBranchData(self.sourceReference, self.sourceReferenceNodegroupId, ['data', '0', 'source_reference', 'instance_details']);
-            self.getSimpleBranchData(self.subgroup, self.subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value']);
-            self.getSimpleBranchData(self.label, self.labelNodegroupId, ['data', '0', '_label', '@display_value']);
+            self.getAllSimpleBranchData();
 
         // ----------------- end get simple branch data --------------------------
 
@@ -624,12 +652,7 @@ define([
             };
 
             // get complex branch data
-            self.getComplexBranchData(self.typeOfGroup, self.typeOfGroupNodegroupId);
-            self.getComplexBranchData(self.nationality, self.nationalityNodegroupId);
-            self.getComplexBranchData(self.externalIdentifierData, self.externalIdentifierNodegroupId);
-            self.getComplexBranchData(self.groupFormationData, self.groupFormationNodegroupId);
-            self.getComplexBranchData(self.groupDissolutionData, self.groupDissolutionNodegroupId);
-            self.getComplexBranchData(self.statementData, self.statementNodegroupId);
+            self.getAllComplexBranchData();
 
         // ----------------- end get complex branch data --------------------------
         

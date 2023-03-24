@@ -307,7 +307,7 @@
       <div class="summary-table-container">
         <div>
           <span class="table-label">Formation</span>
-          <!-- ko if: groupFormationData.length === 0 -->
+          <!-- ko if: groupFormationData().length === 0 -->
           <span class = "report-add-tile-text"
               data-bind="click: function() { self.editTile( null, self.groupFormationNodegroupId, null )},
             ">Add New Formation</span>
@@ -321,7 +321,7 @@
               <th class="header" style="padding: 8px">Type</th>
               <th class="header" style="padding: 8px"></th>
             </tr>
-            <!-- ko if: groupFormationData.length > 0 -->
+            <!-- ko if: groupFormationData().length > 0 -->
             <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
             <tr>
               <td><a data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
@@ -333,7 +333,7 @@
             </tr>
             <!-- /ko -->
             <!-- /ko -->
-            <!-- ko if: groupFormationData.length === 0 -->
+            <!-- ko if: groupFormationData().length === 0 -->
             <tr>
               <td colspan="4" style="background: #f1f3f5; text-align: center;">No data available in table</td>         
             </tr>
@@ -386,7 +386,7 @@
       <div class="summary-table-container">
         <div>
           <span class="table-label">Dissolution</span>
-          <!-- ko if: groupDissolutionData.length === 0 -->
+          <!-- ko if: groupDissolutionData().length === 0 -->
           <span class = "report-add-tile-text"
             data-bind="click: function() { self.editTile( null, self.groupDissolutionNodegroupId, null )},
           ">Add New Dissolution</span>
@@ -400,7 +400,7 @@
               <th class="header" style="padding: 8px">Type</th>
               <th class="header" style="padding: 8px"></th>
             </tr>
-            <!-- ko if: groupDissolutionData.length > 0 -->
+            <!-- ko if: groupDissolutionData().length > 0 -->
             <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
             <tr>
               <!-- <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td> -->
@@ -413,7 +413,7 @@
             </tr>
             <!-- /ko -->
             <!-- /ko -->
-            <!-- ko if: groupDissolutionData.length === 0 -->
+            <!-- ko if: groupDissolutionData().length === 0 -->
             <tr>
               <td colspan="4" style="background: #f1f3f5; text-align: center;">No data available in table</td>         
             </tr>
@@ -2357,23 +2357,34 @@
             data-bind="click: function() { self.editTile( null, self.externalIdentifierNodegroupId, null )},
           ">Add New External URIs</span>
         </div>
-        <table class="table summary-table-left-header">
+        <table class="table summary-table-top-header">
             <tbody>
                 <tr>
-                  <td class="header" style="padding: 8px">URI: </td>
-                  <td style="display: grid; grid-template-columns: repeat(4, 3fr);">
-                  <!-- ko if: externalIdentifierData -->
-                  <!-- ko foreach: { data: externalIdentifierData, as: 'identifier' } -->
-                  <!-- ko if: identifier['exact_match']['url_label'] -->
-                  <a data-bind="text: identifier['exact_match']['url_label'], attr: {href: identifier['exact_match']['url'], target: '_blank'}"></a>
-                  <!-- /ko -->
-                  <!-- ko if: !identifier['exact_match']['url_label'] -->
-                  <a data-bind="text: identifier['exact_match']['url'], attr: {href: identifier['exact_match']['url'], target: '_blank'}"></a>
-                  <!-- /ko -->
-                  <!-- /ko -->
-                  <!-- /ko -->
+                  <th class="header" style="padding: 8px">URI</th>
+                  <th class="header" style="padding: 8px"></th>
+                </tr>
+                <!-- ko if: externalIdentifierData -->
+                <!-- ko foreach: { data: externalIdentifierData, as: 'identifier' } -->
+                <tr>
+                  <td>
+                    <!-- ko if: identifier['exact_match']['url_label'] -->
+                    <a style="color: rgb(0, 0, 255);" data-bind="text: identifier['exact_match']['url_label'], attr: {href: identifier['exact_match']['url'], target: '_blank'}"></a>
+                    <!-- /ko -->
+                    <!-- ko ifnot: identifier['exact_match']['url_label'] -->
+                    <a style="color: rgb(0, 0, 255);" data-bind="text: identifier['exact_match']['url'], attr: {href: identifier['exact_match']['url'], target: '_blank'}"></a>
+                    <!-- /ko -->
+                    <td style="width:40px;">
+                      <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px;"
+                          data-bind="click: function() {
+                            self.editTile(
+                                self.getValue(identifier, ['exact_match', '@tile_id']),
+                          )}">+</button>
+                    </td>      
                   </td>
-            </tbody>
+                </tr>
+                <!-- /ko -->
+                <!-- /ko -->
+              </tbody>
         </table>
       </div>
 
