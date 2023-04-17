@@ -311,7 +311,7 @@ class provenance_report(View):
 
         #create modified search string if search value exists
         if search_value != None:
-            query_string = "SELECT q.*, COUNT(*) OVER() AS full_count FROM tiles q JOIN jsonb_each(q.tiledata) d ON true WHERE d.value::text ILIKE '%{0}%' AND nodegroupid = '{1}' AND resourceinstanceid = '{2}'".format(search_value, nodegroupid, resourceid)
+            query_string = "SELECT q.*, COUNT(*) OVER() AS full_count FROM tiles q JOIN jsonb_each(q.tiledata) d ON true WHERE d.value::text ILIKE '%{0}%' AND nodegroupid = '{1}' AND resourceinstanceid = '{2}' GROUP BY tileid".format(search_value, nodegroupid, resourceid)
 
         #create modified search string if tileid exists
         if tileid != None:
