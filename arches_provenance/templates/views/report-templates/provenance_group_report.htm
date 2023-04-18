@@ -93,10 +93,9 @@
                   <td class="header" style="padding: 8px">Role: </td>
                   <!-- ko if: typeOfGroup() -->
                     <td data-bind="text: typeOfGroup()?.[0]?.['type']?.['@display_value']"> </td>
-                    <td>
-                      <button type='button' class='btn' 
-                        style='font-weight:bold; font-size:large; width:5px;' 
-                        data-bind="click: function() {openNodeEditor(); getWidget(typeOfGroup()[0]['type'], typeOfGroup);}">+</button>
+                    <td class="edit-button-cell">
+                      <button type='button' class='btn fa fa-pencil'  
+                        data-bind="click: function() {openNodeEditor(); getWidget(typeOfGroup()[0]['type'], typeOfGroup);}"></button>
                     </td>
                   <!-- /ko -->
                 </tr>
@@ -104,10 +103,9 @@
                   <td class="header" style="padding: 8px">Nationality: </td>
                   <!-- ko if: nationality() -->
                     <td data-bind="text: nationality()?.[0]?.['nationality']?.['@display_value']"> </td>
-                    <td>
-                      <button type='button' class='btn' 
-                        style='font-weight:bold; font-size:large; width:5px;' 
-                        data-bind="click: function() {openNodeEditor(); getWidget(nationality()[0]['nationality'], nationality);}">+</button>
+                    <td class="edit-button-cell">
+                      <button type='button' class='btn fa fa-pencil'  
+                        data-bind="click: function() {openNodeEditor(); getWidget(nationality()[0]['nationality'], nationality);}"></button>
                     </td>
                   <!-- /ko -->
                 </tr>
@@ -126,10 +124,9 @@
                         <!-- /ko -->
                       </div>
                   </td>
-                  <td>
-                    <button type='button' class='btn'
-                      style='font-weight:bold; font-size:large; width:5px;' 
-                      data-bind="click: function() {openNodeEditor(); getWidget(groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_name'][0]['group_formation_timespan_name_content'], groupFormationData)}">+</button>
+                  <td class="edit-button-cell">
+                    <button type='button' class='btn fa fa-pencil'
+                      data-bind="click: function() {openNodeEditor(); getWidget(groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_name'][0]['group_formation_timespan_name_content'], groupFormationData)}"></button>
                   </td>
                   <!-- /ko -->
             </tbody>
@@ -219,39 +216,79 @@
               data-bind="click: function() { self.editTile( null, self.statementNodegroupId, null )},
             ">Add New Statement</span>
         </div>
-        <!-- ko if: statementData().length > 0 -->
-        <!-- ko foreach: { data: statementData, as: 'statement_data' } -->
-        <table class="table summary-table-left-header">
-            <tbody>
-                <tr>
-                  <td class="header" style="padding: 8px;">Statement </td>
-                  <td data-bind="html: self.getValue(statement_data, ['statement', 'statement_content', '@display_value'])"> </td>
-                  <td style="width: 40px;">
-                    <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px"
+        
+        <table id="formation-summary-table" class="table summary-table-top-header">
+          <tbody>
+            <tr>
+              <th>Statement</th>
+              <th>Statement Type</th>
+              <th>Statement Confidentiality</th>
+              <th></th>
+            </tr>
+            <!-- ko if: statementData().length > 0 -->
+            <!-- ko foreach: { data: statementData, as: 'statement_data' } -->
+            <tr>
+              <td data-bind="html: self.getValue(statement_data, ['statement', 'statement_content', '@display_value'])"> </td>
+              <td data-bind="text: self.getValue(statement_data, ['statement', 'statement_type', '@display_value'])"> </td>
+              <td data-bind="text: self.getValue(statement_data, ['statement', 'statement_confidentiality', '@display_value'])"> </td>
+              <td class="edit-button-cell">
+                <button type="button" class="btn fa fa-pencil"
                         data-bind="click: function() {
                             self.editTile(
                                 self.getValue(statement_data, ['statement', '@tile_id']),
                         )},
-                    ">+</button>
+                    "></button>
+              </td>
+            </tr>
+            <!-- /ko -->
+            <!-- /ko -->
+            <!-- ko if: statementData().length === 0 -->
+            <tr>
+              <td colspan="4" style="background: #f1f3f5; text-align: center;">No data available in table</td>         
+            </tr>
+            <!-- /ko -->
+          </tbody>
+        </table>
+        <!-- <table class="table summary-table-left-header">
+            <tbody>
+                <tr>
+                  <td class="header" style="padding: 8px;">Statement </td>
+                  <td data-bind="html: self.getValue(statement_data, ['statement', 'statement_content', '@display_value'])"> </td>
+                  <td class="edit-button-cell">
+                    <button type="button" class="btn fa fa-pencil"
+                        data-bind="click: function() {
+                            self.editTile(
+                                self.getValue(statement_data, ['statement', '@tile_id']),
+                        )},
+                    "></button>
                   </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px;">Statement Type </td>
                   <td data-bind="text: self.getValue(statement_data, ['statement', 'statement_type', '@display_value'])"> </td>
-                  <td></td>
+                  <td class="edit-button-cell">
+                    <button type="button" class="btn fa fa-pencil"
+                        data-bind="click: function() {
+                            self.editTile(
+                                self.getValue(statement_data, ['statement', '@tile_id']),
+                        )},
+                    "></button>
+                  </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px;">Statement Confidentiality </td>
                   <td data-bind="text: self.getValue(statement_data, ['statement', 'statement_confidentiality', '@display_value'])"> </td>
-                  <td></td>
+                  <td class="edit-button-cell">
+                    <button type="button" class="btn fa fa-pencil"
+                        data-bind="click: function() {
+                            self.editTile(
+                                self.getValue(statement_data, ['statement', '@tile_id']),
+                        )},
+                    "></button>
+                  </td>
                 </tr>
             </tbody>
-        </table>
-        <!-- /ko -->
-        <!-- /ko -->
-        <!-- ko if: statementData().length === 0 -->
-        No Statement Data
-        <!-- /ko -->
+        </table> -->
       </div>      
 
     </div>
@@ -321,10 +358,10 @@
         <table id="formation-summary-table" class="table summary-table-top-header">
           <tbody>
             <tr>
-              <th class="header" style="padding: 8px">Location</th>
-              <th class="header" style="padding: 8px">Time</th>
-              <th class="header" style="padding: 8px">Type</th>
-              <th class="header" style="padding: 8px"></th>
+              <th>Location</th>
+              <th>Time</th>
+              <th>Type</th>
+              <th></th>
             </tr>
             <!-- ko if: groupFormationData().length > 0 -->
             <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
@@ -332,8 +369,8 @@
               <td><a data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
               <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
-              <td style="width:40px;">
-                <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px" data-toggle="modal" data-target="#formationModal">+</button>
+              <td class="edit-button-cell">
+                <button type="button" class="btn fa fa-pencil" data-toggle="modal" data-target="#formationModal"></button>
               </td>
             </tr>
             <!-- /ko -->
@@ -400,10 +437,10 @@
         <table id="dissolution-summary-table" class="table summary-table-top-header">
           <tbody>
             <tr>
-              <th class="header" style="padding: 8px">Location</th>
-              <th class="header" style="padding: 8px">Time</th>
-              <th class="header" style="padding: 8px">Type</th>
-              <th class="header" style="padding: 8px"></th>
+              <th>Location</th>
+              <th>Time</th>
+              <th>Type</th>
+              <th></th>
             </tr>
             <!-- ko if: groupDissolutionData().length > 0 -->
             <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
@@ -412,8 +449,8 @@
               <td><a data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
               <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
-              <td style="width:40px;">
-                <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px;" data-toggle="modal" data-target="#dissolutionModal">+</button>
+              <td class="edit-button-cell">
+                <button type="button" class="btn fa fa-pencil" data-toggle="modal" data-target="#dissolutionModal"></button>
               </td>
             </tr>
             <!-- /ko -->
@@ -2367,8 +2404,8 @@
         <table class="table table-striped summary-table-top-header">
             <tbody>
                 <tr>
-                  <th class="header" style="padding: 8px">URI</th>
-                  <th class="header" style="padding: 8px"></th>
+                  <th>URI</th>
+                  <th></th>
                 </tr>
                 <!-- ko if: externalIdentifierData -->
                 <!-- ko foreach: { data: externalIdentifierData, as: 'identifier' } -->
@@ -2381,12 +2418,12 @@
                     <a style="color: rgb(0, 0, 255);" data-bind="text: identifier['exact_match']['url'], attr: {href: identifier['exact_match']['url'], target: '_blank'}"></a>
                     <!-- /ko -->
                   </td>
-                  <td style="width:40px;">
-                    <button type="button" class="btn" style="font-weight:bold; font-size:large; width:40px;"
+                  <td class="edit-button-cell">
+                    <button type="button" class="btn fa fa-pencil"
                         data-bind="click: function() {
                           self.editTile(
                               self.getValue(identifier, ['exact_match', '@tile_id']),
-                        )}">+</button>
+                        )}"></button>
                   </td>      
                 </tr>
                 <!-- /ko -->

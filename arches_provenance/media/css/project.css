@@ -43,9 +43,11 @@ div.rp-report-tile dl a[href] {
     border: solid 1px lightgray;
 }
 
-.summary-table-top-header th{
+.summary-table-top-header>tbody>tr>th {
     font-weight: 600;
     background-color: #efefef;
+    vertical-align: middle;
+    padding: 8px;
 }
 
 .statment-table th {
@@ -75,6 +77,9 @@ div.rp-report-tile dl a[href] {
     color: blue
 }
 
+.edit-button-cell {
+    width: 50px;
+  }
 
 td {
     border: solid 1px #ececec;

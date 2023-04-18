@@ -387,9 +387,9 @@ define([
                 {"title": "Name", "orderable": true, targets: 0, "name": "5bc66298-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_content.@display_value", "defaultContent": ""},
                 {"title": "Type", "orderable": true, targets: 0, "name": "5bc66360-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_type.@display_value", "defaultContent": ""},
                 {"title": "Source", "orderable": false, targets: 0, "data": "name.name_source_reference.@display_value", "defaultContent": ""},
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function() {
-                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#nameModal'>+</button>";
+                        var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#nameModal'></button>";
                         return t;
                     } 
                 },
@@ -521,9 +521,9 @@ define([
                     }
                 },
                 {"title": "Type", "orderable": true, targets: 0, "data": "0c3baefb-e323-11eb-ba14-0a9473e82189", "defaultContent": ""},
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function(data) {
-                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#professionalActivityModal'>+</button>";
+                        var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#professionalActivityModal'></button>";
                         return t;
                     } 
                 },
@@ -551,9 +551,9 @@ define([
                     }
                 },
                 {"title": "Type", "orderable": true, targets: 0, "data": "7c58678a-eac9-11eb-ba14-0a9473e82189", "defaultContent": ""},
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function(data) {
-                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#establishmentModal'>+</button>";
+                        var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#establishmentModal'></button>";
                         return t;
                     } 
                 },
@@ -581,9 +581,9 @@ define([
                         }
                     }
                 },
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function(data) {
-                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#identifierModal'>+</button>";
+                        var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#identifierModal'></button>";
                         return t;
                     } 
                 },
