@@ -111,22 +111,18 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Overall Dates: </td>
-                  <!-- ko if: groupFormationData() -->
-                  <!-- <td data-bind="text: groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_begin_of_the_begin']['@display_value'] + ' -- ' + groupDissolutionData()[0]['group_dissolution']['group_dissolution_timespan']['group_dissolution_timespan_end_of_the_end']['@display_value']">  -->
-                    <td>
+                  <!-- ko let:{formation: getValue(self.groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', '0', 'group_formation_timespan_name_content', '@display_value']), 
+                  dissolution: getValue(self.groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', '0', 'group_dissolution_timespan_name_content', '@display_value'])} -->
+                  <td>
                       <div style="display:inline-flex;">
-                        <!-- ko if: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value']) -->
-                        <div data-bind="text: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', '0', 'group_formation_timespan_name_content', '@display_value'])"></div>
+                        <div data-bind="text: formation"></div>
+                        <!-- ko if: formation && dissolution -->
+                        <div>&nbsp;-&nbsp;</div>
                         <!-- /ko -->
-                        <!-- ko if: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value']) -->
-                        <div> - </div>
-                        <div data-bind="text: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', '0', 'group_dissolution_timespan_name_content', '@display_value'])"></div>
-                        <!-- /ko -->
+                        <div data-bind="text: dissolution"></div>
                       </div>
                   </td>
                   <td class="edit-button-cell">
-                    <button type='button' class='btn fa fa-pencil'
-                      data-bind="click: function() {openNodeEditor(); getWidget(groupFormationData()[0]['group_formation']['group_formation_timespan']['group_formation_timespan_name'][0]['group_formation_timespan_name_content'], groupFormationData)}"></button>
                   </td>
                   <!-- /ko -->
             </tbody>
