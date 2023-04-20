@@ -80,21 +80,13 @@
             <tbody>
                 <tr>
                   <td class="header" style="padding: 8px">Role: </td>
-                  <td data-bind="text: typeOfGroup()?.[0]?.['type']?.['@display_value']"> </td>
-                  <td class="edit-button-cell">
-                    <button type="button" class="btn fa fa-plus"
-                      data-bind="click: function() {
-                          if(typeOfGroup().length > 0){
-                            self.editTile(self.getValue(self.typeOfGroup()[0], ['type', '@tile_id']));
-                          }
-                          else{
-                            self.editTile(null, self.typeOfGroupNodegroupId, null);
-                          }
-                      },
-                  "></button>
-                    <button type='button' class='btn fa fa-pencil'  
-                      data-bind="click: function() {openNodeEditor(); getWidget(typeOfGroup()[0]['type'], typeOfGroup);}"></button>
-                  </td>
+                  <!-- ko if: typeOfGroup() -->
+                    <td data-bind="text: typeOfGroup()?.[0]?.['type']?.['@display_value']"> </td>
+                    <td class="edit-button-cell">
+                      <button type='button' class='btn fa fa-pencil'  
+                        data-bind="click: function() {openNodeEditor(); getWidget(typeOfGroup()?.[0]?.['type'], typeOfGroup, typeOfGroupNodeId);}"></button>
+                    </td>
+                  <!-- /ko -->
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Nationality: </td>
@@ -102,7 +94,7 @@
                     <td data-bind="text: nationality()?.[0]?.['nationality']?.['@display_value']"> </td>
                     <td class="edit-button-cell">
                       <button type='button' class='btn fa fa-pencil'  
-                        data-bind="click: function() {openNodeEditor(); getWidget(nationality()[0]['nationality'], nationality);}"></button>
+                        data-bind="click: function() {openNodeEditor(); getWidget(nationality()?.[0]?.['nationality'], nationality, nationalityNodeId);}"></button>
                     </td>
                   <!-- /ko -->
                 </tr>

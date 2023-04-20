@@ -19,6 +19,11 @@ define([
             const resourceid = params.report.report_json?.resourceinstanceid;
             const resourceName = params.report.report_json?.displayname;
 
+            this.typeOfGroupNodeId = '7275d2fe-2a65-11ec-b195-0a9473e82189';
+            this.nationalityNodeId = 'a5cff5a3-e317-11eb-ba14-0a9473e82189';
+            this.groupFormationDateNodeId = '751f307e-7792-11ec-b195-0a9473e82189';
+            this.groupDissolutionDateNodeId = '5607cb07-7793-11ec-b195-0a9473e82189';
+            
             this.nameNodegroupdId = "5bc65fd2-bb18-11ea-85a6-3af9d3b32b71";
             this.nationalityNodegroupId = "a5cff5a3-e317-11eb-ba14-0a9473e82189";
             this.typeOfGroupNodegroupId = "7275d2fe-2a65-11ec-b195-0a9473e82189";
@@ -308,11 +313,11 @@ define([
 
             self.openNodeEditor = function(){ 
                 $('#cardinality1EditorModal').modal('show');
-            }
+            };
             
             self.closeNodeEditor = function(){ 
                 $('#cardinality1EditorModal').modal('hide');
-            }
+            };
 
             self.buildStrObject = str => {
                 return {[arches.activeLanguage]: {
@@ -321,14 +326,13 @@ define([
                 }};
             };
 
-            self.getWidget = async(rawNodeValue, cardData) => {
+            self.getWidget = async(rawNodeValue, cardData, nodeId) => {
                 try {
                     self.loadedWidget(false);
                     currentNodeBeingEdited = cardData; // store current card data to update on save
 
-                    const nodeid = rawNodeValue['@node_id'];
-                    const tileid = rawNodeValue['@tile_id'];
-                    self.widgetTileid(tileid);
+                    const nodeid = rawNodeValue ? rawNodeValue['@node_id'] : nodeId;
+                    const tileid = rawNodeValue?.['@tile_id'];
 
                     // get widget config
                     let response = await fetch(`${arches.urls.provenance_editor}?nodeid=${nodeid}`);
@@ -338,10 +342,16 @@ define([
                     self.nodeWidgetConfig(result.node);
 
                     // get current value of node via tile
-                    let tile = await fetch(arches.urls.api_tiles(tileid));
-                    let tiledata = await tile.json();
-                    self.currentNodeValue(tiledata.data[nodeid]);
-                    self.originalNodeValue(self.currentNodeValue());
+                    if (tileid) {
+                        self.widgetTileid(tileid);
+                        let tile = await fetch(arches.urls.api_tiles(tileid));
+                        let tiledata = await tile.json();
+                        self.currentNodeValue(tiledata.data[nodeid]);
+                        self.originalNodeValue(self.currentNodeValue());    
+                    } else {
+                        self.currentNodeValue(null);
+                        self.originalNodeValue(null);    
+                    }
 
                     self.loadedWidget(true);
                 } catch(error) {
@@ -360,9 +370,12 @@ define([
                     formData.append('data', JSON.stringify(self.currentNodeValue()));
                 } else {
                     formData.append('data', self.currentNodeValue());
-                } 
-                formData.append('resourceinstanceid', params.resourceinstanceid);
-                formData.append('tileid', self.widgetTileid());
+                }
+
+                formData.append('resourceinstanceid', resourceid);
+                if (self.widgetTileid()) {
+                    formData.append('tileid', self.widgetTileid());
+                }
 
                 let postNewNode = await fetch(arches.urls.api_node_value, {
                     method: 'POST',
@@ -376,6 +389,7 @@ define([
                         return response.json();
                     }
                 }).then(function(data){
+                    console.log(data);
                     if (data.parenttile_id){ // if tile is a child tile, use parent tileid
                         self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.parenttile_id);
                     } else {
