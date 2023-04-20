@@ -92,7 +92,7 @@ define([
             self.typeOfGroup = ko.observable();
             self.externalIdentifierUrl = ko.observable();
             self.externalIdentifierLabel = ko.observable();
-            self.sourceReference = ko.observable();
+            self.sourceReferenceData = ko.observable();
             self.subgroup = ko.observable();
             self.label = ko.observable();
             self.statementData = ko.observableArray();
@@ -174,13 +174,12 @@ define([
                 $('#professional-activity-summary-table').DataTable().ajax.reload();
                 $('#establishment-activity-summary-table').DataTable().ajax.reload();
                 $('#identifier-summary-table').DataTable().ajax.reload();
-                $('#source-reference-summary-table').DataTable().ajax.reload();
             };
 
             self.getAllSimpleBranchData = () => {
                 // self.getSimpleBranchData(self.typeOfGroup, self.typeOfGroupNodegroupId, ['data', '0', 'type', '@display_value']);
                 // self.getSimpleBranchData(self.nationality, self.nationalityNodegroupId, ['data', '0', 'nationality', '@display_value']);
-                self.getSimpleBranchData(self.sourceReference, self.sourceReferenceNodegroupId, ['data', '0', 'source_reference', 'instance_details']);
+                self.getSimpleBranchData(self.sourceReferenceData, self.sourceReferenceNodegroupId, ['data', '0', 'source_reference']);
                 self.getSimpleBranchData(self.subgroup, self.subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value']);
                 self.getSimpleBranchData(self.label, self.labelNodegroupId, ['data', '0', '_label', '@display_value']);
             };
@@ -389,7 +388,6 @@ define([
                         return response.json();
                     }
                 }).then(function(data){
-                    console.log(data);
                     if (data.parenttile_id){ // if tile is a child tile, use parent tileid
                         self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.parenttile_id);
                     } else {
@@ -639,6 +637,8 @@ define([
                     .then(result => {
                         if (result.data.length != 0) {
                             cardData(path.reduce(function index(result, i) {return result[i];}, result));
+                        } else {
+                            cardData(result.data);
                         }
                     })
                     .catch(error => {

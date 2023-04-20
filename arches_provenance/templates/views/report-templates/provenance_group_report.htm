@@ -2856,8 +2856,8 @@
         <div>
           <span class="table-label">Source References</span>
           <span class = "report-add-tile-text"
-            data-bind="click: function() { self.editTile( null, self.sourceReferenceNodegroupId, null )},
-          ">Add New Source References</span>
+              data-bind="click: function() { self.editTile( self.getValue(sourceReferenceData(), ['@tile_id']), self.sourceReferenceNodegroupId, null )},
+          ">Add/Edit Source References</span>
         </div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
               <table id="source-reference-summary-table" class="table table-striped" cellspacing="0" width="100%;">
