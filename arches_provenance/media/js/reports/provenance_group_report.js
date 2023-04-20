@@ -118,8 +118,7 @@ define([
             self.groupFormationDissolution = ko.computed(function() {
                 let formationData = self.groupFormationData();
                 let formation = self.getValue(formationData, ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', '0', 'group_formation_timespan_name_content', '@display_value']);
-                let dissolution = self.getValue(self.groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', '0', 'group_dissolution_timespan_name_content', '@display_value']); 
-                console.log(`${formation} - ${dissolution}`);
+                let dissolution = self.getValue(self.groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', '0', 'group_dissolution_timespan_name_content', '@display_value']);
                 return `${formation} - ${dissolution}`;
             });
 
