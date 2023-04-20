@@ -41,18 +41,7 @@
 <div class="relative report-title-bar" style="position: absolute; z-index: 5; width: 100vw;">
   <div class="report-toolbar-preview ep-form-toolbar">
     <h4 class="report-toolbar-title" style="width: 95vw;">
-      <div>
-      <span data-bind="text: resourceName "></span><span data-bind="text: ' [Group] '"></span>
-      <div style="display:inline-flex;">
-        <!-- ko if: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value']) -->
-        <div data-bind="text: getValue(groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value'])"></div>
-        <!-- /ko -->
-        <!-- ko if: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value']) -->
-        <div> - </div>
-        <div data-bind="text: getValue(groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"></div>
-        <!-- /ko -->
-      </div>
-    </div>
+      <span data-bind="text: reportTitle "></span>
     </h4>
   </div>
 </div>
@@ -91,13 +80,21 @@
             <tbody>
                 <tr>
                   <td class="header" style="padding: 8px">Role: </td>
-                  <!-- ko if: typeOfGroup() -->
-                    <td data-bind="text: typeOfGroup()?.[0]?.['type']?.['@display_value']"> </td>
-                    <td class="edit-button-cell">
-                      <button type='button' class='btn fa fa-pencil'  
-                        data-bind="click: function() {openNodeEditor(); getWidget(typeOfGroup()[0]['type'], typeOfGroup);}"></button>
-                    </td>
-                  <!-- /ko -->
+                  <td data-bind="text: typeOfGroup()?.[0]?.['type']?.['@display_value']"> </td>
+                  <td class="edit-button-cell">
+                    <button type="button" class="btn fa fa-plus"
+                      data-bind="click: function() {
+                          if(typeOfGroup().length > 0){
+                            self.editTile(self.getValue(self.typeOfGroup()[0], ['type', '@tile_id']));
+                          }
+                          else{
+                            self.editTile(null, self.typeOfGroupNodegroupId, null);
+                          }
+                      },
+                  "></button>
+                    <button type='button' class='btn fa fa-pencil'  
+                      data-bind="click: function() {openNodeEditor(); getWidget(typeOfGroup()[0]['type'], typeOfGroup);}"></button>
+                  </td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Nationality: </td>
@@ -111,20 +108,9 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Overall Dates: </td>
-                  <!-- ko let:{formation: getValue(self.groupFormationData(), ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', '0', 'group_formation_timespan_name_content', '@display_value']), 
-                  dissolution: getValue(self.groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', '0', 'group_dissolution_timespan_name_content', '@display_value'])} -->
-                  <td>
-                      <div style="display:inline-flex;">
-                        <div data-bind="text: formation"></div>
-                        <!-- ko if: formation && dissolution -->
-                        <div>&nbsp;-&nbsp;</div>
-                        <!-- /ko -->
-                        <div data-bind="text: dissolution"></div>
-                      </div>
-                  </td>
-                  <td class="edit-button-cell">
-                  </td>
-                  <!-- /ko -->
+                  <td data-bind="text: self.groupFormationDissolution"></td>
+                  <td class="edit-button-cell"></td>
+                </tr>
             </tbody>
         </table>
       </div>

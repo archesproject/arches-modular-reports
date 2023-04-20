@@ -100,6 +100,27 @@ define([
             self.relatedResourceConfigs = ko.observableArray();
             self.nameRowData = ko.observable();
             self.externalIdentifierData = ko.observable();
+
+            // helper function for getting to the template
+            self.getValue = function(obj, attrs, missingValue='') {
+                try {
+                    return attrs.reduce(function index(obj, i) {return obj[i];}, obj) || missingValue;
+                } catch(e) {
+                    return missingValue;
+                }
+            };
+
+            self.groupFormationDissolution = ko.computed(function() {
+                let formationData = self.groupFormationData();
+                let formation = self.getValue(formationData, ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', '0', 'group_formation_timespan_name_content', '@display_value']);
+                let dissolution = self.getValue(self.groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', '0', 'group_dissolution_timespan_name_content', '@display_value']); 
+                console.log(`${formation} - ${dissolution}`);
+                return `${formation} - ${dissolution}`;
+            });
+
+            self.reportTitle = ko.computed(function() {
+                return `${resourceName} [Group] ${self.groupFormationDissolution()}`;
+            });
             
             let selectedElement = null;
             self.handleMouseover = function(data, evt){
@@ -368,16 +389,6 @@ define([
             // End of Node Editor
 
             self.resourceName = resourceName;
-
-            // helper function for getting to the template
-            self.getValue = function(obj, attrs, missingValue='') {
-                try {
-                    return attrs.reduce(function index(obj, i) {return obj[i];}, obj) || missingValue;
-                } catch(e) {
-                    return missingValue;
-                }
-            };
-
 
 
         // ----------------- begin name table definition --------------------------
