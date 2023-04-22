@@ -1,37 +1,103 @@
-define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-templates/provenance_group_report.htm'], function(arches, ko, datatable, provenanceGroupReportTemplate) {
+define([
+    'jquery',
+    'underscore',
+    'arches', 
+    'knockout',
+    'models/graph',
+    'viewmodels/card',
+    'viewmodels/tile',
+    'viewmodels/provisional-tile',
+    'bindings/datatable', 
+    'js-cookie',
+    'templates/views/report-templates/provenance_group_report.htm'
+], function($, _, arches, ko, GraphModel, CardViewModel, TileViewModel, ProvisionalTileViewModel, datatable, Cookies, provenanceGroupReportTemplate) {
     return ko.components.register('provenance_group_report', {
         viewModel: function(params) {
             params.configKeys = [];
             var self = this;
 
-            const resourceid = params.report.report_json.resourceinstanceid;
-            const resourceName = params.report.report_json.displayname;
+            const resourceid = params.report.report_json?.resourceinstanceid;
+            const resourceName = params.report.report_json?.displayname;
 
-            const nameNodegroupdId = "5bc65fd2-bb18-11ea-85a6-3af9d3b32b71";
-            const nationalityNodegroupId = "a5cff5a3-e317-11eb-ba14-0a9473e82189";
-            const typeOfGroupNodegroupId = "7275d2fe-2a65-11ec-b195-0a9473e82189";
-            const statementNodegroupId = "9285a4ba-bb18-11ea-85a6-3af9d3b32b71";
-            const externalIdentifierNodegroupId = "f5930746-bb18-11ea-85a6-3af9d3b32b71";
-            const subGroupNodegroupId = "df216a34-bb18-11ea-85a6-3af9d3b32b71";
-            const labelNodegroupId = "97f15d22-bb18-11ea-85a6-3af9d3b32b71";
-            const contactNodegroupId = "ace43c39-f43b-11eb-ba14-0a9473e82189";
-            const groupFormationNodegroupId = "c6dc61cc-bb18-11ea-85a6-3af9d3b32b71";
-            const groupDissolutionNodegroupId = "c0a136c4-bba0-11ea-ad92-3af9d3b32b71";   
-            const groupEstablishmentNodegroupId =  "7c586770-eac9-11eb-ba14-0a9473e82189";
-            const groupProfessionalActivityNodegroupId = "0c3baef0-e323-11eb-ba14-0a9473e82189";
-            const groupIdentifierAssignmentNodegroupId = "42b0db83-e319-11eb-ba14-0a9473e82189";
-            const sourceReferenceNodegroupId = "30e30626-c798-11ea-b94e-3af9d3b32b71";
+            this.typeOfGroupNodeId = '7275d2fe-2a65-11ec-b195-0a9473e82189';
+            this.nationalityNodeId = 'a5cff5a3-e317-11eb-ba14-0a9473e82189';
+            this.groupFormationDateNodeId = '751f307e-7792-11ec-b195-0a9473e82189';
+            this.groupDissolutionDateNodeId = '5607cb07-7793-11ec-b195-0a9473e82189';
+            
+            this.nameNodegroupdId = "5bc65fd2-bb18-11ea-85a6-3af9d3b32b71";
+            this.nationalityNodegroupId = "a5cff5a3-e317-11eb-ba14-0a9473e82189";
+            this.typeOfGroupNodegroupId = "7275d2fe-2a65-11ec-b195-0a9473e82189";
+            this.statementNodegroupId = "9285a4ba-bb18-11ea-85a6-3af9d3b32b71";
+            this.externalIdentifierNodegroupId = "f5930746-bb18-11ea-85a6-3af9d3b32b71";
+            this.subGroupNodegroupId = "df216a34-bb18-11ea-85a6-3af9d3b32b71";
+            this.labelNodegroupId = "97f15d22-bb18-11ea-85a6-3af9d3b32b71";
+            this.contactNodegroupId = "ace43c39-f43b-11eb-ba14-0a9473e82189";
+            this.groupFormationNodegroupId = "c6dc61cc-bb18-11ea-85a6-3af9d3b32b71";
+            this.groupDissolutionNodegroupId = "c0a136c4-bba0-11ea-ad92-3af9d3b32b71";
+            this.groupEstablishmentNodegroupId =  "7c586770-eac9-11eb-ba14-0a9473e82189";
+            this.groupProfessionalActivityNodegroupId = "0c3baef0-e323-11eb-ba14-0a9473e82189";
+            this.groupIdentifierAssignmentNodegroupId = "42b0db83-e319-11eb-ba14-0a9473e82189";
+            this.sourceReferenceNodegroupId = "30e30626-c798-11ea-b94e-3af9d3b32b71";
+
+            this.sojournNameNodegroupId = '7c586764-eac9-11eb-ba14-0a9473e82189';
+            this.sojournStatementNodegroupId = '7c58675b-eac9-11eb-ba14-0a9473e82189';
+            this.sojournStatementNameNodegroupId = '7c58675e-eac9-11eb-ba14-0a9473e82189';
+            this.sojournTimespanNodegroupId = '7c58676a-eac9-11eb-ba14-0a9473e82189';
+            this.sojournTimespanNameNodegroupId = '7c586758-eac9-11eb-ba14-0a9473e82189';
+            this.sojournTimespanStatementNodegroupId = '7c586755-eac9-11eb-ba14-0a9473e82189';
+            this.sojournTimespanStatementNameNodegroupId = '7c58676d-eac9-11eb-ba14-0a9473e82189';
+            this.sojournTimespanDurationNodegroupId = '7c586761-eac9-11eb-ba14-0a9473e82189';
+            this.sojournTimespanDurationNameNodegroupId = '7c586767-eac9-11eb-ba14-0a9473e82189';
+
+            this.groupFormationStatementNodegroupId = 'c6dc7090-bb18-11ea-85a6-3af9d3b32b71';
+            this.groupFormationStatementNameNodegroupId = 'c6dc734c-bb18-11ea-85a6-3af9d3b32b71';
+            this.groupFormationNameNodegroupId = 'c6dc75f4-bb18-11ea-85a6-3af9d3b32b71';
+            this.groupFormationTimespanNodegroupId = '32fdfc1d-e324-11eb-ba14-0a9473e82189';
+            this.groupFormationTimespanNameNodegroupId = '32fdfc20-e324-11eb-ba14-0a9473e82189';
+            this.groupFormationTimespanStatementNodegroupId = '32fdfc1a-e324-11eb-ba14-0a9473e82189';
+            this.groupFormationTimespanStatementNameNodegroupId = '32fdfc14-e324-11eb-ba14-0a9473e82189';
+            this.groupFormationTimespanDurationNodegroupId = '32fdfc17-e324-11eb-ba14-0a9473e82189';
+            this.groupFormationTimespanDurationNameNodegroupId = '32fdfc11-e324-11eb-ba14-0a9473e82189';
+
+            this.groupDissolutionNameNodegroupId = 'c0a1247c-bba0-11ea-ad92-3af9d3b32b71';
+            this.groupDissolutionStatementNodegroupId = 'c0a121b6-bba0-11ea-ad92-3af9d3b32b71';
+            this.groupDissolutionStatementNameNodegroupId = 'c0a129b8-bba0-11ea-ad92-3af9d3b32b71';
+            this.groupDissolutionTimespanNodegroupId = 'c77b5163-17bf-11ec-b193-0a9473e82189';
+            this.groupDissolutionTimespanNameNodegroupId = 'c77b5166-17bf-11ec-b193-0a9473e82189';
+            this.groupDissolutionTimespanStatementNodegroupId = 'c77b5160-17bf-11ec-b193-0a9473e82189';
+            this.groupDissolutionTimespanStatementNameNodegroupId = 'c77b515a-17bf-11ec-b193-0a9473e82189';
+            this.groupDissolutionTimespanDurationNodegroupId = 'c77b515d-17bf-11ec-b193-0a9473e82189';
+            this.groupDissolutionTimespanDurationNameNodegroupId = 'c77b5157-17bf-11ec-b193-0a9473e82189';
+
+            this.professionalActivityNameNodegroupId = '0c3baed8-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityStatementNodegroupId = '0c3baed5-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityStatementNameNodegroupId = '0c3baeed-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityTimespanNodegroupId = '0c3baee7-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityTimespanNameNodegroupId = '0c3baeea-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityTimespanStatementNodegroupId = '0c3baee1-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityTimespanStatementNameNodegroupId = '0c3baee4-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityTimespanDurationNodegroupId = '0c3baede-e323-11eb-ba14-0a9473e82189';
+            this.professionalActivityTimespanDurationNameNodegroupId = '0c3baedb-e323-11eb-ba14-0a9473e82189';
+
+            this.identifierDataAssignmentNodegroupId = '42b0db6b-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentNameNodegroupId = '42b0db7a-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentTimespanNodegroupId = '42b0db80-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentTimespanNameNodegroupId = '42b0db77-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentTimespanStatementNodegroupId = '42b0db74-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentTimespanStatementNameNodegroupId = '42b0db71-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentTimespanDurationNodegroupId = '42b0db7d-e319-11eb-ba14-0a9473e82189';
+            this.identifierDataAssignmentTimespanDurationNameNodegroupId = '42b0db6e-e319-11eb-ba14-0a9473e82189';
 
             self.nationality = ko.observable();
             self.typeOfGroup = ko.observable();
             self.externalIdentifierUrl = ko.observable();
             self.externalIdentifierLabel = ko.observable();
-            self.sourceReference = ko.observable();
+            self.sourceReferenceData = ko.observable();
             self.subgroup = ko.observable();
             self.label = ko.observable();
             self.statementData = ko.observableArray();
-            self.groupFormationData = ko.observable();
-            self.groupDissolutionData = ko.observable();
+            self.groupFormationData = ko.observableArray();
+            self.groupDissolutionData = ko.observableArray();
             self.groupEstablishmentData = ko.observable();
             self.groupProfessionalActivityData = ko.observable();
             self.groupIdentifierAssignmentData = ko.observable();
@@ -39,6 +105,37 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
             self.relatedResourceConfigs = ko.observableArray();
             self.nameRowData = ko.observable();
             self.externalIdentifierData = ko.observable();
+
+            // helper function for getting to the template
+            self.getValue = function(obj, attrs, missingValue='') {
+                try {
+                    return attrs.reduce(function index(obj, i) {return obj[i];}, obj) || missingValue;
+                } catch(e) {
+                    return missingValue;
+                }
+            };
+
+            self.groupFormationDissolution = ko.computed(function() {
+                let formationData = self.groupFormationData();
+                let formation = self.getValue(formationData, ['0', 'group_formation', 'group_formation_timespan', 'group_formation_timespan_name', '0', 'group_formation_timespan_name_content', '@display_value']);
+                let dissolution = self.getValue(self.groupDissolutionData(), ['0', 'group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', '0', 'group_dissolution_timespan_name_content', '@display_value']);
+                return `${formation} - ${dissolution}`;
+            });
+
+            self.reportTitle = ko.computed(function() {
+                return `${resourceName} [Group] ${self.groupFormationDissolution()}`;
+            });
+            
+            let selectedElement = null;
+            self.handleMouseover = function(data, evt){
+                if(selectedElement){
+                    $(selectedElement).removeClass("hovered");
+                }
+                selectedElement = evt.currentTarget;
+                if(evt.type == "mouseover"){
+                    $(evt.currentTarget).addClass("hovered");
+                }
+            };
             
             // graphids of all graphs in provenance/the ones that can be related to Groups
             self.relatedResourceGraphs = {
@@ -57,17 +154,252 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                 "Visual Work":"933ee880-b4b5-11ea-84f7-3af9d3b32b71"
             };
 
-            self.resourceName = resourceName;
+            // Tile Editor
 
-            // helper function for getting to the template
-            self.getValue = function(obj, attrs, missingValue='') {
-                try {
-                    return attrs.reduce(function index(obj, i) {return obj[i];}, obj) || missingValue;
-                } catch(e) {
-                    return missingValue;
-                }
+            this.resourceId = ko.observable();
+            this.card = ko.observable();
+            this.tile = ko.observable();
+            this.displayname = ko.observable();
+            this.showTileEditor = ko.observable(false);
+            this.complete = params.complete || ko.observable();
+            this.loading = params.loading || ko.observable(false);
+            this.currentObservable = ko.observable();
+            this.currentNodegroupId = ko.observable();
+            this.mainTileId = ko.observable();
+
+            this.reloadAllTableAjax = () => {
+                $('#name-summary-table').DataTable().ajax.reload();
+                $('#source-reference-summary-table').DataTable().ajax.reload();
+                $('#professional-activity-summary-table').DataTable().ajax.reload();
+                $('#establishment-activity-summary-table').DataTable().ajax.reload();
+                $('#identifier-summary-table').DataTable().ajax.reload();
             };
 
+            self.getAllSimpleBranchData = () => {
+                // self.getSimpleBranchData(self.typeOfGroup, self.typeOfGroupNodegroupId, ['data', '0', 'type', '@display_value']);
+                // self.getSimpleBranchData(self.nationality, self.nationalityNodegroupId, ['data', '0', 'nationality', '@display_value']);
+                self.getSimpleBranchData(self.sourceReferenceData, self.sourceReferenceNodegroupId, ['data', '0', 'source_reference']);
+                self.getSimpleBranchData(self.subgroup, self.subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value']);
+                self.getSimpleBranchData(self.label, self.labelNodegroupId, ['data', '0', '_label', '@display_value']);
+            };
+
+            self.getAllComplexBranchData = () => {
+                self.getComplexBranchData(self.typeOfGroup, self.typeOfGroupNodegroupId);
+                self.getComplexBranchData(self.nationality, self.nationalityNodegroupId);
+                self.getComplexBranchData(self.externalIdentifierData, self.externalIdentifierNodegroupId);
+                self.getComplexBranchData(self.groupFormationData, self.groupFormationNodegroupId);
+                self.getComplexBranchData(self.groupDissolutionData, self.groupDissolutionNodegroupId);
+                self.getComplexBranchData(self.statementData, self.statementNodegroupId);    
+            };
+
+            this.refeshEverything = () => {
+                self.getComplexBranchData(self.currentObservable(), self.currentNodegroupId(), self.mainTileId());
+                self.getAllSimpleBranchData();
+                self.getAllComplexBranchData();
+                self.reloadAllTableAjax();
+                self.showTileEditor(false);
+                $('#nameModal').modal('hide');
+            };
+
+            this.onSaveSuccess = () => {
+                self.refeshEverything();
+            };
+            this.onDeleteSuccess = () => {
+                self.refeshEverything();
+            };
+            this.onSaveError = () => {};
+            this.onDeleteError = () => {};
+
+            const handlers = {
+                'after-update': [],
+                'tile-reset': []
+            };
+            this.on = function(eventName, handler) {
+                if (handlers[eventName]) {
+                    handlers[eventName].push(handler);
+                }
+            },
+
+            this.close = function() {
+                self.showTileEditor(false);
+            };
+
+            this.editTile = function(tileid, nodegroupid, parenttileid) {
+                const url = tileid ?
+                    `${arches.urls.provenance_editor}?tileid=${tileid}` :
+                    `${arches.urls.provenance_editor}?nodegroupid=${nodegroupid}&resourceid=${resourceid}&parenttileid=${parenttileid}`;
+                $.getJSON(url).then(function(data) {
+                    self.resourceId(data.resourceid);
+                    self.displayname(data.displayname);
+                    const createLookup = function(list, idKey) {
+                        return _.reduce(list, function(lookup, item) {
+                            lookup[item[idKey]] = item;
+                            return lookup;
+                        }, {});
+                    };
+                    const card = data.cards.find(card=>card.nodegroup_id == data.tile.nodegroup_id);
+                    const graphModel = new GraphModel({
+                        data: {
+                            nodes: data.nodes,
+                            nodegroups: data.nodegroups,
+                            edges: []
+                        },
+                        datatypes: data.datatypes
+                    });
+                    self.reviewer = data.userisreviewer;
+                    self.provisionalTileViewModel = new ProvisionalTileViewModel({
+                        tile: self.tile,
+                        reviewer: data.userisreviewer
+                    });
+    
+                    self.widgetLookup = createLookup(
+                        data.widgets,
+                        'widgetid'
+                    );
+                    self.cardComponentLookup = createLookup(
+                        data['card_components'],
+                        'componentid'
+                    );
+                    self.nodeLookup = createLookup(
+                        graphModel.get('nodes')(),
+                        'nodeid'
+                    );
+    
+                    self.card(new CardViewModel({
+                        card: card,
+                        graphModel: graphModel,
+                        tile: data.tile,
+                        resourceId: self.resourceId,
+                        displayname: self.displayname,
+                        handlers: handlers,
+                        cards: data.cards,
+                        tiles: data.tiles,
+                        provisionalTileViewModel: self.provisionalTileViewModel,
+                        cardwidgets: data.cardwidgets,
+                        userisreviewer: data.userisreviewer,
+                        loading: self.loading
+                    }));
+
+                    data.tile.noDefaults = true;
+                    self.tile(new TileViewModel({
+                        tile: data.tile,
+                        card: self.card(),
+                        graphModel: graphModel,
+                        resourceId: self.resourceId,
+                        displayname: self.displayname,
+                        handlers: handlers,
+                        userisreviewer: data.userisreviewer,
+                        provisionalTileViewModel: self.provisionalTileViewModel,
+                        loading: self.loading,
+                        cardwidgets: data.cardwidgets,
+                    }));
+                    self.showTileEditor(true);
+                });
+            };
+    
+            // End of Tile Editor
+
+            // Node Editor
+            self.cardwidgetWidgetConfig = ko.observable();
+            self.widgetWidgetConfig = ko.observable();
+            self.nodeWidgetConfig = ko.observable();
+            self.widgetTileid = ko.observable();
+            let currentNodeBeingEdited;
+            self.currentNodeValue = ko.observable();
+            self.originalNodeValue = ko.observable();
+            self.loadedWidget = ko.observable(false);
+
+            self.openNodeEditor = function(){ 
+                $('#cardinality1EditorModal').modal('show');
+            };
+            
+            self.closeNodeEditor = function(){ 
+                $('#cardinality1EditorModal').modal('hide');
+            };
+
+            self.buildStrObject = str => {
+                return {[arches.activeLanguage]: {
+                    'value': str,
+                    'direction': arches.activeLanguageDir
+                }};
+            };
+
+            self.getWidget = async(rawNodeValue, cardData, nodeId) => {
+                try {
+                    self.loadedWidget(false);
+                    currentNodeBeingEdited = cardData; // store current card data to update on save
+
+                    const nodeid = rawNodeValue ? rawNodeValue['@node_id'] : nodeId;
+                    const tileid = rawNodeValue?.['@tile_id'];
+
+                    // get widget config
+                    let response = await fetch(`${arches.urls.provenance_editor}?nodeid=${nodeid}`);
+                    let result = await response.json();
+                    self.cardwidgetWidgetConfig(result.cardwidget);
+                    self.widgetWidgetConfig(result.widget);
+                    self.nodeWidgetConfig(result.node);
+
+                    // get current value of node via tile
+                    if (tileid) {
+                        self.widgetTileid(tileid);
+                        let tile = await fetch(arches.urls.api_tiles(tileid));
+                        let tiledata = await tile.json();
+                        self.currentNodeValue(tiledata.data[nodeid]);
+                        self.originalNodeValue(self.currentNodeValue());    
+                    } else {
+                        self.currentNodeValue(null);
+                        self.originalNodeValue(null);    
+                    }
+
+                    self.loadedWidget(true);
+                } catch(error) {
+                    console.error('Error:', error);
+                };
+            };
+
+            
+
+            self.saveNodeValue = async function() {
+                this.loading(true);
+                let formData = new FormData();
+                formData.append('nodeid', self.nodeWidgetConfig().nodeid);
+                // formData.append('data', self.currentNodeValue());
+                if (self.widgetWidgetConfig().name === 'text-widget') {
+                    formData.append('data', JSON.stringify(self.currentNodeValue()));
+                } else {
+                    formData.append('data', self.currentNodeValue());
+                }
+
+                formData.append('resourceinstanceid', resourceid);
+                if (self.widgetTileid()) {
+                    formData.append('tileid', self.widgetTileid());
+                }
+
+                let postNewNode = await fetch(arches.urls.api_node_value, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData,
+                    headers: {
+                        "X-CSRFToken": Cookies.get('csrftoken')
+                    }
+                }).then(function(response) {
+                    if(response.ok){
+                        return response.json();
+                    }
+                }).then(function(data){
+                    if (data.parenttile_id){ // if tile is a child tile, use parent tileid
+                        self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.parenttile_id);
+                    } else {
+                        self.getComplexBranchData(currentNodeBeingEdited, data.nodegroup_id, data.tileid);
+                    }
+                    self.closeNodeEditor();
+                });
+                this.loading(false);
+            };
+
+            // End of Node Editor
+
+            self.resourceName = resourceName;
 
 
         // ----------------- begin name table definition --------------------------
@@ -77,9 +409,9 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                 {"title": "Name", "orderable": true, targets: 0, "name": "5bc66298-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_content.@display_value", "defaultContent": ""},
                 {"title": "Type", "orderable": true, targets: 0, "name": "5bc66360-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_type.@display_value", "defaultContent": ""},
                 {"title": "Source", "orderable": false, targets: 0, "data": "name.name_source_reference.@display_value", "defaultContent": ""},
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function() {
-                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#nameModal'>+</button>";
+                        var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#nameModal'></button>";
                         return t;
                     } 
                 },
@@ -100,7 +432,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                 deferRender: true,
                 errMode: 'Ignore',
                 ajax: {
-                    url: arches.urls.provenance_report + '?resourceid=' + resourceid + '&nodegroupid=' + nameNodegroupdId,
+                    url: arches.urls.provenance_report + '?resourceid=' + resourceid + '&nodegroupid=' + self.nameNodegroupdId,
                     dataSrc: function(json) {
                         for (el of json.data) {
                             for (const [key, value] of Object.entries(el['name'])) {
@@ -144,9 +476,9 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                 deferRender: true,
                 errMode: 'Ignore',
                 ajax: {
-                    url: arches.urls.provenance_source_references + '?resourceid=' + resourceid + '&nodegroupid=' + sourceReferenceNodegroupId,
+                    url: arches.urls.provenance_source_references + '?resourceid=' + resourceid + '&nodegroupid=' + self.sourceReferenceNodegroupId,
                     dataSrc: function(json) {
-                        return json.data
+                        return json.data;
                     }
                 },
             };
@@ -192,7 +524,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
             const professionalActivityColumns  = [
                 {"title": "Location", "orderable": true, targets: 0, "data": "related_resource", "defaultContent": "",
                     "render": function(data) {
-                        if (data) {
+                        if (data?.name?.en?.value) {
                             return "<a href=/report/" + data.relatedresourceinstanceid + " target=_blank style='color:blue;'>" + data.name.en.value + "</a>";
                         }
                         else {
@@ -211,9 +543,9 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                     }
                 },
                 {"title": "Type", "orderable": true, targets: 0, "data": "0c3baefb-e323-11eb-ba14-0a9473e82189", "defaultContent": ""},
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function(data) {
-                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#professionalActivityModal'>+</button>";
+                        var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#professionalActivityModal'></button>";
                         return t;
                     } 
                 },
@@ -222,7 +554,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
             const establishmentColumns  = [
                 {"title": "Location", "orderable": true, targets: 0, "data": "related_resource", "defaultContent": "",
                     "render": function(data) {
-                        if (data) {
+                        if (data?.name?.en?.value) {
                             return "<a href=/report/" + data.relatedresourceinstanceid + " target=_blank style='color:blue;'>" + data.name.en.value + "</a>";
                         }
                         else {
@@ -241,9 +573,9 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                     }
                 },
                 {"title": "Type", "orderable": true, targets: 0, "data": "7c58678a-eac9-11eb-ba14-0a9473e82189", "defaultContent": ""},
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function(data) {
-                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#establishmentModal'>+</button>";
+                        var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#establishmentModal'></button>";
                         return t;
                     } 
                 },
@@ -271,17 +603,17 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                         }
                     }
                 },
-                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "width": "10px",
+                {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function(data) {
-                        var t = "<button type='button' class='btn' style='font-weight:bold; font-size:large; width:5px;' data-toggle='modal' data-target='#identifierModal'>+</button>";
+                        var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#identifierModal'></button>";
                         return t;
                     } 
                 },
             ];
 
-            self.createSummaryTableConfig('professionalActivity', professionalActivityColumns, groupProfessionalActivityNodegroupId, ['0c3baf01-e323-11eb-ba14-0a9473e82189', '0c3baefb-e323-11eb-ba14-0a9473e82189', '0c3baef5-e323-11eb-ba14-0a9473e82189']);
-            self.createSummaryTableConfig('establishment', establishmentColumns, groupEstablishmentNodegroupId, ['e5f12154-17c1-11ec-b193-0a9473e82189', '7c5867a1-eac9-11eb-ba14-0a9473e82189', '7c58678a-eac9-11eb-ba14-0a9473e82189']);
-            self.createSummaryTableConfig('identifierAssignemnt', identifierAssignmentColumns, groupIdentifierAssignmentNodegroupId, ['42b0dbab-e319-11eb-ba14-0a9473e82189', '42b0db9e-e319-11eb-ba14-0a9473e82189', '42b0db8c-e319-11eb-ba14-0a9473e82189']);
+            self.createSummaryTableConfig('professionalActivity', professionalActivityColumns, self.groupProfessionalActivityNodegroupId, ['0c3baf01-e323-11eb-ba14-0a9473e82189', '0c3baefb-e323-11eb-ba14-0a9473e82189', '0c3baef5-e323-11eb-ba14-0a9473e82189']);
+            self.createSummaryTableConfig('establishment', establishmentColumns, self.groupEstablishmentNodegroupId, ['e5f12154-17c1-11ec-b193-0a9473e82189', '7c5867a1-eac9-11eb-ba14-0a9473e82189', '7c58678a-eac9-11eb-ba14-0a9473e82189']);
+            self.createSummaryTableConfig('identifierAssignemnt', identifierAssignmentColumns, self.groupIdentifierAssignmentNodegroupId, ['42b0dbab-e319-11eb-ba14-0a9473e82189', '42b0db9e-e319-11eb-ba14-0a9473e82189', '42b0db8c-e319-11eb-ba14-0a9473e82189']);
             
         // ----------------- end summary table defitions --------------------------
         
@@ -304,6 +636,8 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
                     .then(result => {
                         if (result.data.length != 0) {
                             cardData(path.reduce(function index(result, i) {return result[i];}, result));
+                        } else {
+                            cardData(result.data);
                         }
                     })
                     .catch(error => {
@@ -312,11 +646,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
             };
 
             // get values for all cardinality "1" nodegroups
-            self.getSimpleBranchData(self.typeOfGroup, typeOfGroupNodegroupId, ['data', '0', 'type', '@display_value']);
-            self.getSimpleBranchData(self.nationality, nationalityNodegroupId, ['data', '0', 'nationality', '@display_value']);
-            self.getSimpleBranchData(self.sourceReference, sourceReferenceNodegroupId, ['data', '0', 'source_reference', 'instance_details']);
-            self.getSimpleBranchData(self.subgroup, subGroupNodegroupId, ['data', '0', 'member_of_group', '@display_value']);
-            self.getSimpleBranchData(self.label, labelNodegroupId, ['data', '0', '_label', '@display_value']);
+            self.getAllSimpleBranchData();
 
         // ----------------- end get simple branch data --------------------------
 
@@ -346,10 +676,7 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
             };
 
             // get complex branch data
-            self.getComplexBranchData(self.externalIdentifierData, externalIdentifierNodegroupId);
-            self.getComplexBranchData(self.groupFormationData, groupFormationNodegroupId);
-            self.getComplexBranchData(self.groupDissolutionData, groupDissolutionNodegroupId);
-            self.getComplexBranchData(self.statementData, statementNodegroupId);
+            self.getAllComplexBranchData();
 
         // ----------------- end get complex branch data --------------------------
         
@@ -414,29 +741,49 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
         // ----------------- end get related resources data --------------------------
 
 
+            $('#formation-summary-table tbody').on( 'click', 'button', function() {
+                self.currentObservable(self.groupFormationData);
+                self.currentNodegroupId(self.groupFormationNodegroupId);
+                self.mainTileId('');
+            } );
+
+            $('#dissolution-summary-table tbody').on( 'click', 'button', function() {
+                self.currentObservable(self.groupDissolutionData);
+                self.currentNodegroupId(self.groupDissolutionNodegroupId);
+                self.mainTileId('');
+            } );
 
             // jquery logic for buttons that expose modals
             $('#professional-activity-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#professional-activity-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
-                self.getComplexBranchData(self.groupProfessionalActivityData, groupProfessionalActivityNodegroupId, data.tileid);
+                self.getComplexBranchData(self.groupProfessionalActivityData, self.groupProfessionalActivityNodegroupId, data.tileid);
+                self.currentObservable(self.groupProfessionalActivityData);
+                self.currentNodegroupId(self.groupProfessionalActivityNodegroupId);
+                self.mainTileId(data.tileid);
             } );
 
             $('#establishment-activity-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#establishment-activity-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
-                self.getComplexBranchData(self.groupEstablishmentData, groupEstablishmentNodegroupId, data.tileid);
+                self.getComplexBranchData(self.groupEstablishmentData, self.groupEstablishmentNodegroupId, data.tileid);
+                self.currentObservable(self.groupEstablishmentData);
+                self.currentNodegroupId(self.groupEstablishmentNodegroupId);
+                self.mainTileId(data.tileid);
             } );
 
             $('#identifier-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#identifier-summary-table').DataTable();
                 var data = table.row( $(this).parents('tr') ).data();
-                self.getComplexBranchData(self.groupIdentifierAssignmentData, groupIdentifierAssignmentNodegroupId, data.tileid);
+                self.getComplexBranchData(self.groupIdentifierAssignmentData, self.groupIdentifierAssignmentNodegroupId, data.tileid);
+                self.currentObservable(self.groupIdentifierAssignmentData);
+                self.currentNodegroupId(self.groupIdentifierAssignmentNodegroupId);
+                self.mainTileId(data.tileid);
             } );
 
             $('#name-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#name-summary-table').DataTable();
-                var data = table.row( $(this).parents('tr') ).data();
+                var data = table.row($(this).parents('tr') ).data();
                 self.nameRowData(data);
             } );
 
@@ -464,6 +811,10 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
             $('#closenamemodal').click(function() {
                 $('#nameModal').modal('hide');
             });
+
+            $('#closeCardinality1EditorModal').click(function() {
+                $('#cardinality1EditorModal').modal('hide');
+            });
             
             // suppress error that pops up when tables fail to load. This information can still be found in developer tools
             $.fn.dataTable.ext.errMode = 'ignore';
@@ -471,4 +822,3 @@ define(['arches', 'knockout', 'bindings/datatable', 'templates/views/report-temp
         template: provenanceGroupReportTemplate
     });
 });
-

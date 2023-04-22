@@ -43,9 +43,11 @@ div.rp-report-tile dl a[href] {
     border: solid 1px lightgray;
 }
 
-.summary-table-top-header th{
+.summary-table-top-header>tbody>tr>th {
     font-weight: 600;
     background-color: #efefef;
+    vertical-align: middle;
+    padding: 8px;
 }
 
 .statment-table th {
@@ -75,6 +77,9 @@ div.rp-report-tile dl a[href] {
     color: blue
 }
 
+.edit-button-cell {
+    width: 50px;
+  }
 
 td {
     border: solid 1px #ececec;
@@ -124,7 +129,7 @@ td {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    }
+}
 
 .anchor::before { 
     display: block; 
@@ -133,4 +138,40 @@ td {
     height: 55px; 
     visibility: hidden; 
     pointer-events: none;
-    }
+}
+
+.provenance-tile-editor {
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.75);
+    padding-top: 50px;
+}
+
+.provenance-tile-editor-content {
+    background-color: #fefefe;
+    margin: 3% 20%;
+    border: 1px solid #888;
+    width: 75%;
+    padding: 24px;
+}
+
+.provenance-tile-editor-content .loading-mask {
+    background-color: rgba(192,192,192, 0.6);
+}
+
+.hovered {
+    cursor: pointer;
+    border: 1px solid blue;
+    background-color: #eeeeee;
+}
+
+.report-add-tile-text {
+    cursor: pointer;
+    color: steelblue;
+    padding-left: 10px;
+}
