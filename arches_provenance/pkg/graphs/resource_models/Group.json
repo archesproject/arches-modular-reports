@@ -8467,7 +8467,7 @@
                     "parentnodegroup_id": "7c58676a-eac9-11eb-ba14-0a9473e82189"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "7c58675b-eac9-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": "7c586770-eac9-11eb-ba14-0a9473e82189"
