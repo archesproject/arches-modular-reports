@@ -10,7 +10,7 @@
         "arches-dev-dependencies": "archesproject/arches-dev-dependencies#stable/7.2.0"
     },
     "dependencies": {
-        "arches": "archesproject/arches#stable/7.2.0",
+        "arches": "archesproject/arches#dev/7.4.x",
         "request": "^2.88.2"
     }
 }
