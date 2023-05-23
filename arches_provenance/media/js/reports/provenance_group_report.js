@@ -696,7 +696,7 @@ define([
                     columns: [
                         {"title": "Related Resource", "orderable": true, targets: 0, "name": "name", "data": 'resourceinstance_to',
                             "render": function(data) {
-                                return "<a href=/report/" + data.resourceid + " target=_blank style='color:blue;'>" + data.displayname + "</a>";
+                                return "<a href="+ arches.urls.resource_report + data.resourceid + " target=_blank style='color:blue;'>" + data.displayname + "</a>";
                             }
                         },
                         {"title": "Relationship Type", "orderable": true, targets: 0, "name": "relationshiptype", "data": "relationshiptype",
