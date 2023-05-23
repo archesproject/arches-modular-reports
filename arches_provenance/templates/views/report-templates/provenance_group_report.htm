@@ -298,7 +298,7 @@
                         <td>
                             <!-- ko if: nameRowData().name.name_source_reference -->
                             <!-- ko foreach: {data: nameRowData().name.name_source_reference.instance_details, as: 'instance' } -->
-                            <a style="cursor:pointer; color:blue; text-decoration:underline;" data-bind="text: instance['display_value'], attr: {href: '/report/' + instance['resourceId'], target: '_blank'}"></a>
+                            <a style="cursor:pointer; color:blue; text-decoration:underline;" data-bind="text: instance['display_value'], attr: {href: self.resourceReportUrl + instance['resourceId'], target: '_blank'}"></a>
                             <!-- /ko -->
                             <!-- /ko -->
                         </td>  
@@ -340,7 +340,7 @@
             <!-- ko if: groupFormationData().length > 0 -->
             <!-- ko foreach: { data: groupFormationData, as: 'groupFormation' } -->
             <tr>
-              <td><a data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
+              <td><a data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: { href: self.resourceReportUrl + self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
               <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 'group_formation_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
               <td class="edit-button-cell">
@@ -420,7 +420,7 @@
             <!-- ko foreach: { data: groupDissolutionData, as: 'groupDissolution' } -->
             <tr>
               <!-- <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', '@display_value'])"> </td> -->
-              <td><a data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: { href: /report/ + self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
+              <td><a data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: { href: self.resourceReportUrl + self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank' }, style: { color: 'blue' }"></a></td>
               <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 'group_dissolution_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
               <td class="edit-button-cell">
@@ -503,7 +503,7 @@
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Formation Location: </td>
-                      <td><a data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: {href: '/report/' + self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
+                      <td><a data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'display_value']), attr: {href: self.resourceReportUrl + self.getValue(groupFormation, ['group_formation', 'group_formation_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Formation Type: </td>
@@ -978,7 +978,7 @@
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Dissolution Location: </td>
-                  <td><a data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: {href: '/report/' + self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
+                  <td><a data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'display_value']), attr: {href: self.resourceReportUrl + self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td>
                 </tr>
                 <tr>
                   <td class="header" style="padding: 8px">Dissolution Type: </td>
@@ -1444,7 +1444,7 @@
                   </tr>
                   <tr>
                     <td class="header" style="padding: 8px">Establishment Location: </td>
-                    <td><a data-bind="text: self.getValue(sojourn, ['sojourn_location', '@display_value']), attr: {href: '/report/' + self.getValue(sojourn, ['sojourn_location', 'resourceId']), target: '_blank'}"> </a></td>
+                    <td><a data-bind="text: self.getValue(sojourn, ['sojourn_location', '@display_value']), attr: {href: self.resourceReportUrl + self.getValue(sojourn, ['sojourn_location', 'resourceId']), target: '_blank'}"> </a></td>
                   </tr>
                   <tr>
                     <td class="header" style="padding: 8px">Establishment Type: </td>
@@ -1928,7 +1928,7 @@
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Professional Activity Location: </td>
-                      <td><a data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_location', '@display_value']), attr: {href: '/report/' + self.getValue(professionalActivity, ['professional_activity', 'professional_activity_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td> 
+                      <td><a data-bind="text: self.getValue(professionalActivity, ['professional_activity', 'professional_activity_location', '@display_value']), attr: {href: self.resourceReportUrl + self.getValue(professionalActivity, ['professional_activity', 'professional_activity_location', 'instance_details', 0, 'resourceId']), target: '_blank'}"></a></td> 
                     </tr>
                     <tr>
                       <td class="header" style="padding: 8px">Professional Activity Type: </td>

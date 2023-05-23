@@ -106,6 +106,8 @@ define([
             self.nameRowData = ko.observable();
             self.externalIdentifierData = ko.observable();
 
+            this.resourceReportUrl =  arches.urls.resource_report; 
+
             // helper function for getting to the template
             self.getValue = function(obj, attrs, missingValue='') {
                 try {
@@ -408,7 +410,10 @@ define([
             const nameColumns = [
                 {"title": "Name", "orderable": true, targets: 0, "name": "5bc66298-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_content.@display_value", "defaultContent": ""},
                 {"title": "Type", "orderable": true, targets: 0, "name": "5bc66360-bb18-11ea-85a6-3af9d3b32b71", "data": "name.name_type.@display_value", "defaultContent": ""},
-                {"title": "Source", "orderable": false, targets: 0, "data": "name.name_source_reference.@display_value", "defaultContent": ""},
+                {"title": "Source", "orderable": false, targets: 0, "data": "name.name_source_reference", "defaultContent": "", "render": function(data) {
+                    var t = `<a href='${arches.urls.resource_report}${data.instance_details[0].resourceId}' target='_blank' style="color:blue;">${data['@display_value']}</a>`;
+                    return t;
+                }},
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function() {
                         var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#nameModal'></button>";
@@ -456,7 +461,7 @@ define([
             const sourceReferenceColumns = [
                 {"title": "Source Reference", "orderable": true, targets: 0, "data": "reference", "name": "name", "defaultContent": "",
                     "render": function(data) {
-                        var t = `<a href='/report/${data.resourceinstanceid}' target='_blank' style="color:blue;">${data.name}</a>`
+                        var t = `<a href='${arches.urls.resource_report}${data.resourceinstanceid}' target='_blank' style="color:blue;">${data.name}</a>`;
                         return t;
                     }
                 },
@@ -525,7 +530,7 @@ define([
                 {"title": "Location", "orderable": true, targets: 0, "data": "related_resource", "defaultContent": "",
                     "render": function(data) {
                         if (data?.name?.en?.value) {
-                            return "<a href=/report/" + data.relatedresourceinstanceid + " target=_blank style='color:blue;'>" + data.name.en.value + "</a>";
+                            return "<a href=" + arches.urls.resource_report + data.relatedresourceinstanceid + " target=_blank style='color:blue;'>" + data.name.en.value + "</a>";
                         }
                         else {
                             return '';
@@ -555,7 +560,7 @@ define([
                 {"title": "Location", "orderable": true, targets: 0, "data": "related_resource", "defaultContent": "",
                     "render": function(data) {
                         if (data?.name?.en?.value) {
-                            return "<a href=/report/" + data.relatedresourceinstanceid + " target=_blank style='color:blue;'>" + data.name.en.value + "</a>";
+                            return "<a href=" + arches.urls.resource_report + data.relatedresourceinstanceid + " target=_blank style='color:blue;'>" + data.name.en.value + "</a>";
                         }
                         else {
                             return '';
@@ -696,7 +701,7 @@ define([
                     columns: [
                         {"title": "Related Resource", "orderable": true, targets: 0, "name": "name", "data": 'resourceinstance_to',
                             "render": function(data) {
-                                return "<a href="+ arches.urls.resource_report + data.resourceid + " target=_blank style='color:blue;'>" + data.displayname + "</a>";
+                                return "<a href=" + arches.urls.resource_report + data.resourceid + " target=_blank style='color:blue;'>" + data.displayname + "</a>";
                             }
                         },
                         {"title": "Relationship Type", "orderable": true, targets: 0, "name": "relationshiptype", "data": "relationshiptype",
