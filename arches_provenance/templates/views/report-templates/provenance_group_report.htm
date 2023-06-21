@@ -451,7 +451,7 @@
             <table class="table summary-table-left-header"
                 data-bind="click: function() {
                   self.editTile(
-                      self.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
+                      self.getValue(groupFormation, ['group_formation', '@tile_id']),
                   )},
                   clickBubble: false,
                   mouseoverBubble: false,
@@ -466,7 +466,7 @@
                                 self.editTile(
                                     self.getValue(groupFormation, ['group_formation', 'group_formation_name', 'group_formation_name_content', '@tile_id']),
                                     self.groupFormationNameNodegroupId,
-                                    self.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
+                                    self.getValue(groupFormation, ['group_formation', '@tile_id']),
                                 )},
                                 clickBubble: false,
                                 mouseoverBubble: false,
@@ -603,7 +603,7 @@
                         self.editTile(
                             null,
                             self.groupFormationStatementNodegroupId,
-                            self.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
+                            self.getValue(groupFormation, ['group_formation', '@tile_id']),
                         )},
                         clickBubble: false,
                         mouseoverBubble: false,
@@ -905,7 +905,7 @@
                         self.editTile(
                             null,
                             self.groupFormationTimespanNodegroupId,
-                            self.getValue(groupFormation, ['group_formation', 'group_formation_actor', '@tile_id']),
+                            self.getValue(groupFormation, ['group_formation', '@tile_id']),
                         )},
                         clickBubble: false,
                         mouseoverBubble: false,
