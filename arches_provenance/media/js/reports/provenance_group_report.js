@@ -194,8 +194,8 @@ define([
                 self.getComplexBranchData(self.statementData, self.statementNodegroupId);    
             };
 
-            this.refeshEverything = () => {
-                self.getComplexBranchData(self.currentObservable(), self.currentNodegroupId(), self.mainTileId());
+            this.refreshEverything = () => {
+                self.getComplexBranchData(self.currentObservable, self.currentNodegroupId(), self.mainTileId());
                 self.getAllSimpleBranchData();
                 self.getAllComplexBranchData();
                 self.reloadAllTableAjax();
@@ -204,10 +204,10 @@ define([
             };
 
             this.onSaveSuccess = () => {
-                self.refeshEverything();
+                self.refreshEverything();
             };
             this.onDeleteSuccess = () => {
-                self.refeshEverything();
+                self.refreshEverything();
             };
             this.onSaveError = () => {};
             this.onDeleteError = () => {};
@@ -793,6 +793,7 @@ define([
             $('#name-summary-table tbody').on( 'click', 'button', function() {
                 var table = $('#name-summary-table').DataTable();
                 var data = table.row($(this).parents('tr') ).data();
+                self.currentNodegroupId(self.nameNodegroupdId);
                 self.nameRowData(data);
             } );
 
