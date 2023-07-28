@@ -16,6 +16,7 @@ define([
             params.configKeys = [];
             var self = this;
 
+            this.authenticated = ko.observable(false);
             const resourceid = params.report.report_json?.resourceinstanceid;
             const resourceName = params.report.report_json?.displayname;
 
@@ -130,12 +131,14 @@ define([
             
             let selectedElement = null;
             self.handleMouseover = function(data, evt){
-                if(selectedElement){
-                    $(selectedElement).removeClass("hovered");
-                }
-                selectedElement = evt.currentTarget;
-                if(evt.type == "mouseover"){
-                    $(evt.currentTarget).addClass("hovered");
+                if (self.authenticated()) {
+                    if(selectedElement){
+                        $(selectedElement).removeClass("hovered");
+                    }
+                    selectedElement = evt.currentTarget;
+                    if(evt.type == "mouseover"){
+                        $(evt.currentTarget).addClass("hovered");
+                    }    
                 }
             };
             
@@ -227,6 +230,9 @@ define([
             };
 
             this.editTile = function(tileid, nodegroupid, parenttileid) {
+                if (!self.authenticated()) {
+                    return;
+                }
                 const url = tileid ?
                     `${arches.urls.provenance_editor}?tileid=${tileid}` :
                     `${arches.urls.provenance_editor}?nodegroupid=${nodegroupid}&resourceid=${resourceid}&parenttileid=${parenttileid}`;
@@ -420,7 +426,10 @@ define([
                 }},
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function() {
-                        var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#nameModal'></button>";
+                        var t = null;
+                        if (self.authenticated()) {
+                            t = "<!-- ko if: self.authenticated() --><button type='button' data-bind='if: self.authenticated()' class='btn fa fa-pencil' data-toggle='modal' data-target='#nameModal'></button><!-- /ko -->";
+                        }
                         return t;
                     } 
                 },
@@ -643,6 +652,8 @@ define([
                 fetch(`${arches.urls.provenance_report}?${searchParams}`)
                     .then (response => response.json())
                     .then(result => {
+                        self.authenticated(result.userIsReviewer);
+                        delete result.userIsReviewer;
                         if (result.data.length != 0) {
                             cardData(path.reduce(function index(result, i) {return result[i];}, result));
                         } else {
