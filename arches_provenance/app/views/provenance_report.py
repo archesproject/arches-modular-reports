@@ -298,6 +298,7 @@ class provenance_report(View):
         search_value = request.GET.get("search[value]") if request.GET.get("search[value]") else None
         order_column = request.GET.get("columns[{0}][name]".format(int(request.GET.get("order[0][column]")))) if request.GET.get("order[0][column]") != None else None
         order_dir = request.GET.get("order[0][dir]") if request.GET.get("order[0][column]") != None else None
+        user_is_reviewer = user_is_resource_reviewer(request.user)
 
         #get total number of records
         with connection.cursor() as cursor:
@@ -353,7 +354,7 @@ class provenance_report(View):
         for tile in tiles:
             ret.append(LabelBasedGraph.from_tile(tile, lookup[0], lookup[1]))
         
-        return JSONResponse({'data': ret, 'recordsTotal': records_total, 'recordsFiltered': filtered_tiles}, indent=4)
+        return JSONResponse({'data': ret, 'userIsReviewer': user_is_reviewer, 'recordsTotal': records_total, 'recordsFiltered': filtered_tiles}, indent=4)
 
 class ProvenanceSourceReferences(View):
     #this view was created specifically for source reference table
