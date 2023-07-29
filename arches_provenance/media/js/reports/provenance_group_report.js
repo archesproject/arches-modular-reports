@@ -18,7 +18,7 @@ define([
 
             this.authenticated = ko.observable(false);
             this.icon = ko.pureComputed(()=> {
-                const icon = self.authenticated ? 'pencil' : 'question';
+                const icon = self.authenticated() ? 'pencil' : 'question';
                 return icon;
             });
 
@@ -431,7 +431,11 @@ define([
                 }},
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function() {
-                        return `<button type='button' class='btn fa fa-${self.icon}' data-toggle='modal' data-target='#nameModal'></button><!-- /ko -->`;
+                        let t = null;
+                        if (self.authenticated()) {
+                            t = `<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#nameModal'></button><!-- /ko -->`;
+                        }
+                        return t;
                     } 
                 },
             ];
@@ -564,7 +568,7 @@ define([
                 {"title": "Type", "orderable": true, targets: 0, "data": "0c3baefb-e323-11eb-ba14-0a9473e82189", "defaultContent": ""},
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function(data) {
-                        return `<button type='button' class='btn fa fa-${self.icon}' data-toggle='modal' data-target='#professionalActivityModal'></button>`;
+                        return `<button type='button' class='btn fa fa-${(self.icon())}' data-toggle='modal' data-target='#professionalActivityModal'></button>`;
                     } 
                 },
             ];
@@ -593,7 +597,7 @@ define([
                 {"title": "Type", "orderable": true, targets: 0, "data": "7c58678a-eac9-11eb-ba14-0a9473e82189", "defaultContent": ""},
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function(data) {
-                        return `<button type='button' class='btn fa fa-${self.icon}' data-toggle='modal' data-target='#establishmentModal'></button>`;
+                        return `<button type='button' class='btn fa fa-${self.icon()}' data-toggle='modal' data-target='#establishmentModal'></button>`;
                     } 
                 },
             ];
@@ -622,7 +626,7 @@ define([
                 },
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function(data) {
-                        return `<button type='button' class='btn fa fa-${icon}' data-toggle='modal' data-target='#identifierModal'></button>`;
+                        return `<button type='button' class='btn fa fa-${self.icon()}' data-toggle='modal' data-target='#identifierModal'></button>`;
                     } 
                 },
             ];
