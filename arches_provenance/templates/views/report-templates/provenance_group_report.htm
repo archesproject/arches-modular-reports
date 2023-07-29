@@ -84,7 +84,7 @@
                     <td data-bind="text: typeOfGroup()?.[0]?.['type']?.['@display_value']"> </td>
                     <td class="edit-button-cell">
                       <button type='button' class='btn fa fa-pencil'  
-                        data-bind="visible: self.authenticated(), click: function() {openNodeEditor(); getWidget(typeOfGroup()?.[0]?.['type'], typeOfGroup, typeOfGroupNodeId);}"></button>
+                        data-bind="visible: self.isReviewer(), click: function() {openNodeEditor(); getWidget(typeOfGroup()?.[0]?.['type'], typeOfGroup, typeOfGroupNodeId);}"></button>
                     </td>
                   <!-- /ko -->
                 </tr>
@@ -94,7 +94,7 @@
                     <td data-bind="text: nationality()?.[0]?.['nationality']?.['@display_value']"> </td>
                     <td class="edit-button-cell">
                       <button type='button' class='btn fa fa-pencil'  
-                        data-bind="visible: self.authenticated(), click: function() {openNodeEditor(); getWidget(nationality()?.[0]?.['nationality'], nationality, nationalityNodeId);}"></button>
+                        data-bind="visible: self.isReviewer(), click: function() {openNodeEditor(); getWidget(nationality()?.[0]?.['nationality'], nationality, nationalityNodeId);}"></button>
                     </td>
                   <!-- /ko -->
                 </tr>
@@ -166,7 +166,7 @@
         <div>
           <span class="table-label">Names</span>
           <span class = "report-add-tile-text"
-              data-bind="if: self.authenticated, click: function() { self.editTile( null, self.nameNodegroupdId, null )},
+              data-bind="if: self.isReviewer, click: function() { self.editTile( null, self.nameNodegroupdId, null )},
             ">Add New Name</span>
         </div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
@@ -187,7 +187,7 @@
         <div>
           <span class="table-label">Statements</span>
           <span class = "report-add-tile-text"
-              data-bind="if: self.authenticated, click: function() { self.editTile( null, self.statementNodegroupId, null )},
+              data-bind="if: self.isReviewer, click: function() { self.editTile( null, self.statementNodegroupId, null )},
             ">Add New Statement</span>
         </div>
         
@@ -211,7 +211,7 @@
                             self.editTile(
                                 self.getValue(statement_data, ['statement', '@tile_id']),
                         )},
-                        visible: self.authenticated()
+                        visible: self.isReviewer()
                     "></button>
               </td>
             </tr>
@@ -235,7 +235,7 @@
                             self.editTile(
                                 self.getValue(statement_data, ['statement', '@tile_id']),
                         )},
-                        visible: self.authenticated()
+                        visible: self.isReviewer()
                     "></button>
                   </td>
                 </tr>
@@ -248,7 +248,7 @@
                             self.editTile(
                                 self.getValue(statement_data, ['statement', '@tile_id']),
                         )},
-                        visible: self.authenticated()
+                        visible: self.isReviewer()
                     "></button>
                   </td>
                 </tr>
@@ -261,7 +261,7 @@
                             self.editTile(
                                 self.getValue(statement_data, ['statement', '@tile_id']),
                         )}
-                        visible: self.authenticated()
+                        visible: self.isReviewer()
                     "></button>
                   </td>
                 </tr>
@@ -329,7 +329,7 @@
           <span class="table-label">Formation</span>
           <!-- ko if: groupFormationData().length === 0 -->
           <span class = "report-add-tile-text"
-              data-bind="if: self.authenticated, click: function() { self.editTile( null, self.groupFormationNodegroupId, null )},
+              data-bind="if: self.isReviewer, click: function() { self.editTile( null, self.groupFormationNodegroupId, null )},
             ">Add New Formation</span>
           <!-- /ko -->
         </div>
@@ -348,8 +348,8 @@
               <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 0, 'group_formation_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
               <td class="edit-button-cell">
-                <button type="button" data-bind="visible: self.authenticated()" class="btn fa fa-pencil" data-toggle="modal" data-target="#formationModal"></button>
-                <button type="button" data-bind="visible: !self.authenticated()" class="btn fa fa-question" data-toggle="modal" data-target="#formationModal"></button>
+                <button type="button" data-bind="visible: self.isReviewer()" class="btn fa fa-pencil" data-toggle="modal" data-target="#formationModal"></button>
+                <button type="button" data-bind="visible: !self.isReviewer()" class="btn fa fa-question" data-toggle="modal" data-target="#formationModal"></button>
               </td>
             </tr>
             <!-- /ko -->
@@ -368,7 +368,7 @@
         <div>
           <span class="table-label">Professional Activity</span>
           <span class = "report-add-tile-text"
-              data-bind="if: self.authenticated, click: function() { self.editTile( null, self.groupProfessionalActivityNodegroupId, null )},
+              data-bind="if: self.isReviewer, click: function() { self.editTile( null, self.groupProfessionalActivityNodegroupId, null )},
             ">Add New Professional Activity</span>
         </div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
@@ -387,7 +387,7 @@
         <div>
           <span class="table-label">Establishment</span>
           <span class = "report-add-tile-text"
-              data-bind="if: self.authenticated, click: function() { self.editTile( null, self.groupEstablishmentNodegroupId, null )},
+              data-bind="if: self.isReviewer, click: function() { self.editTile( null, self.groupEstablishmentNodegroupId, null )},
             ">Add New Establishment</span>
         </div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
@@ -409,7 +409,7 @@
           <span class="table-label">Dissolution</span>
           <!-- ko if: groupDissolutionData().length === 0 -->
           <span class = "report-add-tile-text"
-            data-bind="if: self.authenticated, click: function() { self.editTile( null, self.groupDissolutionNodegroupId, null )},
+            data-bind="if: self.isReviewer, click: function() { self.editTile( null, self.groupDissolutionNodegroupId, null )},
           ">Add New Dissolution</span>
           <!-- /ko -->
         </div>
@@ -429,8 +429,8 @@
               <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 0, 'group_dissolution_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
               <td class="edit-button-cell">
-                <button type="button" data-bind="visible: self.authenticated()" class="btn fa fa-pencil" data-toggle="modal" data-target="#dissolutionModal"></button>
-                <button type="button" data-bind="visible: !self.authenticated()" class="btn fa fa-question" data-toggle="modal" data-target="#dissolutionModal"></button>
+                <button type="button" data-bind="visible: self.isReviewer()" class="btn fa fa-pencil" data-toggle="modal" data-target="#dissolutionModal"></button>
+                <button type="button" data-bind="visible: !self.isReviewer()" class="btn fa fa-question" data-toggle="modal" data-target="#dissolutionModal"></button>
             </td>
             </tr>
             <!-- /ko -->
@@ -579,7 +579,7 @@
                               clickBubble: false,
                               mouseoverBubble: false,
                               event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                              if: self.authenticated,
+                              if: self.isReviewer,
                       ">Add New Statement Name</div>
                   <!-- /ko -->
                 </td>
@@ -615,7 +615,7 @@
                         clickBubble: false,
                         mouseoverBubble: false,
                         event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                        if: self.authenticated,
+                        if: self.isReviewer,
                 ">Add New Statement</span>
             </div>
             <!-- /ko -->
@@ -677,7 +677,7 @@
                               clickBubble: false,
                               mouseoverBubble: false,
                               event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                              if: self.authenticated,
+                              if: self.isReviewer,
                       ">Add New Time Span Name</div>
                   <!-- /ko -->
                 </td>
@@ -761,7 +761,7 @@
                                     clickBubble: false,
                                     mouseoverBubble: false,
                                     event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                                    if: self.authenticated,
+                                    if: self.isReviewer,
                             ">Add New Time Span Duration Name</div>
                         <!-- /ko -->
                       </td>
@@ -804,7 +804,7 @@
                           clickBubble: false,
                           mouseoverBubble: false,
                           event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                          if: self.authenticated,
+                          if: self.isReviewer,
                       ">Add New Time Span Duration</div>
                   <!-- /ko -->
                 </td>
@@ -868,7 +868,7 @@
                                 clickBubble: false,
                                 mouseoverBubble: false,
                                 event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                                if: self.authenticated,
+                                if: self.isReviewer,
                             ">Add New Time Span Statement Name</div>
                         <!-- /ko -->
                     
@@ -903,7 +903,7 @@
                             clickBubble: false,
                             mouseoverBubble: false,
                             event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                            if: self.authenticated,
+                            if: self.isReviewer,
                       ">Add New Time Span Statement</div>
                 <!-- /ko -->
               </td>
@@ -923,7 +923,7 @@
                         clickBubble: false,
                         mouseoverBubble: false,
                         event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                        if: self.authenticated,
+                        if: self.isReviewer,
                   ">Add New Time Span</span>
               </div>
             <!-- /ko -->
@@ -1058,7 +1058,7 @@
                           clickBubble: false,
                           mouseoverBubble: false,
                           event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                          if: self.authenticated,
+                          if: self.isReviewer,
                       ">Add New Statement Name</div>
               <!-- /ko -->
             </td>
@@ -1094,7 +1094,7 @@
                   clickBubble: false,
                   mouseoverBubble: false,
                   event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                  if: self.authenticated,
+                  if: self.isReviewer,
           ">Add New Statement</span>
         </div>
         <!-- /ko -->
@@ -1156,7 +1156,7 @@
                           clickBubble: false,
                           mouseoverBubble: false,
                           event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                          if: self.authenticated,
+                          if: self.isReviewer,
                       ">Add New Time Span Name</div>
               <!-- /ko -->          
             </td>
@@ -1240,7 +1240,7 @@
                                 clickBubble: false,
                                 mouseoverBubble: false,
                                 event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                                if: self.authenticated,
+                                if: self.isReviewer,
                             ">Add New Time Span Duration Name</div>
                     <!-- /ko -->
                   </td>
@@ -1279,7 +1279,7 @@
                       clickBubble: false,
                       mouseoverBubble: false,
                       event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                      if: self.authenticated,
+                      if: self.isReviewer,
               ">Add New Time Span Duration</div>
               <!-- /ko -->
           </td>
@@ -1343,7 +1343,7 @@
                             clickBubble: false,
                             mouseoverBubble: false,
                             event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                            if: self.authenticated,
+                            if: self.isReviewer,
                     ">Add New Time Span Statement Name</div>
                     <!-- /ko -->
                   </td>    
@@ -1377,7 +1377,7 @@
                         clickBubble: false,
                         mouseoverBubble: false,
                         event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                        if: self.authenticated,
+                        if: self.isReviewer,
                 ">Add New Time Span Statement</div>
             <!-- /ko -->
           </td>
@@ -1397,7 +1397,7 @@
                   clickBubble: false,
                   mouseoverBubble: false,
                   event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                  if: self.authenticated,
+                  if: self.isReviewer,
           ">Add New Time Span</span>
         </div>
         <!-- /ko -->
@@ -1494,7 +1494,7 @@
                     clickBubble: false,
                     mouseoverBubble: false,
                     event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                    if: self.authenticated,
+                    if: self.isReviewer,
             ">Add New Statement</span>
           </div>
           <!-- ko if: sojourn.sojourn_statement?.length > 0 -->
@@ -1554,7 +1554,7 @@
                             clickBubble: false,
                             mouseoverBubble: false,
                             event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                            if: self.authenticated,
+                            if: self.isReviewer,
                         ">Add New Statement Name</div>
                   <!-- /ko -->
               </td>
@@ -1637,7 +1637,7 @@
                               clickBubble: false,
                               mouseoverBubble: false,
                               event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                              if: self.authenticated,
+                              if: self.isReviewer,
                           ">Add New Time Span Name</div>
                   <!-- /ko -->          
               </td>
@@ -1721,7 +1721,7 @@
                                     clickBubble: false,
                                     mouseoverBubble: false,
                                     event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                                    if: self.authenticated,
+                                    if: self.isReviewer,
                                 ">Add New Time Span Name</div>
                         <!-- /ko -->
                       </td>
@@ -1764,7 +1764,7 @@
                         clickBubble: false,
                         mouseoverBubble: false,
                         event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                        if: self.authenticated,
+                        if: self.isReviewer,
                 ">Add New Time Span Duration</div>
                 <!-- /ko -->
             </td>
@@ -1828,7 +1828,7 @@
                                   clickBubble: false,
                                   mouseoverBubble: false,
                                   event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                                  if: self.authenticated,
+                                  if: self.isReviewer,
                           ">Add New Time Span Statement Name</div>
                       <!-- /ko -->
                   </td>
@@ -1867,7 +1867,7 @@
                             clickBubble: false,
                             mouseoverBubble: false,
                             event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                            if: self.authenticated,
+                            if: self.isReviewer,
                     ">Add New Time Span Statement</div>
                 <!-- /ko -->
               </td>
@@ -1887,7 +1887,7 @@
                       clickBubble: false,
                       mouseoverBubble: false,
                       event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                      if: self.authenticated,
+                      if: self.isReviewer,
               ">Add New Time Span</span>
           </div>
 
@@ -2024,7 +2024,7 @@
                           clickBubble: false,
                           mouseoverBubble: false,
                           event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                          if: self.authenticated,
+                          if: self.isReviewer,
                       ">Add New Statement Name</div>
                   <!-- /ko -->
                 </td>
@@ -2060,7 +2060,7 @@
                       clickBubble: false,
                       mouseoverBubble: false,
                       event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                      if: self.authenticated,
+                      if: self.isReviewer,
               ">Add New Statement</span>
             </div>
             <!-- /ko -->
@@ -2123,7 +2123,7 @@
                           clickBubble: false,
                           mouseoverBubble: false,
                           event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                          if: self.authenticated,
+                          if: self.isReviewer,
                       ">Add New Time Span Name</div>
                   <!-- /ko -->
                 </td>
@@ -2203,7 +2203,7 @@
                                 clickBubble: false,
                                 mouseoverBubble: false,
                                 event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                                if: self.authenticated,
+                                if: self.isReviewer,
                             ">Add New Statement Name</div>
                         <!-- /ko -->
                       </td>
@@ -2242,7 +2242,7 @@
                         clickBubble: false,
                         mouseoverBubble: false,
                         event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                        if: self.authenticated,
+                        if: self.isReviewer,
                     ">Add New Time Span Duration</div>
                 <!-- /ko -->
               </td>
@@ -2306,7 +2306,7 @@
                                 clickBubble: false,
                                 mouseoverBubble: false,
                                 event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                                if: self.authenticated,
+                                if: self.isReviewer,
                             ">Add New Time Span Statement Name</div>
                         <!-- /ko -->
                       </td>
@@ -2345,7 +2345,7 @@
                           clickBubble: false,
                           mouseoverBubble: false,
                           event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                          if: self.authenticated,
+                          if: self.isReviewer,
                       ">Add New Time Span Statement</div>
                   <!-- /ko -->
                 </td>
@@ -2366,7 +2366,7 @@
                       clickBubble: false,
                       mouseoverBubble: false,
                       event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                      if: self.authenticated,
+                      if: self.isReviewer,
               ">Add New Time Span</span>
             </div>
             <!-- /ko -->
@@ -2391,7 +2391,7 @@
         <div>
           <span class="table-label">Identifiers</span>
           <span class = "report-add-tile-text"
-            data-bind="if: self.authenticated, click: function() { self.editTile( null, self.groupIdentifierAssignmentNodegroupId, null )},
+            data-bind="if: self.isReviewer, click: function() { self.editTile( null, self.groupIdentifierAssignmentNodegroupId, null )},
           ">Add New Identifiers</span>
         </div>
           <div class="table summary-table-standard" data-bind="" style="width: 100%; padding: 10px 15px">
@@ -2412,7 +2412,7 @@
         <div>
           <span class="table-label">External URIs</span>
           <span class = "report-add-tile-text"
-            data-bind="if: self.authenticated, click: function() { self.editTile( null, self.externalIdentifierNodegroupId, null )},
+            data-bind="if: self.isReviewer, click: function() { self.editTile( null, self.externalIdentifierNodegroupId, null )},
           ">Add New External URIs</span>
         </div>
         <table class="table table-striped summary-table-top-header">
@@ -2438,7 +2438,7 @@
                           self.editTile(
                               self.getValue(identifier, ['exact_match', '@tile_id']),
                           )},
-                          visible: self.authenticated()
+                          visible: self.isReviewer()
                         "></button>
                   </td>      
                 </tr>
@@ -2541,7 +2541,7 @@
                           clickBubble: false,
                           mouseoverBubble: false,
                           event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                          if: self.authenticated,
+                          if: self.isReviewer,
                   ">Add New Name</div>
                   <!-- /ko -->
                 </td>
@@ -2617,7 +2617,7 @@
                           clickBubble: false,
                           mouseoverBubble: false,
                           event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                          if: self.authenticated,
+                          if: self.isReviewer,
                       ">Add New Time Span Name</div>
                   <!-- /ko -->
                 </td>
@@ -2697,7 +2697,7 @@
                                 clickBubble: false,
                                 mouseoverBubble: false,
                                 event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                                if: self.authenticated,
+                                if: self.isReviewer,
                             ">Add New Time Span Duration Name</div>
                         <!-- /ko -->
                       </td>
@@ -2740,7 +2740,7 @@
                           clickBubble: false,
                           mouseoverBubble: false,
                           event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                          if: self.authenticated,
+                          if: self.isReviewer,
                   ">Add New Time Span Duration</div>
                   <!-- /ko -->
                 </td>
@@ -2806,7 +2806,7 @@
                                 clickBubble: false,
                                 mouseoverBubble: false,
                                 event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                                if: self.authenticated,
+                                if: self.isReviewer,
                             ">Add New Time Span Statement Name</div>
                         <!-- /ko -->
                       </td>
@@ -2849,7 +2849,7 @@
                           clickBubble: false,
                           mouseoverBubble: false,
                           event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                          if: self.authenticated,
+                          if: self.isReviewer,
                       ">Add New Time Span Statement</div>
                   <!--/ko -->
                 </td>
@@ -2869,7 +2869,7 @@
                       clickBubble: false,
                       mouseoverBubble: false,
                       event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                      if: self.authenticated,
+                      if: self.isReviewer,
               ">Add New identifier data assignment time span</span>
             </div>
             <!-- /ko -->
@@ -2887,7 +2887,7 @@
                       clickBubble: false,
                       mouseoverBubble: false,
                       event: { mouseover: self.handleMouseover, mouseout: self.handleMouseover},
-                      if: self.authenticated,
+                      if: self.isReviewer,
               ">Add New identifier data Assignment</span>
           </div>
             <!-- /ko -->

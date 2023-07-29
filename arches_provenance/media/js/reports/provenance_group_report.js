@@ -16,9 +16,9 @@ define([
             params.configKeys = [];
             var self = this;
 
-            this.authenticated = ko.observable(false);
+            this.isReviewer = ko.observable(false);
             this.icon = ko.pureComputed(()=> {
-                const icon = self.authenticated() ? 'pencil' : 'question';
+                const icon = self.isReviewer() ? 'pencil' : 'question';
                 return icon;
             });
 
@@ -136,7 +136,7 @@ define([
             
             let selectedElement = null;
             self.handleMouseover = function(data, evt){
-                if (self.authenticated()) {
+                if (self.isReviewer()) {
                     if(selectedElement){
                         $(selectedElement).removeClass("hovered");
                     }
@@ -235,7 +235,7 @@ define([
             };
 
             this.editTile = function(tileid, nodegroupid, parenttileid) {
-                if (!self.authenticated()) {
+                if (!self.isReviewer()) {
                     return;
                 }
                 const url = tileid ?
@@ -432,7 +432,7 @@ define([
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function() {
                         let t = null;
-                        if (self.authenticated()) {
+                        if (self.isReviewer()) {
                             t = `<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#nameModal'></button><!-- /ko -->`;
                         }
                         return t;
@@ -654,7 +654,7 @@ define([
                 fetch(`${arches.urls.provenance_report}?${searchParams}`)
                     .then (response => response.json())
                     .then(result => {
-                        self.authenticated(result.userIsReviewer);
+                        self.isReviewer(result.userIsReviewer);
                         delete result.userIsReviewer;
                         if (result.data.length != 0) {
                             cardData(path.reduce(function index(result, i) {return result[i];}, result));
