@@ -203,7 +203,7 @@ define([
             };
 
             this.refreshEverything = () => {
-                self.getComplexBranchData(self.currentObservable, self.currentNodegroupId(), self.mainTileId());
+                self.getComplexBranchData(self.currentObservable(), self.currentNodegroupId(), self.mainTileId());
                 self.getAllSimpleBranchData();
                 self.getAllComplexBranchData();
                 self.reloadAllTableAjax();
