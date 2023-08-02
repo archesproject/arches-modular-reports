@@ -348,8 +348,7 @@
               <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_timespan', 'group_formation_timespan_name', 0, 'group_formation_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: self.getValue(groupFormation, ['group_formation', 'group_formation_type', '@display_value'])"> </td>
               <td class="edit-button-cell">
-                <button type="button" data-bind="visible: self.isReviewer()" class="btn fa fa-pencil" data-toggle="modal" data-target="#formationModal"></button>
-                <button type="button" data-bind="visible: !self.isReviewer()" class="btn fa fa-question" data-toggle="modal" data-target="#formationModal"></button>
+                <button type="button" data-bind="class: self.icon" class="btn fa" data-toggle="modal" data-target="#formationModal"></button>
               </td>
             </tr>
             <!-- /ko -->
@@ -429,8 +428,7 @@
               <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_timespan', 'group_dissolution_timespan_name', 0, 'group_dissolution_timespan_name_content', '@display_value'])"> </td>
               <td data-bind="text: self.getValue(groupDissolution, ['group_dissolution', 'group_dissolution_type', '@display_value'])"> </td>
               <td class="edit-button-cell">
-                <button type="button" data-bind="visible: self.isReviewer()" class="btn fa fa-pencil" data-toggle="modal" data-target="#dissolutionModal"></button>
-                <button type="button" data-bind="visible: !self.isReviewer()" class="btn fa fa-question" data-toggle="modal" data-target="#dissolutionModal"></button>
+                <button type="button" data-bind="class: self.icon" class="btn fa" data-toggle="modal" data-target="#dissolutionModal"></button>
             </td>
             </tr>
             <!-- /ko -->
