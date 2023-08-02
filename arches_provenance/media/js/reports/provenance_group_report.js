@@ -18,7 +18,7 @@ define([
 
             this.isReviewer = ko.observable(false);
             this.icon = ko.pureComputed(()=> {
-                const icon = self.isReviewer() ? 'fa-pencil' : 'fa-question';
+                const icon = self.isReviewer() ? 'fa-pencil' : 'fa-plus';
                 return icon;
             });
 
