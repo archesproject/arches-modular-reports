@@ -16,6 +16,12 @@ define([
             params.configKeys = [];
             var self = this;
 
+            this.isReviewer = ko.observable(false);
+            this.icon = ko.pureComputed(()=> {
+                const icon = self.isReviewer() ? 'fa-pencil' : 'fa-question';
+                return icon;
+            });
+
             const resourceid = params.report.report_json?.resourceinstanceid;
             const resourceName = params.report.report_json?.displayname;
 
@@ -130,12 +136,14 @@ define([
             
             let selectedElement = null;
             self.handleMouseover = function(data, evt){
-                if(selectedElement){
-                    $(selectedElement).removeClass("hovered");
-                }
-                selectedElement = evt.currentTarget;
-                if(evt.type == "mouseover"){
-                    $(evt.currentTarget).addClass("hovered");
+                if (self.isReviewer()) {
+                    if(selectedElement){
+                        $(selectedElement).removeClass("hovered");
+                    }
+                    selectedElement = evt.currentTarget;
+                    if(evt.type == "mouseover"){
+                        $(evt.currentTarget).addClass("hovered");
+                    }    
                 }
             };
             
@@ -195,7 +203,7 @@ define([
             };
 
             this.refreshEverything = () => {
-                self.getComplexBranchData(self.currentObservable, self.currentNodegroupId(), self.mainTileId());
+                self.getComplexBranchData(self.currentObservable(), self.currentNodegroupId(), self.mainTileId());
                 self.getAllSimpleBranchData();
                 self.getAllComplexBranchData();
                 self.reloadAllTableAjax();
@@ -227,6 +235,9 @@ define([
             };
 
             this.editTile = function(tileid, nodegroupid, parenttileid) {
+                if (!self.isReviewer()) {
+                    return;
+                }
                 const url = tileid ?
                     `${arches.urls.provenance_editor}?tileid=${tileid}` :
                     `${arches.urls.provenance_editor}?nodegroupid=${nodegroupid}&resourceid=${resourceid}&parenttileid=${parenttileid}`;
@@ -420,7 +431,10 @@ define([
                 }},
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function() {
-                        var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#nameModal'></button>";
+                        let t = null;
+                        if (self.isReviewer()) {
+                            t = `<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#nameModal'></button><!-- /ko -->`;
+                        }
                         return t;
                     } 
                 },
@@ -554,8 +568,7 @@ define([
                 {"title": "Type", "orderable": true, targets: 0, "data": "0c3baefb-e323-11eb-ba14-0a9473e82189", "defaultContent": ""},
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function(data) {
-                        var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#professionalActivityModal'></button>";
-                        return t;
+                        return `<button type='button' class='btn fa ${self.icon()}' data-toggle='modal' data-target='#professionalActivityModal'></button>`;
                     } 
                 },
             ];
@@ -584,8 +597,7 @@ define([
                 {"title": "Type", "orderable": true, targets: 0, "data": "7c58678a-eac9-11eb-ba14-0a9473e82189", "defaultContent": ""},
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function(data) {
-                        var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#establishmentModal'></button>";
-                        return t;
+                        return `<button type='button' class='btn fa ${self.icon()}' data-toggle='modal' data-target='#establishmentModal'></button>`;
                     } 
                 },
             ];
@@ -614,8 +626,7 @@ define([
                 },
                 {"title": "", "orderable": false, targets: 0, "data": "tileid", "defaultContent": "", "autowidth": false, "class": "edit-button-cell",
                     "render": function(data) {
-                        var t = "<button type='button' class='btn fa fa-pencil' data-toggle='modal' data-target='#identifierModal'></button>";
-                        return t;
+                        return `<button type='button' class='btn fa ${self.icon()}' data-toggle='modal' data-target='#identifierModal'></button>`;
                     } 
                 },
             ];
@@ -643,6 +654,8 @@ define([
                 fetch(`${arches.urls.provenance_report}?${searchParams}`)
                     .then (response => response.json())
                     .then(result => {
+                        self.isReviewer(result.userIsReviewer);
+                        delete result.userIsReviewer;
                         if (result.data.length != 0) {
                             cardData(path.reduce(function index(result, i) {return result[i];}, result));
                         } else {
