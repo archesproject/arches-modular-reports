@@ -242,7 +242,7 @@ module.exports = () => {
         };
 
         let projectSettings = spawn(
-            '/arches/env/bin/python3.7',
+            'python3',
             [Path.resolve(__dirname, Path.parse(__dirname)['dir'], 'settings.py')]
         );
         projectSettings.stderr.on("data", process.stderr.write);
@@ -250,7 +250,7 @@ module.exports = () => {
 
         projectSettings.on('error', () => {
             projectSettings = spawn(
-                '/arches/env/bin/python3.7',
+                'python',
                 [Path.resolve(__dirname, Path.parse(__dirname)['dir'], 'settings.py')]
             );
             projectSettings.stderr.on("data", process.stderr.write);
