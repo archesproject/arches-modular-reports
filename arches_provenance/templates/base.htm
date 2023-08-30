@@ -64,7 +64,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 </head>
 
-<body {% block body_attributes %}class="scroll-y-auto" {% endblock %}>
+<body dir="{{ app_settings.ACTIVE_LANGUAGE_DIR }}" {% block body_attributes %}class="scroll-y-auto" {% endblock %}>
     {% block loading_mask %}
 
     <div class="loading-mask" data-bind="visible: typeof(loading()) === 'boolean' && loading()"></div>
