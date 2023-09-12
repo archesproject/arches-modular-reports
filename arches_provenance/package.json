@@ -12,6 +12,7 @@
     "dependencies": {
         "arches": "archesproject/arches#dev/7.5.x",
         "request": "^2.88.2"
-    }
+    },
+    "nodeModulesPaths": {}
 }
 

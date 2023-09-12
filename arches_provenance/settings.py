@@ -22,9 +22,6 @@ STATIC_ROOT = '/arches/static'
 DATATYPE_LOCATIONS.append('arches_provenance.datatypes')
 FUNCTION_LOCATIONS.append('arches_provenance.functions')
 SEARCH_COMPONENT_LOCATIONS.append('arches_provenance.search_components')
-TEMPLATES[0]['DIRS'].append(os.path.join(APP_ROOT, 'functions', 'templates'))
-TEMPLATES[0]['DIRS'].append(os.path.join(APP_ROOT, 'widgets', 'templates'))
-TEMPLATES[0]['DIRS'].insert(0, os.path.join(APP_ROOT, 'templates'))
 
 LOCALE_PATHS.append(os.path.join(APP_ROOT, 'locale'))
 
@@ -96,6 +93,8 @@ INSTALLED_APPS = (
     'arches_provenance',
     'webpack_loader',
 )
+
+ARCHES_APPLICATIONS = ()
 
 ALLOWED_HOSTS = []
 
@@ -258,11 +257,20 @@ SHOW_LANGUAGE_SWITCH = len(LANGUAGES) > 1
 
 STATIC_URL = "/arches/pir/static/"
 
-STATICFILES_DIRS =  (
-    os.path.join(APP_ROOT, 'media', 'build'),
-    os.path.join(APP_ROOT, 'media'),
-) + STATICFILES_DIRS
+STATICFILES_DIRS =  build_staticfiles_dirs(
+    root_dir=ROOT_DIR,
+    app_root=APP_ROOT,
+    arches_applications=ARCHES_APPLICATIONS,
+)
 
+TEMPLATES = build_templates_config(
+    root_dir=ROOT_DIR,
+    debug=DEBUG,
+    app_root=APP_ROOT,
+    arches_applications=ARCHES_APPLICATIONS,
+)
+
+PUBLIC_SERVER_ADDRESS = "http://127.0.0.1:8000/"
 
 WEBPACK_LOADER = {
     "DEFAULT": {
@@ -290,13 +298,11 @@ if __name__ != "__main__":
 
 
 if __name__ == "__main__":
-    print(
-        json.dumps({
-            'ARCHES_NAMESPACE_FOR_DATA_EXPORT': ARCHES_NAMESPACE_FOR_DATA_EXPORT,
-            'STATIC_URL': STATIC_URL,
-            'ROOT_DIR': ROOT_DIR,
-            'APP_ROOT': APP_ROOT,
-            'WEBPACK_DEVELOPMENT_SERVER_PORT': WEBPACK_DEVELOPMENT_SERVER_PORT,
-        })
+    transmit_webpack_django_config(
+        root_dir=ROOT_DIR,
+        app_root=APP_ROOT,
+        arches_applications=ARCHES_APPLICATIONS,
+        public_server_address=PUBLIC_SERVER_ADDRESS,
+        static_url=STATIC_URL,
+        webpack_development_server_port=WEBPACK_DEVELOPMENT_SERVER_PORT,
     )
-    sys.stdout.flush()

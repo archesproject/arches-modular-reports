@@ -1,7 +1,7 @@
 import uuid
 import json
 from django.shortcuts import render
-from django.conf.urls import include, url
+from django.urls import include, re_path
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
 from django.utils.decorators import method_decorator
@@ -195,14 +195,14 @@ class GraphResourceReportView(BaseManagerView):
 
 
 urlpatterns = [
-    url(r'^', include('arches.urls')),
-	url(r"^graph_report/(?P<resourceid>%s|())$" % uuid_regex, GraphResourceReportView.as_view(), name="resource_graph_report"), 
-    url(r"^provenance_report$", provenance_report.as_view(), name="provenance_report"),
-    url(r"^provenance_summary_table$", ProvenanceSummaryTables.as_view(), name="provenance_summary_table"),
-    url(r"^provenance_source_references$", ProvenanceSourceReferences.as_view(), name="provenance_source_references"),
-    url(r"^provenance_related_resources$", ProvenanceRelatedResources.as_view(), name="provenance_related_resources"),
-    url(r"^provenance_editor$", ProvenanceEditorView.as_view(), name="provenance_editor"),
+    re_path(r'^', include('arches.urls')),
+	re_path(r"^graph_report/(?P<resourceid>%s|())$" % uuid_regex, GraphResourceReportView.as_view(), name="resource_graph_report"), 
+    re_path(r"^provenance_report$", provenance_report.as_view(), name="provenance_report"),
+    re_path(r"^provenance_summary_table$", ProvenanceSummaryTables.as_view(), name="provenance_summary_table"),
+    re_path(r"^provenance_source_references$", ProvenanceSourceReferences.as_view(), name="provenance_source_references"),
+    re_path(r"^provenance_related_resources$", ProvenanceRelatedResources.as_view(), name="provenance_related_resources"),
+    re_path(r"^provenance_editor$", ProvenanceEditorView.as_view(), name="provenance_editor"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-if settings.SHOW_LANGUAGE_SWITCH is True:
-    urlpatterns = i18n_patterns(*urlpatterns)
+# if settings.SHOW_LANGUAGE_SWITCH is True:
+#     urlpatterns = i18n_patterns(*urlpatterns)
