@@ -6,7 +6,7 @@ if [[ -z ${ARCHES_PROJECT} ]]; then
 	APP_FOLDER=${ARCHES_ROOT}
 	PACKAGE_JSON_FOLDER=${ARCHES_ROOT}
 else
-	APP_FOLDER=${WEB_ROOT}/${ARCHES_PROJECT}
+	APP_FOLDER=${WEB_ROOT}/${ARCHES_PROJECT_ROOT_DIRECTORY}
 	PACKAGE_JSON_FOLDER=${ARCHES_ROOT}
 fi
 
@@ -19,7 +19,6 @@ YARN_MODULES_FOLDER=${PACKAGE_JSON_FOLDER}/$(awk \
 
 # Environmental Variables
 export DJANGO_PORT=${DJANGO_PORT:-8000}
-COUCHDB_URL="http://$COUCHDB_USER:$COUCHDB_PASS@$COUCHDB_HOST:$COUCHDB_PORT"
 
 #Utility functions that check db status
 wait_for_db() {
@@ -75,7 +74,6 @@ init_arches() {
 
 		arches-project create ${ARCHES_PROJECT}
 		run_setup_db
-		setup_couchdb
 
 		exit_code=$?
 		if [[ ${exit_code} != 0 ]]; then
@@ -92,17 +90,8 @@ init_arches() {
 		else
 			echo "Database ${PGDBNAME} does not exists yet."
 			run_load_package #change to run_load_package if preferred 
-			setup_couchdb
 		fi
 	fi
-}
-
-# Setup Couchdb (when should this happen?)
-setup_couchdb() {
-    echo "Running: Creating couchdb system databases"
-    curl -X PUT ${COUCHDB_URL}/_users
-    curl -X PUT ${COUCHDB_URL}/_global_changes
-    curl -X PUT ${COUCHDB_URL}/_replicator
 }
 
 # Yarn
@@ -152,7 +141,7 @@ run_load_package() {
 	echo "----- *** LOADING PACKAGE: ${ARCHES_PROJECT} *** -----"
 	echo ""
 	cd ${APP_FOLDER}
-	python3 manage.py packages -o load_package -s ${ARCHES_PROJECT}/pkg -db -dev -y
+	source ../ENV/bin/activate && python3 manage.py packages -o load_package -s ./arches_provenance/pkg -db -dev -y
 }
 
 # "exec" means that it will finish building???
@@ -161,21 +150,9 @@ run_django_server() {
 	echo "----- *** RUNNING DJANGO DEVELOPMENT SERVER *** -----"
 	echo ""
 	cd ${APP_FOLDER}
+	echo ${APP_FOLDER}
     echo "Running Django"
-	exec sh -c "pip install debugpy -t /tmp && python3 /tmp/debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:${DJANGO_PORT}"
-}
-
-run_livereload_server() {
-	echo ""
-	echo "----- *** RUNNING LIVERELOAD SERVER *** -----"
-	echo ""
-	cd ${APP_FOLDER}
-    echo "Running livereload"
-    exec sh -c "python3 manage.py developer livereload --livereloadhost 0.0.0.0"
-}
-
-activate_virtualenv() {
-	. ${WEB_ROOT}/ENV/bin/activate
+	exec /bin/bash -c "source ../ENV/bin/activate && pip install debugpy -t /tmp && python -Wdefault /tmp/debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:${DJANGO_PORT}"
 }
 
 #### Main commands
@@ -185,15 +162,7 @@ run_arches() {
 	run_django_server
 }
 
-#### Main commands
-run_livereload() {
-	run_livereload_server
-}
-
 ### Starting point ###
-
-# trying not to use virtualenv???
-# activate_virtualenv
 
 # Use -gt 1 to consume two arguments per pass in the loop
 # (e.g. each argument has a corresponding value to go with it).
@@ -220,9 +189,6 @@ do
 			copy_settings_local
 			wait_for_db
 			run_arches
-		;;
-		run_livereload)
-			run_livereload_server
 		;;
 		setup_arches)
 			start_celery_supervisor

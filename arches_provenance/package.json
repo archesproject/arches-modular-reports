@@ -10,9 +10,8 @@
         "arches-dev-dependencies": "archesproject/arches-dev-dependencies#dev/7.5.x"
     },
     "dependencies": {
-        "arches": "archesproject/arches#dev/7.5.x",
+        "arches": "file:../../arches/",
         "request": "^2.88.2"
     },
     "nodeModulesPaths": {}
 }
-

@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arches_provenance"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "arches>=7.5.0a1,<7.6.0",
+]
+version = "0.0.1"
+
+[tool.setuptools]
+packages = ["arches_provenance"]
+
+[tool.black]
+line-length = 140
+target-version = ['py39']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
