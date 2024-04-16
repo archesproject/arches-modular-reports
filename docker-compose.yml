@@ -1,15 +1,17 @@
 version: '3.8'
 name: arches-provenance7-0
 services:
-    arches-provenance:
+    arches-provenance7-0:
       container_name: arches-provenance7-0
       image: getty/arches-provenance7-0
       build:
+        args:
+          ARCHES_CORE_HOST_DIR: ../arches/
         context: ..
         dockerfile: arches_provenance/Dockerfile
       command: run_arches
-      volumes:
-        - ../arches/:/web_root/arches
+      volumes:  
+        - ${ARCHES_CORE_HOST_DIR:-../arches/}:/web_root/arches
         - ./:/web_root/arches_provenance
       env_file:
         - ./docker/env_file.env
@@ -19,15 +21,17 @@ services:
       stdin_open: true
       tty: true
 
-    arches-provenance-webpack:
+    arches-provenance-webpack-7-0:
       container_name: arches-provenance-webpack-7-0
       image: fargeo/arches-provenance-webpack-7-0
       build:
+        args:
+          ARCHES_CORE_HOST_DIR: ../arches/
         context: ..
         dockerfile: arches_provenance/docker/webpack/Dockerfile
       command: run_webpack
       volumes:
-        - ../arches/:/web_root/arches
+        - ${ARCHES_CORE_HOST_DIR:-../arches/}:/web_root/arches
         - ./:/web_root/arches_provenance
       env_file:
         - ./docker/webpack/env_file.env
