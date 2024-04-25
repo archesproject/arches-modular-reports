@@ -7,11 +7,13 @@ services:
       build:
         args:
           ARCHES_CORE_HOST_DIR: ../arches/
+          ARCHES_HEALTH_HOST_DIR: ../arches-health/
         context: ..
         dockerfile: arches_provenance/Dockerfile
       command: run_arches
       volumes:  
         - ${ARCHES_CORE_HOST_DIR:-../arches/}:/web_root/arches
+        - ${ARCHES_HEALTH_HOST_DIR:-../arches-health/}:/web_root/arches-health
         - ./:/web_root/arches_provenance
       env_file:
         - ./docker/env_file.env

@@ -204,5 +204,12 @@ urlpatterns = [
     re_path(r"^provenance_editor$", ProvenanceEditorView.as_view(), name="provenance_editor"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
+try:
+    import arches_health
+
+    urlpatterns = urlpatterns + [re_path(r"ht/", include("health_check.urls"))]
+except:
+    pass
+
 # if settings.SHOW_LANGUAGE_SWITCH is True:
 #     urlpatterns = i18n_patterns(*urlpatterns)

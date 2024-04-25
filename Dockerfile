@@ -16,11 +16,13 @@ ARG ARCHES_CORE_HOST_DIR
 FROM stage-${TARGETARCH} as final
 
 ARG ARCHES_CORE_HOST_DIR
+ARG ARCHES_HEALTH_HOST_DIR
 ## Setting default environment variables
 ENV WEB_ROOT=/web_root
 ENV APP_ROOT=${WEB_ROOT}/arches_provenance
 # Root project folder
 ENV ARCHES_ROOT=${WEB_ROOT}/arches
+ENV ARCHES_HEALTH=${WEB_ROOT}/arches-health
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NODE_MAJOR=20
@@ -69,13 +71,17 @@ RUN source ENV/bin/activate && curl https://bootstrap.pypa.io/get-pip.py -o get-
   && npm install -g yarn
 
 RUN rm -rf /root/.cache/pip/*
-
+RUN apt-get update
 # Install the Arches application
 # FIXME: ADD from github repository instead?
 COPY ${ARCHES_CORE_HOST_DIR} ${ARCHES_ROOT}
+COPY ${ARCHES_HEALTH_HOST_DIR} ${ARCHES_HEALTH}
 
 WORKDIR ${ARCHES_ROOT}
 RUN source ../ENV/bin/activate && pip install -e . && pip install -r arches/install/requirements.txt && pip install -r arches/install/requirements_dev.txt
+
+WORKDIR ${ARCHES_HEALTH}
+RUN source ../ENV/bin/activate && pip install -e . 
 
 # TODO: These are required for non-dev installs, currently only depends on arches/afs
 #COPY /arches-vgm/arches_vgm/install/requirements.txt requirements.txt

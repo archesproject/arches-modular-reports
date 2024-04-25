@@ -269,6 +269,8 @@ WEBPACK_LOADER = {
 }
 
 DOCKER = False
+HOSTED_APPS = ()
+
 try:
     from .package_settings import *
 except ImportError:
@@ -293,6 +295,8 @@ if DOCKER:
             from settings_docker import *
         except ImportError as e:
             pass
+
+INSTALLED_APPS = INSTALLED_APPS + HOSTED_APPS
 
 if __name__ == "__main__":
     transmit_webpack_django_config(
