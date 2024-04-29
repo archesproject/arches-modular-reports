@@ -1,5 +1,6 @@
 import uuid
 import json
+import logging
 from django.shortcuts import render
 from django.urls import include, re_path
 from django.conf.urls.static import static
@@ -21,6 +22,9 @@ from arches_provenance.app.views.provenance_report import ProvenanceEditorView
 from arches_provenance.app.views.provenance_report import ProvenanceSourceReferences
 
 uuid_regex = settings.UUID_REGEX
+logger = logging.getLogger(__name__)
+
+
 @method_decorator(can_read_resource_instance, name="dispatch")
 class GraphResourceReportView(BaseManagerView):
 
@@ -203,6 +207,16 @@ urlpatterns = [
     re_path(r"^provenance_related_resources$", ProvenanceRelatedResources.as_view(), name="provenance_related_resources"),
     re_path(r"^provenance_editor$", ProvenanceEditorView.as_view(), name="provenance_editor"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+try:
+    import arches_health
+
+    urlpatterns = urlpatterns + [re_path(r"^ht/", include("health_check.urls"))]
+    urlpatterns = urlpatterns + [re_path(r"^ht-pub/", include("arches_health.urls"))]
+    logger.info("loaded optional health check urls")
+except Exception as e:
+    logger.error(e)
+    pass
 
 # if settings.SHOW_LANGUAGE_SWITCH is True:
 #     urlpatterns = i18n_patterns(*urlpatterns)
