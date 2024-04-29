@@ -275,7 +275,7 @@ JSON_LD_SORT = True
 JSON_LD_SORT_CLASSIFIED = {
     None: 10000,
     "urn:uuid:4c6a4b5b-0691-45db-8caa-34362a5bb7d4": 0,  # preferred term
-    "urn:quid: 883b439-38b6-4706-941f-416af284f3b5": 1,  # alternate term
+    "urn:uuid:4883b439-38b6-4706-941f-416af284f3b5": 1,  # alternate term
 }
 JSON_LD_SORT_LANGUAGE = {
     None: 10000,
@@ -290,7 +290,7 @@ JSON_LD_SORT_CLASSIFIED_PROP = "http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
 JSON_LD_SORT_LANGUAGE_PROP = "http://www.cidoc-crm.org/cidoc-crm/P72_has_language"
 JSON_LD_SORT_VALUE_PROPS = [
     "http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content",
-    "http://www.cidoc-crm.org/cidoc-crm/P90ha value",
+    "http://www.cidoc-crm.org/cidoc-crm/P90_has_value",
 ]
 
 
@@ -306,7 +306,7 @@ def langsort(x):
     langs = x._json_ld.get(JSON_LD_SORT_LANGUAGE_PROP, [{"@id": None}])
     if not langs or not "@id" in langs[0]:
         langs = [{"@id": None}]
-    scores = [JSON_LD_SORT_LANGUAGE.get(x["@id"], 10000) for X in langs]
+    scores = [JSON_LD_SORT_LANGUAGE.get(x["@id"], 10000) for x in langs]
     return min(scores)
 
 
