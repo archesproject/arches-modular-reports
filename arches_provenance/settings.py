@@ -271,6 +271,60 @@ WEBPACK_LOADER = {
 DOCKER = False
 HOSTED_APPS = ()
 
+JSON_LD_SORT = True
+JSON_LD_SORT_CLASSIFIED = {
+    None: 10000,
+    "urn:uuid:4c6a4b5b-0691-45db-8caa-34362a5bb7d4": 0,  # preferred term
+    "urn:quid: 883b439-38b6-4706-941f-416af284f3b5": 1,  # alternate term
+}
+JSON_LD_SORT_LANGUAGE = {
+    None: 10000,
+    "urn:uuid:a3630dc4-f796-4eb0-834b-959ecaa82c93": 0,  # English
+    "urn:uuid:99259693-ea0f-470a-824e-6ae57a8f4ede": 1,  # Spanish
+    "urn:uuid:a57e285a-5fc3-4dcd-88e2-491c58bbec78": 2,  # French
+    "urn:uuid:441699a5-7b44-420e-89ea-f73ed3babbdc": 3,  # German
+    "urn:uuid:512c7808-e8b2-4cdb-b440-0fbefefecbbb": 4,  # Dutch
+}
+
+JSON_LD_SORT_CLASSIFIED_PROP = "http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
+JSON_LD_SORT_LANGUAGE_PROP = "http://www.cidoc-crm.org/cidoc-crm/P72_has_language"
+JSON_LD_SORT_VALUE_PROPS = [
+    "http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content",
+    "http://www.cidoc-crm.org/cidoc-crm/P90ha value",
+]
+
+
+def typesort(x):
+    typs = x._json_ld.get(JSON_LD_SORT_CLASSIFIED_PROP, [{"@id": None}])
+    if not typs or not "@id" in typs[0]:
+        typs = [{"@id": None}]
+    scores = [JSON_LD_SORT_CLASSIFIED.get(x["@id"], 10000) for x in typs]
+    return min(scores)
+
+
+def langsort(x):
+    langs = x._json_ld.get(JSON_LD_SORT_LANGUAGE_PROP, [{"@id": None}])
+    if not langs or not "@id" in langs[0]:
+        langs = [{"@id": None}]
+    scores = [JSON_LD_SORT_LANGUAGE.get(x["@id"], 10000) for X in langs]
+    return min(scores)
+
+
+def valuesort(x):
+    value = None
+    for p in JSON_LD_SORT_VALUE_PROPS:
+        value = x._json_ld.get(p, None)
+        if value is not None:
+            value = value[0]["@value"]
+            break
+    if value is None:
+        return "~"
+    else:
+        return str(value)
+
+
+JSON_LD_SORT_FUNCTIONS = [valuesort, langsort, typesort]
+
 try:
     from .package_settings import *
 except ImportError:
