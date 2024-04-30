@@ -3032,8 +3032,9 @@ arches-dev-dependencies@archesproject/arches-dev-dependencies#dev/7.5.x:
     webpack-dev-server "^4.7.3"
     webpack-merge "^5.8.0"
 
-"arches@file:../../arches":
-  version "7.5.1"
+arches@archesproject/arches#dev/7.5.x:
+  version "7.5.2"
+  resolved "https://codeload.github.com/archesproject/arches/tar.gz/c146492730aa33a1ef65b03606160299d15bc275"
   dependencies:
     "@babel/runtime" "^7.17.2"
     "@mapbox/geojson-extent" "~1.0.1"
