@@ -23,7 +23,7 @@ DATATYPE_LOCATIONS.append("arches_provenance.datatypes")
 FUNCTION_LOCATIONS.append("arches_provenance.functions")
 SEARCH_COMPONENT_LOCATIONS.append("arches_provenance.search_components")
 
-LOCALE_PATHS.append(os.path.join(APP_ROOT, "locale"))
+LOCALE_PATHS.insert(0, os.path.join(APP_ROOT, 'locale'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "mnl1pz=2p+sacc88*8ujh)r9-p8du+8#6#hd)kn$k5a(8)k)k7"
@@ -75,6 +75,7 @@ INSTALLED_APPS = (
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
+    "django_hosts",
     "arches",
     "arches.app.models",
     "arches.management",
@@ -84,12 +85,23 @@ INSTALLED_APPS = (
     "corsheaders",
     "oauth2_provider",
     "django_celery_results",
-    "compressor",
     "arches_provenance",
     "webpack_loader",
 )
 
-ARCHES_APPLICATIONS = ()
+INSTALLED_APPS += ("arches.app",)
+
+ROOT_HOSTCONF = "arches_provenance.hosts"
+DEFAULT_HOST = "arches_provenance"
+
+MIDDLEWARE.insert(  # this must resolve to first MIDDLEWARE entry
+    0, 
+    "django_hosts.middleware.HostsRequestMiddleware"
+)
+
+MIDDLEWARE.append(  # this must resolve last MIDDLEWARE entry
+    "django_hosts.middleware.HostsResponseMiddleware"
+)  
 
 ALLOWED_HOSTS = []
 
@@ -238,7 +250,7 @@ LANGUAGE_CODE = "en"
 # {langcode}-{regioncode} eg: en, en-gb ....
 # a list of language codes can be found here http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGES = [
-    #   ('de', _('German')),
+    # ('de', _('German')),
     ("en", _("English")),
     #   ('en-gb', _('British English')),
     #   ('es', _('Spanish')),
@@ -247,24 +259,18 @@ LANGUAGES = [
 # override this to permenantly display/hide the language switcher
 SHOW_LANGUAGE_SWITCH = len(LANGUAGES) > 1
 
-STATIC_URL = "/arches/pir/static/"
+STATIC_URL = "/static/"
 
-STATICFILES_DIRS = build_staticfiles_dirs(
-    root_dir=ROOT_DIR,
-    app_root=APP_ROOT,
-    arches_applications=ARCHES_APPLICATIONS,
-)
+STATICFILES_DIRS = build_staticfiles_dirs(app_root=APP_ROOT)
 
 TEMPLATES = build_templates_config(
-    root_dir=ROOT_DIR,
     debug=DEBUG,
     app_root=APP_ROOT,
-    arches_applications=ARCHES_APPLICATIONS,
 )
 
 WEBPACK_LOADER = {
     "DEFAULT": {
-        "STATS_FILE": os.path.join(APP_ROOT, "webpack/webpack-stats.json"),
+        "STATS_FILE": os.path.join(APP_ROOT, '..', 'webpack/webpack-stats.json'),
     },
 }
 
@@ -325,6 +331,9 @@ def valuesort(x):
 
 JSON_LD_SORT_FUNCTIONS = [valuesort, langsort, typesort]
 
+PREFERRED_CONCEPT_SCHEMES = [
+    "http://vocab.getty.edu/aat/", "http://www.cidoc-crm.org/cidoc-crm/", "https://data.getty.edu/local/"]
+
 try:
     from .package_settings import *
 except ImportError:
@@ -351,13 +360,3 @@ if DOCKER:
             pass
 
 INSTALLED_APPS = INSTALLED_APPS + HOSTED_APPS
-
-if __name__ == "__main__":
-    transmit_webpack_django_config(
-        root_dir=ROOT_DIR,
-        app_root=APP_ROOT,
-        arches_applications=ARCHES_APPLICATIONS,
-        public_server_address=PUBLIC_SERVER_ADDRESS,
-        static_url=STATIC_URL,
-        webpack_development_server_port=WEBPACK_DEVELOPMENT_SERVER_PORT,
-    )

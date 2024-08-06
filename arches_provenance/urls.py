@@ -2,7 +2,7 @@ import uuid
 import json
 import logging
 from django.shortcuts import render
-from django.urls import include, re_path
+from django.urls import include, re_path, path
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
 from django.utils.decorators import method_decorator
@@ -200,23 +200,36 @@ class GraphResourceReportView(BaseManagerView):
 
 urlpatterns = [
     re_path(r'^', include('arches.urls')),
-	re_path(r"^graph_report/(?P<resourceid>%s|())$" % uuid_regex, GraphResourceReportView.as_view(), name="resource_graph_report"), 
+    re_path(r"^graph_report/(?P<resourceid>%s|())$" % uuid_regex, GraphResourceReportView.as_view(), name="resource_graph_report"), 
     re_path(r"^provenance_report$", provenance_report.as_view(), name="provenance_report"),
     re_path(r"^provenance_summary_table$", ProvenanceSummaryTables.as_view(), name="provenance_summary_table"),
     re_path(r"^provenance_source_references$", ProvenanceSourceReferences.as_view(), name="provenance_source_references"),
     re_path(r"^provenance_related_resources$", ProvenanceRelatedResources.as_view(), name="provenance_related_resources"),
     re_path(r"^provenance_editor$", ProvenanceEditorView.as_view(), name="provenance_editor"),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
 
 try:
     import arches_health
-
     urlpatterns = urlpatterns + [re_path(r"^ht/", include("health_check.urls"))]
     urlpatterns = urlpatterns + [re_path(r"^ht-pub/", include("arches_health.urls"))]
     logger.info("loaded optional health check urls")
 except Exception as e:
     logger.error(e)
     pass
+
+    # Ensure Arches core urls are superseded by project-level urls
+    urlpatterns.append(path('', include('arches.urls')))
+
+    # Adds URL pattern to serve media files during development
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    # Only handle i18n routing in active project. This will still handle the routes provided by Arches core and Arches applications,
+    # but handling i18n routes in multiple places causes application errors.
+    if settings.ROOT_URLCONF == __name__:
+        if settings.SHOW_LANGUAGE_SWITCH is True:
+            urlpatterns = i18n_patterns(*urlpatterns)
+
+        urlpatterns.append(path("i18n/", include("django.conf.urls.i18n")))
 
 # if settings.SHOW_LANGUAGE_SWITCH is True:
 #     urlpatterns = i18n_patterns(*urlpatterns)
