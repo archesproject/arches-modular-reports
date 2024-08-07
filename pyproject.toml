@@ -7,7 +7,7 @@ name = "arches_provenance"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-  "arches@git+https://github.com/archesproject/arches#egg=11117_bulk_concept_editor
+  "arches@git+https://github.com/archesproject/arches#egg=11117_bulk_concept_editor"
 ]
 version = "0.0.1"
 

@@ -199,7 +199,7 @@ class GraphResourceReportView(BaseManagerView):
 
 
 urlpatterns = [
-    re_path(r'^', include('arches.urls')),
+    # re_path(r'^', include('arches.urls')),
     re_path(r"^graph_report/(?P<resourceid>%s|())$" % uuid_regex, GraphResourceReportView.as_view(), name="resource_graph_report"), 
     re_path(r"^provenance_report$", provenance_report.as_view(), name="provenance_report"),
     re_path(r"^provenance_summary_table$", ProvenanceSummaryTables.as_view(), name="provenance_summary_table"),
@@ -217,19 +217,16 @@ except Exception as e:
     logger.error(e)
     pass
 
-    # Ensure Arches core urls are superseded by project-level urls
-    urlpatterns.append(path('', include('arches.urls')))
+# Ensure Arches core urls are superseded by project-level urls
+urlpatterns.append(path('', include('arches.urls')))
 
-    # Adds URL pattern to serve media files during development
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Adds URL pattern to serve media files during development
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-    # Only handle i18n routing in active project. This will still handle the routes provided by Arches core and Arches applications,
-    # but handling i18n routes in multiple places causes application errors.
-    if settings.ROOT_URLCONF == __name__:
-        if settings.SHOW_LANGUAGE_SWITCH is True:
-            urlpatterns = i18n_patterns(*urlpatterns)
+# Only handle i18n routing in active project. This will still handle the routes provided by Arches core and Arches applications,
+# but handling i18n routes in multiple places causes application errors.
+if settings.ROOT_URLCONF == __name__:
+    if settings.SHOW_LANGUAGE_SWITCH is True:
+        urlpatterns = i18n_patterns(*urlpatterns)
 
-        urlpatterns.append(path("i18n/", include("django.conf.urls.i18n")))
-
-# if settings.SHOW_LANGUAGE_SWITCH is True:
-#     urlpatterns = i18n_patterns(*urlpatterns)
+    urlpatterns.append(path("i18n/", include("django.conf.urls.i18n")))
