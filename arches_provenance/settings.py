@@ -3,8 +3,9 @@ Django settings for arches_provenance project.
 """
 
 import os
-import arches
 import inspect
+import semantic_version
+from datetime import datetime, timedelta
 from django.utils.translation import gettext_lazy as _
 
 try:
@@ -12,34 +13,77 @@ try:
 except ImportError:
     pass
 
-# ACCESSIBILITY_MODE = ""
-
 APP_NAME = "arches_provenance"
+APP_VERSION = semantic_version.Version(major=0, minor=0, patch=0)
 APP_ROOT = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-STATICFILES_DIRS = (os.path.join(APP_ROOT, "media"),) + STATICFILES_DIRS
-STATIC_ROOT = "/arches/static"
+
+WEBPACK_LOADER = {
+    "DEFAULT": {
+        "STATS_FILE": os.path.join(APP_ROOT, "..", "webpack/webpack-stats.json"),
+    },
+}
 
 DATATYPE_LOCATIONS.append("arches_provenance.datatypes")
 FUNCTION_LOCATIONS.append("arches_provenance.functions")
+ETL_MODULE_LOCATIONS.append("arches_provenance.etl_modules")
 SEARCH_COMPONENT_LOCATIONS.append("arches_provenance.search_components")
 
-LOCALE_PATHS.insert(0, os.path.join(APP_ROOT, 'locale'))
+LOCALE_PATHS.insert(0, os.path.join(APP_ROOT, "locale"))
+
+FILE_TYPE_CHECKING = "lenient"
+FILE_TYPES = [
+    "bmp",
+    "gif",
+    "jpg",
+    "jpeg",
+    "json",
+    "pdf",
+    "png",
+    "psd",
+    "rtf",
+    "tif",
+    "tiff",
+    "xlsx",
+    "csv",
+    "zip",
+]
+FILENAME_GENERATOR = "arches.app.utils.storage_filename_generator.generate_filename"
+UPLOADED_FILES_DIR = "uploadedfiles"
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "mnl1pz=2p+sacc88*8ujh)r9-p8du+8#6#hd)kn$k5a(8)k)k7"
+SECRET_KEY = "django-insecure-0y6+euwsh*-6-otblyvr(f-z(oo88+(_7vz_r8y)u6kz)=t_c^"
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# SECURITY WARNING: don"t run with debug turned on in production!
 DEBUG = False
 
 ROOT_URLCONF = "arches_provenance.urls"
+ROOT_HOSTCONF = "arches_provenance.hosts"
+
+DEFAULT_HOST = "arches_provenance"
+
+# Modify this line as needed for your project to connect to elasticsearch with a password that you generate
+ELASTICSEARCH_CONNECTION_OPTIONS = {"request_timeout": 30, "verify_certs": False, "basic_auth": ("elastic", "E1asticSearchforArche5")}
+
+# If you need to connect to Elasticsearch via an API key instead of username/password, use the syntax below:
+# ELASTICSEARCH_CONNECTION_OPTIONS = {"request_timeout": 30, "verify_certs": False, "api_key": "<ENCODED_API_KEY>"}
+# ELASTICSEARCH_CONNECTION_OPTIONS = {"request_timeout": 30, "verify_certs": False, "api_key": ("<ID>", "<API_KEY>")}
+
+# Your Elasticsearch instance needs to be configured with xpack.security.enabled=true to use API keys - update elasticsearch.yml or .env file and restart.
+
+# Set the ELASTIC_PASSWORD environment variable in either the docker-compose.yml or .env file to the password you set for the elastic user,
+# otherwise a random password will be generated.
+
+# API keys can be generated via the Elasticsearch API: https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api-create-api-key.html
+# Or Kibana: https://www.elastic.co/guide/en/kibana/current/api-keys.html
 
 # a prefix to append to all elasticsearch indexes, note: must be lower case
 ELASTICSEARCH_PREFIX = "arches_provenance"
 
 ELASTICSEARCH_CUSTOM_INDEXES = []
 # [{
-#     'module': 'arches_provenance.search_indexes.sample_index.SampleIndex',
-#     'name': 'my_new_custom_index' <-- follow ES index naming rules
+#     "module": "arches_provenance.search_indexes.sample_index.SampleIndex",
+#     "name": "my_new_custom_index", <-- follow ES index naming rules
+#     "should_update_asynchronously": False  <-- denotes if asynchronously updating the index would affect custom functionality within the project.
 # }]
 
 KIBANA_URL = "http://localhost:5601/"
@@ -48,6 +92,11 @@ KIBANA_CONFIG_BASEPATH = "kibana"  # must match Kibana config.yml setting (serve
 
 LOAD_DEFAULT_ONTOLOGY = False
 LOAD_PACKAGE_ONTOLOGIES = True
+
+# This is the namespace to use for export of data (for RDF/XML for example)
+# It must point to the url where you host your site
+# Make sure to use a trailing slash
+ARCHES_NAMESPACE_FOR_DATA_EXPORT = "http://localhost:8000/"
 
 DATABASES = {
     "default": {
@@ -61,13 +110,21 @@ DATABASES = {
         "PASSWORD": "postgis",
         "PORT": "5432",
         "POSTGIS_TEMPLATE": "template_postgis",
-        "TEST": {"CHARSET": None, "COLLATION": None, "MIRROR": None, "NAME": None},
+        "TEST": {
+            "CHARSET": None,
+            "COLLATION": None,
+            "MIRROR": None,
+            "NAME": None
+        },
         "TIME_ZONE": None,
-        "USER": "postgres",
+        "USER": "postgres"
     }
 }
 
+SEARCH_THUMBNAILS = False
+
 INSTALLED_APPS = (
+    "webpack_loader",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -85,28 +142,71 @@ INSTALLED_APPS = (
     "corsheaders",
     "oauth2_provider",
     "django_celery_results",
-    "arches_provenance",
-    "webpack_loader",
+    # "silk",
+    "arches_provenance",  # Ensure the project is listed before any other arches applications
 )
 
+# Placing this last ensures any templates provided by Arches Applications
+# take precedence over core arches templates in arches/app/templates.
 INSTALLED_APPS += ("arches.app",)
 
-ROOT_HOSTCONF = "arches_provenance.hosts"
-DEFAULT_HOST = "arches_provenance"
+MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    #"arches.app.utils.middleware.TokenMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "arches.app.utils.middleware.ModifyAuthorizationHeader",
+    "oauth2_provider.middleware.OAuth2TokenMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "arches.app.utils.middleware.SetAnonymousUser",
+    # "silk.middleware.SilkyMiddleware",
+]
 
 MIDDLEWARE.insert(  # this must resolve to first MIDDLEWARE entry
-    0, 
+    0,
     "django_hosts.middleware.HostsRequestMiddleware"
 )
 
 MIDDLEWARE.append(  # this must resolve last MIDDLEWARE entry
     "django_hosts.middleware.HostsResponseMiddleware"
-)  
+)
+
+STATICFILES_DIRS = build_staticfiles_dirs(app_root=APP_ROOT)
+
+TEMPLATES = build_templates_config(
+    debug=DEBUG,
+    app_root=APP_ROOT,
+)
 
 ALLOWED_HOSTS = []
 
 SYSTEM_SETTINGS_LOCAL_PATH = os.path.join(APP_ROOT, "system_settings", "System_Settings.json")
 WSGI_APPLICATION = "arches_provenance.wsgi.application"
+
+# URL that handles the media served from MEDIA_ROOT, used for managing stored files.
+# It must end in a slash if set to a non-empty value.
+MEDIA_URL = "/files/"
+
+# Absolute filesystem path to the directory that will hold user-uploaded files.
+MEDIA_ROOT =  os.path.join(APP_ROOT)
+
+# URL prefix for static files.
+# Example: "http://media.lawrence.com/static/"
+STATIC_URL = "/static/"
+
+# Absolute path to the directory static files should be collected to.
+# Don"t put anything in this directory yourself; store your static files
+# in apps" "static/" subdirectories and in STATICFILES_DIRS.
+# Example: "/home/media/media.lawrence.com/static/"
+STATIC_ROOT = os.path.join(APP_ROOT, "staticfiles")
+
+# when hosting Arches under a sub path set this value to the sub path eg : "/{sub_path}/"
+FORCE_SCRIPT_NAME = None
 
 RESOURCE_IMPORT_LOG = os.path.join(APP_ROOT, "logs", "resource_import.log")
 DEFAULT_RESOURCE_IMPORT_USER = {"username": "admin", "userid": 1}
@@ -124,15 +224,27 @@ LOGGING = {
             "level": "WARNING",  # DEBUG, INFO, WARNING, ERROR
             "class": "logging.FileHandler",
             "filename": os.path.join(APP_ROOT, "arches.log"),
-            "formatter": "console",
+            "formatter": "console"
         },
-        "console": {"level": "WARNING", "class": "logging.StreamHandler", "formatter": "console"},
+        "console": {
+            "level": "WARNING",
+            "class": "logging.StreamHandler",
+            "formatter": "console"
+        }
     },
-    "loggers": {"arches": {"handlers": ["file", "console"], "level": "WARNING", "propagate": True}},
+    "loggers": {
+        "arches": {
+            "handlers": ["file", "console"],
+            "level": "WARNING",
+            "propagate": True
+        }
+    }
 }
 
-# Absolute filesystem path to the directory that will hold user-uploaded files.
-MEDIA_ROOT = os.path.join(APP_ROOT)
+# Rate limit for authentication views
+# See options (including None or python callables):
+# https://django-ratelimit.readthedocs.io/en/stable/rates.html#rates-chapter
+RATE_LIMIT = "5/m"
 
 # Sets default max upload size to 15MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 15728640
@@ -152,54 +264,52 @@ CACHES = {
 }
 
 # Hide nodes and cards in a report that have no data
-HIDE_EMPTY_NODES_IN_REPORT = True
+HIDE_EMPTY_NODES_IN_REPORT = False
 
-BYPASS_CARDINALITY_TILE_VALIDATION = False
 BYPASS_UNIQUE_CONSTRAINT_TILE_VALIDATION = False
 BYPASS_REQUIRED_VALUE_TILE_VALIDATION = False
 
-DATE_IMPORT_EXPORT_FORMAT = "%Y-%m-%d"  # Custom date format for dates imported from and exported to csv
+DATE_IMPORT_EXPORT_FORMAT = "%Y-%m-%d" # Custom date format for dates imported from and exported to csv
 
-# Identify the usernames and duration (seconds) for which you want to cache the time wheel
-CACHE_BY_USER = {"anonymous": 3600 * 24}
-TILE_CACHE_TIMEOUT = 600  # seconds
+# This is used to indicate whether the data in the CSV and SHP exports should be
+# ordered as seen in the resource cards or not.
+EXPORT_DATA_FIELDS_IN_CARD_ORDER = False
+
+#Identify the usernames and duration (seconds) for which you want to cache the time wheel
+CACHE_BY_USER = {
+    "default": 3600 * 24, #24hrs
+    "anonymous": 3600 * 24 #24hrs
+    }
+
+TILE_CACHE_TIMEOUT = 600 #seconds
+CLUSTER_DISTANCE_MAX = 5000 #meters
 GRAPH_MODEL_CACHE_TIMEOUT = None
 
-OAUTH_CLIENT_ID = ""  #'9JCibwrWQ4hwuGn5fu2u1oRZSs9V6gK8Vu8hpRC4'
-MOBILE_DEFAULT_ONLINE_BASEMAP = {"default": "mapbox://styles/mapbox/streets-v9"}
-MOBILE_IMAGE_SIZE_LIMITS = {
-    # These limits are meant to be approximates. Expect to see uploaded sizes range +/- 20%
-    # Not to exceed the limit defined in DATA_UPLOAD_MAX_MEMORY_SIZE
-    "full": min(1500000, DATA_UPLOAD_MAX_MEMORY_SIZE),  # ~1.5 Mb
-    "thumb": 400,  # max width/height in pixels, this will maintain the aspect ratio of the original image
-}
+OAUTH_CLIENT_ID = ""  #"9JCibwrWQ4hwuGn5fu2u1oRZSs9V6gK8Vu8hpRC4"
 
 APP_TITLE = "Arches | Provenance"
 COPYRIGHT_TEXT = "All Rights Reserved."
 COPYRIGHT_YEAR = "2019"
 
 ENABLE_CAPTCHA = False
-# RECAPTCHA_PUBLIC_KEY = ''
-# RECAPTCHA_PRIVATE_KEY = ''
+# RECAPTCHA_PUBLIC_KEY = ""
+# RECAPTCHA_PRIVATE_KEY = ""
 # RECAPTCHA_USE_SSL = False
 NOCAPTCHA = True
-# RECAPTCHA_PROXY = 'http://127.0.0.1:8000'
-if DEBUG is True:
-    SILENCED_SYSTEM_CHECKS = ["captcha.recaptcha_test_key_error"]
+# RECAPTCHA_PROXY = "http://127.0.0.1:8000"
 
-
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  #<-- Only need to uncomment this for testing without an actual email server
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  #<-- Only need to uncomment this for arches_provenance without an actual email server
 # EMAIL_USE_TLS = True
-# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_HOST = "smtp.gmail.com"
 EMAIL_HOST_USER = "xxxx@xxx.com"
-# EMAIL_HOST_PASSWORD = 'xxxxxxx'
+# EMAIL_HOST_PASSWORD = "xxxxxxx"
 # EMAIL_PORT = 587
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-CELERY_BROKER_URL = ""  # RabbitMQ --> "amqp://guest:guest@localhost",  Redis --> "redis://localhost:6379/0"
+CELERY_BROKER_URL = "" # RabbitMQ --> "amqp://guest:guest@localhost",  Redis --> "redis://localhost:6379/0"
 CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_RESULT_BACKEND = "django-db"  # Use 'django-cache' if you want to use your cache as your backend
+CELERY_RESULT_BACKEND = "django-db" # Use "django-cache" if you want to use your cache as your backend
 CELERY_TASK_SERIALIZER = "json"
 
 
@@ -208,7 +318,7 @@ CELERY_SEARCH_EXPORT_CHECK = 3600  # seconds
 
 CELERY_BEAT_SCHEDULE = {
     "delete-expired-search-export": {
-        "task": "arches.app.tasks.delete_file",
+        "task": "arches.app.tasks.delete_file", 
         "schedule": CELERY_SEARCH_EXPORT_CHECK,
     },
     "notification": {
@@ -218,12 +328,58 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
+# Set to True if you want to send celery tasks to the broker without being able to detect celery.
+# This might be necessary if the worker pool is regulary fully active, with no idle workers, or if
+# you need to run the celery task using solo pool (e.g. on Windows). You may need to provide another
+# way of monitoring celery so you can detect the background task not being available.
+CELERY_CHECK_ONLY_INSPECT_BROKER = False
+
+CANTALOUPE_DIR = os.path.join(ROOT_DIR, UPLOADED_FILES_DIR)
+CANTALOUPE_HTTP_ENDPOINT = "http://localhost:8182/"
+
+ACCESSIBILITY_MODE = False
+
+RENDERERS = [
+    {
+        "name": "imagereader",
+        "title": "Image Reader",
+        "description": "Displays most image file types",
+        "id": "5e05aa2e-5db0-4922-8938-b4d2b7919733",
+        "iconclass": "fa fa-camera",
+        "component": "views/components/cards/file-renderers/imagereader",
+        "ext": "",
+        "type": "image/*",
+        "exclude": "tif,tiff,psd",
+    },
+    {
+        "name": "pdfreader",
+        "title": "PDF Reader",
+        "description": "Displays pdf files",
+        "id": "09dec059-1ee8-4fbd-85dd-c0ab0428aa94",
+        "iconclass": "fa fa-file",
+        "component": "views/components/cards/file-renderers/pdfreader",
+        "ext": "pdf",
+        "type": "application/pdf",
+        "exclude": "tif,tiff,psd",
+    },
+]
+
 # By setting RESTRICT_MEDIA_ACCESS to True, media file requests outside of Arches will checked against nodegroup permissions.
 RESTRICT_MEDIA_ACCESS = False
 
+# By setting RESTRICT_CELERY_EXPORT_FOR_ANONYMOUS_USER to True, if the user is attempting
+# to export search results above the SEARCH_EXPORT_IMMEDIATE_DOWNLOAD_THRESHOLD
+# value and is not signed in with a user account then the request will not be allowed.
+RESTRICT_CELERY_EXPORT_FOR_ANONYMOUS_USER = False
+
+# Dictionary containing any additional context items for customising email templates
+EXTRA_EMAIL_CONTEXT = {
+    "salutation": _("Hi"),
+    "expiration":(datetime.now() + timedelta(seconds=CELERY_SEARCH_EXPORT_EXPIRES)).strftime("%A, %d %B %Y")
+}
 
 # see https://docs.djangoproject.com/en/1.9/topics/i18n/translation/#how-django-discovers-language-preference
-# to see how LocaleMiddleware tries to determine the user's language preference
+# to see how LocaleMiddleware tries to determine the user"s language preference
 # (make sure to check your accept headers as they will override the LANGUAGE_CODE setting!)
 # also see get_language_from_request in django.utils.translation.trans_real.py
 # to see how the language code is derived in the actual code
@@ -245,37 +401,24 @@ RESTRICT_MEDIA_ACCESS = False
 LANGUAGE_CODE = "en"
 
 # list of languages to display in the language switcher,
-# if left empty or with a single entry then the switch won't be displayed
+# if left empty or with a single entry then the switch won"t be displayed
 # language codes need to be all lower case with the form:
 # {langcode}-{regioncode} eg: en, en-gb ....
 # a list of language codes can be found here http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGES = [
-    # ('de', _('German')),
+#   ("de", _("German")),
     ("en", _("English")),
-    #   ('en-gb', _('British English')),
-    #   ('es', _('Spanish')),
+#   ("en-gb", _("British English")),
+#   ("es", _("Spanish")),
 ]
 
 # override this to permenantly display/hide the language switcher
 SHOW_LANGUAGE_SWITCH = len(LANGUAGES) > 1
 
-STATIC_URL = "/static/"
+# Implement this class to associate custom documents to the ES resource index
+# See tests.views.search_tests.TestEsMappingModifier class for example
+# ES_MAPPING_MODIFIER_CLASSES = ["arches_provenance.search.es_mapping_modifier.EsMappingModifier"]
 
-STATICFILES_DIRS = build_staticfiles_dirs(app_root=APP_ROOT)
-
-TEMPLATES = build_templates_config(
-    debug=DEBUG,
-    app_root=APP_ROOT,
-)
-
-WEBPACK_LOADER = {
-    "DEFAULT": {
-        "STATS_FILE": os.path.join(APP_ROOT, '..', 'webpack/webpack-stats.json'),
-    },
-}
-
-DOCKER = False
-HOSTED_APPS = ()
 
 JSON_LD_SORT = True
 JSON_LD_SORT_CLASSIFIED = {
@@ -334,6 +477,7 @@ JSON_LD_SORT_FUNCTIONS = [valuesort, langsort, typesort]
 PREFERRED_CONCEPT_SCHEMES = [
     "http://vocab.getty.edu/aat/", "http://www.cidoc-crm.org/cidoc-crm/", "https://data.getty.edu/local/"]
 
+
 try:
     from .package_settings import *
 except ImportError:
@@ -350,13 +494,3 @@ except ImportError as e:
     except ImportError as e:
         pass
 
-if DOCKER:
-    try:
-        from .settings_docker import *
-    except ImportError:
-        try:
-            from settings_docker import *
-        except ImportError as e:
-            pass
-
-INSTALLED_APPS = INSTALLED_APPS + HOSTED_APPS
