@@ -3,32 +3,30 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "arches_provenance"
+name = "ruscha"
 readme = "README.md"
-requires-python = ">=3.9"
-dependencies = [
-  "arches@git+https://github.com/archesproject/arches.git@08e846bd8208a155ea975ac424000b65ba159578"
+authors = []
+license = {text = "GNU AGPL3"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: Django",
+    "Framework :: Django :: 4.2",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
 ]
-version = "0.0.1"
+requires-python = ">=3.10"
+dependencies = [
+    "arches~=7.6",
+]
+version = "1.0.0"
 
 [tool.setuptools]
 packages = ["arches_provenance"]
-
-[tool.black]
-line-length = 140
-target-version = ['py39']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
