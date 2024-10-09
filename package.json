@@ -18,17 +18,17 @@
         "vitest": "vitest --run --coverage"
     },
     "dependencies": {
-        "arches": "archesproject/arches#dev/7.6.x",
-        "vue3-gettext": "^3.0.0-beta.4"
+        "arches": "archesproject/arches#stable/7.6.1"
     },
     "devDependencies": {
-        "arches-dev-dependencies": "archesproject/arches-dev-dependencies#dev/7.6.x"
+        "arches-dev-dependencies": "archesproject/arches-dev-dependencies#stable/7.6.1"
+    },
+    "nodeModulesPaths": {
     },
     "overrides": {
         "moment-timezone": "^0.5.45",
         "nomnom": "npm:@gerhobbelt/nomnom",
-        "rimraf": "^5.0.7",
+        "rimraf": "^5.0.7", 
         "underscore": "^1.13.6"
-    },
-    "nodeModulesPaths": {}
+    }
 }
