@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('graph', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='models.graphmodel')),
             ],
             options={
-                'db_table': 'report_config',
+                'db_table': 'arches_provenance_report_config',
                 'managed': True,
             },
         ),

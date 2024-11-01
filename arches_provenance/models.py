@@ -10,4 +10,4 @@ class ReportConfig(models.Model):
 
     class Meta:
         managed = True
-        db_table = "report_config"
+        db_table = "arches_provenance_report_config"
