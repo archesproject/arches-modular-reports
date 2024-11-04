@@ -6,12 +6,13 @@ import EditableReportTemplate from 'templates/views/report-templates/editable-re
 
 ko.components.register('editable-report', {
     viewModel: function() {
-        // querySelectorAll() handles the Graph Designer case of multiple mounting points on the same page
-        for (let mountingPoint of document.querySelectorAll('.editable-report-mounting-point')) {
-            createVueApplication(EditableReport).then(vueApp => {
-                vueApp.mount(mountingPoint);
-            });
-        }
+        createVueApplication(EditableReport).then(vueApp => {
+            // handles the Graph Designer case of multiple mounting points on the same page
+            const mountingPoints = document.querySelectorAll('.editable-report-mounting-point');
+            const mountingPoint = mountingPoints[mountingPoints.length - 1];
+            
+            vueApp.mount(mountingPoint);
+        });
     },
     template: EditableReportTemplate,
 });
