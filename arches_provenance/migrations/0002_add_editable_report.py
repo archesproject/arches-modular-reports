@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
             ) VALUES (
                 'b0908227-ecc2-48dd-931b-314a9031caa0',
                 'Editable Report Template',
-                'Editable',
+                'An editable report for Provenance Groups.',
                 'reports/editable-report',
                 'editable-report',
                 '{}',
