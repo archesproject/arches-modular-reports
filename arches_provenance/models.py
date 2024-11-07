@@ -6,8 +6,8 @@ from arches.app.models.models import GraphModel
 class ReportConfig(models.Model):
     id = models.AutoField(primary_key=True)
     config = models.JSONField(blank=True, null=False, default=dict)
-    graph = models.ForeignKey(
-        GraphModel, blank=False, on_delete=models.CASCADE, unique=True
+    graph = models.OneToOneField(
+        GraphModel, blank=False, on_delete=models.CASCADE, related_name="report"
     )
 
     class Meta:
@@ -18,7 +18,7 @@ class ReportConfig(models.Model):
         return f"Config for: {self.graph.name}"
 
     def clean(self):
-        if not self.config:
+        if self.graph_id and not self.config:
             self.config = self.generate_config()
 
     def generate_config(self):
