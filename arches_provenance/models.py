@@ -23,6 +23,30 @@ class ReportConfig(models.Model):
 
     def generate_config(self):
         return {
-            str(card.name): []
-            for card in self.graph.cardmodel_set.order_by("sortorder")
+            "descriptor": {},
+            "tools": {
+                "lists": True,
+                "export_formats": ["csv", "json-ld", "rdf"],
+            },
+            "tombstone_nodes": [],
+            "sections": [
+                {
+                    "name": str(card.name),
+                    "nodegroup_id": str(card.nodegroup_id),
+                    "nodes": [
+                        node.alias
+                        for node in sorted(
+                            card.nodegroup.node_set.all(),
+                            key=lambda node: int(node.sortorder or 0),
+                        )
+                        if node.datatype != "semantic"
+                    ],
+                }
+                for card in self.graph.cardmodel_set.filter(
+                    nodegroup__parentnodegroup__isnull=True
+                )
+                .select_related("nodegroup")
+                .prefetch_related("nodegroup__node_set")
+                .order_by("sortorder")
+            ],
         }
