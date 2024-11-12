@@ -22,8 +22,8 @@ class Migration(migrations.Migration):
                     "graph",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
+                        related_name="report",
                         to="models.graphmodel",
-                        unique=True,
                     ),
                 ),
             ],
