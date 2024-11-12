@@ -15,7 +15,7 @@ class ReportConfig(models.Model):
         db_table = "arches_provenance_report_config"
 
     def __str__(self):
-        return f"Config for: {self.graph.name}: {self.config.get("name")}"
+        return f"Config for: {self.graph.name}: {self.config.get('name')}"
 
     def clean(self):
         if self.graph_id and not self.config:
