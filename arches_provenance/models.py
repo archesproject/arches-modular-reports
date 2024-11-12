@@ -3,7 +3,7 @@ import re
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from arches.app.models.models import GraphModel
+from arches.app.models.models import GraphModel, NodeGroup
 
 
 class ReportConfig(models.Model):
@@ -47,7 +47,6 @@ class ReportConfig(models.Model):
         )
         return [
             {
-                "id": i,
                 "label": str(card.name),
                 "nodegroup_id": str(card.nodegroup_id),
                 "nodes": [
@@ -61,7 +60,7 @@ class ReportConfig(models.Model):
                 # Name of a Vue component.
                 "content": "LinkedSection",
             }
-            for i, card in enumerate(ordered_cards, start=1)
+            for card in ordered_cards
         ]
 
     def validate_config(self):
@@ -83,6 +82,8 @@ class ReportConfig(models.Model):
             )
         self.validate_descriptor_template(self.config["descriptor_template"])
         self.validate_tombstone_nodes(self.config["tombstone_nodes"])
+        for section in self.config["sections"]:
+            self.validate_section(section)
 
     def validate_descriptor_template(self, descriptor_template):
         substrings = self.extract_substrings(descriptor_template)
@@ -94,6 +95,23 @@ class ReportConfig(models.Model):
         nodes = self.graph.node_set.filter(alias__in=tombstone_nodes)
         if len(nodes) != len(tombstone_nodes):
             raise ValidationError("Tombstone config contains invalid node aliases.")
+
+    def validate_section(self, section):
+        if not section.get("label"):
+            raise ValidationError("A label is required for each section.")
+        if not section.get("content"):
+            raise ValidationError("A Vue component is required for each section.")
+        nodegroup = (
+            NodeGroup.objects.filter(pk=section["nodegroup_id"], node__graph=self.graph)
+            .prefetch_related("node_set")
+            .first()
+        )
+        if not nodegroup:
+            raise ValidationError("Sections contain invalid nodegroup ids.")
+        aliases = [node.alias for node in nodegroup.node_set.all()]
+        for alias in section["nodes"]:
+            if alias not in aliases:
+                raise ValidationError(f"Section contains invalid node alias: {alias}")
 
     @staticmethod
     def extract_substrings(template_string):
