@@ -1,3 +1,6 @@
+import re
+
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from arches.app.models.models import GraphModel
@@ -20,16 +23,81 @@ class ReportConfig(models.Model):
     def clean(self):
         if self.graph_id and not self.config:
             self.config = self.generate_config()
+        self.validate_config()
 
     def generate_config(self):
-        # This will be fleshed out in a future PR.
         return {
             "name": "Untitled Report",  # Not user-facing: shows in django admin.
-            "descriptor": {},
+            "descriptor_template": f"{self.graph.name} Descriptor",
             "tools": {
-                "lists": True,
                 "export_formats": ["csv", "json-ld", "rdf"],
             },
+            "tabs": ["Data", "Related Resources"],
             "tombstone_nodes": [],
-            "sections": [],
+            "image": None,  # TBD
+            "sections": self.generate_sections(),
         }
+
+    def generate_sections(self):
+        ordered_cards = (
+            self.graph.cardmodel_set.filter(nodegroup__parentnodegroup__isnull=True)
+            .select_related("nodegroup")
+            .prefetch_related("nodegroup__node_set")
+            .order_by("sortorder")
+        )
+        return [
+            {
+                "id": i,
+                "label": str(card.name),
+                "nodegroup_id": str(card.nodegroup_id),
+                "nodes": [
+                    node.alias
+                    for node in sorted(
+                        card.nodegroup.node_set.all(),
+                        key=lambda node: int(node.sortorder or 0),
+                    )
+                    if node.datatype != "semantic"
+                ],
+                # Name of a Vue component.
+                "content": "LinkedSection",
+            }
+            for i, card in enumerate(ordered_cards, start=1)
+        ]
+
+    def validate_config(self):
+        expected_keys = set(
+            [
+                "name",
+                "descriptor_template",
+                "tools",
+                "tabs",
+                "tombstone_nodes",
+                "image",
+                "sections",
+            ]
+        )
+        actual_keys = set(self.config)
+        if expected_keys != actual_keys:
+            raise ValidationError(
+                f"Expected keys: {expected_keys}. Actual keys: {actual_keys}"
+            )
+        self.validate_descriptor_template(self.config["descriptor_template"])
+        self.validate_tombstone_nodes(self.config["tombstone_nodes"])
+
+    def validate_descriptor_template(self, descriptor_template):
+        substrings = self.extract_substrings(descriptor_template)
+        nodes = self.graph.node_set.filter(alias__in=substrings)
+        if len(nodes) != len(substrings):
+            raise ValidationError("Descriptor template contains invalid node aliases.")
+
+    def validate_tombstone_nodes(self, tombstone_nodes):
+        nodes = self.graph.node_set.filter(alias__in=tombstone_nodes)
+        if len(nodes) != len(tombstone_nodes):
+            raise ValidationError("Tombstone config contains invalid node aliases.")
+
+    @staticmethod
+    def extract_substrings(template_string):
+        pattern = r"<(.*?)>"
+        substrings = re.findall(pattern, template_string)
+
+        return substrings
