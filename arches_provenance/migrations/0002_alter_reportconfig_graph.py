@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("arches_provenance", "0001_initial"),
+        ("arches_provenance", "0002_add_editable_report"),
         ("models", "11499_add_editlog_resourceinstance_idx"),
     ]
 
