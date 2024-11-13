@@ -4,11 +4,14 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from arches.app.models.models import GraphModel, NodeGroup
+from arches_provenance.utils import PrettyJSONEncoder
 
 
 class ReportConfig(models.Model):
     id = models.AutoField(primary_key=True)
-    config = models.JSONField(blank=True, null=False, default=dict)
+    config = models.JSONField(
+        blank=True, null=False, default=dict, encoder=PrettyJSONEncoder
+    )
     graph = models.ForeignKey(
         GraphModel, blank=False, on_delete=models.CASCADE, related_name="report"
     )
