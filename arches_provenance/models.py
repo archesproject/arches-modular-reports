@@ -27,19 +27,62 @@ class ReportConfig(models.Model):
 
     def generate_config(self):
         return {
-            "name": "Untitled Report",  # Not user-facing: shows in django admin.
-            "descriptor_template": f"{self.graph.name} Descriptor",
-            "tools": {
-                "export_formats": ["csv", "json-ld", "rdf"],
-            },
-            "tabs": ["Data", "Related Resources"],
-            "tombstone_nodes": [],
-            "image": None,  # TBD
-            "sections": self.generate_sections(),
+            "name": "Untitled Report",
+            "content": [
+                {
+                    "component": "ReportHeader",
+                    "config": {
+                        "descriptor": f"{self.graph.name} Descriptor",
+                    },
+                },
+                {
+                    "component": "ReportToolbar",
+                    "config": {
+                        "lists": True,
+                        "export_formats": ["CSV", "JSON-LD", "RDF"],
+                    },
+                },
+                {
+                    "component": "ReportTombstone",
+                    "config": {
+                        "nodes": [],
+                        "image": None,
+                    },
+                },
+                {
+                    "component": "ReportTabs",
+                    "config": {
+                        "tabs": [
+                            {
+                                "name": "Data",
+                                "content": [
+                                    {
+                                        "component": "CardSections",
+                                        "config": {
+                                            "sections": self.generate_card_sections()
+                                        },
+                                    },
+                                ],
+                            },
+                            {
+                                "name": "Related Resources",
+                                "content": [
+                                    {
+                                        "component": "RelatedResourcesSections",
+                                        "config": {
+                                            "sections": self.generate_related_resources_sections()
+                                        },
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                },
+            ],
         }
 
-    def generate_sections(self):
-        ordered_cards = (
+    def generate_card_sections(self):
+        ordered_top_cards = (
             self.graph.cardmodel_set.filter(nodegroup__parentnodegroup__isnull=True)
             .select_related("nodegroup")
             .prefetch_related("nodegroup__node_set")
@@ -47,69 +90,96 @@ class ReportConfig(models.Model):
         )
         return [
             {
-                "label": str(card.name),
-                "nodegroup_id": str(card.nodegroup_id),
-                "nodes": [
-                    node.alias
-                    for node in sorted(
-                        card.nodegroup.node_set.all(),
-                        key=lambda node: int(node.sortorder or 0),
-                    )
-                    if node.datatype != "semantic"
+                "name": str(card.name),
+                "content": [
+                    {
+                        "component": "CardSection",
+                        "config": {
+                            "nodegroup_id": str(card.nodegroup_id),
+                            "nodes": [
+                                node.alias
+                                for node in sorted(
+                                    card.nodegroup.node_set.all(),
+                                    key=lambda node: int(node.sortorder or 0),
+                                )
+                                if node.datatype != "semantic"
+                            ],
+                        },
+                    }
                 ],
-                # Name of a Vue component.
-                "content": "LinkedSection",
             }
-            for card in ordered_cards
+            for card in ordered_top_cards
         ]
 
-    def validate_config(self):
-        expected_keys = set(
-            [
-                "name",
-                "descriptor_template",
-                "tools",
-                "tabs",
-                "tombstone_nodes",
-                "image",
-                "sections",
-            ]
-        )
-        actual_keys = set(self.config)
-        if expected_keys != actual_keys:
-            raise ValidationError(
-                f"Expected keys: {expected_keys}. Actual keys: {actual_keys}"
-            )
-        self.validate_descriptor_template(self.config["descriptor_template"])
-        self.validate_tombstone_nodes(self.config["tombstone_nodes"])
-        for section in self.config["sections"]:
-            self.validate_section(section)
+    def generate_related_resources_sections(self):
+        return []
 
-    def validate_descriptor_template(self, descriptor_template):
+    def validate_config(self):
+        def validate_dict(config_dict):
+            for k, v in config_dict.items():
+                if k == "name":
+                    if not isinstance(v, str):
+                        raise ValidationError(f"Name is not a string: {v}")
+                elif k == "content":
+                    if not isinstance(v, list):
+                        raise ValidationError(f"Content is not a list: {v}")
+                    validate_content(v)
+                else:
+                    raise ValidationError(f"Invalid key in config: {k}")
+
+        def validate_content(content):
+            for item in content:
+                for k, v in item.items():
+                    if k == "component":
+                        if not isinstance(v, str):
+                            raise ValidationError(f"Component is not a string: {v}")
+                    elif k == "config":
+                        if not isinstance(v, dict):
+                            raise ValidationError(f"Config is not a dict: {v}")
+                        validate_content_config(v)
+                    else:
+                        raise ValidationError(f"Invalid key in content: {k}")
+                getattr(
+                    self, "validate_" + item["component"].lower(), lambda noop: None
+                )(item["config"])
+
+        def validate_content_config(config_dict):
+            for v in config_dict.values():
+                if isinstance(v, list):
+                    for list_item in v:
+                        if (
+                            isinstance(list_item, dict)
+                            and "name" in list_item
+                            and "content" in list_item
+                        ):
+                            validate_dict(list_item)
+
+        validate_dict(self.config)
+
+    def validate_reportheader(self, header_config):
+        descriptor_template = header_config["descriptor"]
         substrings = self.extract_substrings(descriptor_template)
         nodes = self.graph.node_set.filter(alias__in=substrings)
         if len(nodes) != len(substrings):
             raise ValidationError("Descriptor template contains invalid node aliases.")
 
-    def validate_tombstone_nodes(self, tombstone_nodes):
+    def validate_reporttombstone(self, tombstone_config):
+        tombstone_nodes = tombstone_config["nodes"]
         nodes = self.graph.node_set.filter(alias__in=tombstone_nodes)
         if len(nodes) != len(tombstone_nodes):
             raise ValidationError("Tombstone config contains invalid node aliases.")
 
-    def validate_section(self, section):
-        if not section.get("label"):
-            raise ValidationError("A label is required for each section.")
-        if not section.get("content"):
-            raise ValidationError("A Vue component is required for each section.")
+    def validate_cardsection(self, card_config):
+        nodegroup_id = card_config["nodegroup_id"]
         nodegroup = (
-            NodeGroup.objects.filter(pk=section["nodegroup_id"], node__graph=self.graph)
+            NodeGroup.objects.filter(pk=nodegroup_id, node__graph=self.graph)
             .prefetch_related("node_set")
             .first()
         )
         if not nodegroup:
-            raise ValidationError("Sections contain invalid nodegroup ids.")
+            raise ValidationError(f"Section contains invalid nodegroup: {nodegroup_id}")
         aliases = [node.alias for node in nodegroup.node_set.all()]
-        for alias in section["nodes"]:
+        for alias in card_config["nodes"]:
             if alias not in aliases:
                 raise ValidationError(f"Section contains invalid node alias: {alias}")
 
