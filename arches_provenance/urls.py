@@ -20,7 +20,7 @@ from arches_provenance.app.views.provenance_report import ProvenanceRelatedResou
 from arches_provenance.app.views.provenance_report import ProvenanceGroupReportView
 from arches_provenance.app.views.provenance_report import ProvenanceEditorView
 from arches_provenance.app.views.provenance_report import ProvenanceSourceReferences
-from arches_provenance.app.views.provenance_report import ProvenanceEditableReportConfigView
+from arches_provenance.app.views.editable_report import ProvenanceEditableReportConfigView
 
 uuid_regex = settings.UUID_REGEX
 logger = logging.getLogger(__name__)
