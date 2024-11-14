@@ -115,7 +115,25 @@ class ReportConfig(models.Model):
         ]
 
     def generate_related_resources_sections(self):
-        return []
+        top_node = self.graph.node_set.get(istopnode=True)
+        relatable_graphs = GraphModel.objects.filter(
+            pk__in=top_node.get_relatable_resources()
+        )
+        return [
+            {
+                "name": str(relatable_graph.name),  # not pluralized
+                "content": [
+                    {
+                        "component": "RelatedResourcesSection",
+                        "config": {
+                            "graph_id": str(relatable_graph.graph_id),
+                            "nodes": [],  # could generate this once we have more test data
+                        },
+                    }
+                ],
+            }
+            for relatable_graph in relatable_graphs
+        ]
 
     def validate_config(self):
         def validate_dict(config_dict):
