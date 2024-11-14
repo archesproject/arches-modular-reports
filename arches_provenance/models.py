@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from arches.app.models.models import GraphModel, NodeGroup
+from arches.app.models.system_settings import settings
 from arches_provenance.utils import PrettyJSONEncoder
 
 
@@ -115,24 +116,22 @@ class ReportConfig(models.Model):
         ]
 
     def generate_related_resources_sections(self):
-        top_node = self.graph.node_set.get(istopnode=True)
-        relatable_graphs = GraphModel.objects.filter(
-            pk__in=top_node.get_relatable_resources()
+        other_graphs = GraphModel.objects.exclude(
+            pk__in=[self.graph.pk, settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID]
         )
         return [
             {
-                "name": str(relatable_graph.name),  # not pluralized
+                "name": str(other_graph.name),  # not pluralized
                 "content": [
                     {
                         "component": "RelatedResourcesSection",
                         "config": {
-                            "graph_id": str(relatable_graph.graph_id),
-                            "nodes": [],  # could generate this once we have more test data
+                            "graph_id": str(other_graph.pk),
                         },
                     }
                 ],
             }
-            for relatable_graph in relatable_graphs
+            for other_graph in other_graphs
         ]
 
     def validate_config(self):
