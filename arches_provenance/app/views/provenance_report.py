@@ -39,6 +39,9 @@ from django.utils import translation
 from arches.app.utils.betterJSONSerializer import JSONSerializer
 from arches.app.utils.permission_backend import user_is_resource_reviewer
 
+from arches_provenance.models import ReportConfig
+
+
 class ProvenanceRelatedResources(View):
     def get(self, request):
         resourceid = request.GET.get("resourceid")
@@ -507,3 +510,13 @@ class ProvenanceEditorView(View):
             }
 
         return JSONResponse(ret)
+
+
+class ProvenanceEditableReportConfigView(View):
+    def get(self, request):
+        """Just get first. But if there are multiple in the future,
+        the vue component will need to know which one to request."""
+        result = ReportConfig.objects.filter(
+            graph__resourceinstance=request.GET.get("resourceId")
+        ).first()
+        return JSONResponse(result.config if result else {})
