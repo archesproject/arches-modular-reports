@@ -1,6 +1,9 @@
+from http import HTTPStatus
+
+from django.utils.translation import gettext as _
 from django.views.generic import View
 
-from arches.app.utils.response import JSONResponse
+from arches.app.utils.response import JSONErrorResponse, JSONResponse
 from arches_provenance.models import ReportConfig
 
 
@@ -11,4 +14,9 @@ class ProvenanceEditableReportConfigView(View):
         result = ReportConfig.objects.filter(
             graph__resourceinstance=request.GET.get("resourceId")
         ).first()
-        return JSONResponse(result.config if result else {})
+        if not result:
+            return JSONErrorResponse(
+                _("No report config found."), status=HTTPStatus.NOT_FOUND
+            )
+        # Config might expose nodegroup existence: TODO: check permissions?
+        return JSONResponse(result.config)
