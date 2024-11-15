@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import Button from 'primevue/button';
 import Panel from 'primevue/panel';
 
+const _id = Date.now();
 
 let config = {
     title: "Linked Section",
     linked_sections: [
         {   
-            id: "1",
-            label: "Section 1",
+            id: `1-${_id}`,
+            label: "Names and Statements",
             content: "This is the content of section 1"
         },{
-            id: "2",
+            id: `2-${_id}`,
             label: "Section 2",
         },{
-            id: "3",
+            id: `3-${_id}`,
             label: "Section 3",
         },{
-            id: "4",
+            id: `4-${_id}`,
             label: "Section 4",
         },
     ]
@@ -26,40 +26,29 @@ let config = {
 </script>
 
 <template>
-
     <div class="linked-section-outer-container">
-        <div class="linked-section-button-container">
-            <a v-for="linked_section in config.linked_sections" :key="linked_section.id" :href="'#'+linked_section.id" >{{ linked_section.label }}</a>
+        <div class="linked-section-button-container" :id="`sectionheader-${_id}`">
+            <a v-for="linked_section in config.linked_sections" :key="linked_section.id" :href="`#${linked_section.id}`" >{{ linked_section.label }}</a>
         </div>
     
         <div class="linked-section-container">
-            <!-- <section style="height:700px;" :id="linked_section.id" v-for="linked_section in config.linked_sections" :key="linked_section.id">
-                <h2>{{ linked_section.label }}</h2>
-            </section> -->
-
-
-            <Panel toggleable :id="linked_section.id" v-for="linked_section in config.linked_sections" :key="linked_section.id">
+            <Panel v-for="linked_section in config.linked_sections"  :id="linked_section.id" :key="linked_section.id" toggleable>
                 <template #header>
                     <div class="flex items-center gap-2">
                         <span class="font-bold">{{ linked_section.label }}</span>
                     </div>
                 </template>
                 <template #icons>
-                    <Button icon="pi pi-home" severity="secondary" rounded text/>
+                    <a class="pi pi-home back-to-top" :href="`#sectionheader-${_id}`"></a>
                 </template>
                 <div style="height: 600px;"></div>
-
             </Panel>
-
-
         </div>
     </div>
-
 </template>
 
 <style scoped>
 .linked-section-outer-container {
-    position: relative;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -68,18 +57,15 @@ let config = {
 .linked-section-button-container {
     display: flex;
     justify-content: center;
-    /* gap: 5px;
-    position: absolute;
-    top: 0; */
     width: 100%;
     background-color: white;
     padding: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.linked-section-button-container a {
+.linked-section-button-container a, a.back-to-top {
     display: inline-block;
-    padding: 10px 20px;
+    padding: 6px 10px;
     margin: 5px;
     text-decoration: none;
     color: white;
@@ -88,6 +74,15 @@ let config = {
     border-radius: 4px;
     text-align: center;
     cursor: pointer;
+    align-content: center;
+}
+
+a.back-to-top {
+    font-size: 1.5rem;
+    background-color: unset;
+    color: gray;
+    border: unset;
+    padding: 10px;
 }
 
 .linked-section-button-container a:hover {
@@ -95,9 +90,4 @@ let config = {
     border-color: #0056b3;
 }
 
-.linked-section-container {
-    scroll-behavior: smooth;
-    overflow: scroll;
-    height: 600px;
-}
 </style>

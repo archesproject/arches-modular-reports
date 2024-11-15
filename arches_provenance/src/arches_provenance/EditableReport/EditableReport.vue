@@ -10,3 +10,4 @@ import LinkedSection from './components/LinkedSection.vue';
         <LinkedSection />
     </div>
 </template>
+
