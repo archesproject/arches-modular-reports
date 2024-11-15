@@ -38,7 +38,7 @@ onMounted(async () => {
         componentLookup[content.component] = defineAsyncComponent(
             () =>
                 import(
-                    `@/arches_provenance/EditableReport/sections/${content.component}.vue`
+                    `@/arches_provenance/EditableReport/components/${content.component}.vue`
                 ),
         );
     });
