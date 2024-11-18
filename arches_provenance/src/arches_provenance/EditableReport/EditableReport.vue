@@ -18,7 +18,7 @@ const resourceId = window.location.href.split("/").reverse()[0];
 const componentLookup = {};
 
 const config: NamedSection = ref({
-    name: "Loading...",
+    name: $gettext("Loading data"),
     content: [{ component: "", config: {} }],
 });
 
