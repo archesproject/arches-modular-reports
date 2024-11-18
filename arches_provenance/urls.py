@@ -14,6 +14,9 @@ from arches.app.models.system_settings import settings
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.data_management.resources.formats.rdffile import JsonLdWriter
 
+from arches_provenance.app.views.editable_report import (
+    EditableReportAwareResourceReportView,
+)
 from arches_provenance.app.views.provenance_report import provenance_report
 from arches_provenance.app.views.provenance_report import ProvenanceSummaryTables
 from arches_provenance.app.views.provenance_report import ProvenanceRelatedResources
@@ -211,6 +214,13 @@ urlpatterns = [
         "provenance_editable_report_config",
         ProvenanceEditableReportConfigView.as_view(),
         name="provenance_editable_report_config",
+    ),
+    # Override core arches resource report view to allow rendering
+    # distinct template for editable reports.
+    re_path(
+        r"^report/(?P<resourceid>%s)$" % uuid_regex,
+        EditableReportAwareResourceReportView.as_view(),
+        name="resource_report",
     ),
 ]
 
