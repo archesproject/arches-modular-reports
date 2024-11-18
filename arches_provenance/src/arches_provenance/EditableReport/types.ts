@@ -10,5 +10,5 @@ export interface NamedSection {
 
 export interface SectionContent {
     component: string;
-    config: object;
+    config: { [key: string]: any };
 }
