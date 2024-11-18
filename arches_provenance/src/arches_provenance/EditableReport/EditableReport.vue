@@ -2,6 +2,7 @@
 import { defineAsyncComponent, onMounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
+import Toast from "primevue/toast";
 import { useToast } from "primevue/usetoast";
 
 import { fetchReportConfig } from "@/arches_provenance/EditableReport/api.ts";
@@ -30,14 +31,14 @@ onMounted(async () => {
             severity: "error",
             life: DEFAULT_ERROR_TOAST_LIFE,
             summary: $gettext("Unable to fetch report config"),
-            detail: error.message,
+            detail: error.message ?? error,
         });
     }
     config.value.content.forEach((content: SectionContent) => {
         componentLookup[content.component] = defineAsyncComponent(
             () =>
                 import(
-                    `@/arches_provenance/EditableReport/sections/${content.component}.vue`
+                    `@/arches_provenance/EditableReport/components/${content.component}.vue`
                 ),
         );
     });
@@ -55,6 +56,11 @@ onMounted(async () => {
             :content
         />
     </div>
+    <Toast
+        :pt="{
+            messageIcon: { style: { marginTop: 'var(--p-toast-content-gap)' } },
+        }"
+    />
 </template>
 
 <style scoped>
