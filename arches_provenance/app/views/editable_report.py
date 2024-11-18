@@ -1,13 +1,16 @@
 from http import HTTPStatus
 
+from django.db.models import Prefetch
 from django.http import Http404
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.views.generic import View
 
+from arches.app.views.api import APIBase
 from arches.app.models import models
 from arches.app.utils.decorators import can_read_resource_instance
+from arches.app.utils.permission_backend import get_nodegroups_by_perm
 from arches.app.utils.response import JSONErrorResponse, JSONResponse
 from arches.app.views.resource import ResourceReportView
 from arches_provenance.models import ReportConfig
@@ -77,3 +80,41 @@ class EditableReportAwareResourceReportView(ResourceReportView):
             template = "views/resource/report.htm"
 
         return render(request, template, context)
+
+
+class NodePresentationView(APIBase):
+    @method_decorator(can_read_resource_instance, name="dispatch")
+    def get(self, request, resourceid):
+        try:
+            graph = models.GraphModel.objects.filter(resourceinstance=resourceid).get()
+        except models.GraphModel.DoesNotExist:
+            raise Http404()
+        permitted_nodegroups = get_nodegroups_by_perm(
+            request.user, "models.read_nodegroup"
+        )
+        nodes = (
+            models.Node.objects.filter(graph=graph)
+            .filter(nodegroup__in=permitted_nodegroups)
+            .prefetch_related(
+                Prefetch(
+                    "cardxnodexwidget_set",
+                    queryset=models.CardXNodeXWidget.objects.order_by("sortorder"),
+                )
+            )
+        )
+
+        return JSONResponse(
+            {
+                node.alias: {
+                    "nodeid": node.nodeid,
+                    "name": node.name,
+                    "widget_label": (
+                        node.cardxnodexwidget_set.all()[0].label
+                        if node.cardxnodexwidget_set.all()
+                        else node.name.replace("_", " ").title()
+                    ),
+                    "datatype": node.datatype,
+                }
+                for node in nodes
+            }
+        )

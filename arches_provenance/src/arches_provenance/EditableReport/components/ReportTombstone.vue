@@ -7,16 +7,22 @@ import Panel from "primevue/panel";
 
 import { findNodeValue } from "@/arches_provenance/utils.ts";
 
-import type { SectionContent } from "@/arches_provenance/EditableReport/types";
+import type {
+    NodePresentationLookup,
+    SectionContent,
+} from "@/arches_provenance/EditableReport/types";
 
 const resource = inject("resource");
+const nodePresentationLookup = inject(
+    "nodePresentationLookup",
+) as NodePresentationLookup;
 const { $gettext } = useGettext();
 </script>
 
 <template>
     <Panel>
         <div
-            v-if="resource"
+            v-if="resource && nodePresentationLookup"
             class="data-container"
         >
             <!-- Eventually this will become its own component -->
@@ -27,7 +33,9 @@ const { $gettext } = useGettext();
                 class="datatype-widget"
             >
                 <span>
-                    <strong>{{ nodeAlias }}</strong>
+                    <strong>{{
+                        nodePresentationLookup[nodeAlias].widget_label
+                    }}</strong>
                 </span>
                 <span>
                     {{ findNodeValue(resource, nodeAlias) }}

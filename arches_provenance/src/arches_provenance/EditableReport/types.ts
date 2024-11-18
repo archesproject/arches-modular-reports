@@ -12,3 +12,12 @@ export interface SectionContent {
     component: string;
     config: { [key: string]: any };
 }
+
+export interface NodePresentationLookup {
+    [key: string]: {
+        nodeid: string;
+        name: string;
+        widget_label: string;
+        datatype: string;
+    };
+}

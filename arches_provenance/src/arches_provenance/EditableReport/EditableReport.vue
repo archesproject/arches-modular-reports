@@ -6,6 +6,7 @@ import Toast from "primevue/toast";
 import { useToast } from "primevue/usetoast";
 
 import {
+    fetchNodePresentation,
     fetchReportConfig,
     fetchResource,
 } from "@/arches_provenance/EditableReport/api.ts";
@@ -14,6 +15,7 @@ import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_provenance/constants.ts";
 import type { Ref } from "vue";
 import type {
     NamedSection,
+    NodePresentationLookup,
     SectionContent,
 } from "@/arches_provenance/EditableReport/types";
 
@@ -22,8 +24,11 @@ const { $gettext } = useGettext();
 const resourceId = window.location.href.split("/").reverse()[0];
 const componentLookup: { [key: string]: string } = {};
 
-const resource: { [key: string]: any } = ref(null);
+const resource: Ref<{ [key: string]: any } | null> = ref(null);
 provide("resource", resource);
+
+const nodePresentationLookup: Ref<NodePresentationLookup | null> = ref(null);
+provide("nodePresentationLookup", nodePresentationLookup);
 
 const config: Ref<NamedSection> = ref({
     name: $gettext("Loading data"),
@@ -34,10 +39,12 @@ onMounted(async () => {
     try {
         const promises = await Promise.all([
             fetchResource(resourceId),
+            fetchNodePresentation(resourceId),
             fetchReportConfig(resourceId),
         ]);
         resource.value = promises[0];
-        config.value = promises[1];
+        nodePresentationLookup.value = promises[1];
+        config.value = promises[2];
     } catch (error) {
         toast.add({
             severity: "error",

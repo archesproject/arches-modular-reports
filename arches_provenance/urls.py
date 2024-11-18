@@ -14,16 +14,17 @@ from arches.app.models.system_settings import settings
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.data_management.resources.formats.rdffile import JsonLdWriter
 
-from arches_provenance.app.views.editable_report import (
-    EditableReportAwareResourceReportView,
-)
 from arches_provenance.app.views.provenance_report import provenance_report
 from arches_provenance.app.views.provenance_report import ProvenanceSummaryTables
 from arches_provenance.app.views.provenance_report import ProvenanceRelatedResources
 from arches_provenance.app.views.provenance_report import ProvenanceGroupReportView
 from arches_provenance.app.views.provenance_report import ProvenanceEditorView
 from arches_provenance.app.views.provenance_report import ProvenanceSourceReferences
-from arches_provenance.app.views.editable_report import ProvenanceEditableReportConfigView
+from arches_provenance.app.views.editable_report import (
+    EditableReportAwareResourceReportView,
+    NodePresentationView,
+    ProvenanceEditableReportConfigView,
+)
 
 uuid_regex = settings.UUID_REGEX
 logger = logging.getLogger(__name__)
@@ -221,6 +222,11 @@ urlpatterns = [
         r"^report/(?P<resourceid>%s)$" % uuid_regex,
         EditableReportAwareResourceReportView.as_view(),
         name="resource_report",
+    ),
+    path(
+        "api/node_presentation/<uuid:resourceid>",
+        NodePresentationView.as_view(),
+        name="api_node_presentation",
     ),
 ]
 
