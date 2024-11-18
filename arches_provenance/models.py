@@ -43,7 +43,7 @@ class ReportConfig(models.Model):
                     "component": "ReportToolbar",
                     "config": {
                         "lists": True,
-                        "export_formats": ["CSV", "JSON-LD", "RDF"],
+                        "export_formats": ["csv", "json-ld", "rdf"],
                     },
                 },
                 {
