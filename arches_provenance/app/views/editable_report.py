@@ -34,25 +34,36 @@ class EditableReportAwareResourceReportView(ResourceReportView):
         graph = (
             models.GraphModel.objects.filter(resourceinstance=resourceid)
             .select_related("template")
-            .get()
+            .first()
         )
-        try:
-            map_markers = models.MapMarker.objects.all()
-            geocoding_providers = models.Geocoder.objects.all()
-        except AttributeError:
+        if not graph:
             raise Http404(
                 _("No active report template is available for this resource.")
             )
 
-        context = self.get_context_data(
-            main_script="views/resource/report",
-            resourceid=resourceid,
-            report_templates=models.ReportTemplate.objects.all(),
-            card_components=models.CardComponent.objects.all(),
-            widgets=models.Widget.objects.all(),
-            map_markers=map_markers,
-            geocoding_providers=geocoding_providers,
-        )
+        if graph.template.componentname == "editable-report":
+            context = self.get_context_data(
+                main_script="views/resource/report",
+                resourceid=resourceid,
+                # To the extent possible, avoid DB queries needed for KO
+                report_templates=models.ReportTemplate.objects.filter(
+                    componentname="editable-report"
+                ),
+                card_components=models.CardComponent.objects.none(),
+                widgets=models.Widget.objects.none(),
+                map_markers=models.MapMarker.objects.none(),
+                geocoding_providers=models.Geocoder.objects.none(),
+            )
+        else:
+            context = self.get_context_data(
+                main_script="views/resource/report",
+                resourceid=resourceid,
+                report_templates=models.ReportTemplate.objects.all(),
+                card_components=models.CardComponent.objects.all(),
+                widgets=models.Widget.objects.all(),
+                map_markers=models.MapMarker.objects.all(),
+                geocoding_providers=models.Geocoder.objects.all(),
+            )
 
         if graph.iconclass:
             context["nav"]["icon"] = graph.iconclass
