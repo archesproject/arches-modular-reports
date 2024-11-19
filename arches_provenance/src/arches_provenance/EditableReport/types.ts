@@ -14,13 +14,15 @@ export interface SectionContent {
     config: { [key: string]: any };
 }
 
+export interface NodePresentation {
+    nodeid: string;
+    name: string;
+    widget_label: string;
+    datatype: string;
+}
+
 export interface NodePresentationLookup {
-    [key: string]: {
-        nodeid: string;
-        name: string;
-        widget_label: string;
-        datatype: string;
-    };
+    [key: string]: NodePresentation;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

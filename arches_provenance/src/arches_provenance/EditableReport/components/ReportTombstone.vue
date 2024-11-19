@@ -6,6 +6,7 @@ import { useGettext } from "vue3-gettext";
 import Panel from "primevue/panel";
 
 import { findNodeValue } from "@/arches_provenance/EditableReport/utils.ts";
+import GenericDatatype from "@/arches_provenance/DatatypeWidgets/components/GenericDatatype.vue";
 
 import type {
     NodePresentationLookup,
@@ -26,22 +27,13 @@ const { $gettext } = useGettext();
             v-if="resource && nodePresentationLookup"
             class="data-container"
         >
-            <!-- Eventually this will become its own component -->
-            <div
+            <GenericDatatype
                 v-for="nodeAlias in ($attrs.content as SectionContent).config
                     .nodes"
                 :key="nodeAlias"
-                class="datatype-widget"
-            >
-                <span>
-                    <strong>{{
-                        nodePresentationLookup[nodeAlias].widget_label
-                    }}</strong>
-                </span>
-                <span class="node-value">
-                    {{ findNodeValue(resource, nodeAlias) }}
-                </span>
-            </div>
+                :node-presentation="nodePresentationLookup[nodeAlias]"
+                :tile-value="findNodeValue(resource, nodeAlias)"
+            />
         </div>
         <div class="image-container">
             <img
@@ -69,15 +61,6 @@ const { $gettext } = useGettext();
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 30px;
-}
-
-.datatype-widget {
-    display: flex;
-    gap: 10px;
-}
-
-.datatype-widget span.node-value {
-    overflow-wrap: anywhere;
 }
 
 .image-container {
