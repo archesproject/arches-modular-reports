@@ -17,6 +17,7 @@ import type {
     NamedSection,
     NodePresentationLookup,
     SectionContent,
+    Tile,
 } from "@/arches_provenance/EditableReport/types";
 
 const toast = useToast();
@@ -24,7 +25,7 @@ const { $gettext } = useGettext();
 const resourceId = window.location.href.split("/").reverse()[0];
 const componentLookup: { [key: string]: string } = {};
 
-const resource: Ref<{ [key: string]: any } | null> = ref(null);
+const resource: Ref<{ resource: Tile } | null> = ref(null);
 provide("resource", resource);
 
 const nodePresentationLookup: Ref<NodePresentationLookup | null> = ref(null);

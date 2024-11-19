@@ -1,11 +1,10 @@
-type TileValue = any;
-type Tile = { [key: string]: TileValue };
+import type { Tile, TileValue } from "@/arches_provenance/EditableReport/types";
 
 export function findNodeValue(
-    labelBasedResource: { [key: string]: any },
+    labelBasedResource: { resource: Tile },
     nodeAlias: string,
-): TileValue {
-    function searchSiblingNodes(tile: Tile): TileValue {
+): TileValue | undefined {
+    function searchSiblingNodes(tile: Tile): TileValue | undefined {
         for (const [tileNodeAlias, tileData] of Object.entries(tile)) {
             if (tileNodeAlias === nodeAlias) {
                 return tileData;

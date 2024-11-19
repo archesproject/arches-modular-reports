@@ -5,14 +5,15 @@ import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
 
-import { findNodeValue } from "@/arches_provenance/utils.ts";
+import { findNodeValue } from "@/arches_provenance/EditableReport/utils.ts";
 
 import type {
     NodePresentationLookup,
     SectionContent,
+    Tile,
 } from "@/arches_provenance/EditableReport/types";
 
-const resource = inject("resource");
+const resource = inject("resource") as { resource: Tile };
 const nodePresentationLookup = inject(
     "nodePresentationLookup",
 ) as NodePresentationLookup;

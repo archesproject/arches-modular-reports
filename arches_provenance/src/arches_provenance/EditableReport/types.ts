@@ -10,6 +10,7 @@ export interface NamedSection {
 
 export interface SectionContent {
     component: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     config: { [key: string]: any };
 }
 
@@ -20,4 +21,11 @@ export interface NodePresentationLookup {
         widget_label: string;
         datatype: string;
     };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SingleTileValue = any;
+export type TileValue = SingleTileValue | SingleTileValue[];
+export interface Tile {
+    [key: string]: TileValue;
 }
