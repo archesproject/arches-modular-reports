@@ -1,6 +1,8 @@
-# -*- coding: utf-8 -*-
+import uuid
 
 from django.db import migrations
+
+template_pk = uuid.UUID("b0908227-ecc2-48dd-931b-314a9031caa0")
 
 
 class Migration(migrations.Migration):
@@ -9,30 +11,22 @@ class Migration(migrations.Migration):
         ("arches_provenance", "0001_initial"),
     ]
 
+    def create_template(apps, schema_editor):
+        ReportTemplate = apps.get_model("models", "ReportTemplate")
+        ReportTemplate(
+            pk=template_pk,
+            name="Editable Report Template",
+            description="An editable report for Provenance Groups.",
+            component="reports/editable-report",
+            componentname="editable-report",
+            defaultconfig={},
+            preload_resource_data=False,
+        ).save()
+
+    def delete_template(apps, schema_editor):
+        ReportTemplate = apps.get_model("models", "ReportTemplate")
+        ReportTemplate.objects.filter(pk=template_pk).delete()
+
     operations = [
-        migrations.RunSQL(
-            """
-            INSERT INTO report_templates (
-                templateid,
-                name,
-                description,
-                component,
-                componentname,
-                defaultconfig,
-                preload_resource_data
-            ) VALUES (
-                'b0908227-ecc2-48dd-931b-314a9031caa0',
-                'Editable Report Template',
-                'An editable report for Provenance Groups.',
-                'reports/editable-report',
-                'editable-report',
-                '{}',
-                False
-            );
-            """,
-            """
-            DELETE FROM report_templates 
-            WHERE templateid = 'b0908227-ecc2-48dd-931b-314a9031caa0';
-            """,
-        )
+        migrations.RunPython(create_template, delete_template),
     ]
