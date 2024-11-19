@@ -1,38 +1,59 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, ref } from "vue";
+import { defineAsyncComponent, onMounted, provide, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Toast from "primevue/toast";
 import { useToast } from "primevue/usetoast";
 
-import { fetchReportConfig } from "@/arches_provenance/EditableReport/api.ts";
+import {
+    fetchNodePresentation,
+    fetchReportConfig,
+    fetchResource,
+} from "@/arches_provenance/EditableReport/api.ts";
 import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_provenance/constants.ts";
 
+import type { Ref } from "vue";
 import type {
     NamedSection,
+    NodePresentationLookup,
     SectionContent,
+    Tile,
 } from "@/arches_provenance/EditableReport/types";
 
 const toast = useToast();
 const { $gettext } = useGettext();
 const resourceId = window.location.href.split("/").reverse()[0];
-const componentLookup = {};
+const componentLookup: { [key: string]: string } = {};
 
-const config: NamedSection = ref({
+const resource: Ref<{ resource: Tile } | null> = ref(null);
+provide("resource", resource);
+
+const nodePresentationLookup: Ref<NodePresentationLookup | null> = ref(null);
+provide("nodePresentationLookup", nodePresentationLookup);
+
+const config: Ref<NamedSection> = ref({
     name: $gettext("Loading data"),
     content: [{ component: "", config: {} }],
 });
 
 onMounted(async () => {
     try {
-        config.value = await fetchReportConfig(resourceId);
+        const promises = await Promise.all([
+            fetchResource(resourceId),
+            fetchNodePresentation(resourceId),
+            fetchReportConfig(resourceId),
+        ]);
+        resource.value = promises[0];
+        nodePresentationLookup.value = promises[1];
+        config.value = promises[2];
     } catch (error) {
         toast.add({
             severity: "error",
             life: DEFAULT_ERROR_TOAST_LIFE,
-            summary: $gettext("Unable to fetch report config"),
-            detail: error.message ?? error,
+            summary: $gettext("Unable to fetch resource"),
+            detail: (error as Error).message ?? error,
         });
+        return;
     }
     config.value.content.forEach((content: SectionContent) => {
         componentLookup[content.component] = defineAsyncComponent(

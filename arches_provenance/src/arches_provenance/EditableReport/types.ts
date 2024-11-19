@@ -10,5 +10,24 @@ export interface NamedSection {
 
 export interface SectionContent {
     component: string;
-    config: object;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    config: { [key: string]: any };
+}
+
+export interface NodePresentation {
+    nodeid: string;
+    name: string;
+    widget_label: string;
+    datatype: string;
+}
+
+export interface NodePresentationLookup {
+    [key: string]: NodePresentation;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SingleTileValue = any;
+export type TileValue = SingleTileValue | SingleTileValue[];
+export interface Tile {
+    [key: string]: TileValue;
 }

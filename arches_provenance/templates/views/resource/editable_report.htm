@@ -1,0 +1,23 @@
+{% extends "base-manager.htm" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+{{ block.super }}
+{% trans "Resource Report" %}
+{% endblock title %}
+
+{% block main_content %}
+<div 
+    data-bind="
+        component: { 
+            name: 'resource-report-abstract',
+            params: {
+                resourceid: '{{ resourceid }}',
+                report: { templateId: () => 'b0908227-ecc2-48dd-931b-314a9031caa0' },
+                disableDisambiguatedReport: true,
+            }
+        }
+    "
+></div>
+{% endblock main_content %}
