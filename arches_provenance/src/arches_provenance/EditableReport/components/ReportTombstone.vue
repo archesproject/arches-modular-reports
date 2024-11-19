@@ -37,19 +37,26 @@ const { $gettext } = useGettext();
                         nodePresentationLookup[nodeAlias].widget_label
                     }}</strong>
                 </span>
-                <span>
+                <span class="node-value">
                     {{ findNodeValue(resource, nodeAlias) }}
                 </span>
             </div>
         </div>
-        <img
-            :src="arches.urls.media + 'img/photo_missing.png'"
-            :alt="$gettext('Image not available')"
-        />
+        <div class="image-container">
+            <img
+                :src="arches.urls.media + 'img/photo_missing.png'"
+                :alt="$gettext('Image not available')"
+            />
+        </div>
     </Panel>
 </template>
 
 <style scoped>
+:deep(.p-panel-header) {
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
 :deep(.p-panel-content) {
     display: flex;
     justify-content: space-between;
@@ -60,14 +67,26 @@ const { $gettext } = useGettext();
     width: 75%;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
 }
 
 .datatype-widget {
     display: flex;
-    gap: 1rem;
+    gap: 10px;
+}
+
+.datatype-widget span.node-value {
+    overflow-wrap: anywhere;
+}
+
+.image-container {
+    width: 15%;
+    height: 15%;
 }
 
 img {
-    width: 15%;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 </style>

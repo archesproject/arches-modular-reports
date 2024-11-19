@@ -16,6 +16,7 @@ from arches.app.views.resource import ResourceReportView
 from arches_provenance.models import ReportConfig
 
 
+@method_decorator(can_read_resource_instance, name="dispatch")
 class ProvenanceEditableReportConfigView(View):
     def get(self, request):
         """Just get first. But if there are multiple in the future,
@@ -45,6 +46,7 @@ class EditableReportAwareResourceReportView(ResourceReportView):
             )
 
         if graph.template.componentname == "editable-report":
+            template = "views/resource/editable_report.htm"
             context = self.get_context_data(
                 main_script="views/resource/report",
                 resourceid=resourceid,
@@ -58,6 +60,7 @@ class EditableReportAwareResourceReportView(ResourceReportView):
                 geocoding_providers=models.Geocoder.objects.none(),
             )
         else:
+            template = "views/resource/report.htm"
             context = self.get_context_data(
                 main_script="views/resource/report",
                 resourceid=resourceid,
@@ -74,11 +77,6 @@ class EditableReportAwareResourceReportView(ResourceReportView):
         context["nav"]["res_edit"] = True
         context["nav"]["print"] = True
 
-        if graph.template.componentname == "editable-report":
-            template = "views/resource/editable_report.htm"
-        else:
-            template = "views/resource/report.htm"
-
         return render(request, template, context)
 
 
@@ -88,7 +86,7 @@ class NodePresentationView(APIBase):
         try:
             graph = models.GraphModel.objects.filter(resourceinstance=resourceid).get()
         except models.GraphModel.DoesNotExist:
-            raise Http404()
+            return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
         permitted_nodegroups = get_nodegroups_by_perm(
             request.user, "models.read_nodegroup"
         )
