@@ -7,8 +7,17 @@ import Button from "primevue/button";
 const _id = Date.now();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleClick(linked_section: { [key: string]: any }) {
+function scrollToSection(linked_section: { [key: string]: any }) {
     linked_section.collapsed.value = false;
+    document
+        .getElementById(linked_section.id)
+        ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function backToTop() {
+    document
+        .getElementById(`sectionheader-${_id}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "end" });
 }
 
 let config = {
@@ -48,12 +57,10 @@ let config = {
             <Button
                 v-for="linked_section in config.linked_sections"
                 :key="linked_section.id"
-                as="a"
-                :href="`#${linked_section.id}`"
                 :label="linked_section.label"
                 severity="secondary"
                 variant="outlined"
-                @click="handleClick(linked_section)"
+                @click="scrollToSection(linked_section)"
             />
         </div>
 
@@ -69,12 +76,11 @@ let config = {
                 <template #icons>
                     <Button
                         class="back-to-top"
-                        as="a"
-                        :href="`#sectionheader-${_id}`"
                         icon="pi pi-home"
                         severity="secondary"
                         variant="text"
-                        aria-label="Filter"
+                        aria-label="back to top"
+                        @click="backToTop()"
                     />
                 </template>
                 <div style="height: 600px"></div>
@@ -100,7 +106,7 @@ let config = {
     gap: 10px;
 }
 
-a.back-to-top {
+button.back-to-top {
     background-color: unset;
     color: gray;
     border: solid 1px white;
@@ -113,5 +119,8 @@ a.back-to-top {
 :deep(.p-button-label),
 :deep(.pi) {
     font-size: 1.4rem;
+}
+:deep(.p-panel-header) {
+    padding: 10px 20px;
 }
 </style>
