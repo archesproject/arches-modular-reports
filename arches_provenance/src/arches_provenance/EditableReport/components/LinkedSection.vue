@@ -1,8 +1,15 @@
 <script setup lang="ts">
+import { ref } from "vue";
+
 import Panel from "primevue/panel";
 import Button from "primevue/button";
 
 const _id = Date.now();
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleClick(linked_section: { [key: string]: any }) {
+    linked_section.collapsed.value = false;
+}
 
 let config = {
     title: "Linked Section",
@@ -11,18 +18,22 @@ let config = {
             id: `1-${_id}`,
             label: "Names and Statements",
             content: "This is the content of section 1",
+            collapsed: ref(false),
         },
         {
             id: `2-${_id}`,
             label: "Section 2",
+            collapsed: ref(false),
         },
         {
             id: `3-${_id}`,
             label: "Section 3",
+            collapsed: ref(false),
         },
         {
             id: `4-${_id}`,
             label: "Section 4",
+            collapsed: ref(false),
         },
     ],
 };
@@ -42,6 +53,7 @@ let config = {
                 :label="linked_section.label"
                 severity="secondary"
                 variant="outlined"
+                @click="handleClick(linked_section)"
             />
         </div>
 
@@ -50,15 +62,10 @@ let config = {
                 v-for="linked_section in config.linked_sections"
                 :id="linked_section.id"
                 :key="linked_section.id"
+                :collapsed="linked_section.collapsed"
+                :header="linked_section.label"
                 toggleable
             >
-                <template #header>
-                    <div class="flex items-center gap-2">
-                        <span class="font-bold">{{
-                            linked_section.label
-                        }}</span>
-                    </div>
-                </template>
                 <template #icons>
                     <Button
                         class="back-to-top"
@@ -67,6 +74,7 @@ let config = {
                         icon="pi pi-home"
                         severity="secondary"
                         variant="text"
+                        aria-label="Filter"
                     />
                 </template>
                 <div style="height: 600px"></div>
