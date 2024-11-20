@@ -9,20 +9,27 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('models', '11499_add_editlog_resourceinstance_idx'),
+        ("models", "11499_add_editlog_resourceinstance_idx"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ReportConfig',
+            name="ReportConfig",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('config', models.JSONField()),
-                ('graph', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='models.graphmodel')),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("config", models.JSONField(blank=True, default=dict)),
+                (
+                    "graph",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="report",
+                        to="models.graphmodel",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'arches_provenance_report_config',
-                'managed': True,
+                "db_table": "arches_provenance_report_config",
+                "managed": True,
             },
         ),
     ]

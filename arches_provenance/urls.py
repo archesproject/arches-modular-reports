@@ -20,6 +20,11 @@ from arches_provenance.app.views.provenance_report import ProvenanceRelatedResou
 from arches_provenance.app.views.provenance_report import ProvenanceGroupReportView
 from arches_provenance.app.views.provenance_report import ProvenanceEditorView
 from arches_provenance.app.views.provenance_report import ProvenanceSourceReferences
+from arches_provenance.app.views.editable_report import (
+    EditableReportAwareResourceReportView,
+    NodePresentationView,
+    ProvenanceEditableReportConfigView,
+)
 
 uuid_regex = settings.UUID_REGEX
 logger = logging.getLogger(__name__)
@@ -206,6 +211,23 @@ urlpatterns = [
     re_path(r"^provenance_source_references$", ProvenanceSourceReferences.as_view(), name="provenance_source_references"),
     re_path(r"^provenance_related_resources$", ProvenanceRelatedResources.as_view(), name="provenance_related_resources"),
     re_path(r"^provenance_editor$", ProvenanceEditorView.as_view(), name="provenance_editor"),
+    path(
+        "provenance_editable_report_config",
+        ProvenanceEditableReportConfigView.as_view(),
+        name="provenance_editable_report_config",
+    ),
+    # Override core arches resource report view to allow rendering
+    # distinct template for editable reports.
+    re_path(
+        r"^report/(?P<resourceid>%s)$" % uuid_regex,
+        EditableReportAwareResourceReportView.as_view(),
+        name="resource_report",
+    ),
+    path(
+        "api/node_presentation/<uuid:resourceid>",
+        NodePresentationView.as_view(),
+        name="api_node_presentation",
+    ),
 ]
 
 try:

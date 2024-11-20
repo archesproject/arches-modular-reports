@@ -12,5 +12,7 @@
     provenance_related_resources = "{% url 'provenance_related_resources' %}"
     provenance_editor = "{% url 'provenance_editor' %}"
     provenance_source_references = "{% url 'provenance_source_references' %}"
+    provenance_editable_report_config = "{% url 'provenance_editable_report_config' %}"
+    api_node_presentation ='(resourceid) => { return "{% url "api_node_presentation" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resourceid)}'
 ></div>
 {% endblock arches_urls %}
