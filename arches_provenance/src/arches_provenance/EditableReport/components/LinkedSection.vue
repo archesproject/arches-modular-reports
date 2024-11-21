@@ -1,46 +1,52 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, useTemplateRef } from "vue";
 
 import Panel from "primevue/panel";
 import Button from "primevue/button";
 
-const _id = Date.now();
+const buttonSectionRef = useTemplateRef("buttonSectionRef");
+const linkedSectionsRef = useTemplateRef("linked_sections");
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function scrollToSection(linked_section: { [key: string]: any }) {
     linked_section.collapsed.value = false;
-    document
-        .getElementById(linked_section.id)
-        ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+    linkedSectionsRef.value?.forEach(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (section: { [key: string]: any } | null) => {
+            if (section?.pt.linked_section === linked_section) {
+                section?.$el.scrollIntoView({
+                    behavior: "smooth",
+                    block: "end",
+                });
+            }
+        },
+    );
 }
 
 function backToTop() {
-    document
-        .getElementById(`sectionheader-${_id}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "end" });
+    buttonSectionRef.value?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+    });
 }
 
 let config = {
     title: "Linked Section",
     linked_sections: [
         {
-            id: `1-${_id}`,
             label: "Names and Statements",
-            content: "This is the content of section 1",
             collapsed: ref(false),
         },
         {
-            id: `2-${_id}`,
             label: "Section 2",
             collapsed: ref(false),
         },
         {
-            id: `3-${_id}`,
             label: "Section 3",
             collapsed: ref(false),
         },
         {
-            id: `4-${_id}`,
             label: "Section 4",
             collapsed: ref(false),
         },
@@ -51,12 +57,12 @@ let config = {
 <template>
     <div class="linked-section-outer-container">
         <div
-            :id="`sectionheader-${_id}`"
+            ref="buttonSectionRef"
             class="linked-section-button-container"
         >
             <Button
                 v-for="linked_section in config.linked_sections"
-                :key="linked_section.id"
+                :key="linked_section.label"
                 :label="linked_section.label"
                 severity="secondary"
                 variant="outlined"
@@ -67,8 +73,9 @@ let config = {
         <div class="linked-section-container">
             <Panel
                 v-for="linked_section in config.linked_sections"
-                :id="linked_section.id"
-                :key="linked_section.id"
+                :key="linked_section.label"
+                ref="linked_sections"
+                :pt="{ linked_section: linked_section }"
                 :collapsed="linked_section.collapsed"
                 :header="linked_section.label"
                 toggleable
