@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from "vue";
+import type { Ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
@@ -9,8 +10,12 @@ const { $gettext } = useGettext();
 const buttonSectionRef = useTemplateRef("buttonSectionRef");
 const linkedSectionsRef = useTemplateRef("linked_sections");
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function scrollToSection(linked_section: { [key: string]: any }) {
+interface LinkedSection {
+    label: string;
+    collapsed: Ref<boolean>;
+}
+
+function scrollToSection(linked_section: LinkedSection): void {
     linked_section.collapsed.value = false;
 
     linkedSectionsRef.value?.forEach(
