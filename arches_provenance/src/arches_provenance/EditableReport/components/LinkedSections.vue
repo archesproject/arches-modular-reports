@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from "vue";
+import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
 import Button from "primevue/button";
 
+const { $gettext } = useGettext();
 const buttonSectionRef = useTemplateRef("buttonSectionRef");
 const linkedSectionsRef = useTemplateRef("linked_sections");
 
@@ -86,7 +88,7 @@ let config = {
                         icon="pi pi-home"
                         severity="secondary"
                         variant="text"
-                        aria-label="back to top"
+                        :aria-label="$gettext('back to top')"
                         @click="backToTop()"
                     />
                 </template>
