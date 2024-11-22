@@ -5,7 +5,7 @@ export interface Settings {
 
 export interface NamedSection {
     name: string;
-    content: SectionContent[];
+    components: SectionContent[];
 }
 
 export interface SectionContent {

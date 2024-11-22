@@ -28,7 +28,7 @@ const { $gettext } = useGettext();
             class="data-container"
         >
             <GenericDatatype
-                v-for="nodeAlias in ($attrs.content as SectionContent).config
+                v-for="nodeAlias in ($attrs.component as SectionContent).config
                     .nodes"
                 :key="nodeAlias"
                 :node-presentation="nodePresentationLookup[nodeAlias]"
