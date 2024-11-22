@@ -16,7 +16,7 @@ interface LinkedSection {
     collapsed: Ref<boolean>;
 }
 
-async function scrollToSection(linked_section: LinkedSection): Promise<void> {
+function scrollToSection(linked_section: LinkedSection): void {
     linked_section.collapsed.value = false;
 
     const index = config.linked_sections.indexOf(linked_section);
