@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from "vue";
-import type { Ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
 import Button from "primevue/button";
+
+import type { Ref } from "vue";
 
 const { $gettext } = useGettext();
 const buttonSectionRef = useTemplateRef("buttonSectionRef");
@@ -15,20 +16,18 @@ interface LinkedSection {
     collapsed: Ref<boolean>;
 }
 
-function scrollToSection(linked_section: LinkedSection): void {
+async function scrollToSection(linked_section: LinkedSection): Promise<void> {
     linked_section.collapsed.value = false;
 
-    linkedSectionsRef.value?.forEach(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (section: { [key: string]: any } | null) => {
-            if (section?.pt.linked_section === linked_section) {
-                section?.$el.scrollIntoView({
-                    behavior: "smooth",
-                    block: "end",
-                });
-            }
-        },
-    );
+    const index = config.linked_sections.indexOf(linked_section);
+    const section = linkedSectionsRef.value?.[index];
+
+    if (section) {
+        section.$el.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+        });
+    }
 }
 
 function backToTop() {
@@ -38,7 +37,7 @@ function backToTop() {
     });
 }
 
-let config = {
+const config = {
     title: "Linked Section",
     linked_sections: [
         {
@@ -80,9 +79,8 @@ let config = {
         <div class="linked-section-container">
             <Panel
                 v-for="linked_section in config.linked_sections"
-                :key="linked_section.label"
                 ref="linked_sections"
-                :pt="{ linked_section: linked_section }"
+                :key="linked_section.label"
                 :collapsed="linked_section.collapsed"
                 :header="linked_section.label"
                 toggleable
