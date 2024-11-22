@@ -32,7 +32,7 @@ class ReportConfig(models.Model):
     def generate_config(self):
         return {
             "name": "Untitled Report",
-            "content": [
+            "components": [
                 {
                     "component": "ReportHeader",
                     "config": {
@@ -59,7 +59,7 @@ class ReportConfig(models.Model):
                         "tabs": [
                             {
                                 "name": "Data",
-                                "content": [
+                                "components": [
                                     {
                                         "component": "CardSections",
                                         "config": {
@@ -70,7 +70,7 @@ class ReportConfig(models.Model):
                             },
                             {
                                 "name": "Related Resources",
-                                "content": [
+                                "components": [
                                     {
                                         "component": "RelatedResourcesSections",
                                         "config": {
@@ -95,7 +95,7 @@ class ReportConfig(models.Model):
         return [
             {
                 "name": str(card.name),
-                "content": [
+                "components": [
                     {
                         "component": "CardSection",
                         "config": {
@@ -122,7 +122,7 @@ class ReportConfig(models.Model):
         return [
             {
                 "name": str(other_graph.name),  # not pluralized
-                "content": [
+                "components": [
                     {
                         "component": "RelatedResourcesSection",
                         "config": {
@@ -140,15 +140,15 @@ class ReportConfig(models.Model):
                 if k == "name":
                     if not isinstance(v, str):
                         raise ValidationError(f"Name is not a string: {v}")
-                elif k == "content":
+                elif k == "components":
                     if not isinstance(v, list):
-                        raise ValidationError(f"Content is not a list: {v}")
-                    validate_content(v)
+                        raise ValidationError(f"Components is not a list: {v}")
+                    validate_components(v)
                 else:
                     raise ValidationError(f"Invalid key in config: {k}")
 
-        def validate_content(content):
-            for item in content:
+        def validate_components(components):
+            for item in components:
                 for k, v in item.items():
                     if k == "component":
                         if not isinstance(v, str):
@@ -156,21 +156,21 @@ class ReportConfig(models.Model):
                     elif k == "config":
                         if not isinstance(v, dict):
                             raise ValidationError(f"Config is not a dict: {v}")
-                        validate_content_config(v)
+                        validate_components_config(v)
                     else:
-                        raise ValidationError(f"Invalid key in content: {k}")
+                        raise ValidationError(f"Invalid key in components: {k}")
                 getattr(
                     self, "validate_" + item["component"].lower(), lambda noop: None
                 )(item["config"])
 
-        def validate_content_config(config_dict):
+        def validate_components_config(config_dict):
             for v in config_dict.values():
                 if isinstance(v, list):
                     for list_item in v:
                         if (
                             isinstance(list_item, dict)
                             and "name" in list_item
-                            and "content" in list_item
+                            and "components" in list_item
                         ):
                             validate_dict(list_item)
 
