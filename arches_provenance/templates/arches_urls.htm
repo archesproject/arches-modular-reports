@@ -14,5 +14,6 @@
     provenance_source_references = "{% url 'provenance_source_references' %}"
     provenance_editable_report_config = "{% url 'provenance_editable_report_config' %}"
     api_node_presentation ='(resourceid) => { return "{% url "api_node_presentation" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resourceid)}'
+    api_nodegroup_tile_data ='(resourceinstanceid, nodegroupid) => { return "{% url "api_nodegroup_tile_data" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resourceinstanceid).replace("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", nodegroupid)}'
 ></div>
 {% endblock arches_urls %}

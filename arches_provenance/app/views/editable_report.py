@@ -9,10 +9,13 @@ from django.views.generic import View
 
 from arches.app.views.api import APIBase
 from arches.app.models import models
+from arches.app.models.tile import Tile
 from arches.app.utils.decorators import can_read_resource_instance
+from arches.app.utils.label_based_graph_v2 import LabelBasedGraph
 from arches.app.utils.permission_backend import get_nodegroups_by_perm
 from arches.app.utils.response import JSONErrorResponse, JSONResponse
 from arches.app.views.resource import ResourceReportView
+
 from arches_provenance.models import ReportConfig
 
 
@@ -116,3 +119,30 @@ class NodePresentationView(APIBase):
                 for node in nodes
             }
         )
+
+
+class NodegroupTileDataView(APIBase):
+    def get(self, request, resourceinstanceid, nodegroupid):
+        tiles = Tile.objects.filter(
+            resourceinstance_id=resourceinstanceid, nodegroup_id=nodegroupid
+        )
+
+        # BEGIN generate node_ids_to_tiles_reference
+        node_ids_to_tiles_reference = {}
+
+        for tile in tiles:
+            node_ids = list(tile.data.keys())
+
+            if str(tile.nodegroup_id) not in node_ids:
+                node_ids.append(str(tile.nodegroup_id))
+
+            for node_id in node_ids:
+                tile_list = node_ids_to_tiles_reference.get(node_id, [])
+                tile_list.append(tile)
+                node_ids_to_tiles_reference[node_id] = tile_list
+        # END generate node_ids_to_tiles_reference
+
+        ret = []
+        ret.append(LabelBasedGraph.from_tile(tile, node_ids_to_tiles_reference, {}))
+
+        return JSONResponse(ret)

@@ -75,6 +75,7 @@ onMounted(async () => {
             v-for="component in config.components"
             :key="component.component"
             :component
+            :resource-instance-id="resourceId"
         />
     </div>
     <Toast
