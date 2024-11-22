@@ -143,6 +143,7 @@ class NodegroupTileDataView(APIBase):
         # END generate node_ids_to_tiles_reference
 
         ret = []
-        ret.append(LabelBasedGraph.from_tile(tile, node_ids_to_tiles_reference, {}))
+        for tile in tiles:
+            ret.append(LabelBasedGraph.from_tile(tile, node_ids_to_tiles_reference, {}))
 
         return JSONResponse(ret)
