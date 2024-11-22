@@ -33,7 +33,7 @@ provide("nodePresentationLookup", nodePresentationLookup);
 
 const config: Ref<NamedSection> = ref({
     name: $gettext("Loading data"),
-    content: [{ component: "", config: {} }],
+    components: [{ component: "", config: {} }],
 });
 
 onMounted(async () => {
@@ -55,11 +55,11 @@ onMounted(async () => {
         });
         return;
     }
-    config.value.content.forEach((content: SectionContent) => {
-        componentLookup[content.component] = defineAsyncComponent(
+    config.value.components.forEach((component: SectionContent) => {
+        componentLookup[component.component] = defineAsyncComponent(
             () =>
                 import(
-                    `@/arches_provenance/EditableReport/components/${content.component}.vue`
+                    `@/arches_provenance/EditableReport/components/${component.component}.vue`
                 ),
         );
     });
@@ -71,10 +71,10 @@ onMounted(async () => {
         <h2>{{ config.name }}</h2>
         <!--Consider <keep-alive> if future refactors cause these to be rerendered.-->
         <component
-            :is="componentLookup[content.component]"
-            v-for="content in config.content"
-            :key="content.component"
-            :content
+            :is="componentLookup[component.component]"
+            v-for="component in config.components"
+            :key="component.component"
+            :component
         />
     </div>
     <Toast
