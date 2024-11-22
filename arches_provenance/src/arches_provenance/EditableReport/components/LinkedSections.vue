@@ -19,8 +19,12 @@ interface LinkedSection {
 function scrollToSection(linked_section: LinkedSection): void {
     linked_section.collapsed.value = false;
 
-    const index = config.linked_sections.indexOf(linked_section);
-    const section = linkedSectionsRef.value?.[index];
+    const sections = linkedSectionsRef.value;
+
+    const section = sections?.find((section) => {
+        const props = section?.$props as { header?: string };
+        return props.header === linked_section.label;
+    });
 
     if (section) {
         section.$el.scrollIntoView({
