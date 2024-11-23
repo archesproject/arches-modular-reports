@@ -25,6 +25,7 @@ from arches_provenance.app.views.editable_report import (
     NodePresentationView,
     ProvenanceEditableReportConfigView,
     NodegroupTileDataView,
+    CardFromNodegroupIdView,
 )
 
 uuid_regex = settings.UUID_REGEX
@@ -257,6 +258,11 @@ urlpatterns = [
         "api/nodegroup_tile_data/<uuid:resourceinstanceid>/<uuid:nodegroupid>/",
         NodegroupTileDataView.as_view(),
         name="api_nodegroup_tile_data",
+    ),
+    path(
+        "api/card_from_nodegroup_id/<uuid:nodegroupid>/",
+        CardFromNodegroupIdView.as_view(),
+        name="api_card_from_nodegroup_id",
     ),
 ]
 

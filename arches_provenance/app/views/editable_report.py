@@ -10,6 +10,7 @@ from django.views.generic import View
 from arches.app.views.api import APIBase
 from arches.app.models import models
 from arches.app.models.tile import Tile
+from arches.app.models.card import Card
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.label_based_graph_v2 import LabelBasedGraph
 from arches.app.utils.permission_backend import get_nodegroups_by_perm
@@ -147,3 +148,13 @@ class NodegroupTileDataView(APIBase):
             ret.append(LabelBasedGraph.from_tile(tile, node_ids_to_tiles_reference, {}))
 
         return JSONResponse(ret)
+
+
+class CardFromNodegroupIdView(APIBase):
+    def get(self, request, nodegroupid):
+        try:
+            card = Card.objects.get(nodegroup_id=nodegroupid)
+        except models.GraphModel.DoesNotExist:
+            return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
+
+        return JSONResponse(card)
