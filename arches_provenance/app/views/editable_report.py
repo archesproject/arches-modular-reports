@@ -122,16 +122,39 @@ class NodePresentationView(APIBase):
         )
 
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+
 class NodegroupTileDataView(APIBase):
     def get(self, request, resourceinstanceid, nodegroupid):
         tiles = Tile.objects.filter(
             resourceinstance_id=resourceinstanceid, nodegroup_id=nodegroupid
         )
 
-        # BEGIN generate node_ids_to_tiles_reference
-        node_ids_to_tiles_reference = {}
+        page_number = request.GET.get("page", 1)
+        rows_per_page = request.GET.get(
+            "rows_per_page"
+        )  # no fallback, let it fail if not provided
 
-        for tile in tiles:
+        try:
+            page_number = int(page_number)
+            rows_per_page = int(rows_per_page)
+        except ValueError:
+            return JSONResponse(
+                {"error": "Invalid page or rows_per_page parameter"}, status=400
+            )
+
+        paginator = Paginator(tiles, rows_per_page)
+
+        try:
+            page = paginator.page(page_number)
+        except PageNotAnInteger:
+            page = paginator.page(1)
+        except EmptyPage:
+            page = paginator.page(paginator.num_pages)
+
+        node_ids_to_tiles_reference = {}
+        for tile in page.object_list:
             node_ids = list(tile.data.keys())
 
             if str(tile.nodegroup_id) not in node_ids:
@@ -141,13 +164,24 @@ class NodegroupTileDataView(APIBase):
                 tile_list = node_ids_to_tiles_reference.get(node_id, [])
                 tile_list.append(tile)
                 node_ids_to_tiles_reference[node_id] = tile_list
-        # END generate node_ids_to_tiles_reference
 
         ret = []
-        for tile in tiles:
+        for tile in page.object_list:
             ret.append(LabelBasedGraph.from_tile(tile, node_ids_to_tiles_reference, {}))
 
-        return JSONResponse(ret)
+        response_data = {
+            "results": ret,
+            "total_count": paginator.count,
+            # 'num_pages': paginator.num_pages,
+            "page": page_number,
+            # 'rows_per_page': rows_per_page,
+            # 'has_next': page.has_next(),
+            # 'has_previous': page.has_previous(),
+            # 'next_page_number': page.next_page_number() if page.has_next() else None,
+            # 'previous_page_number': page.previous_page_number() if page.has_previous() else None,
+        }
+
+        return JSONResponse(response_data)
 
 
 class CardFromNodegroupIdView(APIBase):

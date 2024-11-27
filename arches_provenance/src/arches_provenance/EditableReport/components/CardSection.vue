@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
+import { useGettext } from "vue3-gettext";
 
-import DataTable from "primevue/datatable";
+import Button from "primevue/button";
 import Column from "primevue/column";
+import DataTable from "primevue/datatable";
+import Select from "primevue/select";
 
 import {
     fetchCardFromNodegroupId,
@@ -10,6 +13,8 @@ import {
 } from "@/arches_provenance/EditableReport/api.ts";
 
 import type { Ref } from "vue";
+
+const { $gettext } = useGettext();
 
 const props = defineProps<{
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,29 +27,47 @@ interface ColumnName {
     widget_label: string;
 }
 
+const isLoading = ref(false);
+// const isLoadingAdditionalResults = ref(false);
+const searchResultsPage = ref(1);
+const searchResultsTotalCount = ref(0);
+const query = ref("");
+
 const tableTitle = ref("");
 const columnNames: Ref<ColumnName[]> = ref([]);
 
 const cardData = ref(null);
-const nodeGroupTileData = ref(null);
+const nodegroupTileData = ref([]);
+
+const rowsPerPageOptions = ref([5, 10, 20]);
+const rowsPerPage = ref(5);
+
+watch(rowsPerPage, (newValue) => {
+    foo(
+        props.resourceInstanceId,
+        props.component.config?.nodegroup_id,
+        newValue,
+    );
+});
 
 onMounted(() => {
-    Promise.all([
-        fetchCardFromNodegroupId(props.component.config?.nodegroup_id),
-        fetchNodegroupTileData(
-            props.resourceInstanceId,
-            props.component.config?.nodegroup_id,
-        ),
-    ]).then(([fetchedCardData, fetchedNodeGroupTileData]) => {
-        tableTitle.value = fetchedCardData?.name;
-        columnNames.value = deriveColumnNames(
-            props.component.config,
-            fetchedCardData,
-        );
+    foo(
+        props.resourceInstanceId,
+        props.component.config?.nodegroup_id,
+        rowsPerPage.value,
+    );
 
-        cardData.value = fetchedCardData;
-        nodeGroupTileData.value = fetchedNodeGroupTileData;
-    });
+    fetchCardFromNodegroupId(props.component.config?.nodegroup_id).then(
+        (fetchedCardData) => {
+            tableTitle.value = fetchedCardData?.name;
+            columnNames.value = deriveColumnNames(
+                props.component.config,
+                fetchedCardData,
+            );
+
+            cardData.value = fetchedCardData;
+        },
+    );
 });
 
 function deriveColumnNames(
@@ -89,13 +112,50 @@ function getDisplayValue(obj: Record<string, any>, key: string): string | null {
 
     return null;
 }
+
+function foo(resourceInstanceId, nodegroupId, rowsPerPage) {
+    isLoading.value = true;
+
+    fetchNodegroupTileData(resourceInstanceId, nodegroupId, rowsPerPage).then(
+        (fetchedNodegroupTileData) => {
+            nodegroupTileData.value = fetchedNodegroupTileData["results"];
+            searchResultsPage.value = fetchedNodegroupTileData["page"];
+            searchResultsTotalCount.value =
+                fetchedNodegroupTileData["total_count"];
+
+            isLoading.value = false;
+        },
+    );
+}
+
+function bar(event, callback) {
+    console.log("bar");
+    callback(event);
+}
 </script>
 
 <template>
-    <DataTable :value="nodeGroupTileData">
+    <DataTable
+        v-if="nodegroupTileData.length > 0"
+        paginator
+        lazy
+        :value="nodegroupTileData"
+        :loading="isLoading"
+        :total-records="searchResultsTotalCount"
+        :rows="rowsPerPage"
+    >
         <template #header>
-            <h4>{{ tableTitle }}</h4>
+            <h4 style="color: var(--p-content-color)">{{ tableTitle }}</h4>
+
+            <div>
+                <span>{{ $gettext("Number of rows:") }}</span>
+                <Select
+                    v-model="rowsPerPage"
+                    :options="rowsPerPageOptions"
+                />
+            </div>
         </template>
+
         <Column
             field=""
             header=""
@@ -110,10 +170,50 @@ function getDisplayValue(obj: Record<string, any>, key: string): string | null {
                 {{ getDisplayValue(slotProps.data, slotProps.field) }}
             </template>
         </Column>
+
+        <template
+            #paginatorcontainer="{
+                first,
+                last,
+                page,
+                pageCount,
+                prevPageCallback,
+                nextPageCallback,
+                totalRecords,
+            }"
+        >
+            <div>
+                <Button
+                    icon="pi pi-chevron-left"
+                    rounded
+                    text
+                    :disabled="page === 0"
+                    @click="prevPageCallback"
+                />
+                <div>
+                    <span
+                        >Showing {{ first }} to {{ last }} of
+                        {{ totalRecords }}</span
+                    >
+                    <span>Page {{ page + 1 }} of {{ pageCount }}</span>
+                </div>
+                <Button
+                    icon="pi pi-chevron-right"
+                    rounded
+                    text
+                    :disabled="page === pageCount - 1"
+                    @click="
+                        (e) => {
+                            bar(e, nextPageCallback);
+                        }
+                    "
+                />
+            </div>
+        </template>
     </DataTable>
 
     <!-- <pre>{{ columnNames }}</pre> -->
     <!-- <pre>{{ props.component.config }}</pre> -->
     <!-- <pre>{{ cardData }}</pre> -->
-    <!-- <pre>{{ nodeGroupTileData }}</pre> -->
+    <!-- <pre>{{ nodegroupTileData }}</pre> -->
 </template>

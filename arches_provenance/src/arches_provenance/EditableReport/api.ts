@@ -38,13 +38,19 @@ export const fetchNodegroup = async (nodegroupId: string) => {
 export const fetchNodegroupTileData = async (
     resourceInstanceId: string,
     nodegroupId: string,
+    rowsPerPage: number,
 ) => {
     const url = arches.urls.api_nodegroup_tile_data(
         resourceInstanceId,
         nodegroupId,
     );
-    const response = await fetch(url);
+    const params = new URLSearchParams({
+        rows_per_page: rowsPerPage.toString(),
+    });
+
+    const response = await fetch(url + "?" + params.toString());
     const parsed = await response.json();
+
     if (!response.ok) throw new Error(parsed.message || response.statusText);
     return parsed;
 };
