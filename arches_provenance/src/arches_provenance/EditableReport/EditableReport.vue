@@ -43,9 +43,10 @@ const config: Ref<NamedSection> = ref({
 });
 
 onMounted(async () => {
-    const reportAbstractContainer =
-        sectionContainerRef.value!.parentElement!.parentElement!.parentElement!;
-    const resourceId = reportAbstractContainer.getAttribute("data-resourceid")!;
+    const reportContainer = sectionContainerRef.value!.closest(
+        ".resource-report-abstract-container",
+    );
+    const resourceId = reportContainer!.getAttribute("data-resourceid")!;
     try {
         const promises = await Promise.all([
             fetchResource(resourceId),
