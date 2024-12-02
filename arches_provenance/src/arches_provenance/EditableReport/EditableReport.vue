@@ -22,7 +22,7 @@ import type {
 
 const toast = useToast();
 const { $gettext } = useGettext();
-const resourceId = window.location.href.split("/").reverse()[0];
+const resourceInstanceId = window.location.href.split("/").reverse()[0];
 const componentLookup: { [key: string]: string } = {};
 
 const resource: Ref<{ resource: Tile } | null> = ref(null);
@@ -39,9 +39,9 @@ const config: Ref<NamedSection> = ref({
 onMounted(async () => {
     try {
         const promises = await Promise.all([
-            fetchResource(resourceId),
-            fetchNodePresentation(resourceId),
-            fetchReportConfig(resourceId),
+            fetchResource(resourceInstanceId),
+            fetchNodePresentation(resourceInstanceId),
+            fetchReportConfig(resourceInstanceId),
         ]);
         resource.value = promises[0];
         nodePresentationLookup.value = promises[1];
@@ -75,6 +75,7 @@ onMounted(async () => {
             v-for="component in config.components"
             :key="component.component"
             :component
+            :resource-instance-id
         />
     </div>
     <Toast
@@ -87,5 +88,7 @@ onMounted(async () => {
 <style scoped>
 .section-container {
     gap: 2rem;
+    height: calc(100vh - 50px);
+    width: calc(100vw - 50px);
 }
 </style>

@@ -61,7 +61,7 @@ class ReportConfig(models.Model):
                                 "name": "Data",
                                 "components": [
                                     {
-                                        "component": "CardSections",
+                                        "component": "LinkedSections",
                                         "config": {
                                             "sections": self.generate_card_sections()
                                         },

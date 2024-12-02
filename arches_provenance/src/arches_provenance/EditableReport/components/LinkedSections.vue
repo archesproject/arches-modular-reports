@@ -5,20 +5,28 @@ import { useGettext } from "vue3-gettext";
 import Panel from "primevue/panel";
 import Button from "primevue/button";
 
+import CardSection from "@/arches_provenance/EditableReport/components/CardSection.vue";
+
+import type {
+    NamedSection,
+    SectionContent,
+} from "@/arches_provenance/EditableReport/types";
+
+const { component, resourceInstanceId } = defineProps<{
+    component: SectionContent;
+    resourceInstanceId: string;
+}>();
+
 const { $gettext } = useGettext();
 const buttonSectionRef = useTemplateRef("buttonSectionRef");
 const linkedSectionsRef = useTemplateRef("linked_sections");
 
-interface LinkedSection {
-    label: string;
-}
-
-function scrollToSection(linked_section: LinkedSection): void {
+function scrollToSection(linked_section: NamedSection): void {
     const sections = linkedSectionsRef.value;
 
     const section = sections?.find((section) => {
         const props = section?.$props as { header?: string };
-        return props.header === linked_section.label;
+        return props.header === linked_section.name;
     });
 
     if (section) {
@@ -38,24 +46,6 @@ function backToTop() {
         block: "end",
     });
 }
-
-const config = {
-    title: "Linked Section",
-    linked_sections: [
-        {
-            label: "Names and Statements",
-        },
-        {
-            label: "Section 2",
-        },
-        {
-            label: "Section 3",
-        },
-        {
-            label: "Section 4",
-        },
-    ],
-};
 </script>
 
 <template>
@@ -65,9 +55,9 @@ const config = {
             class="linked-section-button-container"
         >
             <Button
-                v-for="linked_section in config.linked_sections"
-                :key="linked_section.label"
-                :label="linked_section.label"
+                v-for="linked_section in component.config.sections"
+                :key="linked_section.name"
+                :label="linked_section.name"
                 severity="secondary"
                 variant="outlined"
                 @click="scrollToSection(linked_section)"
@@ -76,11 +66,11 @@ const config = {
 
         <div class="linked-section-container">
             <Panel
-                v-for="linked_section in config.linked_sections"
+                v-for="linked_section in component.config.sections"
                 ref="linked_sections"
-                :key="linked_section.label"
+                :key="linked_section.name"
                 :collapsed="false"
-                :header="linked_section.label"
+                :header="linked_section.name"
                 toggleable
             >
                 <template #icons>
@@ -93,6 +83,11 @@ const config = {
                         @click="backToTop()"
                     />
                 </template>
+                <CardSection
+                    :key="linked_section.name"
+                    :config="linked_section.components[0].config"
+                    :resource-instance-id
+                />
                 <div style="height: 600px"></div>
             </Panel>
         </div>
