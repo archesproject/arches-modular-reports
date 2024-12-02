@@ -127,9 +127,52 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 class NodegroupTileDataView(APIBase):
     def get(self, request, resourceinstanceid, nodegroupid):
-        tiles = Tile.objects.filter(
-            resourceinstance_id=resourceinstanceid, nodegroup_id=nodegroupid
+
+        from django.db.models.functions import Concat
+        from django.db.models import Func, TextField, Value, F
+
+        class ArchesGetNodeDisplayValue(Func):
+            function = "__arches_get_node_display_value"
+            output_field = TextField()
+
+            def __init__(self, in_tiledata, in_nodeid, language_id="en", **extra):
+                expressions = [in_tiledata, in_nodeid, Value(language_id)]
+                super().__init__(*expressions, **extra)
+
+        query_string = request.GET.get("query_string", "")
+
+        nodes = models.Node.objects.filter(nodegroup_id=nodegroupid).exclude(
+            datatype__in=["semantic", "annotation", "geojson-feature-collection"]
         )
+
+        annotations = {
+            f'field_{str(node.pk).replace("-", "_")}': ArchesGetNodeDisplayValue(
+                F("data"), Value(str(node.pk))
+            )
+            for node in nodes
+        }
+
+        # adds spaces between fields
+        fields_with_spaces = []
+        for field in [F(field) for field in annotations.keys()]:
+            fields_with_spaces.append(field)
+            fields_with_spaces.append(Value(" "))
+
+        tiles = (
+            Tile.objects.filter(
+                resourceinstance_id=resourceinstanceid, nodegroup_id=nodegroupid
+            )
+            .annotate(**annotations)
+            .annotate(search_text=Concat(*fields_with_spaces, output_field=TextField()))
+            .filter(search_text__icontains=query_string)
+        )
+
+        # sort_node_id = '10120624-bad0-11ea-81b2-3af9d3b32b71'
+        sort_node_id = "1012053e-bad0-11ea-81b2-3af9d3b32b71"
+
+        sorting_field_name = f'field_{sort_node_id.replace("-", "_")}'
+
+        tiles = tiles.order_by(F(sorting_field_name))
 
         page_number = request.GET.get("page")
         rows_per_page = request.GET.get("rows_per_page")
@@ -172,11 +215,6 @@ class NodegroupTileDataView(APIBase):
             "total_count": paginator.count,
             "total_pages": paginator.num_pages,
             "page": page_number,
-            # 'rows_per_page': rows_per_page,
-            # 'has_next': page.has_next(),
-            # 'has_previous': page.has_previous(),
-            # 'next_page_number': page.next_page_number() if page.has_next() else None,
-            # 'previous_page_number': page.previous_page_number() if page.has_previous() else None,
         }
 
         return JSONResponse(response_data)
