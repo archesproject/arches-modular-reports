@@ -22,12 +22,13 @@ const EditableReportTheme = {
 };
 
 ko.components.register('editable-report', {
-    viewModel: function() {
+    viewModel: function(params) {
         createVueApplication(EditableReport, EditableReportTheme).then(vueApp => {
             // handles the Graph Designer case of multiple mounting points on the same page
             const mountingPoints = document.querySelectorAll('.editable-report-mounting-point');
             const mountingPoint = mountingPoints[mountingPoints.length - 1];
-            
+
+            vueApp.provide('resourceInstanceId', params.report.report_json.resourceinstanceid);
             vueApp.mount(mountingPoint);
         });
     },

@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import {
-    defineAsyncComponent,
-    onMounted,
-    provide,
-    ref,
-    useTemplateRef,
-} from "vue";
+import { defineAsyncComponent, inject, onMounted, provide, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Toast from "primevue/toast";
@@ -28,9 +22,9 @@ import type {
 
 const toast = useToast();
 const { $gettext } = useGettext();
-const sectionContainerRef = useTemplateRef("section-container");
 const componentLookup: { [key: string]: string } = {};
 
+const resourceInstanceId = inject("resourceInstanceId") as string;
 const resource: Ref<{ resource: Tile } | null> = ref(null);
 provide("resource", resource);
 
@@ -43,15 +37,14 @@ const config: Ref<NamedSection> = ref({
 });
 
 onMounted(async () => {
-    const reportContainer = sectionContainerRef.value!.closest(
-        ".resource-report-abstract-container",
-    );
-    const resourceId = reportContainer!.getAttribute("data-resourceid")!;
+    if (!resourceInstanceId) {
+        return;
+    }
     try {
         const promises = await Promise.all([
-            fetchResource(resourceId),
-            fetchNodePresentation(resourceId),
-            fetchReportConfig(resourceId),
+            fetchResource(resourceInstanceId),
+            fetchNodePresentation(resourceInstanceId),
+            fetchReportConfig(resourceInstanceId),
         ]);
         resource.value = promises[0];
         nodePresentationLookup.value = promises[1];
@@ -77,10 +70,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div
-        ref="section-container"
-        class="section-container"
-    >
+    <div class="section-container">
         <h2>{{ config.name }}</h2>
         <!--Consider <keep-alive> if future refactors cause these to be rerendered.-->
         <component
