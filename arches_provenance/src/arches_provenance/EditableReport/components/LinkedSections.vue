@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { useTemplateRef } from "vue";
+import { defineAsyncComponent, onMounted, useTemplateRef } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
 import Button from "primevue/button";
-
-import CardSection from "@/arches_provenance/EditableReport/components/CardSection.vue";
 
 import type {
     NamedSection,
     SectionContent,
 } from "@/arches_provenance/EditableReport/types";
 
+const componentLookup: { [key: string]: string } = {};
 const { component, resourceInstanceId } = defineProps<{
     component: SectionContent;
     resourceInstanceId: string;
@@ -46,6 +45,21 @@ function backToTop() {
         block: "end",
     });
 }
+
+onMounted(async () => {
+    component.config.sections.forEach((section: NamedSection) => {
+        section.components.forEach((component: SectionContent) => {
+            if (!componentLookup[component.component]) {
+                componentLookup[component.component] = defineAsyncComponent(
+                    () =>
+                        import(
+                            `@/arches_provenance/EditableReport/components/${component.component}.vue`
+                        ),
+                );
+            }
+        });
+    });
+});
 </script>
 
 <template>
@@ -83,7 +97,10 @@ function backToTop() {
                         @click="backToTop()"
                     />
                 </template>
-                <CardSection
+                <component
+                    :is="
+                        componentLookup[linked_section.components[0].component]
+                    "
                     :key="linked_section.name"
                     :config="linked_section.components[0].config"
                     :resource-instance-id

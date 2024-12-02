@@ -72,7 +72,7 @@ class ReportConfig(models.Model):
                                 "name": "Related Resources",
                                 "components": [
                                     {
-                                        "component": "RelatedResourcesSections",
+                                        "component": "LinkedSections",
                                         "config": {
                                             "sections": self.generate_related_resources_sections()
                                         },
