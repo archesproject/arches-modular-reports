@@ -131,10 +131,8 @@ class NodegroupTileDataView(APIBase):
             resourceinstance_id=resourceinstanceid, nodegroup_id=nodegroupid
         )
 
-        page_number = request.GET.get("page", 1)
-        rows_per_page = request.GET.get(
-            "rows_per_page"
-        )  # no fallback, let it fail if not provided
+        page_number = request.GET.get("page")
+        rows_per_page = request.GET.get("rows_per_page")
 
         try:
             page_number = int(page_number)
@@ -172,7 +170,7 @@ class NodegroupTileDataView(APIBase):
         response_data = {
             "results": ret,
             "total_count": paginator.count,
-            # 'num_pages': paginator.num_pages,
+            "total_pages": paginator.num_pages,
             "page": page_number,
             # 'rows_per_page': rows_per_page,
             # 'has_next': page.has_next(),

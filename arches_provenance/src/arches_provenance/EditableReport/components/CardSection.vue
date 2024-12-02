@@ -2,11 +2,14 @@
 import { ref, onMounted, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
-import Button from "primevue/button";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
 import Select from "primevue/select";
+import Paginator from "primevue/paginator";
 
+import { useToast } from "primevue/usetoast";
+
+import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_provenance/constants.ts";
 import {
     fetchCardFromNodegroupId,
     fetchNodegroupTileData,
@@ -15,6 +18,7 @@ import {
 import type { Ref } from "vue";
 
 const { $gettext } = useGettext();
+const toast = useToast();
 
 const props = defineProps<{
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,7 +33,7 @@ interface ColumnName {
 
 const isLoading = ref(false);
 // const isLoadingAdditionalResults = ref(false);
-const searchResultsPage = ref(1);
+const currentPage = ref(1);
 const searchResultsTotalCount = ref(0);
 const query = ref("");
 
@@ -37,26 +41,40 @@ const tableTitle = ref("");
 const columnNames: Ref<ColumnName[]> = ref([]);
 
 const cardData = ref(null);
-const nodegroupTileData = ref([]);
+const pageNumberToNodegroupTileData = ref({});
+const currentlyDisplayedTableData = ref([]);
 
 const rowsPerPageOptions = ref([5, 10, 20]);
 const rowsPerPage = ref(5);
 
-watch(rowsPerPage, (newValue) => {
-    foo(
-        props.resourceInstanceId,
-        props.component.config?.nodegroup_id,
-        newValue,
-    );
-});
+const aaa = ref(0);
+
+watch(
+    rowsPerPage,
+    async (newValue) => {
+        aaa.value += 1;
+
+        const { results, page, totalCount } = await fetchData(
+            props.resourceInstanceId,
+            props.component.config?.nodegroup_id,
+            newValue,
+            1,
+        );
+
+        pageNumberToNodegroupTileData.value = {
+            [page]: results,
+        };
+
+        currentlyDisplayedTableData.value =
+            pageNumberToNodegroupTileData.value[page];
+
+        currentPage.value = page;
+        searchResultsTotalCount.value = totalCount;
+    },
+    { immediate: true },
+);
 
 onMounted(() => {
-    foo(
-        props.resourceInstanceId,
-        props.component.config?.nodegroup_id,
-        rowsPerPage.value,
-    );
-
     fetchCardFromNodegroupId(props.component.config?.nodegroup_id).then(
         (fetchedCardData) => {
             tableTitle.value = fetchedCardData?.name;
@@ -113,36 +131,72 @@ function getDisplayValue(obj: Record<string, any>, key: string): string | null {
     return null;
 }
 
-function foo(resourceInstanceId, nodegroupId, rowsPerPage) {
+async function fetchData(
+    resourceInstanceId: string,
+    nodegroupId: string,
+    rowsPerPage: number,
+    page: number,
+) {
     isLoading.value = true;
 
-    fetchNodegroupTileData(resourceInstanceId, nodegroupId, rowsPerPage).then(
-        (fetchedNodegroupTileData) => {
-            nodegroupTileData.value = fetchedNodegroupTileData["results"];
-            searchResultsPage.value = fetchedNodegroupTileData["page"];
-            searchResultsTotalCount.value =
-                fetchedNodegroupTileData["total_count"];
+    try {
+        const fetchedNodegroupTileData = await fetchNodegroupTileData(
+            resourceInstanceId,
+            nodegroupId,
+            rowsPerPage,
+            page,
+        );
 
-            isLoading.value = false;
-        },
-    );
+        return {
+            results: fetchedNodegroupTileData.results,
+            page: fetchedNodegroupTileData.page,
+            totalCount: fetchedNodegroupTileData.total_count,
+        };
+    } catch (error: unknown) {
+        toast.add({
+            severity: "error",
+            life: DEFAULT_ERROR_TOAST_LIFE,
+            summary: $gettext("Unable to fetch resource"),
+            detail: error instanceof Error ? error.message : String(error),
+        });
+
+        throw error;
+    } finally {
+        isLoading.value = false;
+    }
 }
 
-function bar(event, callback) {
-    console.log("bar");
-    callback(event);
+async function foo(page) {
+    if (pageNumberToNodegroupTileData.value[page]) {
+        currentlyDisplayedTableData.value =
+            pageNumberToNodegroupTileData.value[page];
+        currentPage.value = page;
+    } else {
+        const {
+            results,
+            page: fetchedPage,
+            totalCount,
+        } = await fetchData(
+            props.resourceInstanceId,
+            props.component.config?.nodegroup_id,
+            rowsPerPage.value,
+            page,
+        );
+
+        pageNumberToNodegroupTileData.value[fetchedPage] = results;
+        currentlyDisplayedTableData.value = results;
+        currentPage.value = fetchedPage;
+        searchResultsTotalCount.value = totalCount;
+    }
 }
 </script>
 
 <template>
     <DataTable
-        v-if="nodegroupTileData.length > 0"
-        paginator
-        lazy
-        :value="nodegroupTileData"
+        v-if="currentlyDisplayedTableData.length > 0"
+        :value="currentlyDisplayedTableData"
         :loading="isLoading"
         :total-records="searchResultsTotalCount"
-        :rows="rowsPerPage"
     >
         <template #header>
             <h4 style="color: var(--p-content-color)">{{ tableTitle }}</h4>
@@ -170,50 +224,23 @@ function bar(event, callback) {
                 {{ getDisplayValue(slotProps.data, slotProps.field) }}
             </template>
         </Column>
-
-        <template
-            #paginatorcontainer="{
-                first,
-                last,
-                page,
-                pageCount,
-                prevPageCallback,
-                nextPageCallback,
-                totalRecords,
-            }"
-        >
-            <div>
-                <Button
-                    icon="pi pi-chevron-left"
-                    rounded
-                    text
-                    :disabled="page === 0"
-                    @click="prevPageCallback"
-                />
-                <div>
-                    <span
-                        >Showing {{ first }} to {{ last }} of
-                        {{ totalRecords }}</span
-                    >
-                    <span>Page {{ page + 1 }} of {{ pageCount }}</span>
-                </div>
-                <Button
-                    icon="pi pi-chevron-right"
-                    rounded
-                    text
-                    :disabled="page === pageCount - 1"
-                    @click="
-                        (e) => {
-                            bar(e, nextPageCallback);
-                        }
-                    "
-                />
-            </div>
-        </template>
     </DataTable>
+
+    <Paginator
+        :key="aaa"
+        :rows="rowsPerPage"
+        :total-records="searchResultsTotalCount"
+        @page="(e) => foo(e.page + 1)"
+    />
 
     <!-- <pre>{{ columnNames }}</pre> -->
     <!-- <pre>{{ props.component.config }}</pre> -->
     <!-- <pre>{{ cardData }}</pre> -->
-    <!-- <pre>{{ nodegroupTileData }}</pre> -->
+    <!-- <pre>{{ pageNumberToNodegroupTileData }}</pre> -->
 </template>
+
+<style scoped>
+:deep(.p-paginator) {
+    border-radius: 0;
+}
+</style>

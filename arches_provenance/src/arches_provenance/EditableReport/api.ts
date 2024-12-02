@@ -39,6 +39,7 @@ export const fetchNodegroupTileData = async (
     resourceInstanceId: string,
     nodegroupId: string,
     rowsPerPage: number,
+    page: number,
 ) => {
     const url = arches.urls.api_nodegroup_tile_data(
         resourceInstanceId,
@@ -46,6 +47,7 @@ export const fetchNodegroupTileData = async (
     );
     const params = new URLSearchParams({
         rows_per_page: rowsPerPage.toString(),
+        page: page.toString(),
     });
 
     const response = await fetch(url + "?" + params.toString());
