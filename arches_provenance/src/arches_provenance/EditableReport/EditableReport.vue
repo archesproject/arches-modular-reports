@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, provide, ref } from "vue";
+import { defineAsyncComponent, onMounted, provide, ref, shallowRef } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Toast from "primevue/toast";
@@ -12,7 +12,7 @@ import {
 } from "@/arches_provenance/EditableReport/api.ts";
 import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_provenance/constants.ts";
 
-import type { Ref } from "vue";
+import type { Component, Ref, ShallowRef } from "vue";
 import type {
     NamedSection,
     NodePresentationLookup,
@@ -23,7 +23,10 @@ import type {
 const toast = useToast();
 const { $gettext } = useGettext();
 const resourceInstanceId = window.location.href.split("/").reverse()[0];
-const componentLookup: { [key: string]: string } = {};
+const componentLookup: ShallowRef<{ [key: string]: Component }> = shallowRef(
+    {},
+);
+provide("components", componentLookup);
 
 const resource: Ref<{ resource: Tile } | null> = ref(null);
 provide("resource", resource);
@@ -55,14 +58,43 @@ onMounted(async () => {
         });
         return;
     }
-    config.value.components.forEach((component: SectionContent) => {
-        componentLookup[component.component] = defineAsyncComponent(
-            () =>
-                import(
-                    `@/arches_provenance/EditableReport/components/${component.component}.vue`
-                ),
-        );
-    });
+
+    function registerComponent(componentName: string) {
+        if (!componentLookup.value[componentName]) {
+            componentLookup.value[componentName] = defineAsyncComponent(
+                () =>
+                    import(
+                        `@/arches_provenance/EditableReport/components/${componentName}.vue`
+                    ),
+            );
+        }
+    }
+
+    function traverse(component: SectionContent) {
+        registerComponent(component.component);
+
+        // Currently searches arbitrary config values only one level down.
+        Object.values(component.config).forEach((configVal) => {
+            if (!configVal) {
+                return;
+            }
+            // Duck-type for SectionConfig via presence of "components" property.
+            let subComponents = configVal?.components ?? [];
+            if (configVal.flatMap) {
+                subComponents = configVal
+                    .filter(
+                        (inner: unknown) => (inner as NamedSection).components,
+                    )
+                    .flatMap(
+                        (inner: unknown) => (inner as NamedSection).components,
+                    );
+            }
+            subComponents.forEach((sub: SectionContent) => traverse(sub));
+        });
+    }
+    config.value.components.forEach((component: SectionContent) =>
+        traverse(component),
+    );
 });
 </script>
 
