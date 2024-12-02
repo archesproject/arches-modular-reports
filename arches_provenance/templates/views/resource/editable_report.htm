@@ -8,13 +8,18 @@
 {% endblock title %}
 
 {% block main_content %}
-<div 
+<div
     data-bind="
-        component: { 
+        component: {
             name: 'resource-report-abstract',
             params: {
                 resourceid: '{{ resourceid }}',
-                report: { templateId: () => 'b0908227-ecc2-48dd-931b-314a9031caa0' },
+                report: {
+                    templateId: () => 'b0908227-ecc2-48dd-931b-314a9031caa0',
+                    report_json: {
+                        resourceinstanceid: '{{ resourceid }}',
+                    },
+                },
                 disableDisambiguatedReport: true,
             }
         }
