@@ -22,6 +22,10 @@ from arches.app.views.resource import ResourceReportView
 
 from arches_provenance.models import ReportConfig
 
+from arches_provenance.app.utils.nodegroup_tile_data_utils import (
+    get_sorted_filtered_tiles,
+)
+
 
 @method_decorator(can_read_resource_instance, name="dispatch")
 class ProvenanceEditableReportConfigView(View):
@@ -127,76 +131,25 @@ class NodePresentationView(APIBase):
 
 class NodegroupTileDataView(APIBase):
     def get(self, request, resourceinstanceid, nodegroupid):
-        class ArchesGetNodeDisplayValue(Func):
-            function = "__arches_get_node_display_value"
-            output_field = TextField()
-
-            def __init__(self, in_tiledata, in_nodeid, language_id):
-                super().__init__(in_tiledata, in_nodeid, language_id)
-
-        user_language = translation.get_language()
-        query = request.GET.get("query", "")
-        sort_node_id = request.GET.get("sort_node_id")
-        sort_order = request.GET.get("sort_order", "asc")
-
-        # semantic, annotation, and geojson-feature-collection data types are excluded in __arches_get_node_display_value
-        nodes = models.Node.objects.filter(nodegroup_id=nodegroupid).exclude(
-            datatype__in=["semantic", "annotation", "geojson-feature-collection"]
-        )
-
-        annotations = {
-            f'field_{str(node.pk).replace("-", "_")}': ArchesGetNodeDisplayValue(
-                F("data"), Value(str(node.pk)), Value(user_language)
-            )
-            for node in nodes
-        }
-
-        # adds spaces between fields
-        display_values_with_spaces = []
-        for field in [F(field) for field in annotations.keys()]:
-            display_values_with_spaces.append(field)
-            display_values_with_spaces.append(Value(" "))
-
-        tiles = (
-            Tile.objects.filter(
-                resourceinstance_id=resourceinstanceid, nodegroup_id=nodegroupid
-            )
-            .annotate(**annotations)
-            .annotate(
-                search_text=Concat(
-                    *display_values_with_spaces, output_field=TextField()
-                )
-            )
-            .filter(search_text__icontains=query)
-        )
-
-        if sort_node_id:
-            sort_field_name = f'field_{sort_node_id.replace("-", "_")}'
-
-            if sort_order == "asc":
-                tiles = tiles.order_by(F(sort_field_name).asc())
-            elif sort_order == "desc":
-                tiles = tiles.order_by(F(sort_field_name).desc())
-
         page_number = request.GET.get("page")
         rows_per_page = request.GET.get("rows_per_page")
 
-        try:
-            page_number = int(page_number)
-            rows_per_page = int(rows_per_page)
-        except ValueError:
-            return JSONResponse(
-                {"error": "Invalid page or rows_per_page parameter"}, status=400
-            )
+        query = request.GET.get("query", "")
+        sort_node_id = request.GET.get("sort_node_id")
+        sort_order = request.GET.get("sort_order", "asc")
+        user_language = translation.get_language()
+
+        tiles = get_sorted_filtered_tiles(
+            resourceinstanceid=resourceinstanceid,
+            nodegroupid=nodegroupid,
+            sort_node_id=sort_node_id,
+            sort_order=sort_order,
+            query=query,
+            user_language=user_language,
+        )
 
         paginator = Paginator(tiles, rows_per_page)
-
-        try:
-            page = paginator.page(page_number)
-        except PageNotAnInteger:
-            page = paginator.page(1)
-        except EmptyPage:
-            page = paginator.page(paginator.num_pages)
+        page = paginator.page(page_number)
 
         node_ids_to_tiles_reference = {}
         for tile in page.object_list:
@@ -210,12 +163,11 @@ class NodegroupTileDataView(APIBase):
                 tile_list.append(tile)
                 node_ids_to_tiles_reference[node_id] = tile_list
 
-        ret = []
-        for tile in page.object_list:
-            ret.append(LabelBasedGraph.from_tile(tile, node_ids_to_tiles_reference, {}))
-
         response_data = {
-            "results": ret,
+            "results": [
+                LabelBasedGraph.from_tile(tile, node_ids_to_tiles_reference, {})
+                for tile in page.object_list
+            ],
             "total_count": paginator.count,
             "total_pages": paginator.num_pages,
             "page": page_number,
