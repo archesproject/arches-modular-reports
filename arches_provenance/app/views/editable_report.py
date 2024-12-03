@@ -135,7 +135,7 @@ class NodegroupTileDataView(APIBase):
                 super().__init__(in_tiledata, in_nodeid, language_id)
 
         user_language = translation.get_language()
-        query_string = request.GET.get("query_string", "")
+        query = request.GET.get("query", "")
         sort_node_id = request.GET.get("sort_node_id")
         sort_order = request.GET.get("sort_order", "asc")
 
@@ -167,7 +167,7 @@ class NodegroupTileDataView(APIBase):
                     *display_values_with_spaces, output_field=TextField()
                 )
             )
-            .filter(search_text__icontains=query_string)
+            .filter(search_text__icontains=query)
         )
 
         if sort_node_id:

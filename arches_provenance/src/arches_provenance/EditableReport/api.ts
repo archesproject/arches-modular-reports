@@ -42,6 +42,7 @@ export const fetchNodegroupTileData = async (
     page: number,
     sortNodeId: string | undefined,
     sortOrder: string | undefined,
+    query: string | undefined,
 ) => {
     console.log(sortNodeId);
     const url = arches.urls.api_nodegroup_tile_data(
@@ -53,6 +54,7 @@ export const fetchNodegroupTileData = async (
         page: page.toString(),
         sort_node_id: sortNodeId || "",
         sort_order: sortOrder || "",
+        query: query || "",
     });
 
     const response = await fetch(url + "?" + params.toString());

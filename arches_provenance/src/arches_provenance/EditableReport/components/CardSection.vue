@@ -4,6 +4,9 @@ import { useGettext } from "vue3-gettext";
 
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
+import IconField from "primevue/iconfield";
+import InputIcon from "primevue/inputicon";
+import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import Paginator from "primevue/paginator";
 
@@ -50,58 +53,50 @@ const aaa = ref(0);
 const sortNodeId = ref(null);
 const sortOrder = ref("asc");
 
-watch(
-    sortOrder,
-    async (newValue) => {
-        aaa.value += 1;
+watch(sortOrder, async (newValue) => {
+    aaa.value += 1;
 
-        const { results, page, totalCount } = await fetchData(
-            props.resourceInstanceId,
-            props.component.config?.nodegroup_id,
-            rowsPerPage.value,
-            1,
-            sortNodeId.value,
-            newValue,
-        );
+    const { results, page, totalCount } = await fetchData(
+        props.resourceInstanceId,
+        props.component.config?.nodegroup_id,
+        rowsPerPage.value,
+        1,
+        sortNodeId.value,
+        newValue,
+    );
 
-        pageNumberToNodegroupTileData.value = {
-            [page]: results,
-        };
+    pageNumberToNodegroupTileData.value = {
+        [page]: results,
+    };
 
-        currentlyDisplayedTableData.value =
-            pageNumberToNodegroupTileData.value[page];
+    currentlyDisplayedTableData.value =
+        pageNumberToNodegroupTileData.value[page];
 
-        currentPage.value = page;
-        searchResultsTotalCount.value = totalCount;
-    },
-    { immediate: true },
-);
+    currentPage.value = page;
+    searchResultsTotalCount.value = totalCount;
+});
 
-watch(
-    sortNodeId,
-    async (newValue) => {
-        aaa.value += 1;
+watch(sortNodeId, async (newValue) => {
+    aaa.value += 1;
 
-        const { results, page, totalCount } = await fetchData(
-            props.resourceInstanceId,
-            props.component.config?.nodegroup_id,
-            rowsPerPage.value,
-            1,
-            newValue,
-        );
+    const { results, page, totalCount } = await fetchData(
+        props.resourceInstanceId,
+        props.component.config?.nodegroup_id,
+        rowsPerPage.value,
+        1,
+        newValue,
+    );
 
-        pageNumberToNodegroupTileData.value = {
-            [page]: results,
-        };
+    pageNumberToNodegroupTileData.value = {
+        [page]: results,
+    };
 
-        currentlyDisplayedTableData.value =
-            pageNumberToNodegroupTileData.value[page];
+    currentlyDisplayedTableData.value =
+        pageNumberToNodegroupTileData.value[page];
 
-        currentPage.value = page;
-        searchResultsTotalCount.value = totalCount;
-    },
-    { immediate: true },
-);
+    currentPage.value = page;
+    searchResultsTotalCount.value = totalCount;
+});
 
 watch(
     rowsPerPage,
@@ -192,6 +187,7 @@ async function fetchData(
     page: number,
     sortNodeId: string | null = null,
     sortOrder: string | null = null,
+    query: string | null = null,
 ) {
     isLoading.value = true;
 
@@ -205,6 +201,7 @@ async function fetchData(
             page,
             sortNodeId,
             sortOrder,
+            query,
         );
 
         return {
@@ -262,6 +259,37 @@ function baz(e) {
         sortOrder.value = "desc";
     }
 }
+
+const value1 = ref("");
+let timeout = null;
+
+watch(value1, (newValue) => {
+    clearTimeout(timeout);
+
+    timeout = setTimeout(async () => {
+        aaa.value += 1;
+
+        const { results, page, totalCount } = await fetchData(
+            props.resourceInstanceId,
+            props.component.config?.nodegroup_id,
+            rowsPerPage.value,
+            1,
+            sortNodeId.value,
+            sortOrder.value,
+            newValue,
+        );
+
+        pageNumberToNodegroupTileData.value = {
+            [page]: results,
+        };
+
+        currentlyDisplayedTableData.value =
+            pageNumberToNodegroupTileData.value[page];
+
+        currentPage.value = page;
+        searchResultsTotalCount.value = totalCount;
+    }, 500);
+});
 </script>
 
 <template>
@@ -283,6 +311,14 @@ function baz(e) {
                     :options="rowsPerPageOptions"
                 />
             </div>
+
+            <IconField>
+                <InputIcon class="pi pi-search" />
+                <InputText
+                    v-model="value1"
+                    :placeholder="$gettext('Search')"
+                />
+            </IconField>
         </template>
 
         <Column
@@ -307,11 +343,6 @@ function baz(e) {
         :total-records="searchResultsTotalCount"
         @page="(e) => foo(e.page + 1)"
     />
-
-    <!-- <pre>{{ columnNames }}</pre> -->
-    <!-- <pre>{{ props.component.config }}</pre> -->
-    <!-- <pre>{{ cardData }}</pre> -->
-    <!-- <pre>{{ pageNumberToNodegroupTileData }}</pre> -->
 </template>
 
 <style scoped>
