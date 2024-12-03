@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from "vue";
+import { useTemplateRef } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
 import Button from "primevue/button";
-
-import type { Ref } from "vue";
 
 const { $gettext } = useGettext();
 const buttonSectionRef = useTemplateRef("buttonSectionRef");
@@ -13,12 +11,9 @@ const linkedSectionsRef = useTemplateRef("linked_sections");
 
 interface LinkedSection {
     label: string;
-    collapsed: Ref<boolean>;
 }
 
 function scrollToSection(linked_section: LinkedSection): void {
-    linked_section.collapsed.value = false;
-
     const sections = linkedSectionsRef.value;
 
     const section = sections?.find((section) => {
@@ -27,6 +22,9 @@ function scrollToSection(linked_section: LinkedSection): void {
     });
 
     if (section) {
+        if (section.d_collapsed) {
+            section.toggle();
+        }
         section.$el.scrollIntoView({
             behavior: "smooth",
             block: "nearest",
@@ -46,19 +44,15 @@ const config = {
     linked_sections: [
         {
             label: "Names and Statements",
-            collapsed: ref(false),
         },
         {
             label: "Section 2",
-            collapsed: ref(false),
         },
         {
             label: "Section 3",
-            collapsed: ref(false),
         },
         {
             label: "Section 4",
-            collapsed: ref(false),
         },
     ],
 };
@@ -85,7 +79,7 @@ const config = {
                 v-for="linked_section in config.linked_sections"
                 ref="linked_sections"
                 :key="linked_section.label"
-                :collapsed="linked_section.collapsed"
+                :collapsed="false"
                 :header="linked_section.label"
                 toggleable
             >
