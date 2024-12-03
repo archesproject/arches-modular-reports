@@ -32,10 +32,8 @@ interface ColumnName {
 }
 
 const isLoading = ref(false);
-// const isLoadingAdditionalResults = ref(false);
 const currentPage = ref(1);
 const searchResultsTotalCount = ref(0);
-const query = ref("");
 
 const tableTitle = ref("");
 const columnNames: Ref<ColumnName[]> = ref([]);
@@ -48,6 +46,62 @@ const rowsPerPageOptions = ref([5, 10, 20]);
 const rowsPerPage = ref(5);
 
 const aaa = ref(0);
+
+const sortNodeId = ref(null);
+const sortOrder = ref("asc");
+
+watch(
+    sortOrder,
+    async (newValue) => {
+        aaa.value += 1;
+
+        const { results, page, totalCount } = await fetchData(
+            props.resourceInstanceId,
+            props.component.config?.nodegroup_id,
+            rowsPerPage.value,
+            1,
+            sortNodeId.value,
+            newValue,
+        );
+
+        pageNumberToNodegroupTileData.value = {
+            [page]: results,
+        };
+
+        currentlyDisplayedTableData.value =
+            pageNumberToNodegroupTileData.value[page];
+
+        currentPage.value = page;
+        searchResultsTotalCount.value = totalCount;
+    },
+    { immediate: true },
+);
+
+watch(
+    sortNodeId,
+    async (newValue) => {
+        aaa.value += 1;
+
+        const { results, page, totalCount } = await fetchData(
+            props.resourceInstanceId,
+            props.component.config?.nodegroup_id,
+            rowsPerPage.value,
+            1,
+            newValue,
+        );
+
+        pageNumberToNodegroupTileData.value = {
+            [page]: results,
+        };
+
+        currentlyDisplayedTableData.value =
+            pageNumberToNodegroupTileData.value[page];
+
+        currentPage.value = page;
+        searchResultsTotalCount.value = totalCount;
+    },
+    { immediate: true },
+);
 
 watch(
     rowsPerPage,
@@ -136,8 +190,12 @@ async function fetchData(
     nodegroupId: string,
     rowsPerPage: number,
     page: number,
+    sortNodeId: string | null = null,
+    sortOrder: string | null = null,
 ) {
     isLoading.value = true;
+
+    console.log("fetchData", sortNodeId);
 
     try {
         const fetchedNodegroupTileData = await fetchNodegroupTileData(
@@ -145,6 +203,8 @@ async function fetchData(
             nodegroupId,
             rowsPerPage,
             page,
+            sortNodeId,
+            sortOrder,
         );
 
         return {
@@ -189,6 +249,19 @@ async function foo(page) {
         searchResultsTotalCount.value = totalCount;
     }
 }
+
+function bar(e) {
+    const foo = cardData.value.nodes.find((node) => node.alias === e);
+    sortNodeId.value = foo.nodeid;
+}
+
+function baz(e) {
+    if (e === 1) {
+        sortOrder.value = "asc";
+    } else {
+        sortOrder.value = "desc";
+    }
+}
 </script>
 
 <template>
@@ -197,6 +270,8 @@ async function foo(page) {
         :value="currentlyDisplayedTableData"
         :loading="isLoading"
         :total-records="searchResultsTotalCount"
+        @update:sort-field="(e) => bar(e)"
+        @update:sort-order="(e) => baz(e)"
     >
         <template #header>
             <h4 style="color: var(--p-content-color)">{{ tableTitle }}</h4>
@@ -219,6 +294,7 @@ async function foo(page) {
             :key="col.node_name + '_' + index"
             :field="col.node_name"
             :header="col.widget_label"
+            sortable
         >
             <template #body="slotProps">
                 {{ getDisplayValue(slotProps.data, slotProps.field) }}
@@ -227,7 +303,6 @@ async function foo(page) {
     </DataTable>
 
     <Paginator
-        :key="aaa"
         :rows="rowsPerPage"
         :total-records="searchResultsTotalCount"
         @page="(e) => foo(e.page + 1)"

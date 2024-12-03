@@ -1,8 +1,11 @@
 from http import HTTPStatus
 
-from django.db.models import Prefetch
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models.functions import Concat
+from django.db.models import Prefetch, Func, TextField, Value, F
 from django.http import Http404
 from django.shortcuts import render
+from django.utils import translation
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.views.generic import View
@@ -122,57 +125,58 @@ class NodePresentationView(APIBase):
         )
 
 
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
-
 class NodegroupTileDataView(APIBase):
     def get(self, request, resourceinstanceid, nodegroupid):
-
-        from django.db.models.functions import Concat
-        from django.db.models import Func, TextField, Value, F
-
         class ArchesGetNodeDisplayValue(Func):
             function = "__arches_get_node_display_value"
             output_field = TextField()
 
-            def __init__(self, in_tiledata, in_nodeid, language_id="en", **extra):
-                expressions = [in_tiledata, in_nodeid, Value(language_id)]
-                super().__init__(*expressions, **extra)
+            def __init__(self, in_tiledata, in_nodeid, language_id):
+                super().__init__(in_tiledata, in_nodeid, language_id)
 
+        user_language = translation.get_language()
         query_string = request.GET.get("query_string", "")
+        sort_node_id = request.GET.get("sort_node_id")
+        sort_order = request.GET.get("sort_order", "asc")
 
+        # semantic, annotation, and geojson-feature-collection data types are excluded in __arches_get_node_display_value
         nodes = models.Node.objects.filter(nodegroup_id=nodegroupid).exclude(
             datatype__in=["semantic", "annotation", "geojson-feature-collection"]
         )
 
         annotations = {
             f'field_{str(node.pk).replace("-", "_")}': ArchesGetNodeDisplayValue(
-                F("data"), Value(str(node.pk))
+                F("data"), Value(str(node.pk)), Value(user_language)
             )
             for node in nodes
         }
 
         # adds spaces between fields
-        fields_with_spaces = []
+        display_values_with_spaces = []
         for field in [F(field) for field in annotations.keys()]:
-            fields_with_spaces.append(field)
-            fields_with_spaces.append(Value(" "))
+            display_values_with_spaces.append(field)
+            display_values_with_spaces.append(Value(" "))
 
         tiles = (
             Tile.objects.filter(
                 resourceinstance_id=resourceinstanceid, nodegroup_id=nodegroupid
             )
             .annotate(**annotations)
-            .annotate(search_text=Concat(*fields_with_spaces, output_field=TextField()))
+            .annotate(
+                search_text=Concat(
+                    *display_values_with_spaces, output_field=TextField()
+                )
+            )
             .filter(search_text__icontains=query_string)
         )
 
-        # sort_node_id = '10120624-bad0-11ea-81b2-3af9d3b32b71'
-        sort_node_id = "1012053e-bad0-11ea-81b2-3af9d3b32b71"
+        if sort_node_id:
+            sort_field_name = f'field_{sort_node_id.replace("-", "_")}'
 
-        sorting_field_name = f'field_{sort_node_id.replace("-", "_")}'
-
-        tiles = tiles.order_by(F(sorting_field_name))
+            if sort_order == "asc":
+                tiles = tiles.order_by(F(sort_field_name).asc())
+            elif sort_order == "desc":
+                tiles = tiles.order_by(F(sort_field_name).desc())
 
         page_number = request.GET.get("page")
         rows_per_page = request.GET.get("rows_per_page")
