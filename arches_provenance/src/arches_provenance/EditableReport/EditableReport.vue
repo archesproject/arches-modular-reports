@@ -20,12 +20,14 @@ import type {
     Tile,
 } from "@/arches_provenance/EditableReport/types";
 
+interface ComponentMapping {
+    [key: string]: Component;
+}
+
 const toast = useToast();
 const { $gettext } = useGettext();
 const resourceInstanceId = window.location.href.split("/").reverse()[0];
-const componentLookup: ShallowRef<{ [key: string]: Component }> = shallowRef(
-    {},
-);
+const componentLookup: ShallowRef<ComponentMapping> = shallowRef({});
 provide("components", componentLookup);
 
 const resource: Ref<{ resource: Tile } | null> = ref(null);
@@ -70,7 +72,7 @@ onMounted(async () => {
         }
     }
 
-    function traverse(component: SectionContent) {
+    function traverseSection(component: SectionContent) {
         registerComponent(component.component);
 
         // Currently searches arbitrary config values only one level down.
@@ -89,11 +91,13 @@ onMounted(async () => {
                         (inner: unknown) => (inner as NamedSection).components,
                     );
             }
-            subComponents.forEach((sub: SectionContent) => traverse(sub));
+            subComponents.forEach((sub: SectionContent) =>
+                traverseSection(sub),
+            );
         });
     }
     config.value.components.forEach((component: SectionContent) =>
-        traverse(component),
+        traverseSection(component),
     );
 });
 </script>
