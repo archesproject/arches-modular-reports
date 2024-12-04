@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, provide, ref } from "vue";
+import { defineAsyncComponent, inject, onMounted, provide, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Toast from "primevue/toast";
@@ -22,9 +22,9 @@ import type {
 
 const toast = useToast();
 const { $gettext } = useGettext();
-const resourceId = window.location.href.split("/").reverse()[0];
 const componentLookup: { [key: string]: string } = {};
 
+const resourceInstanceId = inject("resourceInstanceId") as string;
 const resource: Ref<{ resource: Tile } | null> = ref(null);
 provide("resource", resource);
 
@@ -37,11 +37,14 @@ const config: Ref<NamedSection> = ref({
 });
 
 onMounted(async () => {
+    if (!resourceInstanceId) {
+        return;
+    }
     try {
         const promises = await Promise.all([
-            fetchResource(resourceId),
-            fetchNodePresentation(resourceId),
-            fetchReportConfig(resourceId),
+            fetchResource(resourceInstanceId),
+            fetchNodePresentation(resourceInstanceId),
+            fetchReportConfig(resourceInstanceId),
         ]);
         resource.value = promises[0];
         nodePresentationLookup.value = promises[1];

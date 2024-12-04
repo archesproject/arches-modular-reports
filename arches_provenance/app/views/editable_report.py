@@ -50,6 +50,7 @@ class EditableReportAwareResourceReportView(ResourceReportView):
             context = self.get_context_data(
                 main_script="views/resource/report",
                 resourceid=resourceid,
+                templateid=graph.template.pk,
                 # To the extent possible, avoid DB queries needed for KO
                 report_templates=models.ReportTemplate.objects.filter(
                     componentname="editable-report"
