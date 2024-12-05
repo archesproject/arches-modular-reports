@@ -5,7 +5,6 @@ import {
     onMounted,
     provide,
     ref,
-    shallowRef,
 } from "vue";
 import { useGettext } from "vue3-gettext";
 
@@ -19,7 +18,7 @@ import {
 } from "@/arches_provenance/EditableReport/api.ts";
 import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_provenance/constants.ts";
 
-import type { Component, Ref, ShallowRef } from "vue";
+import type { Ref } from "vue";
 import type {
     NamedSection,
     NodePresentationLookup,
@@ -29,10 +28,7 @@ import type {
 
 const toast = useToast();
 const { $gettext } = useGettext();
-const componentLookup: ShallowRef<{ [key: string]: Component }> = shallowRef(
-    {},
-);
-provide("components", componentLookup);
+const componentLookup: { [key: string]: string } = {};
 
 const resourceInstanceId = inject("resourceInstanceId") as string;
 const resource: Ref<{ resource: Tile } | null> = ref(null);
@@ -68,43 +64,14 @@ onMounted(async () => {
         });
         return;
     }
-
-    function registerComponent(componentName: string) {
-        if (!componentLookup.value[componentName]) {
-            componentLookup.value[componentName] = defineAsyncComponent(
-                () =>
-                    import(
-                        `@/arches_provenance/EditableReport/components/${componentName}.vue`
-                    ),
-            );
-        }
-    }
-
-    function traverse(component: SectionContent) {
-        registerComponent(component.component);
-
-        // Currently searches arbitrary config values only one level down.
-        Object.values(component.config).forEach((configVal) => {
-            if (!configVal) {
-                return;
-            }
-            // Duck-type for SectionConfig via presence of "components" property.
-            let subComponents = configVal?.components ?? [];
-            if (configVal.flatMap) {
-                subComponents = configVal
-                    .filter(
-                        (inner: unknown) => (inner as NamedSection).components,
-                    )
-                    .flatMap(
-                        (inner: unknown) => (inner as NamedSection).components,
-                    );
-            }
-            subComponents.forEach((sub: SectionContent) => traverse(sub));
-        });
-    }
-    config.value.components.forEach((component: SectionContent) =>
-        traverse(component),
-    );
+    config.value.components.forEach((component: SectionContent) => {
+        componentLookup[component.component] = defineAsyncComponent(
+            () =>
+                import(
+                    `@/arches_provenance/EditableReport/components/${component.component}.vue`
+                ),
+        );
+    });
 });
 </script>
 

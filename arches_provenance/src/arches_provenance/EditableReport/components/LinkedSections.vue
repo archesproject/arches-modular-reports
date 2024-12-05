@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, useTemplateRef } from "vue";
+import { defineAsyncComponent, onMounted, useTemplateRef } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
@@ -10,12 +10,11 @@ import type {
     SectionContent,
 } from "@/arches_provenance/EditableReport/types";
 
+const componentLookup: { [key: string]: string } = {};
 const { component, resourceInstanceId } = defineProps<{
     component: SectionContent;
     resourceInstanceId: string;
 }>();
-
-const componentLookup = inject("components") as { [key: string]: string };
 
 const { $gettext } = useGettext();
 const buttonSectionRef = useTemplateRef("buttonSectionRef");
@@ -46,6 +45,21 @@ function backToTop() {
         block: "end",
     });
 }
+
+onMounted(async () => {
+    component.config.sections.forEach((section: NamedSection) => {
+        section.components.forEach((component: SectionContent) => {
+            if (!componentLookup[component.component]) {
+                componentLookup[component.component] = defineAsyncComponent(
+                    () =>
+                        import(
+                            `@/arches_provenance/EditableReport/components/${component.component}.vue`
+                        ),
+                );
+            }
+        });
+    });
+});
 </script>
 
 <template>
