@@ -1,5 +1,13 @@
 from django.db.models.functions import Concat
-from django.db.models import Func, TextField, Value, F
+from django.db.models import (
+    Case,
+    F,
+    Func,
+    IntegerField,
+    TextField,
+    Value,
+    When,
+)
 
 from arches.app.models import models
 from arches.app.models.tile import Tile
@@ -48,8 +56,22 @@ def get_sorted_filtered_tiles(
         sort_field_name = f'field_{sort_node_id.replace("-", "_")}'
 
         if sort_order == "asc":
-            tiles = tiles.order_by(F(sort_field_name).asc())
+            tiles = tiles.annotate(
+                sort_priority=Case(
+                    When(**{f"{sort_field_name}__isnull": True}, then=Value(1)),
+                    When(**{f"{sort_field_name}": ""}, then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            ).order_by("sort_priority", F(sort_field_name).asc())
         elif sort_order == "desc":
-            tiles = tiles.order_by(F(sort_field_name).desc())
+            tiles = tiles.annotate(
+                sort_priority=Case(
+                    When(**{f"{sort_field_name}__isnull": True}, then=Value(0)),
+                    When(**{f"{sort_field_name}": ""}, then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField(),
+                )
+            ).order_by("sort_priority", F(sort_field_name).desc())
 
     return tiles

@@ -75,6 +75,9 @@ const query = ref("");
 watch(
     [sortOrder, sortNodeId, rowsPerPage],
     ([newSortOrder, newSortNodeId, newRowsPerPage]) => {
+        pageNumberToNodegroupTileData.value = {};
+        paginatorKey.value += 1;
+
         fetchData(
             props.resourceInstanceId,
             props.component.config.nodegroup_id,
@@ -93,6 +96,8 @@ watch(query, (newQuery) => {
     }
 
     timeout = setTimeout(() => {
+        pageNumberToNodegroupTileData.value = {};
+
         fetchData(
             props.resourceInstanceId,
             props.component.config.nodegroup_id,
@@ -240,9 +245,7 @@ function onUpdateSortField(event: string) {
         (node) => node.alias === event,
     );
 
-    if (selectedNode) {
-        sortNodeId.value = selectedNode.nodeid;
-    }
+    sortNodeId.value = selectedNode!.nodeid;
 }
 
 function onUpdateSortOrder(event: number | undefined) {
@@ -315,5 +318,9 @@ function onUpdateSortOrder(event: number | undefined) {
 <style scoped>
 :deep(.p-paginator) {
     border-radius: 0;
+}
+
+:deep(.p-datatable-column-sorted) {
+    background: var(--p-datatable-header-cell-background);
 }
 </style>
