@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, provide, ref, shallowRef } from "vue";
+import {
+    defineAsyncComponent,
+    inject,
+    onMounted,
+    provide,
+    ref,
+    shallowRef,
+} from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Toast from "primevue/toast";
@@ -26,10 +33,10 @@ interface ComponentMapping {
 
 const toast = useToast();
 const { $gettext } = useGettext();
-const resourceInstanceId = window.location.href.split("/").reverse()[0];
 const componentLookup: ShallowRef<ComponentMapping> = shallowRef({});
 provide("components", componentLookup);
 
+const resourceInstanceId = inject("resourceInstanceId") as string;
 const resource: Ref<{ resource: Tile } | null> = ref(null);
 provide("resource", resource);
 
@@ -42,6 +49,9 @@ const config: Ref<NamedSection> = ref({
 });
 
 onMounted(async () => {
+    if (!resourceInstanceId) {
+        return;
+    }
     try {
         const promises = await Promise.all([
             fetchResource(resourceInstanceId),
