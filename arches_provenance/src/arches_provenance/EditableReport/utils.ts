@@ -12,8 +12,8 @@ export async function importComponents(
     namedSections: NamedSection[],
     componentLookup: ComponentLookup,
 ): Promise<void> {
-    namedSections.forEach((tab: NamedSection) => {
-        tab.components.forEach((component: SectionContent) => {
+    namedSections.forEach((section: NamedSection) => {
+        section.components.forEach((component: SectionContent) => {
             componentLookup[component.component] = defineAsyncComponent(
                 () =>
                     import(

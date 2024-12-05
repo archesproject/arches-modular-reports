@@ -88,11 +88,10 @@ onMounted(() => importComponents(component.config.sections, componentLookup));
                     />
                 </template>
                 <component
-                    :is="
-                        componentLookup[linked_section.components[0].component]
-                    "
-                    :key="linked_section.name"
-                    :config="linked_section.components[0].config"
+                    :is="componentLookup[child.component]"
+                    v-for="child in linked_section.components"
+                    :key="child.config.key ?? 'default'"
+                    :config="child.config"
                     :resource-instance-id
                 />
                 <div style="height: 600px"></div>
