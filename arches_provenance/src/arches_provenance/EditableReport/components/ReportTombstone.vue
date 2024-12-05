@@ -15,6 +15,12 @@ import type {
 } from "@/arches_provenance/EditableReport/types";
 
 const resource = inject("resource") as { resource: Tile };
+
+const props = defineProps<{
+    component: SectionContent;
+    resourceInstanceId: string;
+}>();
+
 const nodePresentationLookup = inject(
     "nodePresentationLookup",
 ) as NodePresentationLookup;
@@ -28,8 +34,7 @@ const { $gettext } = useGettext();
             class="data-container"
         >
             <GenericDatatype
-                v-for="nodeAlias in ($attrs.component as SectionContent).config
-                    .nodes"
+                v-for="nodeAlias in props.component.config.nodes"
                 :key="nodeAlias"
                 :node-presentation="nodePresentationLookup[nodeAlias]"
                 :tile-value="findNodeValue(resource, nodeAlias)"
