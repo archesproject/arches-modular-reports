@@ -24,16 +24,6 @@ import type { PageState } from "primevue/paginator";
 const { $gettext } = useGettext();
 const toast = useToast();
 
-const props = defineProps<{
-    component: {
-        config: {
-            nodegroup_id: string;
-            nodes: string[];
-        };
-    };
-    resourceInstanceId: string;
-}>();
-
 interface ColumnName {
     nodeAlias: string;
     widgetLabel: string;
@@ -45,26 +35,37 @@ interface CardData {
     widgets: { node_id: string; label: string }[];
 }
 
-const queryTimeoutValue = 500;
-let timeout: ReturnType<typeof setTimeout> | null = null;
+const props = defineProps<{
+    component: {
+        config: {
+            nodegroup_id: string;
+            nodes: string[];
+        };
+    };
+    resourceInstanceId: string;
+}>();
+
 const ASC = "asc";
 const DESC = "desc";
+const ROWS_PER_PAGE_OPTIONS = [5, 10, 20];
 
-const isLoading = ref(false);
-const currentPage = ref(1);
-const searchResultsTotalCount = ref(0);
+const queryTimeoutValue = 500;
+let timeout: ReturnType<typeof setTimeout> | null = null;
 
 const tableTitle = ref("");
 const columnNames = ref<ColumnName[]>([]);
+const isLoading = ref(false);
 
 const cardData = ref<CardData | null>(null);
-const pageNumberToNodegroupTileData = ref<Record<number, unknown[]>>({});
-const currentlyDisplayedTableData = ref<unknown[]>([]);
-
-const rowsPerPageOptions = ref([5, 10, 20]);
-const rowsPerPage = ref(5);
 
 const paginatorKey = ref(0);
+const currentPage = ref(1);
+const rowsPerPageOptions = ref(ROWS_PER_PAGE_OPTIONS);
+const rowsPerPage = ref(ROWS_PER_PAGE_OPTIONS[0]);
+
+const pageNumberToNodegroupTileData = ref<Record<number, unknown[]>>({});
+const currentlyDisplayedTableData = ref<unknown[]>([]);
+const searchResultsTotalCount = ref(0);
 
 const sortNodeId = ref("");
 const sortOrder = ref(ASC);
