@@ -55,23 +55,20 @@ def get_sorted_filtered_tiles(
     if sort_node_id:
         sort_field_name = f'field_{sort_node_id.replace("-", "_")}'
 
+        sort_priority = Case(
+            When(**{f"{sort_field_name}__isnull": True}, then=Value(1)),
+            When(**{f"{sort_field_name}": ""}, then=Value(1)),
+            default=Value(0),
+            output_field=IntegerField(),
+        )
+
         if sort_order == "asc":
-            tiles = tiles.annotate(
-                sort_priority=Case(
-                    When(**{f"{sort_field_name}__isnull": True}, then=Value(1)),
-                    When(**{f"{sort_field_name}": ""}, then=Value(1)),
-                    default=Value(0),
-                    output_field=IntegerField(),
-                )
-            ).order_by("sort_priority", F(sort_field_name).asc())
+            tiles = tiles.annotate(sort_priority=sort_priority).order_by(
+                "sort_priority", F(sort_field_name).asc()
+            )
         elif sort_order == "desc":
-            tiles = tiles.annotate(
-                sort_priority=Case(
-                    When(**{f"{sort_field_name}__isnull": True}, then=Value(0)),
-                    When(**{f"{sort_field_name}": ""}, then=Value(0)),
-                    default=Value(1),
-                    output_field=IntegerField(),
-                )
-            ).order_by("sort_priority", F(sort_field_name).desc())
+            tiles = tiles.annotate(sort_priority=sort_priority).order_by(
+                "-sort_priority", F(sort_field_name).desc()
+            )
 
     return tiles
