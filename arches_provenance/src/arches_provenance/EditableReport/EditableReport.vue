@@ -42,14 +42,18 @@ onMounted(async () => {
         return;
     }
     try {
-        const promises = await Promise.all([
-            fetchResource(resourceInstanceId),
-            fetchNodePresentation(resourceInstanceId),
-            fetchReportConfig(resourceInstanceId),
+        await Promise.all([
+            fetchResource(resourceInstanceId).then(
+                (data) => (resource.value = data),
+            ),
+            fetchNodePresentation(resourceInstanceId).then(
+                (data) => (nodePresentationLookup.value = data),
+            ),
+            fetchReportConfig(resourceInstanceId).then((data) => {
+                importComponents([data], componentLookup);
+                config.value = data;
+            }),
         ]);
-        resource.value = promises[0];
-        nodePresentationLookup.value = promises[1];
-        config.value = promises[2];
     } catch (error) {
         toast.add({
             severity: "error",
@@ -59,7 +63,6 @@ onMounted(async () => {
         });
         return;
     }
-    importComponents([config.value], componentLookup);
 });
 </script>
 
