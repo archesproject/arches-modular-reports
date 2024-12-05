@@ -7,7 +7,10 @@ import TabList from "primevue/tablist";
 import TabPanel from "primevue/tabpanel";
 import TabPanels from "primevue/tabpanels";
 
-import { importComponents } from "@/arches_provenance/EditableReport/utils.ts";
+import {
+    importComponents,
+    uniqueId,
+} from "@/arches_provenance/EditableReport/utils.ts";
 
 import type {
     ComponentLookup,
@@ -45,7 +48,7 @@ onMounted(() => importComponents(component.config.tabs, componentLookup));
                 <component
                     :is="componentLookup[tabComponent.component]"
                     v-for="tabComponent in tab.components"
-                    :key="tabComponent.component"
+                    :key="uniqueId(tabComponent)"
                     :component="tabComponent"
                     :resource-instance-id
                 />

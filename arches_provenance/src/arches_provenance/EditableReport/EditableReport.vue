@@ -11,7 +11,10 @@ import {
     fetchResource,
 } from "@/arches_provenance/EditableReport/api.ts";
 import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_provenance/constants.ts";
-import { importComponents } from "@/arches_provenance/EditableReport/utils.ts";
+import {
+    importComponents,
+    uniqueId,
+} from "@/arches_provenance/EditableReport/utils.ts";
 
 import type { Ref } from "vue";
 import type {
@@ -73,7 +76,7 @@ onMounted(async () => {
         <component
             :is="componentLookup[component.component]"
             v-for="component in config.components"
-            :key="component.component"
+            :key="uniqueId(component)"
             :component
             :resource-instance-id
         />

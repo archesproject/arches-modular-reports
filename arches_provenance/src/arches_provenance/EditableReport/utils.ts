@@ -8,6 +8,11 @@ import type {
     TileValue,
 } from "@/arches_provenance/EditableReport/types";
 
+export function uniqueId(_unused: unknown) {
+    /* Not cryptographically secure, but good enough for Vue component keys. */
+    return Math.floor(Math.random() * Date.now());
+}
+
 export async function importComponents(
     namedSections: NamedSection[],
     componentLookup: ComponentLookup,

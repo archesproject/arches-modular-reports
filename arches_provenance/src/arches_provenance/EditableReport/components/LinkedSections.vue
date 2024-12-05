@@ -5,7 +5,10 @@ import { useGettext } from "vue3-gettext";
 import Panel from "primevue/panel";
 import Button from "primevue/button";
 
-import { importComponents } from "@/arches_provenance/EditableReport/utils.ts";
+import {
+    importComponents,
+    uniqueId,
+} from "@/arches_provenance/EditableReport/utils.ts";
 
 import type {
     ComponentLookup,
@@ -90,7 +93,7 @@ onMounted(() => importComponents(component.config.sections, componentLookup));
                 <component
                     :is="componentLookup[child.component]"
                     v-for="child in linked_section.components"
-                    :key="child.config.key ?? 'default'"
+                    :key="uniqueId(child)"
                     :config="child.config"
                     :resource-instance-id
                 />
