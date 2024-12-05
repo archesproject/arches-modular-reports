@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, useTemplateRef } from "vue";
+import { onMounted, useTemplateRef } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
 import Button from "primevue/button";
 
+import { importComponents } from "@/arches_provenance/EditableReport/utils.ts";
+
 import type {
+    ComponentLookup,
     NamedSection,
     SectionContent,
 } from "@/arches_provenance/EditableReport/types";
 
-const componentLookup: { [key: string]: string } = {};
+const componentLookup: ComponentLookup = {};
 const { component, resourceInstanceId } = defineProps<{
     component: SectionContent;
     resourceInstanceId: string;
@@ -46,20 +49,7 @@ function backToTop() {
     });
 }
 
-onMounted(async () => {
-    component.config.sections.forEach((section: NamedSection) => {
-        section.components.forEach((component: SectionContent) => {
-            if (!componentLookup[component.component]) {
-                componentLookup[component.component] = defineAsyncComponent(
-                    () =>
-                        import(
-                            `@/arches_provenance/EditableReport/components/${component.component}.vue`
-                        ),
-                );
-            }
-        });
-    });
-});
+onMounted(() => importComponents(component.config.sections, componentLookup));
 </script>
 
 <template>

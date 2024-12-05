@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import {
-    defineAsyncComponent,
-    inject,
-    onMounted,
-    provide,
-    ref,
-} from "vue";
+import { inject, onMounted, provide, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Toast from "primevue/toast";
@@ -17,18 +11,19 @@ import {
     fetchResource,
 } from "@/arches_provenance/EditableReport/api.ts";
 import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_provenance/constants.ts";
+import { importComponents } from "@/arches_provenance/EditableReport/utils.ts";
 
 import type { Ref } from "vue";
 import type {
+    ComponentLookup,
     NamedSection,
     NodePresentationLookup,
-    SectionContent,
     Tile,
 } from "@/arches_provenance/EditableReport/types";
 
 const toast = useToast();
 const { $gettext } = useGettext();
-const componentLookup: { [key: string]: string } = {};
+const componentLookup: ComponentLookup = {};
 
 const resourceInstanceId = inject("resourceInstanceId") as string;
 const resource: Ref<{ resource: Tile } | null> = ref(null);
@@ -64,14 +59,7 @@ onMounted(async () => {
         });
         return;
     }
-    config.value.components.forEach((component: SectionContent) => {
-        componentLookup[component.component] = defineAsyncComponent(
-            () =>
-                import(
-                    `@/arches_provenance/EditableReport/components/${component.component}.vue`
-                ),
-        );
-    });
+    importComponents([config.value], componentLookup);
 });
 </script>
 

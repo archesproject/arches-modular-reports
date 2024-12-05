@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted } from "vue";
+import { onMounted } from "vue";
 
 import Tab from "primevue/tab";
 import Tabs from "primevue/tabs";
@@ -7,30 +7,21 @@ import TabList from "primevue/tablist";
 import TabPanel from "primevue/tabpanel";
 import TabPanels from "primevue/tabpanels";
 
+import { importComponents } from "@/arches_provenance/EditableReport/utils.ts";
+
 import type {
-    NamedSection,
+    ComponentLookup,
     SectionContent,
 } from "@/arches_provenance/EditableReport/types";
 
-const componentLookup: { [key: string]: string } = {};
+const componentLookup: ComponentLookup = {};
 
 const { component, resourceInstanceId } = defineProps<{
     component: SectionContent;
     resourceInstanceId: string;
 }>();
 
-onMounted(async () => {
-    component.config.tabs.forEach((tab: NamedSection) => {
-        tab.components.forEach((component: SectionContent) => {
-            componentLookup[component.component] = defineAsyncComponent(
-                () =>
-                    import(
-                        `@/arches_provenance/EditableReport/components/${component.component}.vue`
-                    ),
-            );
-        });
-    });
-});
+onMounted(() => importComponents(component.config.tabs, componentLookup));
 </script>
 
 <template>
