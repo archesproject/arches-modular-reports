@@ -7,121 +7,102 @@ import DataTable from "primevue/datatable";
 import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
 import InputText from "primevue/inputtext";
-import Select from "primevue/select";
 import Paginator from "primevue/paginator";
+import Select from "primevue/select";
 
 import { useToast } from "primevue/usetoast";
 
 import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_provenance/constants.ts";
+
 import {
     fetchCardFromNodegroupId,
     fetchNodegroupTileData,
 } from "@/arches_provenance/EditableReport/api.ts";
 
-import type { Ref } from "vue";
+import type { PageState } from "primevue/paginator";
 
 const { $gettext } = useGettext();
 const toast = useToast();
 
 const props = defineProps<{
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    component: Record<string, any>;
+    component: {
+        config: {
+            nodegroup_id: string;
+            nodes: string[];
+        };
+    };
     resourceInstanceId: string;
 }>();
 
 interface ColumnName {
-    node_name: string;
-    widget_label: string;
+    nodeAlias: string;
+    widgetLabel: string;
 }
+
+interface CardData {
+    name: string;
+    nodes: { alias: string; nodeid: string }[];
+    widgets: { node_id: string; label: string }[];
+}
+
+const queryTimeoutValue = 500;
+let timeout: ReturnType<typeof setTimeout> | null = null;
+const ASC = "asc";
+const DESC = "desc";
 
 const isLoading = ref(false);
 const currentPage = ref(1);
 const searchResultsTotalCount = ref(0);
 
 const tableTitle = ref("");
-const columnNames: Ref<ColumnName[]> = ref([]);
+const columnNames = ref<ColumnName[]>([]);
 
-const cardData = ref(null);
-const pageNumberToNodegroupTileData = ref({});
-const currentlyDisplayedTableData = ref([]);
+const cardData = ref<CardData | null>(null);
+const pageNumberToNodegroupTileData = ref<Record<number, unknown[]>>({});
+const currentlyDisplayedTableData = ref<unknown[]>([]);
 
 const rowsPerPageOptions = ref([5, 10, 20]);
 const rowsPerPage = ref(5);
 
-const aaa = ref(0);
+const paginatorKey = ref(0);
 
-const sortNodeId = ref(null);
-const sortOrder = ref("asc");
+const sortNodeId = ref("");
+const sortOrder = ref(ASC);
 
-watch(sortOrder, async (newValue) => {
-    aaa.value += 1;
-
-    const { results, page, totalCount } = await fetchData(
-        props.resourceInstanceId,
-        props.component.config?.nodegroup_id,
-        rowsPerPage.value,
-        1,
-        sortNodeId.value,
-        newValue,
-    );
-
-    pageNumberToNodegroupTileData.value = {
-        [page]: results,
-    };
-
-    currentlyDisplayedTableData.value =
-        pageNumberToNodegroupTileData.value[page];
-
-    currentPage.value = page;
-    searchResultsTotalCount.value = totalCount;
-});
-
-watch(sortNodeId, async (newValue) => {
-    aaa.value += 1;
-
-    const { results, page, totalCount } = await fetchData(
-        props.resourceInstanceId,
-        props.component.config?.nodegroup_id,
-        rowsPerPage.value,
-        1,
-        newValue,
-    );
-
-    pageNumberToNodegroupTileData.value = {
-        [page]: results,
-    };
-
-    currentlyDisplayedTableData.value =
-        pageNumberToNodegroupTileData.value[page];
-
-    currentPage.value = page;
-    searchResultsTotalCount.value = totalCount;
-});
+const query = ref("");
 
 watch(
-    rowsPerPage,
-    async (newValue) => {
-        aaa.value += 1;
-
-        const { results, page, totalCount } = await fetchData(
+    [sortOrder, sortNodeId, rowsPerPage],
+    ([newSortOrder, newSortNodeId, newRowsPerPage]) => {
+        fetchData(
             props.resourceInstanceId,
-            props.component.config?.nodegroup_id,
-            newValue,
-            1,
+            props.component.config.nodegroup_id,
+            newRowsPerPage,
+            1, // Reset to first page
+            newSortNodeId,
+            newSortOrder,
+            query.value,
         );
-
-        pageNumberToNodegroupTileData.value = {
-            [page]: results,
-        };
-
-        currentlyDisplayedTableData.value =
-            pageNumberToNodegroupTileData.value[page];
-
-        currentPage.value = page;
-        searchResultsTotalCount.value = totalCount;
     },
-    { immediate: true },
 );
+
+watch(query, (newQuery) => {
+    if (timeout) {
+        clearTimeout(timeout);
+    }
+
+    timeout = setTimeout(() => {
+        fetchData(
+            props.resourceInstanceId,
+            props.component.config.nodegroup_id,
+            rowsPerPage.value,
+            1, // Reset to first page
+            sortNodeId.value,
+            sortOrder.value,
+            newQuery,
+        );
+    }, queryTimeoutValue);
+});
 
 onMounted(() => {
     fetchCardFromNodegroupId(props.component.config?.nodegroup_id).then(
@@ -135,7 +116,61 @@ onMounted(() => {
             cardData.value = fetchedCardData;
         },
     );
+
+    fetchData(
+        props.resourceInstanceId,
+        props.component.config?.nodegroup_id,
+        rowsPerPage.value,
+        currentPage.value,
+        sortNodeId.value,
+        sortOrder.value,
+        query.value,
+    );
 });
+
+async function fetchData(
+    resourceInstanceId: string,
+    nodegroupId: string,
+    rowsPerPage: number,
+    page: number,
+    sortNodeId: string,
+    sortOrder: string,
+    query: string,
+) {
+    isLoading.value = true;
+
+    try {
+        const {
+            results,
+            page: fetchedPage,
+            total_count: totalCount,
+        } = await fetchNodegroupTileData(
+            resourceInstanceId,
+            nodegroupId,
+            rowsPerPage,
+            page,
+            sortNodeId,
+            sortOrder,
+            query,
+        );
+
+        pageNumberToNodegroupTileData.value[fetchedPage] = results;
+        currentlyDisplayedTableData.value = results;
+        currentPage.value = fetchedPage;
+        searchResultsTotalCount.value = totalCount;
+    } catch (error) {
+        toast.add({
+            severity: "error",
+            life: DEFAULT_ERROR_TOAST_LIFE,
+            summary: $gettext("Unable to fetch resource"),
+            detail: error instanceof Error ? error.message : String(error),
+        });
+
+        throw error;
+    } finally {
+        isLoading.value = false;
+    }
+}
 
 function deriveColumnNames(
     config: { nodes: string[] },
@@ -157,168 +192,97 @@ function deriveColumnNames(
         }
 
         return {
-            node_name: nodeAlias,
-            widget_label: matchingWidget?.label || "",
+            nodeAlias: nodeAlias,
+            widgetLabel: matchingWidget?.label || "",
         };
     });
 }
 
-function getDisplayValue(obj: Record<string, any>, key: string): string | null {
-    if (obj[key] && obj[key]["@display_value"]) {
-        return obj[key]["@display_value"];
+function getDisplayValue(
+    tileData: Record<string, unknown>,
+    key: string,
+): string | null {
+    if (tileData[key]) {
+        return (tileData[key] as Record<string, string>)["@display_value"];
     }
 
-    for (const firstLevelKey in obj) {
-        if (
-            typeof obj[firstLevelKey] === "object" &&
-            obj[firstLevelKey][key]?.["@display_value"]
-        ) {
-            return obj[firstLevelKey][key]["@display_value"];
-        }
+    for (const value of Object.values(tileData)) {
+        const result = getDisplayValue(value as Record<string, unknown>, key);
+        if (result) return result;
     }
 
-    return null;
+    return null; // Return null if no matches found
 }
 
-async function fetchData(
-    resourceInstanceId: string,
-    nodegroupId: string,
-    rowsPerPage: number,
-    page: number,
-    sortNodeId: string | null = null,
-    sortOrder: string | null = null,
-    query: string | null = null,
-) {
-    isLoading.value = true;
+function onUpdatePagination(event: PageState) {
+    const page = event.page + 1; // PrimeVue paginator is 0-indexed
 
-    console.log("fetchData", sortNodeId);
-
-    try {
-        const fetchedNodegroupTileData = await fetchNodegroupTileData(
-            resourceInstanceId,
-            nodegroupId,
-            rowsPerPage,
-            page,
-            sortNodeId,
-            sortOrder,
-            query,
-        );
-
-        return {
-            results: fetchedNodegroupTileData.results,
-            page: fetchedNodegroupTileData.page,
-            totalCount: fetchedNodegroupTileData.total_count,
-        };
-    } catch (error: unknown) {
-        toast.add({
-            severity: "error",
-            life: DEFAULT_ERROR_TOAST_LIFE,
-            summary: $gettext("Unable to fetch resource"),
-            detail: error instanceof Error ? error.message : String(error),
-        });
-
-        throw error;
-    } finally {
-        isLoading.value = false;
-    }
-}
-
-async function foo(page) {
     if (pageNumberToNodegroupTileData.value[page]) {
         currentlyDisplayedTableData.value =
             pageNumberToNodegroupTileData.value[page];
         currentPage.value = page;
     } else {
-        const {
-            results,
-            page: fetchedPage,
-            totalCount,
-        } = await fetchData(
+        fetchData(
             props.resourceInstanceId,
             props.component.config?.nodegroup_id,
             rowsPerPage.value,
             page,
-        );
-
-        pageNumberToNodegroupTileData.value[fetchedPage] = results;
-        currentlyDisplayedTableData.value = results;
-        currentPage.value = fetchedPage;
-        searchResultsTotalCount.value = totalCount;
-    }
-}
-
-function bar(e) {
-    const foo = cardData.value.nodes.find((node) => node.alias === e);
-    sortNodeId.value = foo.nodeid;
-}
-
-function baz(e) {
-    if (e === 1) {
-        sortOrder.value = "asc";
-    } else {
-        sortOrder.value = "desc";
-    }
-}
-
-const value1 = ref("");
-let timeout = null;
-
-watch(value1, (newValue) => {
-    clearTimeout(timeout);
-
-    timeout = setTimeout(async () => {
-        aaa.value += 1;
-
-        const { results, page, totalCount } = await fetchData(
-            props.resourceInstanceId,
-            props.component.config?.nodegroup_id,
-            rowsPerPage.value,
-            1,
             sortNodeId.value,
             sortOrder.value,
-            newValue,
+            query.value,
         );
+    }
+}
 
-        pageNumberToNodegroupTileData.value = {
-            [page]: results,
-        };
+function onUpdateSortField(event: string) {
+    const selectedNode = cardData.value?.nodes.find(
+        (node) => node.alias === event,
+    );
 
-        currentlyDisplayedTableData.value =
-            pageNumberToNodegroupTileData.value[page];
+    if (selectedNode) {
+        sortNodeId.value = selectedNode.nodeid;
+    }
+}
 
-        currentPage.value = page;
-        searchResultsTotalCount.value = totalCount;
-    }, 500);
-});
+function onUpdateSortOrder(event: number | undefined) {
+    if (event === 1) {
+        sortOrder.value = ASC;
+    } else if (event === -1) {
+        sortOrder.value = DESC;
+    }
+}
 </script>
 
 <template>
     <DataTable
-        v-if="currentlyDisplayedTableData.length > 0"
         :value="currentlyDisplayedTableData"
         :loading="isLoading"
         :total-records="searchResultsTotalCount"
-        @update:sort-field="(e) => bar(e)"
-        @update:sort-order="(e) => baz(e)"
+        @update:sort-field="onUpdateSortField"
+        @update:sort-order="onUpdateSortOrder"
     >
         <template #header>
             <h4 style="color: var(--p-content-color)">{{ tableTitle }}</h4>
 
-            <div>
-                <span>{{ $gettext("Number of rows:") }}</span>
-                <Select
-                    v-model="rowsPerPage"
-                    :options="rowsPerPageOptions"
-                />
-            </div>
+            <div style="display: flex; justify-content: space-between">
+                <div>
+                    <span>{{ $gettext("Number of rows:") }}</span>
+                    <Select
+                        v-model="rowsPerPage"
+                        style="margin: 0 1rem"
+                        :options="rowsPerPageOptions"
+                    />
+                </div>
 
-            <IconField>
-                <InputIcon class="pi pi-search" />
-                <InputText
-                    v-model="value1"
-                    :placeholder="$gettext('Search')"
-                />
-            </IconField>
+                <IconField>
+                    <InputIcon class="pi pi-search" />
+                    <InputText
+                        v-model="query"
+                        style="height: 100%"
+                        :placeholder="$gettext('Search')"
+                    />
+                </IconField>
+            </div>
         </template>
 
         <Column
@@ -326,10 +290,10 @@ watch(value1, (newValue) => {
             header=""
         />
         <Column
-            v-for="(col, index) of columnNames"
-            :key="col.node_name + '_' + index"
-            :field="col.node_name"
-            :header="col.widget_label"
+            v-for="col of columnNames"
+            :key="col.nodeAlias"
+            :field="col.nodeAlias"
+            :header="col.widgetLabel"
             sortable
         >
             <template #body="slotProps">
@@ -339,9 +303,11 @@ watch(value1, (newValue) => {
     </DataTable>
 
     <Paginator
+        v-if="searchResultsTotalCount > rowsPerPage"
+        :key="paginatorKey"
         :rows="rowsPerPage"
         :total-records="searchResultsTotalCount"
-        @page="(e) => foo(e.page + 1)"
+        @page="onUpdatePagination"
     />
 </template>
 

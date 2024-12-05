@@ -40,11 +40,10 @@ export const fetchNodegroupTileData = async (
     nodegroupId: string,
     rowsPerPage: number,
     page: number,
-    sortNodeId: string | undefined,
-    sortOrder: string | undefined,
-    query: string | undefined,
+    sortNodeId: string | null,
+    sortOrder: string | null,
+    query: string | null,
 ) => {
-    console.log(sortNodeId);
     const url = arches.urls.api_nodegroup_tile_data(
         resourceInstanceId,
         nodegroupId,
