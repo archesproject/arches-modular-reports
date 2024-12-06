@@ -115,7 +115,7 @@ onMounted(() => importComponents(component.config.sections, componentLookup));
     flex-wrap: wrap;
     justify-content: center;
     width: 100%;
-    background-color: white;
+    background-color: var(--p-content-background);
     padding: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     gap: 10px;
