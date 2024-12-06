@@ -19,12 +19,23 @@ export async function importComponents(
 ): Promise<void> {
     namedSections.forEach((section: NamedSection) => {
         section.components.forEach((component: SectionContent) => {
-            componentLookup[component.component] = defineAsyncComponent(
-                () =>
-                    import(
-                        `@/arches_provenance/EditableReport/components/${component.component}.vue`
-                    ),
-            );
+            let imported;
+            try {
+                imported = defineAsyncComponent(
+                    () =>
+                        import(
+                            `@/arches_provenance/EditableReport/components/${component.component}.vue`
+                        ),
+                );
+            } catch {
+                imported = defineAsyncComponent(
+                    () =>
+                        import(
+                            `@/arches_provenance/EditableReport/components/${component.component}/${component.component}.vue`
+                        ),
+                );
+            }
+            componentLookup[component.component] = imported;
         });
     });
 }
