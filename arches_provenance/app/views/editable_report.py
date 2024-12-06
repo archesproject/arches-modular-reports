@@ -134,9 +134,10 @@ class NodegroupTileDataView(APIBase):
         page_number = request.GET.get("page")
         rows_per_page = request.GET.get("rows_per_page")
 
-        query = request.GET.get("query", "")
+        query = request.GET.get("query")
         sort_node_id = request.GET.get("sort_node_id")
         sort_order = request.GET.get("sort_order", "asc")
+
         user_language = translation.get_language()
 
         tiles = get_sorted_filtered_tiles(
@@ -169,7 +170,6 @@ class NodegroupTileDataView(APIBase):
                 for tile in page.object_list
             ],
             "total_count": paginator.count,
-            "total_pages": paginator.num_pages,
             "page": page_number,
         }
 

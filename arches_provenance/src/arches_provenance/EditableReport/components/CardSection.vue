@@ -24,7 +24,7 @@ import type { PageState } from "primevue/paginator";
 const { $gettext } = useGettext();
 const toast = useToast();
 
-interface ColumnName {
+interface ColumnDatum {
     nodeAlias: string;
     widgetLabel: string;
 }
@@ -53,7 +53,7 @@ const queryTimeoutValue = 500;
 let timeout: ReturnType<typeof setTimeout> | null = null;
 
 const tableTitle = ref("");
-const columnNames = ref<ColumnName[]>([]);
+const columnData = ref<ColumnDatum[]>([]);
 const isLoading = ref(false);
 
 const cardData = ref<CardData | null>(null);
@@ -114,7 +114,7 @@ onMounted(() => {
     fetchCardFromNodegroupId(props.component.config?.nodegroup_id).then(
         (fetchedCardData) => {
             tableTitle.value = fetchedCardData?.name;
-            columnNames.value = deriveColumnNames(
+            columnData.value = deriveColumnData(
                 props.component.config,
                 fetchedCardData,
             );
@@ -178,13 +178,13 @@ async function fetchData(
     }
 }
 
-function deriveColumnNames(
+function deriveColumnData(
     config: { nodes: string[] },
     cardData: {
         nodes: { alias: string; nodeid: string }[];
         widgets: { node_id: string; label: string }[];
     },
-): ColumnName[] {
+): ColumnDatum[] {
     return config.nodes.map((nodeAlias: string) => {
         const matchingNode = cardData.nodes.find(
             (node) => node.alias === nodeAlias,
@@ -217,7 +217,7 @@ function getDisplayValue(
         if (result) return result;
     }
 
-    return null; // Return null if no matches found
+    return null;
 }
 
 function onUpdatePagination(event: PageState) {
@@ -294,10 +294,10 @@ function onUpdateSortOrder(event: number | undefined) {
             header=""
         />
         <Column
-            v-for="col of columnNames"
-            :key="col.nodeAlias"
-            :field="col.nodeAlias"
-            :header="col.widgetLabel"
+            v-for="columnDatum of columnData"
+            :key="columnDatum.nodeAlias"
+            :field="columnDatum.nodeAlias"
+            :header="columnDatum.widgetLabel"
             sortable
         >
             <template #body="slotProps">
