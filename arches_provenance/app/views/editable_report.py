@@ -192,6 +192,26 @@ class NodegroupTileDataView(APIBase):
         return JSONResponse(response_data)
 
 
+@method_decorator(can_read_resource_instance, name="dispatch")
+class ChildTileDataView(APIBase):
+    def get(self, request, tileid):
+        tile = Tile.objects.get(tileid=tileid)
+
+        node_ids_to_tiles_reference = {}
+        node_ids = list(tile.data.keys())
+
+        if str(tile.nodegroup_id) not in node_ids:
+            node_ids.append(str(tile.nodegroup_id))
+
+        for node_id in node_ids:
+            tile_list = node_ids_to_tiles_reference.get(node_id, [])
+            tile_list.append(tile)
+            node_ids_to_tiles_reference[node_id] = tile_list
+        return JSONResponse(
+            LabelBasedGraph.from_tile(tile, node_ids_to_tiles_reference, {})
+        )
+
+
 class CardFromNodegroupIdView(APIBase):
     def get(self, request, nodegroupid):
         try:

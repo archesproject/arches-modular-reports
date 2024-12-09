@@ -21,6 +21,7 @@ from arches_provenance.app.views.provenance_report import ProvenanceGroupReportV
 from arches_provenance.app.views.provenance_report import ProvenanceEditorView
 from arches_provenance.app.views.provenance_report import ProvenanceSourceReferences
 from arches_provenance.app.views.editable_report import (
+    ChildTileDataView,
     EditableReportAwareResourceReportView,
     NodePresentationView,
     ProvenanceEditableReportConfigView,
@@ -258,6 +259,11 @@ urlpatterns = [
         "api/nodegroup_tile_data/<uuid:resourceinstanceid>/<uuid:nodegroupid>",
         NodegroupTileDataView.as_view(),
         name="api_nodegroup_tile_data",
+    ),
+    path(
+        "api/child_tile_data/<uuid:tileid>",
+        ChildTileDataView.as_view(),
+        name="api_child_tile_data",
     ),
     path(
         "api/card_from_nodegroup_id/<uuid:nodegroupid>",

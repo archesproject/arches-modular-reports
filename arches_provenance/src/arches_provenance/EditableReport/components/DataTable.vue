@@ -9,12 +9,14 @@ import InputIcon from "primevue/inputicon";
 import InputText from "primevue/inputtext";
 import Message from "primevue/message";
 import Paginator from "primevue/paginator";
+import ProgressSpinner from "primevue/progressspinner";
 import Select from "primevue/select";
 
 import {
     fetchCardFromNodegroupId,
     fetchNodegroupTileData,
 } from "@/arches_provenance/EditableReport/api.ts";
+import ChildTiles from "@/arches_provenance/EditableReport/components/ChildTiles.vue";
 
 import type { PageState } from "primevue/paginator";
 
@@ -246,6 +248,13 @@ function onUpdatePagination(event: PageState) {
     }
 }
 
+function tileIdFromData(tileData: Record<string, unknown>): string {
+    // TODO: clean up these types
+    return Object.values(tileData as Record<string, Record<string, string>>)[0][
+        "@tile_id"
+    ];
+}
+
 function onUpdateSortField(event: string) {
     const selectedNode = cardData.value?.nodes.find(
         (node) => node.alias === event,
@@ -285,6 +294,7 @@ function onUpdateSortOrder(event: number | undefined) {
             :value="currentlyDisplayedTableData"
             :loading="isLoading"
             :total-records="searchResultsTotalCount"
+            :expanded-rows="[]"
             @update:sort-field="onUpdateSortField"
             @update:sort-order="onUpdateSortOrder"
         >
@@ -317,8 +327,8 @@ function onUpdateSortOrder(event: number | undefined) {
             </template>
 
             <Column
-                field=""
-                header=""
+                expander
+                style="width: 25px"
             />
             <Column
                 v-for="columnDatum of columnData"
@@ -331,6 +341,16 @@ function onUpdateSortOrder(event: number | undefined) {
                     {{ getDisplayValue(slotProps.data, slotProps.field) }}
                 </template>
             </Column>
+            <template #expansion="slotProps">
+                <Suspense>
+                    <ChildTiles :tile-id="tileIdFromData(slotProps.data)" />
+                    <template #fallback>
+                        <ProgressSpinner
+                            style="display: flex; width: 4rem; height: 4rem"
+                        />
+                    </template>
+                </Suspense>
+            </template>
         </DataTable>
 
         <div
@@ -354,5 +374,11 @@ function onUpdateSortOrder(event: number | undefined) {
 
 :deep(.p-datatable-column-sorted) {
     background: var(--p-datatable-header-cell-background);
+}
+
+:deep(.p-datatable-row-toggle-button) {
+    padding-block: 6px;
+    width: var(--p-button-icon-width);
+    height: var(--p-button-icon-height);
 }
 </style>
