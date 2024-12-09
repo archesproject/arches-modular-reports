@@ -208,7 +208,9 @@ class ChildTileDataView(APIBase):
             language=translation.get_language(),
         )
         serialized_graph = published_graph.serialized_graph
-        return JSONResponse(self._serialize_with_children(tile, serialized_graph))
+        return JSONResponse(
+            self._serialize_with_children(tile, serialized_graph)["@children"]
+        )
 
     def _serialize_with_children(self, tile, serialized_graph):
         node_ids = list(tile.data.keys())

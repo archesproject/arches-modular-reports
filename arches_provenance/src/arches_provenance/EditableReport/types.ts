@@ -41,3 +41,16 @@ export type TileValue = SingleTileValue | SingleTileValue[];
 export interface Tile {
     [key: string]: TileValue;
 }
+
+export interface LabelBasedTile {
+    "@children": LabelBasedTile[];
+    [key: string]: LabelBasedTile[] | LabelBasedNode;
+}
+
+export interface LabelBasedNode {
+    [key: string]: {
+        "@display_value": string;
+        "@node_id": string;
+        "@tile_id": string;
+    };
+}
