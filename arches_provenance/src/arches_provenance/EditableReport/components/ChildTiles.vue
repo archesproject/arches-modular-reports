@@ -18,4 +18,10 @@ const childTileData = await fetchChildTileData(props.tileId);
             :depth="1"
         />
     </template>
+    <p
+        v-if="!childTileData.length"
+        style="margin: 0 4.25rem"
+    >
+        {{ $gettext("No further data found.") }}
+    </p>
 </template>
