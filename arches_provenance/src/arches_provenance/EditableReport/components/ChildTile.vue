@@ -9,7 +9,11 @@ import type {
     NodePresentationLookup,
 } from "@/arches_provenance/EditableReport/types";
 
-const { data, depth } = defineProps<{ data: LabelBasedTile; depth: number }>();
+const {
+    data,
+    depth,
+    divider = false,
+} = defineProps<{ data: LabelBasedTile; depth: number; divider?: boolean }>();
 
 const nodePresentationLookup = inject(
     "nodePresentationLookup",
@@ -34,6 +38,11 @@ function tileIdFromChild(child: LabelBasedTile): string {
 </script>
 
 <template>
+    <div
+        v-if="divider"
+        class="divider"
+        role="presentation"
+    ></div>
     <details open="true">
         <summary>
             <strong>{{ nodePresentationLookup[cardName].widget_label }}</strong>
@@ -50,6 +59,7 @@ function tileIdFromChild(child: LabelBasedTile): string {
             <ChildTile
                 v-for="child in children"
                 :key="tileIdFromChild(child)"
+                :divider="true"
                 :data="child"
                 :depth="depth + 1"
             />
@@ -58,7 +68,14 @@ function tileIdFromChild(child: LabelBasedTile): string {
 </template>
 
 <style scoped>
+.divider {
+    height: 2px;
+    margin: 2rem;
+    background: var(--p-content-border-color);
+}
+
 details {
+    margin-top: var(--p-list-gap);
     margin-left: v-bind(cardIndentation);
     font-size: small;
 }
