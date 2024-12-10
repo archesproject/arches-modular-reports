@@ -1,12 +1,19 @@
 <script setup lang="ts">
+import { inject } from "vue";
+
 import ChildTile from "@/arches_provenance/EditableReport/components/ChildTile.vue";
 
 import type {
     LabelBasedNode,
     LabelBasedTile,
+    NodePresentationLookup,
 } from "@/arches_provenance/EditableReport/types";
 
 const { data, depth } = defineProps<{ data: LabelBasedTile; depth: number }>();
+
+const nodePresentationLookup = inject(
+    "nodePresentationLookup",
+) as NodePresentationLookup;
 
 const childKey = "@children";
 const { [childKey]: children, ...singleTileData } = data;
@@ -29,7 +36,7 @@ function tileIdFromChild(child: LabelBasedTile): string {
 <template>
     <details open="true">
         <summary>
-            <strong>{{ cardName }}</strong>
+            <strong>{{ nodePresentationLookup[cardName].widget_label }}</strong>
         </summary>
         <dl>
             <div
@@ -37,7 +44,7 @@ function tileIdFromChild(child: LabelBasedTile): string {
                 :key="pair[0]"
                 class="node-pair"
             >
-                <dt>{{ pair[0] }}</dt>
+                <dt>{{ nodePresentationLookup[pair[0]].widget_label }}</dt>
                 <dd>{{ pair[1]["@display_value"] }}</dd>
             </div>
             <ChildTile
