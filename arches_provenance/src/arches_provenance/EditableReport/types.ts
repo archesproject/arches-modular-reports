@@ -1,3 +1,5 @@
+import type { Component } from "vue";
+
 export interface Settings {
     ACTIVE_LANGUAGE: string;
     ACTIVE_LANGUAGE_DIRECTION: string;
@@ -23,6 +25,10 @@ export interface NodePresentation {
 
 export interface NodePresentationLookup {
     [key: string]: NodePresentation;
+}
+
+export interface ComponentLookup {
+    [key: string]: Component;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
