@@ -28,7 +28,8 @@
     "overrides": {
         "moment-timezone": "^0.5.45",
         "nomnom": "npm:@gerhobbelt/nomnom",
-        "primevue": "4.2.3",
+        "primevue": "4.2.5",
+        "@primevue/themes": "4.2.5",
         "vue-tsc": "2.0.29",
         "typescript": "5.6.2",
         "rimraf": "^5.0.7", 

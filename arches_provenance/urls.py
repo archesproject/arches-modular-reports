@@ -255,12 +255,12 @@ urlpatterns = [
         name="api_node_presentation",
     ),
     path(
-        "api/nodegroup_tile_data/<uuid:resourceinstanceid>/<uuid:nodegroupid>/",
+        "api/nodegroup_tile_data/<uuid:resourceinstanceid>/<uuid:nodegroupid>",
         NodegroupTileDataView.as_view(),
         name="api_nodegroup_tile_data",
     ),
     path(
-        "api/card_from_nodegroup_id/<uuid:nodegroupid>/",
+        "api/card_from_nodegroup_id/<uuid:nodegroupid>",
         CardFromNodegroupIdView.as_view(),
         name="api_card_from_nodegroup_id",
     ),

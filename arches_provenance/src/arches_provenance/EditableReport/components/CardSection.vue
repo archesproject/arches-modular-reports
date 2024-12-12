@@ -208,13 +208,24 @@ function getDisplayValue(
     tileData: Record<string, unknown>,
     key: string,
 ): string | null {
-    if (tileData[key]) {
-        return (tileData[key] as Record<string, string>)["@display_value"];
-    }
+    const queue: Array<Record<string, unknown>> = [tileData];
 
-    for (const value of Object.values(tileData)) {
-        const result = getDisplayValue(value as Record<string, unknown>, key);
-        if (result) return result;
+    while (queue.length > 0) {
+        const currentItem = queue.shift();
+
+        if (Object.prototype.hasOwnProperty.call(currentItem, key)) {
+            const value = currentItem![key];
+
+            if ("@display_value" in (value as Record<string, unknown>)) {
+                return (value as Record<string, string>)["@display_value"];
+            }
+        }
+
+        for (const val of Object.values(currentItem!)) {
+            if (val && typeof val === "object") {
+                queue.push(val as Record<string, unknown>);
+            }
+        }
     }
 
     return null;
@@ -279,11 +290,15 @@ function onUpdateSortOrder(event: number | undefined) {
                 </div>
 
                 <IconField>
-                    <InputIcon class="pi pi-search" />
+                    <InputIcon
+                        class="pi pi-search"
+                        aria-hidden="true"
+                    />
                     <InputText
                         v-model="query"
                         style="height: 100%"
                         :placeholder="$gettext('Search')"
+                        :aria-label="$gettext('Search')"
                     />
                 </IconField>
             </div>

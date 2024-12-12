@@ -130,6 +130,7 @@ class NodePresentationView(APIBase):
         )
 
 
+@method_decorator(can_read_resource_instance, name="dispatch")
 class NodegroupTileDataView(APIBase):
     def get(self, request, resourceinstanceid, nodegroupid):
         page_number = request.GET.get("page")
@@ -181,7 +182,7 @@ class CardFromNodegroupIdView(APIBase):
     def get(self, request, nodegroupid):
         try:
             card = Card.objects.get(nodegroup_id=nodegroupid)
-        except models.GraphModel.DoesNotExist:
+        except models.Card.DoesNotExist:
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
 
         return JSONResponse(card)

@@ -13,16 +13,15 @@ from arches.app.models import models
 from arches.app.models.tile import Tile
 
 
+class ArchesGetNodeDisplayValue(Func):
+    function = "__arches_get_node_display_value"
+    output_field = TextField()
+    arity = 3
+
+
 def get_sorted_filtered_tiles(
     resourceinstanceid, nodegroupid, sort_node_id, sort_order, query, user_language
 ):
-    class ArchesGetNodeDisplayValue(Func):
-        function = "__arches_get_node_display_value"
-        output_field = TextField()
-
-        def __init__(self, in_tiledata, in_nodeid, language_id):
-            super().__init__(in_tiledata, in_nodeid, language_id)
-
     # semantic, annotation, and geojson-feature-collection data types are excluded in __arches_get_node_display_value
     nodes = models.Node.objects.filter(nodegroup_id=nodegroupid).exclude(
         datatype__in=["semantic", "annotation", "geojson-feature-collection"]
@@ -70,5 +69,7 @@ def get_sorted_filtered_tiles(
             tiles = tiles.annotate(sort_priority=sort_priority).order_by(
                 "-sort_priority", F(sort_field_name).desc()
             )
+    else:
+        tiles = tiles.order_by("pk")  # default sort order for consistent pagination
 
     return tiles
