@@ -37,6 +37,7 @@ export default [
             },
         },
         "rules": {
+            "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" } ],
             "semi": ["error", "always"],
         },
     },
