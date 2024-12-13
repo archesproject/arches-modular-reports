@@ -97,7 +97,6 @@ onMounted(() => importComponents(component.config.sections, componentLookup));
                     :component="child"
                     :resource-instance-id
                 />
-                <div style="height: 600px"></div>
             </Panel>
         </div>
     </div>
