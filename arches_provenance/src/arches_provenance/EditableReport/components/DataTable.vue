@@ -7,12 +7,9 @@ import DataTable from "primevue/datatable";
 import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
 import InputText from "primevue/inputtext";
+import Message from "primevue/message";
 import Paginator from "primevue/paginator";
 import Select from "primevue/select";
-
-import { useToast } from "primevue/usetoast";
-
-import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_provenance/constants.ts";
 
 import {
     fetchCardFromNodegroupId,
@@ -22,7 +19,6 @@ import {
 import type { PageState } from "primevue/paginator";
 
 const { $gettext } = useGettext();
-const toast = useToast();
 
 interface ColumnDatum {
     nodeAlias: string;
@@ -47,6 +43,7 @@ const props = defineProps<{
 
 const ASC = "asc";
 const DESC = "desc";
+const CARDINALITY_N = "n";
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 20];
 
 const queryTimeoutValue = 500;
@@ -55,8 +52,10 @@ let timeout: ReturnType<typeof setTimeout> | null = null;
 const tableTitle = ref("");
 const columnData = ref<ColumnDatum[]>([]);
 const isLoading = ref(false);
+const hasLoadingError = ref(false);
 
 const cardData = ref<CardData | null>(null);
+const cardinality = ref("");
 
 const paginatorKey = ref(0);
 const currentPage = ref(1);
@@ -119,6 +118,7 @@ onMounted(() => {
                 fetchedCardData,
             );
 
+            cardinality.value = fetchedCardData.cardinality;
             cardData.value = fetchedCardData;
         },
     );
@@ -165,13 +165,7 @@ async function fetchData(
         currentPage.value = fetchedPage;
         searchResultsTotalCount.value = totalCount;
     } catch (error) {
-        toast.add({
-            severity: "error",
-            life: DEFAULT_ERROR_TOAST_LIFE,
-            summary: $gettext("Unable to fetch resource"),
-            detail: error instanceof Error ? error.message : String(error),
-        });
-
+        hasLoadingError.value = true;
         throw error;
     } finally {
         isLoading.value = false;
@@ -269,65 +263,87 @@ function onUpdateSortOrder(event: number | undefined) {
 </script>
 
 <template>
-    <DataTable
-        :value="currentlyDisplayedTableData"
-        :loading="isLoading"
-        :total-records="searchResultsTotalCount"
-        @update:sort-field="onUpdateSortField"
-        @update:sort-order="onUpdateSortOrder"
+    <Message
+        v-if="hasLoadingError"
+        size="large"
+        severity="error"
+        icon="pi pi-times-circle"
     >
-        <template #header>
-            <h4 style="color: var(--p-content-color)">{{ tableTitle }}</h4>
-
-            <div style="display: flex; justify-content: space-between">
-                <div>
-                    <span>{{ $gettext("Number of rows:") }}</span>
-                    <Select
-                        v-model="rowsPerPage"
-                        style="margin: 0 1rem"
-                        :options="rowsPerPageOptions"
-                    />
-                </div>
-
-                <IconField>
-                    <InputIcon
-                        class="pi pi-search"
-                        aria-hidden="true"
-                    />
-                    <InputText
-                        v-model="query"
-                        style="height: 100%"
-                        :placeholder="$gettext('Search')"
-                        :aria-label="$gettext('Search')"
-                    />
-                </IconField>
-            </div>
-        </template>
-
-        <Column
-            field=""
-            header=""
-        />
-        <Column
-            v-for="columnDatum of columnData"
-            :key="columnDatum.nodeAlias"
-            :field="columnDatum.nodeAlias"
-            :header="columnDatum.widgetLabel"
-            sortable
+        {{ $gettext("An error occurred while fetching data.") }}
+    </Message>
+    <Message
+        v-else-if="!isLoading && !searchResultsTotalCount"
+        size="large"
+        severity="info"
+        icon="pi pi-info-circle"
+    >
+        {{ $gettext("No data found.") }}
+    </Message>
+    <div v-else>
+        <DataTable
+            :value="currentlyDisplayedTableData"
+            :loading="isLoading"
+            :total-records="searchResultsTotalCount"
+            @update:sort-field="onUpdateSortField"
+            @update:sort-order="onUpdateSortOrder"
         >
-            <template #body="slotProps">
-                {{ getDisplayValue(slotProps.data, slotProps.field) }}
-            </template>
-        </Column>
-    </DataTable>
+            <template #header>
+                <div
+                    v-if="cardinality === CARDINALITY_N"
+                    style="display: flex; justify-content: space-between"
+                >
+                    <div>
+                        <span>{{ $gettext("Number of rows:") }}</span>
+                        <Select
+                            v-model="rowsPerPage"
+                            style="margin: 0 1rem"
+                            :options="rowsPerPageOptions"
+                        />
+                    </div>
 
-    <Paginator
-        v-if="searchResultsTotalCount > rowsPerPage"
-        :key="paginatorKey"
-        :rows="rowsPerPage"
-        :total-records="searchResultsTotalCount"
-        @page="onUpdatePagination"
-    />
+                    <IconField style="display: flex">
+                        <InputIcon
+                            class="pi pi-search"
+                            aria-hidden="true"
+                        />
+                        <InputText
+                            v-model="query"
+                            :placeholder="$gettext('Search')"
+                            :aria-label="$gettext('Search')"
+                        />
+                    </IconField>
+                </div>
+            </template>
+
+            <Column
+                field=""
+                header=""
+            />
+            <Column
+                v-for="columnDatum of columnData"
+                :key="columnDatum.nodeAlias"
+                :field="columnDatum.nodeAlias"
+                :header="columnDatum.widgetLabel"
+                :sortable="cardinality === CARDINALITY_N"
+            >
+                <template #body="slotProps">
+                    {{ getDisplayValue(slotProps.data, slotProps.field) }}
+                </template>
+            </Column>
+        </DataTable>
+
+        <div
+            v-if="searchResultsTotalCount > rowsPerPage"
+            style="display: flex; justify-content: flex-end"
+        >
+            <Paginator
+                :key="paginatorKey"
+                :rows="rowsPerPage"
+                :total-records="searchResultsTotalCount"
+                @page="onUpdatePagination"
+            />
+        </div>
+    </div>
 </template>
 
 <style scoped>
