@@ -107,6 +107,8 @@ class NodePresentationView(APIBase):
         nodes = (
             models.Node.objects.filter(graph=graph)
             .filter(nodegroup__in=permitted_nodegroups)
+            .select_related("nodegroup")
+            .prefetch_related("nodegroup__cardmodel_set")
             .prefetch_related(
                 Prefetch(
                     "cardxnodexwidget_set",
@@ -120,6 +122,7 @@ class NodePresentationView(APIBase):
                 node.alias: {
                     "nodeid": node.nodeid,
                     "name": node.name,
+                    "card_name": node.nodegroup.cardmodel_set[0].name,
                     "widget_label": (
                         node.cardxnodexwidget_set.all()[0].label
                         if node.cardxnodexwidget_set.all()

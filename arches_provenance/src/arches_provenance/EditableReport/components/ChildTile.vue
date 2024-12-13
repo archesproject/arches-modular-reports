@@ -45,7 +45,7 @@ function tileIdFromChild(child: LabelBasedTile): string {
     ></div>
     <details open="true">
         <summary>
-            <strong>{{ nodePresentationLookup[cardName].widget_label }}</strong>
+            <strong>{{ nodePresentationLookup[cardName].card_name }}</strong>
         </summary>
         <dl>
             <div
