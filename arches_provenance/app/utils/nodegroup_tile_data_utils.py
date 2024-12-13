@@ -70,6 +70,8 @@ def get_sorted_filtered_tiles(
                 "-sort_priority", F(sort_field_name).desc()
             )
     else:
-        tiles = tiles.order_by("pk")  # default sort order for consistent pagination
+        tiles = tiles.order_by(
+            "sortorder"
+        )  # default sort order for consistent pagination
 
     return tiles
