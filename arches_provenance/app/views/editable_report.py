@@ -1,8 +1,7 @@
 from http import HTTPStatus
 
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models.functions import Concat
-from django.db.models import Prefetch, Func, TextField, Value, F
+from django.core.paginator import Paginator
+from django.db.models import Prefetch
 from django.http import Http404
 from django.shortcuts import render
 from django.utils import translation
