@@ -153,6 +153,15 @@ class NodegroupTileDataView(APIBase):
         paginator = Paginator(tiles, rows_per_page)
         page = paginator.page(page_number)
 
+        # BEGIN serializer logic
+        node = models.Node.objects.select_related("graph__publication").get(
+            pk=nodegroupid
+        )
+
+        published_graph = models.PublishedGraph.objects.get(
+            publication=node.graph.publication, language=user_language
+        )
+
         node_ids_to_tiles_reference = {}
         for tile in page.object_list:
             node_ids = list(tile.data.keys())
@@ -164,10 +173,16 @@ class NodegroupTileDataView(APIBase):
                 tile_list = node_ids_to_tiles_reference.get(node_id, [])
                 tile_list.append(tile)
                 node_ids_to_tiles_reference[node_id] = tile_list
+        # END serializer logic
 
         response_data = {
             "results": [
-                LabelBasedGraph.from_tile(tile, node_ids_to_tiles_reference, {})
+                LabelBasedGraph.from_tile(
+                    tile,
+                    node_ids_to_tiles_reference,
+                    nodegroup_cardinality_reference={},
+                    serialized_graph=published_graph.serialized_graph,
+                )
                 for tile in page.object_list
             ],
             "total_count": paginator.count,
