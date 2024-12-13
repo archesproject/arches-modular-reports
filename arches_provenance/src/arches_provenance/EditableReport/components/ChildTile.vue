@@ -82,6 +82,8 @@ details {
 
 summary {
     margin-bottom: 1.5rem;
+    /* https://github.com/twbs/bootstrap/issues/21060 */
+    display: list-item;
 }
 
 dl {
