@@ -226,7 +226,7 @@ class ChildTileDataView(APIBase):
 
         tile._children = [
             self._serialize_with_children(child, serialized_graph)
-            for child in tile.tilemodel_set.all()
+            for child in tile.tilemodel_set.order_by("sortorder")
         ]
 
         return {
