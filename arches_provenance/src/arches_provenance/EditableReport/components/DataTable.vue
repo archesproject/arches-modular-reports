@@ -373,4 +373,8 @@ function onUpdateSortOrder(event: number | undefined) {
     width: var(--p-button-icon-width);
     height: var(--p-button-icon-height);
 }
+
+:deep(.p-datatable-empty-message td) {
+    padding-left: 3.5rem;
+}
 </style>

@@ -49,7 +49,7 @@ onMounted(fetchData);
     </template>
     <p
         v-if="!isLoading && !childTileData.length"
-        style="margin: 0 4.25rem"
+        style="padding: 0 4.25rem; margin-bottom: 0"
     >
         {{ $gettext("No further data found") }}
     </p>
