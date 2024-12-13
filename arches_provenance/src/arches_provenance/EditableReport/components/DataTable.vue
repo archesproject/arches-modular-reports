@@ -9,7 +9,6 @@ import InputIcon from "primevue/inputicon";
 import InputText from "primevue/inputtext";
 import Message from "primevue/message";
 import Paginator from "primevue/paginator";
-import ProgressSpinner from "primevue/progressspinner";
 import Select from "primevue/select";
 
 import {
@@ -342,14 +341,7 @@ function onUpdateSortOrder(event: number | undefined) {
                 </template>
             </Column>
             <template #expansion="slotProps">
-                <Suspense>
-                    <ChildTiles :tile-id="tileIdFromData(slotProps.data)" />
-                    <template #fallback>
-                        <ProgressSpinner
-                            style="display: flex; width: 4rem; height: 4rem"
-                        />
-                    </template>
-                </Suspense>
+                <ChildTiles :tile-id="tileIdFromData(slotProps.data)" />
             </template>
         </DataTable>
 
