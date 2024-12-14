@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { onMounted, useTemplateRef } from "vue";
+import { onMounted, ref, useTemplateRef } from "vue";
 import { useGettext } from "vue3-gettext";
-
 import Panel from "primevue/panel";
 import Button from "primevue/button";
 
@@ -23,25 +22,34 @@ const { component, resourceInstanceId } = defineProps<{
 }>();
 
 const { $gettext } = useGettext();
-const buttonSectionRef = useTemplateRef("buttonSectionRef");
-const linkedSectionsRef = useTemplateRef("linked_sections");
+
+const buttonSectionRef = useTemplateRef<HTMLElement>("buttonSectionRef");
+const linkedSectionsRef = useTemplateRef<HTMLElement[]>("linked_sections");
+const collapsedSections = ref<Record<string, boolean>>({});
 
 function scrollToSection(linked_section: NamedSection): void {
     const sections = linkedSectionsRef.value;
 
-    const section = sections?.find((section) => {
-        const props = section?.$props as { header?: string };
-        return props.header === linked_section.name;
+    const sectionElement = sections?.find((el) => {
+        const panelRoot = el.closest(".p-panel");
+        const headerText = panelRoot
+            ?.querySelector(".p-panel-header")
+            ?.textContent?.trim();
+        return headerText === linked_section.name;
     });
 
-    if (section) {
-        if (section.d_collapsed) {
-            section.toggle();
+    if (sectionElement) {
+        if (collapsedSections.value[linked_section.name]) {
+            collapsedSections.value[linked_section.name] = false;
         }
-        section.$el.scrollIntoView({
-            behavior: "smooth",
-            block: "nearest",
-        });
+
+        const panelRoot = sectionElement.closest(".p-panel") as HTMLElement;
+        if (panelRoot) {
+            panelRoot.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+            });
+        }
     }
 }
 
@@ -74,11 +82,14 @@ onMounted(() => importComponents(component.config.sections, componentLookup));
         <div class="linked-section-container">
             <Panel
                 v-for="linked_section in component.config.sections"
-                ref="linked_sections"
                 :key="linked_section.name"
-                :collapsed="false"
+                :collapsed="collapsedSections[linked_section.name]"
                 :header="linked_section.name"
                 toggleable
+                @toggle="
+                    collapsedSections[linked_section.name] =
+                        !collapsedSections[linked_section.name]
+                "
             >
                 <template #icons>
                     <Button
@@ -90,14 +101,20 @@ onMounted(() => importComponents(component.config.sections, componentLookup));
                         @click="backToTop()"
                     />
                 </template>
-                <component
-                    :is="componentLookup[child.component]"
-                    v-for="child in linked_section.components"
-                    :key="uniqueId(child)"
-                    :config="child.config"
-                    :resource-instance-id
-                />
-                <div style="height: 600px"></div>
+
+                <div
+                    ref="linked_sections"
+                    class="panel-content"
+                >
+                    <component
+                        :is="componentLookup[child.component]"
+                        v-for="child in linked_section.components"
+                        :key="uniqueId(child)"
+                        :config="child.config"
+                        :resource-instance-id
+                    />
+                    <div style="height: 600px"></div>
+                </div>
             </Panel>
         </div>
     </div>
