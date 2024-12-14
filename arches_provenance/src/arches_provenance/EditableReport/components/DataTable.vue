@@ -96,6 +96,7 @@ watch(query, (newQuery) => {
 
     timeout = setTimeout(() => {
         pageNumberToNodegroupTileData.value = {};
+        paginatorKey.value += 1;
 
         fetchData(
             props.resourceInstanceId,
@@ -272,7 +273,7 @@ function onUpdateSortOrder(event: number | undefined) {
         {{ $gettext("An error occurred while fetching data.") }}
     </Message>
     <Message
-        v-else-if="!isLoading && !searchResultsTotalCount"
+        v-else-if="!isLoading && !query && !timeout && !searchResultsTotalCount"
         size="large"
         severity="info"
         icon="pi pi-info-circle"
