@@ -28,9 +28,7 @@ const linkedSectionsRef = useTemplateRef<HTMLElement[]>("linked_sections");
 const collapsedSections = ref<Record<string, boolean>>({});
 
 function scrollToSection(linked_section: NamedSection): void {
-    const sections = linkedSectionsRef.value;
-
-    const sectionElement = sections?.find((el) => {
+    const sectionElement = linkedSectionsRef.value!.find((el) => {
         const panelRoot = el.closest(".p-panel");
         const headerText = panelRoot
             ?.querySelector(".p-panel-header")
