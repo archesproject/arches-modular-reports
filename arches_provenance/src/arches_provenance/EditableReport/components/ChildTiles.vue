@@ -44,8 +44,9 @@ onMounted(fetchData);
     <Message
         v-if="isError"
         severity="error"
-        >{{ $gettext("Unable to fetch resource") }}</Message
     >
+        {{ $gettext("Unable to fetch resource") }}
+    </Message>
     <p
         v-else-if="!isLoading && !childTileData.length"
         style="padding: 0 4.25rem; margin-bottom: 0"
