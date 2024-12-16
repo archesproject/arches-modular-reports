@@ -181,12 +181,15 @@ class NodegroupTileDataView(APIBase):
 
         response_data = {
             "results": [
-                LabelBasedGraph.from_tile(
-                    tile,
-                    node_ids_to_tiles_reference,
-                    nodegroup_cardinality_reference={},
-                    serialized_graph=published_graph.serialized_graph,
-                )
+                {
+                    **LabelBasedGraph.from_tile(
+                        tile,
+                        node_ids_to_tiles_reference,
+                        nodegroup_cardinality_reference={},
+                        serialized_graph=published_graph.serialized_graph,
+                    ),
+                    "@has_children": tile.tilemodel_set.exists(),
+                }
                 for tile in page.object_list
             ],
             "total_count": paginator.count,

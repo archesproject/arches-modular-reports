@@ -18,6 +18,7 @@ import {
 import ChildTiles from "@/arches_provenance/EditableReport/components/ChildTiles.vue";
 
 import type { PageState } from "primevue/paginator";
+import type { LabelBasedCard } from "@/arches_provenance/EditableReport/types";
 
 const { $gettext } = useGettext();
 
@@ -248,8 +249,8 @@ function onUpdatePagination(event: PageState) {
 }
 
 function tileIdFromData(tileData: Record<string, unknown>): string {
-    // TODO: clean up these types
-    return Object.values(tileData as Record<string, Record<string, string>>)[0][
+    const { ["@has_children"]: _hasChildren, ...cards } = tileData;
+    return Object.values(cards as Record<string, Record<string, string>>)[0][
         "@tile_id"
     ];
 }
@@ -268,6 +269,10 @@ function onUpdateSortOrder(event: number | undefined) {
     } else if (event === -1) {
         sortOrder.value = DESC;
     }
+}
+
+function rowClass(data: LabelBasedCard) {
+    return [{ "no-children": data["@has_children"] === false }];
 }
 </script>
 
@@ -294,6 +299,7 @@ function onUpdateSortOrder(event: number | undefined) {
             :loading="isLoading"
             :total-records="searchResultsTotalCount"
             :expanded-rows="[]"
+            :row-class
             @update:sort-field="onUpdateSortField"
             @update:sort-order="onUpdateSortOrder"
         >
@@ -374,7 +380,7 @@ function onUpdateSortOrder(event: number | undefined) {
     height: var(--p-button-icon-height);
 }
 
-:deep(.p-datatable-empty-message td) {
-    padding-left: 3.5rem;
+:deep(.no-children .p-datatable-row-toggle-button) {
+    visibility: hidden;
 }
 </style>

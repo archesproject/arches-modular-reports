@@ -45,13 +45,16 @@ export interface Tile {
 
 export interface LabelBasedTile {
     "@children": LabelBasedTile[];
-    [key: string]: LabelBasedTile[] | LabelBasedNode;
+    [key: string]: LabelBasedTile[] | LabelBasedCard;
+}
+
+export interface LabelBasedCard {
+    "@has_children": boolean;
+    [key: string]: boolean | LabelBasedNode;
 }
 
 export interface LabelBasedNode {
-    [key: string]: {
-        "@display_value": string;
-        "@node_id": string;
-        "@tile_id": string;
-    };
+    "@display_value": string;
+    "@node_id": string;
+    "@tile_id": string;
 }
