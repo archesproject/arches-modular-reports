@@ -21,11 +21,9 @@ from arches.app.views.resource import ResourceReportView
 
 from arches_provenance.models import ReportConfig
 
-from arches_provenance.app.utils.label_based_graph_override import (
-    LabelBasedGraphWithBranchExport,
-)
 from arches_provenance.app.utils.nodegroup_tile_data_utils import (
     get_sorted_filtered_tiles,
+    serialize_tiles_with_children,
 )
 
 
@@ -122,7 +120,7 @@ class NodePresentationView(APIBase):
                 node.alias: {
                     "nodeid": node.nodeid,
                     "name": node.name,
-                    "card_name": node.nodegroup.cardmodel_set[0].name,
+                    "card_name": node.nodegroup.cardmodel_set.first().name,
                     "widget_label": (
                         node.cardxnodexwidget_set.all()[0].label
                         if node.cardxnodexwidget_set.all()
@@ -210,34 +208,10 @@ class ChildTileDataView(APIBase):
             publication=tile.resourceinstance.graph.publication,
             language=translation.get_language(),
         )
-        serialized_graph = published_graph.serialized_graph
-        return JSONResponse(
-            self._serialize_with_children(tile, serialized_graph)["@children"]
+        serialized = serialize_tiles_with_children(
+            tile, published_graph.serialized_graph
         )
-
-    def _serialize_with_children(self, tile, serialized_graph):
-        node_ids = list(tile.data.keys())
-
-        if str(tile.nodegroup_id) not in node_ids:
-            node_ids.append(str(tile.nodegroup_id))
-
-        node_ids_to_tiles_reference = {}
-        for node_id in node_ids:
-            tile_list = node_ids_to_tiles_reference.get(node_id, [])
-            tile_list.append(tile)
-            node_ids_to_tiles_reference[node_id] = tile_list
-
-        tile._children = [
-            self._serialize_with_children(child, serialized_graph)
-            for child in tile.tilemodel_set.order_by("sortorder")
-        ]
-
-        return {
-            "@children": tile._children,
-            **LabelBasedGraphWithBranchExport.from_tile(
-                tile, node_ids_to_tiles_reference, {}, serialized_graph=serialized_graph
-            ),
-        }
+        return JSONResponse(serialized["@children"])
 
 
 class CardFromNodegroupIdView(APIBase):

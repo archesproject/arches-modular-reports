@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { inject } from "vue";
 
-import ChildTile from "@/arches_provenance/EditableReport/components/ChildTile.vue";
-
 import type {
     LabelBasedNode,
     LabelBasedTile,
@@ -23,7 +21,7 @@ const childKey = "@children";
 const { [childKey]: children, ...singleTileData } = data;
 const cardName = Object.keys(singleTileData)[0];
 const nodeNameValuePairs = Object.entries(singleTileData[cardName]).filter(
-    (pair) => !pair[0].startsWith("@"),
+    ([nodeName]) => !nodeName.startsWith("@"),
 );
 
 const marginUnit = 1.5;
@@ -49,12 +47,12 @@ function tileIdFromChild(child: LabelBasedTile): string {
         </summary>
         <dl>
             <div
-                v-for="pair in nodeNameValuePairs"
-                :key="pair[0]"
+                v-for="[nodeName, nodeValue] in nodeNameValuePairs"
+                :key="nodeName"
                 class="node-pair"
             >
-                <dt>{{ nodePresentationLookup[pair[0]].widget_label }}</dt>
-                <dd>{{ pair[1]["@display_value"] }}</dd>
+                <dt>{{ nodePresentationLookup[nodeName].widget_label }}</dt>
+                <dd>{{ nodeValue["@display_value"] }}</dd>
             </div>
             <ChildTile
                 v-for="child in children"
