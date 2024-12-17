@@ -11,7 +11,7 @@ import {
 
 import type {
     ComponentLookup,
-    NamedSection,
+    CollapableSection,
     SectionContent,
 } from "@/arches_provenance/EditableReport/types";
 
@@ -25,9 +25,9 @@ const { $gettext } = useGettext();
 
 const buttonSectionRef = useTemplateRef<HTMLElement>("buttonSectionRef");
 const linkedSectionsRef = useTemplateRef<HTMLElement[]>("linked_sections");
-const collapsedSections = ref<Record<string, boolean>>({});
+const linkedSections = ref<CollapableSection[]>([]);
 
-function scrollToSection(linked_section: NamedSection): void {
+function scrollToSection(linked_section: CollapableSection): void {
     const sectionElement = linkedSectionsRef.value!.find((el) => {
         const panelRoot = el.closest(".p-panel");
         const headerText = panelRoot
@@ -37,9 +37,7 @@ function scrollToSection(linked_section: NamedSection): void {
     });
 
     if (sectionElement) {
-        if (collapsedSections.value[linked_section.name]) {
-            collapsedSections.value[linked_section.name] = false;
-        }
+        linked_section.collapsed = false;
 
         const panelRoot = sectionElement.closest(".p-panel") as HTMLElement;
         if (panelRoot) {
@@ -58,7 +56,17 @@ function backToTop() {
     });
 }
 
-onMounted(() => importComponents(component.config.sections, componentLookup));
+onMounted(async () => {
+    await importComponents(component.config.sections, componentLookup);
+
+    for (const section of component.config.sections) {
+        linkedSections.value.push({
+            name: section.name,
+            components: section.components,
+            collapsed: false,
+        });
+    }
+});
 </script>
 
 <template>
@@ -68,7 +76,7 @@ onMounted(() => importComponents(component.config.sections, componentLookup));
             class="linked-section-button-container"
         >
             <Button
-                v-for="linked_section in component.config.sections"
+                v-for="linked_section in linkedSections"
                 :key="linked_section.name"
                 :label="linked_section.name"
                 severity="secondary"
@@ -79,15 +87,12 @@ onMounted(() => importComponents(component.config.sections, componentLookup));
 
         <div class="linked-section-container">
             <Panel
-                v-for="linked_section in component.config.sections"
+                v-for="linked_section in linkedSections"
                 :key="linked_section.name"
-                :collapsed="collapsedSections[linked_section.name]"
+                :collapsed="linked_section.collapsed"
                 :header="linked_section.name"
                 toggleable
-                @toggle="
-                    collapsedSections[linked_section.name] =
-                        !collapsedSections[linked_section.name]
-                "
+                @toggle="linked_section.collapsed = !linked_section.collapsed"
             >
                 <template #icons>
                     <Button

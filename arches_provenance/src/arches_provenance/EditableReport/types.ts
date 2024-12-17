@@ -10,6 +10,10 @@ export interface NamedSection {
     components: SectionContent[];
 }
 
+export interface CollapableSection extends NamedSection {
+    collapsed: boolean;
+}
+
 export interface SectionContent {
     component: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
