@@ -56,8 +56,9 @@ function backToTop() {
     });
 }
 
-onMounted(() => {
-    importComponents(component.config.sections, componentLookup);
+onMounted(async () => {
+    await importComponents(component.config.sections, componentLookup);
+
     for (const section of component.config.sections) {
         linkedSections.value.push({
             name: section.name,
