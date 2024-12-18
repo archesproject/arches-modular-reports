@@ -15,7 +15,7 @@ import {
     fetchCardFromNodegroupId,
     fetchNodegroupTileData,
 } from "@/arches_provenance/EditableReport/api.ts";
-import ChildTiles from "@/arches_provenance/EditableReport/components/ChildTiles.vue";
+import HierarchicalTileViewer from "@/arches_provenance/EditableReport/components/HierarchicalTileViewer.vue";
 
 import type { PageState } from "primevue/paginator";
 import type { LabelBasedCard } from "@/arches_provenance/EditableReport/types";
@@ -347,7 +347,9 @@ function rowClass(data: LabelBasedCard) {
                 </template>
             </Column>
             <template #expansion="slotProps">
-                <ChildTiles :tile-id="tileIdFromData(slotProps.data)" />
+                <HierarchicalTileViewer
+                    :tile-id="tileIdFromData(slotProps.data)"
+                />
             </template>
         </DataTable>
 
