@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { onMounted, useTemplateRef } from "vue";
+import { onMounted, ref, useTemplateRef } from "vue";
 import { useGettext } from "vue3-gettext";
-
 import Panel from "primevue/panel";
 import Button from "primevue/button";
 
@@ -12,7 +11,7 @@ import {
 
 import type {
     ComponentLookup,
-    NamedSection,
+    CollapableSection,
     SectionContent,
 } from "@/arches_provenance/EditableReport/types";
 
@@ -23,25 +22,30 @@ const { component, resourceInstanceId } = defineProps<{
 }>();
 
 const { $gettext } = useGettext();
-const buttonSectionRef = useTemplateRef("buttonSectionRef");
-const linkedSectionsRef = useTemplateRef("linked_sections");
 
-function scrollToSection(linked_section: NamedSection): void {
-    const sections = linkedSectionsRef.value;
+const buttonSectionRef = useTemplateRef<HTMLElement>("buttonSectionRef");
+const linkedSectionsRef = useTemplateRef<HTMLElement[]>("linked_sections");
+const linkedSections = ref<CollapableSection[]>([]);
 
-    const section = sections?.find((section) => {
-        const props = section?.$props as { header?: string };
-        return props.header === linked_section.name;
+function scrollToSection(linked_section: CollapableSection): void {
+    const sectionElement = linkedSectionsRef.value!.find((el) => {
+        const panelRoot = el.closest(".p-panel");
+        const headerText = panelRoot
+            ?.querySelector(".p-panel-header")
+            ?.textContent?.trim();
+        return headerText === linked_section.name;
     });
 
-    if (section) {
-        if (section.d_collapsed) {
-            section.toggle();
+    if (sectionElement) {
+        linked_section.collapsed = false;
+
+        const panelRoot = sectionElement.closest(".p-panel") as HTMLElement;
+        if (panelRoot) {
+            panelRoot.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+            });
         }
-        section.$el.scrollIntoView({
-            behavior: "smooth",
-            block: "nearest",
-        });
     }
 }
 
@@ -52,7 +56,17 @@ function backToTop() {
     });
 }
 
-onMounted(() => importComponents(component.config.sections, componentLookup));
+onMounted(async () => {
+    await importComponents(component.config.sections, componentLookup);
+
+    for (const section of component.config.sections) {
+        linkedSections.value.push({
+            name: section.name,
+            components: section.components,
+            collapsed: false,
+        });
+    }
+});
 </script>
 
 <template>
@@ -62,7 +76,7 @@ onMounted(() => importComponents(component.config.sections, componentLookup));
             class="linked-section-button-container"
         >
             <Button
-                v-for="linked_section in component.config.sections"
+                v-for="linked_section in linkedSections"
                 :key="linked_section.name"
                 :label="linked_section.name"
                 severity="secondary"
@@ -73,12 +87,12 @@ onMounted(() => importComponents(component.config.sections, componentLookup));
 
         <div class="linked-section-container">
             <Panel
-                v-for="linked_section in component.config.sections"
-                ref="linked_sections"
+                v-for="linked_section in linkedSections"
                 :key="linked_section.name"
-                :collapsed="false"
+                :collapsed="linked_section.collapsed"
                 :header="linked_section.name"
                 toggleable
+                @toggle="linked_section.collapsed = !linked_section.collapsed"
             >
                 <template #icons>
                     <Button
@@ -90,14 +104,20 @@ onMounted(() => importComponents(component.config.sections, componentLookup));
                         @click="backToTop()"
                     />
                 </template>
-                <component
-                    :is="componentLookup[child.component]"
-                    v-for="child in linked_section.components"
-                    :key="uniqueId(child)"
-                    :config="child.config"
-                    :resource-instance-id
-                />
-                <div style="height: 600px"></div>
+
+                <div
+                    ref="linked_sections"
+                    class="panel-content"
+                >
+                    <component
+                        :is="componentLookup[child.component]"
+                        v-for="child in linked_section.components"
+                        :key="uniqueId(child)"
+                        :config="child.config"
+                        :resource-instance-id
+                    />
+                    <div style="height: 600px"></div>
+                </div>
             </Panel>
         </div>
     </div>
