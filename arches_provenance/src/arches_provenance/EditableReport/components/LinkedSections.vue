@@ -113,7 +113,7 @@ onMounted(async () => {
                         :is="componentLookup[child.component]"
                         v-for="child in linked_section.components"
                         :key="uniqueId(child)"
-                        :config="child.config"
+                        :component="child"
                         :resource-instance-id
                     />
                     <div style="height: 600px"></div>

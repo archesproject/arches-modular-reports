@@ -26,3 +26,47 @@ export const fetchReportConfig = async (resourceId: string) => {
     if (!response.ok) throw new Error(parsed.message || response.statusText);
     return parsed;
 };
+
+export const fetchNodegroup = async (nodegroupId: string) => {
+    const url = arches.urls.api_nodegroup(nodegroupId);
+    const response = await fetch(url);
+    const parsed = await response.json();
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};
+
+export const fetchNodegroupTileData = async (
+    resourceInstanceId: string,
+    nodegroupId: string,
+    rowsPerPage: number,
+    page: number,
+    sortNodeId: string | null,
+    sortOrder: string | null,
+    query: string | null,
+) => {
+    const url = arches.urls.api_nodegroup_tile_data(
+        resourceInstanceId,
+        nodegroupId,
+    );
+    const params = new URLSearchParams({
+        rows_per_page: rowsPerPage.toString(),
+        page: page.toString(),
+        sort_node_id: sortNodeId || "",
+        sort_order: sortOrder || "",
+        query: query || "",
+    });
+
+    const response = await fetch(url + "?" + params.toString());
+    const parsed = await response.json();
+
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};
+
+export const fetchCardFromNodegroupId = async (nodegroupId: string) => {
+    const url = arches.urls.api_card_from_nodegroup_id(nodegroupId);
+    const response = await fetch(url);
+    const parsed = await response.json();
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};

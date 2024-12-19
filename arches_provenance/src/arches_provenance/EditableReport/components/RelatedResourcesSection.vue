@@ -1,12 +1,12 @@
 <script setup lang="ts">
-const { config } = defineProps<{
-    config: { graph_id: string };
+import type { SectionContent } from "@/arches_provenance/EditableReport/types";
+
+const { component } = defineProps<{
+    component: SectionContent;
     resourceInstanceId: string;
 }>();
 </script>
 
 <template>
-    <div>
-        {{ config.graph_id }}
-    </div>
+    <div>{{ component.config.graph_id }}</div>
 </template>

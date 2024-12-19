@@ -97,7 +97,7 @@ class ReportConfig(models.Model):
                 "name": str(card.name),
                 "components": [
                     {
-                        "component": "CardSection",
+                        "component": "DataTable",
                         "config": {
                             "nodegroup_id": str(card.nodegroup_id),
                             "nodes": [
@@ -189,7 +189,7 @@ class ReportConfig(models.Model):
         if len(nodes) != len(tombstone_nodes):
             raise ValidationError("Tombstone config contains invalid node aliases.")
 
-    def validate_cardsection(self, card_config):
+    def validate_datatable(self, card_config):
         nodegroup_id = card_config["nodegroup_id"]
         nodegroup = (
             NodeGroup.objects.filter(pk=nodegroup_id, node__graph=self.graph)
