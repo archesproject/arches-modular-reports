@@ -10,7 +10,7 @@ export interface NamedSection {
     components: SectionContent[];
 }
 
-export interface CollapableSection extends NamedSection {
+export interface CollapsibleSection extends NamedSection {
     collapsed: boolean;
 }
 
