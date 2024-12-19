@@ -22,7 +22,9 @@ class ReportConfig(models.Model):
         db_table = "arches_provenance_report_config"
 
     def __str__(self):
-        return f"Config for: {self.graph.name}: {self.config.get('name')}"
+        if self.config and self.graph:
+            return f"Config for: {self.graph.name}: {self.config.get('name')}"
+        return super().__str__()
 
     def clean(self):
         if self.graph_id and not self.config:
@@ -121,14 +123,15 @@ class ReportConfig(models.Model):
         )
         return [
             {
-                "name": str(other_graph.name),  # not pluralized
+                "name": str(other_graph.name),
                 "components": [
                     {
                         "component": "RelatedResourcesSection",
                         "config": {
                             "graph_id": str(other_graph.pk),
+                            "additional_nodes": [],
                         },
-                    }
+                    },
                 ],
             }
             for other_graph in other_graphs
@@ -202,6 +205,21 @@ class ReportConfig(models.Model):
         for alias in card_config["nodes"]:
             if alias not in aliases:
                 raise ValidationError(f"Section contains invalid node alias: {alias}")
+
+    def validate_relatedresourcessection(self, rr_config):
+        if "graph_id" not in rr_config:
+            raise ValidationError("Related Resources section missing graph_id")
+        if "additional_nodes" not in rr_config:
+            raise ValidationError("Related Resources section missing additional_nodes")
+        try:
+            graph = GraphModel.objects.get(pk=rr_config["graph_id"])
+        except GraphModel.DoesNotExist:
+            raise ValidationError("Related Resources section contains invalid graph id")
+        node_aliases = {node.alias for node in graph.node_set.all()}
+        if extra_nodes := set(rr_config["additional_nodes"]) - node_aliases:
+            raise ValidationError(
+                f"Related Resources section contains invalid node aliases: {extra_nodes}"
+            )
 
     @staticmethod
     def extract_substrings(template_string):

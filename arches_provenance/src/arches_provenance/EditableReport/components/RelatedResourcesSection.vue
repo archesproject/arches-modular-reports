@@ -8,5 +8,5 @@ const { component } = defineProps<{
 </script>
 
 <template>
-    <div>{{ component.config.graph_id }}</div>
+    <pre>{{ component.config }}</pre>
 </template>
