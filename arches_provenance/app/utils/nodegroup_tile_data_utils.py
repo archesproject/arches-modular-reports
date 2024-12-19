@@ -12,6 +12,10 @@ from django.db.models import (
 from arches.app.models import models
 from arches.app.models.tile import Tile
 
+from arches_provenance.app.utils.label_based_graph_with_branch_export import (
+    LabelBasedGraphWithBranchExport,
+)
+
 
 class ArchesGetNodeDisplayValue(Func):
     function = "__arches_get_node_display_value"
@@ -75,3 +79,28 @@ def get_sorted_filtered_tiles(
         )  # default sort order for consistent pagination
 
     return tiles
+
+
+def serialize_tiles_with_children(tile, serialized_graph):
+    node_ids = list(tile.data.keys())
+
+    if str(tile.nodegroup_id) not in node_ids:
+        node_ids.append(str(tile.nodegroup_id))
+
+    node_ids_to_tiles_reference = {}
+    for node_id in node_ids:
+        tile_list = node_ids_to_tiles_reference.get(node_id, [])
+        tile_list.append(tile)
+        node_ids_to_tiles_reference[node_id] = tile_list
+
+    tile._children = [
+        serialize_tiles_with_children(child, serialized_graph)
+        for child in tile.tilemodel_set.order_by("sortorder")
+    ]
+
+    return {
+        "@children": tile._children,
+        **LabelBasedGraphWithBranchExport.from_tile(
+            tile, node_ids_to_tiles_reference, {}, serialized_graph=serialized_graph
+        ),
+    }

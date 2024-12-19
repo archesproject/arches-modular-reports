@@ -23,6 +23,7 @@ from arches_provenance.models import ReportConfig
 
 from arches_provenance.app.utils.nodegroup_tile_data_utils import (
     get_sorted_filtered_tiles,
+    serialize_tiles_with_children,
 )
 
 
@@ -104,6 +105,8 @@ class NodePresentationView(APIBase):
         nodes = (
             models.Node.objects.filter(graph=graph)
             .filter(nodegroup__in=permitted_nodegroups)
+            .select_related("nodegroup")
+            .prefetch_related("nodegroup__cardmodel_set")
             .prefetch_related(
                 Prefetch(
                     "cardxnodexwidget_set",
@@ -117,6 +120,7 @@ class NodePresentationView(APIBase):
                 node.alias: {
                     "nodeid": node.nodeid,
                     "name": node.name,
+                    "card_name": node.nodegroup.cardmodel_set.first().name,
                     "widget_label": (
                         node.cardxnodexwidget_set.all()[0].label
                         if node.cardxnodexwidget_set.all()
@@ -177,12 +181,15 @@ class NodegroupTileDataView(APIBase):
 
         response_data = {
             "results": [
-                LabelBasedGraph.from_tile(
-                    tile,
-                    node_ids_to_tiles_reference,
-                    nodegroup_cardinality_reference={},
-                    serialized_graph=published_graph.serialized_graph,
-                )
+                {
+                    **LabelBasedGraph.from_tile(
+                        tile,
+                        node_ids_to_tiles_reference,
+                        nodegroup_cardinality_reference={},
+                        serialized_graph=published_graph.serialized_graph,
+                    ),
+                    "@has_children": tile.tilemodel_set.exists(),
+                }
                 for tile in page.object_list
             ],
             "total_count": paginator.count,
@@ -190,6 +197,24 @@ class NodegroupTileDataView(APIBase):
         }
 
         return JSONResponse(response_data)
+
+
+@method_decorator(can_read_resource_instance, name="dispatch")
+class ChildTileDataView(APIBase):
+    def get(self, request, tileid):
+        tile = (
+            models.TileModel.objects.filter(tileid=tileid)
+            .select_related("resourceinstance__graph__publication")
+            .get()
+        )
+        published_graph = models.PublishedGraph.objects.get(
+            publication=tile.resourceinstance.graph.publication,
+            language=translation.get_language(),
+        )
+        serialized = serialize_tiles_with_children(
+            tile, published_graph.serialized_graph
+        )
+        return JSONResponse(serialized["@children"])
 
 
 class CardFromNodegroupIdView(APIBase):

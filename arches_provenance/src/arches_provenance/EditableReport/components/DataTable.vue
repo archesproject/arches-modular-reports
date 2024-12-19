@@ -15,8 +15,10 @@ import {
     fetchCardFromNodegroupId,
     fetchNodegroupTileData,
 } from "@/arches_provenance/EditableReport/api.ts";
+import HierarchicalTileViewer from "@/arches_provenance/EditableReport/components/HierarchicalTileViewer.vue";
 
 import type { PageState } from "primevue/paginator";
+import type { LabelBasedCard } from "@/arches_provenance/EditableReport/types";
 
 const { $gettext } = useGettext();
 
@@ -246,6 +248,13 @@ function onUpdatePagination(event: PageState) {
     }
 }
 
+function tileIdFromData(tileData: Record<string, unknown>): string {
+    const { ["@has_children"]: _hasChildren, ...cards } = tileData;
+    return Object.values(cards as Record<string, Record<string, string>>)[0][
+        "@tile_id"
+    ];
+}
+
 function onUpdateSortField(event: string) {
     const selectedNode = cardData.value?.nodes.find(
         (node) => node.alias === event,
@@ -260,6 +269,10 @@ function onUpdateSortOrder(event: number | undefined) {
     } else if (event === -1) {
         sortOrder.value = DESC;
     }
+}
+
+function rowClass(data: LabelBasedCard) {
+    return [{ "no-children": data["@has_children"] === false }];
 }
 </script>
 
@@ -285,6 +298,8 @@ function onUpdateSortOrder(event: number | undefined) {
             :value="currentlyDisplayedTableData"
             :loading="isLoading"
             :total-records="searchResultsTotalCount"
+            :expanded-rows="[]"
+            :row-class
             @update:sort-field="onUpdateSortField"
             @update:sort-order="onUpdateSortOrder"
         >
@@ -317,8 +332,8 @@ function onUpdateSortOrder(event: number | undefined) {
             </template>
 
             <Column
-                field=""
-                header=""
+                expander
+                style="width: 25px"
             />
             <Column
                 v-for="columnDatum of columnData"
@@ -331,6 +346,11 @@ function onUpdateSortOrder(event: number | undefined) {
                     {{ getDisplayValue(slotProps.data, slotProps.field) }}
                 </template>
             </Column>
+            <template #expansion="slotProps">
+                <HierarchicalTileViewer
+                    :tile-id="tileIdFromData(slotProps.data)"
+                />
+            </template>
         </DataTable>
 
         <div
@@ -354,5 +374,15 @@ function onUpdateSortOrder(event: number | undefined) {
 
 :deep(.p-datatable-column-sorted) {
     background: var(--p-datatable-header-cell-background);
+}
+
+:deep(.p-datatable-row-toggle-button) {
+    padding-block: 6px;
+    width: var(--p-button-icon-width);
+    height: var(--p-button-icon-height);
+}
+
+:deep(.no-children .p-datatable-row-toggle-button) {
+    visibility: hidden;
 }
 </style>

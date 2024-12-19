@@ -10,7 +10,7 @@ export interface NamedSection {
     components: SectionContent[];
 }
 
-export interface CollapableSection extends NamedSection {
+export interface CollapsibleSection extends NamedSection {
     collapsed: boolean;
 }
 
@@ -23,6 +23,7 @@ export interface SectionContent {
 export interface NodePresentation {
     nodeid: string;
     name: string;
+    card_name: string;
     widget_label: string;
     datatype: string;
 }
@@ -40,4 +41,20 @@ type SingleTileValue = any;
 export type TileValue = SingleTileValue | SingleTileValue[];
 export interface Tile {
     [key: string]: TileValue;
+}
+
+export interface LabelBasedTile {
+    "@children": LabelBasedTile[];
+    [key: string]: LabelBasedTile[] | LabelBasedCard;
+}
+
+export interface LabelBasedCard {
+    "@has_children": boolean;
+    [key: string]: boolean | LabelBasedNode;
+}
+
+export interface LabelBasedNode {
+    "@display_value": string;
+    "@node_id": string;
+    "@tile_id": string;
 }

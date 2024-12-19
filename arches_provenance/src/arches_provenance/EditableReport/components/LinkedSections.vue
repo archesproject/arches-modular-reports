@@ -11,7 +11,7 @@ import {
 
 import type {
     ComponentLookup,
-    CollapableSection,
+    CollapsibleSection,
     SectionContent,
 } from "@/arches_provenance/EditableReport/types";
 
@@ -25,9 +25,9 @@ const { $gettext } = useGettext();
 
 const buttonSectionRef = useTemplateRef<HTMLElement>("buttonSectionRef");
 const linkedSectionsRef = useTemplateRef<HTMLElement[]>("linked_sections");
-const linkedSections = ref<CollapableSection[]>([]);
+const linkedSections = ref<CollapsibleSection[]>([]);
 
-function scrollToSection(linked_section: CollapableSection): void {
+function scrollToSection(linked_section: CollapsibleSection): void {
     const sectionElement = linkedSectionsRef.value!.find((el) => {
         const panelRoot = el.closest(".p-panel");
         const headerText = panelRoot
@@ -116,7 +116,7 @@ onMounted(async () => {
                         :component="child"
                         :resource-instance-id
                     />
-                    <div style="height: 600px"></div>
+                    <div style="height: 200px"></div>
                 </div>
             </Panel>
         </div>
