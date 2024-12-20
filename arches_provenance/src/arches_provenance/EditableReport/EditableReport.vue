@@ -94,4 +94,8 @@ onMounted(async () => {
     height: calc(100vh - 50px);
     width: calc(100vw - 50px);
 }
+:deep(.p-button-label),
+:deep(.pi) {
+    font-size: 1.4rem;
+}
 </style>
