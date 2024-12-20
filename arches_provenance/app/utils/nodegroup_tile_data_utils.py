@@ -1,13 +1,17 @@
-from django.db.models.functions import Concat
 from django.db.models import (
     Case,
     F,
+    FilteredRelation,
     Func,
     IntegerField,
+    OuterRef,
+    Q,
+    Subquery,
     TextField,
     Value,
     When,
 )
+from django.db.models.functions import Concat, NullIf
 
 from arches.app.models import models
 from arches.app.models.tile import Tile
@@ -79,6 +83,100 @@ def get_sorted_filtered_tiles(
         )  # default sort order for consistent pagination
 
     return tiles
+
+
+def get_sorted_filtered_relations(
+    *, resource, related_graphid, nodes, sort, direction, request_language
+):
+    to_tile_annotations = {
+        node.alias
+        + "_to_tile": FilteredRelation(
+            # TODO: cardinality N?
+            "resourceinstanceidto__tilemodel",
+            condition=Q(
+                resourceinstanceidto__tilemodel__nodegroup_id=node.nodegroup_id,
+            ),
+        )
+        for node in nodes
+    }
+    from_tile_annotations = {
+        node.alias
+        + "_from_tile": FilteredRelation(
+            # TODO: cardinality N?
+            "resourceinstanceidfrom__tilemodel",
+            condition=Q(
+                resourceinstanceidfrom__tilemodel__nodegroup_id=node.nodegroup_id,
+            ),
+        )
+        for node in nodes
+    }
+    data_annotations = {
+        node.alias: NullIf(
+            Case(
+                When(
+                    Q(resourceinstanceidfrom=resource),
+                    then=ArchesGetNodeDisplayValue(
+                        F(node.alias + "_to_tile__data"),
+                        Value(node.pk),
+                        Value(request_language),
+                    ),
+                ),
+                When(
+                    Q(resourceinstanceidto=resource),
+                    then=ArchesGetNodeDisplayValue(
+                        F(node.alias + "_from_tile__data"),
+                        Value(node.pk),
+                        Value(request_language),
+                    ),
+                ),
+            ),
+            Value("", output_field=TextField()),
+        )
+        for node in nodes
+    }
+
+    relations = (
+        (
+            models.ResourceXResource.objects.filter(
+                resourceinstanceidfrom=resource,
+                resourceinstanceto_graphid=related_graphid,
+            )
+            | models.ResourceXResource.objects.filter(
+                resourceinstanceidto=resource,
+                resourceinstancefrom_graphid=related_graphid,
+            )
+        )
+        .distinct()
+        .annotate(
+            widget_label=Subquery(
+                models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
+                .order_by("sortorder")
+                .values(f"label__{request_language}")
+            )
+        )
+        .annotate(
+            display_name=Case(
+                When(
+                    Q(resourceinstanceidfrom=resource),
+                    then=F(f"resourceinstanceidto__name__{request_language}"),
+                ),
+                When(
+                    Q(resourceinstanceidto=resource),
+                    then=F(f"resourceinstanceidfrom__name__{request_language}"),
+                ),
+            )
+        )
+        .annotate(**from_tile_annotations)
+        .annotate(**to_tile_annotations)
+        .annotate(**data_annotations)
+    )
+
+    if direction.startswith("asc"):
+        relations = relations.order_by(F(sort).asc(nulls_last=True))
+    else:
+        relations = relations.order_by(F(sort).desc(nulls_last=True))
+
+    return relations
 
 
 def serialize_tiles_with_children(tile, serialized_graph):

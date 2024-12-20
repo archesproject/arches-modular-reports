@@ -119,7 +119,7 @@ class ReportConfig(models.Model):
 
     def generate_related_resources_sections(self):
         other_graphs = GraphModel.objects.exclude(
-            pk__in=[self.graph.pk, settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID]
+            pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID
         )
         return [
             {
