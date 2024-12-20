@@ -11,6 +11,7 @@ from django.db.models import (
     Value,
     When,
 )
+from django.db.models.fields.json import KT
 from django.db.models.functions import Concat, NullIf
 
 from arches.app.models import models
@@ -78,9 +79,8 @@ def get_sorted_filtered_tiles(
                 "-sort_priority", F(sort_field_name).desc()
             )
     else:
-        tiles = tiles.order_by(
-            "sortorder"
-        )  # default sort order for consistent pagination
+        # default sort order for consistent pagination
+        tiles = tiles.order_by("sortorder")
 
     return tiles
 
@@ -148,24 +148,26 @@ def get_sorted_filtered_relations(
         )
         .distinct()
         .annotate(
-            widget_label=Subquery(
+            widget_label_json=Subquery(
                 models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
                 .order_by("sortorder")
-                .values(f"label__{request_language}")
+                .values("label")
             )
         )
+        .annotate(widget_label=KT(f"widget_label_json__{request_language}"))
         .annotate(
-            display_name=Case(
+            display_name_json=Case(
                 When(
                     Q(resourceinstanceidfrom=resource),
-                    then=F(f"resourceinstanceidto__name__{request_language}"),
+                    then=F(f"resourceinstanceidto__name"),
                 ),
                 When(
                     Q(resourceinstanceidto=resource),
-                    then=F(f"resourceinstanceidfrom__name__{request_language}"),
+                    then=F(f"resourceinstanceidfrom__name"),
                 ),
             )
         )
+        .annotate(display_name=KT(f"display_name_json__{request_language}"))
         .annotate(**from_tile_annotations)
         .annotate(**to_tile_annotations)
         .annotate(**data_annotations)

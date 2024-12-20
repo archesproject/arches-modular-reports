@@ -129,13 +129,16 @@ class RelatedResourceView(APIBase):
                         if relation.resourceinstanceidfrom_id == resourceid
                         else relation.resourceinstanceidfrom_id
                     ),
-                    # TODO: debug F vs. KT and remove slices that strip quotes.
-                    "widget_label": str(relation.widget_label)[
-                        1 : len(str(relation.widget_label)) - 1
-                    ],
-                    "display_name": str(relation.display_name)[
-                        1 : len(str(relation.display_name)) - 1
-                    ],
+                    "widget_label": getattr(
+                        relation.widget_label,
+                        request_language,
+                        str(relation.widget_label),
+                    ),
+                    "display_name": getattr(
+                        relation.display_name,
+                        request_language,
+                        str(relation.display_name),
+                    ),
                     "nodes": {
                         node.alias: getattr(relation, node.alias) for node in nodes
                     },
