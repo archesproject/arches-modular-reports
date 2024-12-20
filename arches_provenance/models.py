@@ -218,7 +218,7 @@ class ReportConfig(models.Model):
         node_aliases = {node.alias for node in graph.node_set.all()}
         if extra_nodes := set(rr_config["additional_nodes"]) - node_aliases:
             raise ValidationError(
-                f"Related Resources section contains invalid node aliases: {extra_nodes}"
+                f"Related Resources section {graph.name} contains invalid node aliases: {extra_nodes}"
             )
 
     @staticmethod
