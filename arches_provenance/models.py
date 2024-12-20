@@ -162,9 +162,11 @@ class ReportConfig(models.Model):
                         validate_components_config(v)
                     else:
                         raise ValidationError(f"Invalid key in components: {k}")
-                getattr(
+                method = getattr(
                     self, "validate_" + item["component"].lower(), lambda noop: None
-                )(item["config"])
+                )
+                # example method: validate_relatedresourcessection
+                method(item["config"])
 
         def validate_components_config(config_dict):
             for v in config_dict.values():
