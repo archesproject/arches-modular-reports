@@ -151,7 +151,7 @@ def get_sorted_filtered_relations(
             widget_label_json=Subquery(
                 models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
                 .order_by("sortorder")
-                .values("label")
+                .values("label")[:1]
             )
         )
         .annotate(widget_label=KT(f"widget_label_json__{request_language}"))
