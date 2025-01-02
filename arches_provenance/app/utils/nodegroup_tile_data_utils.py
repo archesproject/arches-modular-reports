@@ -29,7 +29,7 @@ class ArchesGetNodeDisplayValue(Func):
 
 
 def get_sorted_filtered_tiles(
-    resourceinstanceid, nodegroupid, sort_node_id, sort_order, query, user_language
+    *, resourceinstanceid, nodegroupid, sort_node_id, sort_order, query, user_language
 ):
     # semantic, annotation, and geojson-feature-collection data types are excluded in __arches_get_node_display_value
     nodes = models.Node.objects.filter(nodegroup_id=nodegroupid).exclude(

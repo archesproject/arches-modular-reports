@@ -166,12 +166,12 @@ class NodePresentationView(APIBase):
             models.Node.objects.filter(graph=graph)
             .filter(nodegroup__in=permitted_nodegroups)
             .select_related("nodegroup")
-            .prefetch_related("nodegroup__cardmodel_set")
             .prefetch_related(
+                "nodegroup__cardmodel_set",
                 Prefetch(
                     "cardxnodexwidget_set",
                     queryset=models.CardXNodeXWidget.objects.order_by("sortorder"),
-                )
+                ),
             )
         )
 
