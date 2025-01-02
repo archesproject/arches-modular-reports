@@ -1,7 +1,8 @@
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
-from django.db.models import Prefetch
+from django.db.models import OuterRef, Prefetch, Subquery
+from django.db.models.fields.json import KT
 from django.http import Http404
 from django.shortcuts import render
 from django.utils import translation
@@ -103,8 +104,9 @@ class RelatedResourceView(APIBase):
         additional_nodes = request.GET.get("nodes", "").split(",")
         page_number = request.GET.get("page", 1)
         rows_per_page = request.GET.get("rows_per_page", 10)
-        sort = request.GET.get("sort", "widget_label")
+        sort = request.GET.get("sort", "@relation_name")
         direction = request.GET.get("direction", "asc")
+        request_language = translation.get_language_from_request(request)
 
         nodes = (
             models.Node.objects.filter(
@@ -113,17 +115,15 @@ class RelatedResourceView(APIBase):
             .exclude(
                 datatype__in=["semantic", "annotation", "geojson-feature-collection"]
             )
-            .select_related("nodegroup")
-        )
-        request_language = translation.get_language_from_request(request)
-
-        for node in nodes:
-            if node.nodegroup.cardinality == "n":
-                return JSONErrorResponse(
-                    message=_("Cardinality 'n' node is not supported: {}").format(
-                        node.alias
-                    )
+            .annotate(
+                widget_label_json=Subquery(
+                    models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
+                    .order_by("sortorder")
+                    .values("label")[:1]
                 )
+            )
+            .annotate(widget_label=KT(f"widget_label_json__{request_language}"))
+        )
 
         relations = get_sorted_filtered_relations(
             resource=resource,
@@ -143,22 +143,15 @@ class RelatedResourceView(APIBase):
                         if relation.resourceinstanceidfrom_id == resourceid
                         else relation.resourceinstanceidfrom_id
                     ),
-                    "widget_label": getattr(
-                        relation.widget_label,
-                        request_language,
-                        str(relation.widget_label),
-                    ),
-                    "display_name": getattr(
-                        relation.display_name,
-                        request_language,
-                        str(relation.display_name),
-                    ),
+                    "@relation_name": getattr(relation, "@relation_name"),
+                    "@display_name": getattr(relation, "@display_name"),
                     "nodes": {
                         node.alias: getattr(relation, node.alias) for node in nodes
                     },
                 }
                 for relation in paginator.get_page(page_number)
             ],
+            "widget_labels": {node.alias: node.widget_label for node in nodes},
             "total_count": paginator.count,
             "page": page_number,
         }

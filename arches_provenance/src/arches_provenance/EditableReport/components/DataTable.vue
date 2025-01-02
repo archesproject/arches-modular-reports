@@ -13,6 +13,7 @@ import Select from "primevue/select";
 
 import {
     fetchCardFromNodegroupId,
+    fetchRelatedResourceData,
     fetchNodegroupTileData,
 } from "@/arches_provenance/EditableReport/api.ts";
 import HierarchicalTileViewer from "@/arches_provenance/EditableReport/components/HierarchicalTileViewer.vue";
@@ -37,12 +38,15 @@ const props = defineProps<{
     component: {
         config: {
             nodegroup_id: string;
-            nodes: string[];
+            nodes?: string[];
+            additional_nodes?: string[];
+            graph_id?: string;
         };
     };
     resourceInstanceId: string;
 }>();
 
+const RELATED_RESOURCE_MODE = !!props.component.config.additional_nodes;
 const ASC = "asc";
 const DESC = "desc";
 const CARDINALITY_N = "n";
@@ -67,8 +71,9 @@ const rowsPerPage = ref(ROWS_PER_PAGE_OPTIONS[0]);
 const pageNumberToNodegroupTileData = ref<Record<number, unknown[]>>({});
 const currentlyDisplayedTableData = ref<unknown[]>([]);
 const searchResultsTotalCount = ref(0);
+const widgetLabelLookup = ref<Record<string, string>>({});
 
-const sortNodeId = ref("");
+const sortNodeId = ref(RELATED_RESOURCE_MODE ? "@relation_name" : "");
 const sortOrder = ref(ASC);
 
 const query = ref("");
@@ -112,19 +117,29 @@ watch(query, (newQuery) => {
     }, queryTimeoutValue);
 });
 
-onMounted(() => {
-    fetchCardFromNodegroupId(props.component.config?.nodegroup_id).then(
-        (fetchedCardData) => {
-            tableTitle.value = fetchedCardData?.name;
-            columnData.value = deriveColumnData(
-                props.component.config,
-                fetchedCardData,
-            );
+watch(widgetLabelLookup, () => {
+    if (RELATED_RESOURCE_MODE) {
+        columnData.value = deriveRelatedResourceColumnData(
+            props.component.config,
+        );
+    }
+});
 
-            cardinality.value = fetchedCardData.cardinality;
-            cardData.value = fetchedCardData;
-        },
-    );
+onMounted(() => {
+    if (!RELATED_RESOURCE_MODE) {
+        fetchCardFromNodegroupId(props.component.config?.nodegroup_id).then(
+            (fetchedCardData) => {
+                tableTitle.value = fetchedCardData?.name;
+                columnData.value = deriveColumnData(
+                    props.component.config,
+                    fetchedCardData,
+                );
+
+                cardinality.value = fetchedCardData.cardinality;
+                cardData.value = fetchedCardData;
+            },
+        );
+    }
 
     fetchData(
         props.resourceInstanceId,
@@ -149,24 +164,40 @@ async function fetchData(
     isLoading.value = true;
 
     try {
+        let promise;
+        if (RELATED_RESOURCE_MODE) {
+            promise = fetchRelatedResourceData(
+                resourceInstanceId,
+                props.component.config.graph_id!,
+                props.component.config.additional_nodes!,
+                rowsPerPage,
+                page,
+                sortNodeId,
+                sortOrder,
+            );
+        } else {
+            promise = fetchNodegroupTileData(
+                resourceInstanceId,
+                nodegroupId,
+                rowsPerPage,
+                page,
+                sortNodeId,
+                sortOrder,
+                query,
+            );
+        }
         const {
             results,
             page: fetchedPage,
             total_count: totalCount,
-        } = await fetchNodegroupTileData(
-            resourceInstanceId,
-            nodegroupId,
-            rowsPerPage,
-            page,
-            sortNodeId,
-            sortOrder,
-            query,
-        );
+            widget_labels: widgetLabels,
+        } = await promise;
 
         pageNumberToNodegroupTileData.value[fetchedPage] = results;
         currentlyDisplayedTableData.value = results;
         currentPage.value = fetchedPage;
         searchResultsTotalCount.value = totalCount;
+        widgetLabelLookup.value = widgetLabels;
     } catch (error) {
         hasLoadingError.value = true;
         throw error;
@@ -176,13 +207,13 @@ async function fetchData(
 }
 
 function deriveColumnData(
-    config: { nodes: string[] },
+    config: { nodes?: string[] },
     cardData: {
         nodes: { alias: string; nodeid: string }[];
         widgets: { node_id: string; label: string }[];
     },
 ): ColumnDatum[] {
-    return config.nodes.map((nodeAlias: string) => {
+    return config.nodes!.map((nodeAlias: string) => {
         const matchingNode = cardData.nodes.find(
             (node) => node.alias === nodeAlias,
         );
@@ -201,10 +232,43 @@ function deriveColumnData(
     });
 }
 
+function deriveRelatedResourceColumnData(config: {
+    additional_nodes?: string[];
+}) {
+    return [
+        {
+            nodeAlias: "@relation_name",
+            widgetLabel: "Relation Name",
+        },
+        {
+            nodeAlias: "@display_name",
+            widgetLabel: "Display Name",
+        },
+        ...config.additional_nodes!.map((nodeAlias: string) => {
+            return {
+                nodeAlias,
+                widgetLabel: widgetLabelLookup.value[nodeAlias] ?? nodeAlias,
+            };
+        }),
+    ];
+}
+
 function getDisplayValue(
-    tileData: Record<string, unknown>,
+    tileData: Record<string, string | Record<string, unknown>>,
     key: string,
 ): string | null {
+    if (key === "@relation_name") {
+        return tileData["@relation_name"] as string;
+    } else if (key === "@display_name") {
+        return tileData["@display_name"] as string;
+    } else if (
+        tileData.nodes &&
+        typeof tileData.nodes !== "string" &&
+        key in tileData.nodes
+    ) {
+        return tileData.nodes[key] as string;
+    }
+
     const queue: Array<Record<string, unknown>> = [tileData];
 
     while (queue.length > 0) {
@@ -256,6 +320,11 @@ function tileIdFromData(tileData: Record<string, unknown>): string {
 }
 
 function onUpdateSortField(event: string) {
+    // TODO: standardize node id/alias API param to avoid bifurcation.
+    if (RELATED_RESOURCE_MODE) {
+        sortNodeId.value = event;
+        return;
+    }
     const selectedNode = cardData.value?.nodes.find(
         (node) => node.alias === event,
     );
@@ -332,6 +401,7 @@ function rowClass(data: LabelBasedCard) {
             </template>
 
             <Column
+                v-if="!RELATED_RESOURCE_MODE"
                 expander
                 style="width: 25px"
             />
@@ -340,13 +410,18 @@ function rowClass(data: LabelBasedCard) {
                 :key="columnDatum.nodeAlias"
                 :field="columnDatum.nodeAlias"
                 :header="columnDatum.widgetLabel"
-                :sortable="cardinality === CARDINALITY_N"
+                :sortable="
+                    RELATED_RESOURCE_MODE || cardinality === CARDINALITY_N
+                "
             >
                 <template #body="slotProps">
                     {{ getDisplayValue(slotProps.data, slotProps.field) }}
                 </template>
             </Column>
-            <template #expansion="slotProps">
+            <template
+                v-if="!RELATED_RESOURCE_MODE"
+                #expansion="slotProps"
+            >
                 <HierarchicalTileViewer
                     :tile-id="tileIdFromData(slotProps.data)"
                 />

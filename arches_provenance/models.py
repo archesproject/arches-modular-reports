@@ -126,7 +126,7 @@ class ReportConfig(models.Model):
                 "name": str(other_graph.name),
                 "components": [
                     {
-                        "component": "RelatedResourcesSection",
+                        "component": "DataTable",
                         "config": {
                             "graph_id": str(other_graph.pk),
                             "additional_nodes": [],
@@ -195,6 +195,8 @@ class ReportConfig(models.Model):
             raise ValidationError("Tombstone config contains invalid node aliases.")
 
     def validate_datatable(self, card_config):
+        if "additional_nodes" in card_config:
+            return self.validate_relatedresourcessection(card_config)
         nodegroup_id = card_config["nodegroup_id"]
         nodegroup = (
             NodeGroup.objects.filter(pk=nodegroup_id, node__graph=self.graph)

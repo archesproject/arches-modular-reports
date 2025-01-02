@@ -148,13 +148,14 @@ def get_sorted_filtered_relations(
             )
         )
         .annotate(
-            widget_label_json=Subquery(
+            relation_name_json=Subquery(
                 models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
                 .order_by("sortorder")
                 .values("label")[:1]
             )
         )
-        .annotate(widget_label=KT(f"widget_label_json__{request_language}"))
+        # TODO: add fallback to active language
+        .annotate(**{"@relation_name": KT(f"relation_name_json__{request_language}")})
         .annotate(
             display_name_json=Case(
                 When(
@@ -167,7 +168,8 @@ def get_sorted_filtered_relations(
                 ),
             )
         )
-        .annotate(display_name=KT(f"display_name_json__{request_language}"))
+        # TODO: add fallback to active language
+        .annotate(**{"@display_name": KT(f"display_name_json__{request_language}")})
         .annotate(**from_tile_annotations)
         .annotate(**to_tile_annotations)
         .annotate(**data_annotations)
