@@ -28,6 +28,12 @@ ko.components.register('editable-report', {
             const mountingPoints = document.querySelectorAll('.editable-report-mounting-point');
             const mountingPoint = mountingPoints[mountingPoints.length - 1];
 
+            // handles the Resource Editor case of navigating from report doesn't unmount the previous app
+            if (window.archesEditableReportVueApp) {
+                window.archesEditableReportVueApp.unmount();
+            }
+            window.archesEditableReportVueApp = vueApp;
+
             vueApp.provide('resourceInstanceId', params.report.report_json.resourceinstanceid);
             vueApp.mount(mountingPoint);
         });
