@@ -62,7 +62,10 @@ onMounted(async () => {
     for (const section of component.config.sections) {
         linkedSections.value.push({
             name: section.name,
-            components: section.components,
+            components: section.components.map((child: SectionContent) => ({
+                ...child,
+                config: { ...child.config, id: uniqueId(child) },
+            })),
             collapsed: false,
         });
     }
@@ -112,7 +115,7 @@ onMounted(async () => {
                     <component
                         :is="componentLookup[child.component]"
                         v-for="child in linked_section.components"
-                        :key="uniqueId(child)"
+                        :key="child.config.id"
                         :component="child"
                         :resource-instance-id
                     />
