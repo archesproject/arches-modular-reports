@@ -120,7 +120,7 @@ class ReportConfig(models.Model):
     def generate_related_resources_sections(self):
         other_graphs = GraphModel.objects.exclude(
             pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID
-        )
+        ).filter(isresource=True)
         return [
             {
                 "name": str(other_graph.name),
