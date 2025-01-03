@@ -217,10 +217,19 @@ class ReportConfig(models.Model):
             graph = GraphModel.objects.get(pk=rr_config["graph_id"])
         except GraphModel.DoesNotExist:
             raise ValidationError("Related Resources section contains invalid graph id")
-        node_aliases = {node.alias for node in graph.node_set.all()}
-        if extra_nodes := set(rr_config["additional_nodes"]) - node_aliases:
+        nodes = graph.node_set.exclude(istopnode=True).select_related("nodegroup")
+        node_aliases = {node.alias for node in nodes}
+        requested_node_aliases = set(rr_config["additional_nodes"])
+        if extra_node_aliases := requested_node_aliases - node_aliases:
             raise ValidationError(
-                f"Related Resources section {graph.name} contains invalid node aliases: {extra_nodes}"
+                f"Related Resources section {graph.name} contains extraneous node aliases: {extra_node_aliases}"
+            )
+        cardinality_1_node_aliases = {
+            node.alias for node in nodes if node.nodegroup.cardinality == "1"
+        }
+        if extra_node_aliases := requested_node_aliases - cardinality_1_node_aliases:
+            raise ValidationError(
+                f"Related Resources section {graph.name} contains cardinality 'n' node aliases: {extra_node_aliases}"
             )
 
     @staticmethod

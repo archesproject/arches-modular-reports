@@ -88,10 +88,12 @@ def get_sorted_filtered_tiles(
 def get_sorted_filtered_relations(
     *, resource, related_graphid, nodes, sort, direction, request_language
 ):
+    for node in nodes:
+        # View should have already checked and raised JSONErrorResponse.
+        assert node.nodegroup.cardinality == "1"
     to_tile_annotations = {
         node.alias
         + "_to_tile": FilteredRelation(
-            # TODO: cardinality N?
             "resourceinstanceidto__tilemodel",
             condition=Q(
                 resourceinstanceidto__tilemodel__nodegroup_id=node.nodegroup_id,
@@ -102,7 +104,6 @@ def get_sorted_filtered_relations(
     from_tile_annotations = {
         node.alias
         + "_from_tile": FilteredRelation(
-            # TODO: cardinality N?
             "resourceinstanceidfrom__tilemodel",
             condition=Q(
                 resourceinstanceidfrom__tilemodel__nodegroup_id=node.nodegroup_id,
@@ -177,7 +178,7 @@ def get_sorted_filtered_relations(
     else:
         relations = relations.order_by(F(sort).desc(nulls_last=True))
 
-    return relations.distinct("pk", sort)
+    return relations
 
 
 def serialize_tiles_with_children(tile, serialized_graph):

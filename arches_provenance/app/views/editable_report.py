@@ -106,10 +106,24 @@ class RelatedResourceView(APIBase):
         sort = request.GET.get("sort", "widget_label")
         direction = request.GET.get("direction", "asc")
 
-        nodes = models.Node.objects.filter(
-            alias__in=additional_nodes, graph_id=related_graphid
-        ).exclude(datatype__in=["semantic", "annotation", "geojson-feature-collection"])
+        nodes = (
+            models.Node.objects.filter(
+                alias__in=additional_nodes, graph_id=related_graphid
+            )
+            .exclude(
+                datatype__in=["semantic", "annotation", "geojson-feature-collection"]
+            )
+            .select_related("nodegroup")
+        )
         request_language = translation.get_language_from_request(request)
+
+        for node in nodes:
+            if node.nodegroup.cardinality == "n":
+                return JSONErrorResponse(
+                    message=_("Cardinality 'n' node is not supported: {}").format(
+                        node.alias
+                    )
+                )
 
         relations = get_sorted_filtered_relations(
             resource=resource,
