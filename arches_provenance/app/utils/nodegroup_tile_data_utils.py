@@ -35,6 +35,23 @@ class ArrayToString(Func):
     arity = 3
 
 
+def annotate_related_graph_nodes_with_widget_labels(
+    additional_nodes, related_graphid, request_language
+):
+    return (
+        models.Node.objects.filter(alias__in=additional_nodes, graph_id=related_graphid)
+        .exclude(datatype__in=["semantic", "annotation", "geojson-feature-collection"])
+        .annotate(
+            widget_label_json=Subquery(
+                models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
+                .order_by("sortorder")
+                .values("label")[:1]
+            )
+        )
+        .annotate(widget_label=KT(f"widget_label_json__{request_language}"))
+    )
+
+
 def get_sorted_filtered_tiles(
     *, resourceinstanceid, nodegroupid, sort_node_id, sort_order, query, user_language
 ):
@@ -149,7 +166,8 @@ def get_sorted_filtered_relations(
                 .values("label")[:1]
             )
         )
-        # TODO: add fallback to active language
+        # TODO: add fallback to system language? Below also.
+        # https://github.com/archesproject/arches/issues/10028
         .annotate(**{"@relation_name": KT(f"relation_name_json__{request_language}")})
         .annotate(
             display_name_json=Case(
@@ -163,7 +181,6 @@ def get_sorted_filtered_relations(
                 ),
             )
         )
-        # TODO: add fallback to active language
         .annotate(**{"@display_name": KT(f"display_name_json__{request_language}")})
         .annotate(**data_annotations)
     )

@@ -1,8 +1,7 @@
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
-from django.db.models import OuterRef, Prefetch, Subquery
-from django.db.models.fields.json import KT
+from django.db.models import Prefetch
 from django.http import Http404
 from django.shortcuts import render
 from django.utils import translation
@@ -22,6 +21,7 @@ from arches.app.views.resource import ResourceReportView
 from arches_provenance.models import ReportConfig
 
 from arches_provenance.app.utils.nodegroup_tile_data_utils import (
+    annotate_related_graph_nodes_with_widget_labels,
     get_sorted_filtered_relations,
     get_sorted_filtered_tiles,
     serialize_tiles_with_children,
@@ -106,25 +106,11 @@ class RelatedResourceView(APIBase):
         rows_per_page = request.GET.get("rows_per_page", 10)
         sort = request.GET.get("sort", "@relation_name")
         direction = request.GET.get("direction", "asc")
-        request_language = translation.get_language_from_request(request)
+        request_language = translation.get_language()
 
-        nodes = (
-            models.Node.objects.filter(
-                alias__in=additional_nodes, graph_id=related_graphid
-            )
-            .exclude(
-                datatype__in=["semantic", "annotation", "geojson-feature-collection"]
-            )
-            .annotate(
-                widget_label_json=Subquery(
-                    models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
-                    .order_by("sortorder")
-                    .values("label")[:1]
-                )
-            )
-            .annotate(widget_label=KT(f"widget_label_json__{request_language}"))
+        nodes = annotate_related_graph_nodes_with_widget_labels(
+            additional_nodes, related_graphid, request_language
         )
-
         relations = get_sorted_filtered_relations(
             resource=resource,
             related_graphid=related_graphid,
