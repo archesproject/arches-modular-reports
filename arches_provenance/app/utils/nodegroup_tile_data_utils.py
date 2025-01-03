@@ -146,7 +146,6 @@ def get_sorted_filtered_relations(
                 resourceinstancefrom_graphid=related_graphid,
             )
         )
-        .distinct()
         .annotate(
             widget_label_json=Subquery(
                 models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
@@ -178,7 +177,7 @@ def get_sorted_filtered_relations(
     else:
         relations = relations.order_by(F(sort).desc(nulls_last=True))
 
-    return relations
+    return relations.distinct("pk", sort)
 
 
 def serialize_tiles_with_children(tile, serialized_graph):
