@@ -138,7 +138,7 @@ class RelatedResourceView(APIBase):
         response_data = {
             "results": [
                 {
-                    "related_resource": (
+                    "related_resource_id": (
                         relation.resourceinstanceidto_id
                         if relation.resourceinstanceidfrom_id == resourceid
                         else relation.resourceinstanceidfrom_id
