@@ -1,7 +1,7 @@
+from django.contrib.postgres.expressions import ArraySubquery
 from django.db.models import (
     Case,
     F,
-    FilteredRelation,
     Func,
     IntegerField,
     OuterRef,
@@ -12,7 +12,8 @@ from django.db.models import (
     When,
 )
 from django.db.models.fields.json import KT
-from django.db.models.functions import Concat, NullIf
+from django.db.models.functions import Concat
+from django.utils.translation import gettext as _
 
 from arches.app.models import models
 from arches.app.models.tile import Tile
@@ -24,6 +25,12 @@ from arches_provenance.app.utils.label_based_graph_with_branch_export import (
 
 class ArchesGetNodeDisplayValue(Func):
     function = "__arches_get_node_display_value"
+    output_field = TextField()
+    arity = 3
+
+
+class ArrayToString(Func):
+    function = "ARRAY_TO_STRING"
     output_field = TextField()
     arity = 3
 
@@ -88,50 +95,37 @@ def get_sorted_filtered_tiles(
 def get_sorted_filtered_relations(
     *, resource, related_graphid, nodes, sort, direction, request_language
 ):
-    for node in nodes:
-        # View should have already checked and raised JSONErrorResponse.
-        assert node.nodegroup.cardinality == "1"
-    to_tile_annotations = {
-        node.alias
-        + "_to_tile": FilteredRelation(
-            "resourceinstanceidto__tilemodel",
-            condition=Q(
-                resourceinstanceidto__tilemodel__nodegroup_id=node.nodegroup_id,
+    def make_tile_annotations(node, direction):
+        return ArrayToString(
+            ArraySubquery(
+                models.TileModel.objects.filter(
+                    resourceinstance=OuterRef(f"resourceinstanceid{direction}"),
+                    nodegroup_id=node.nodegroup_id,
+                )
+                .exclude(**{f"data__{node.pk}__isnull": True})
+                .annotate(
+                    display_value=ArchesGetNodeDisplayValue(
+                        F("data"), Value(node.pk), Value(request_language)
+                    )
+                )
+                .order_by("sortorder")
+                .values("display_value")
+                # TODO: consider distinct, especially for concept values.
             ),
+            Value(", "),  # delimiter
+            Value(_("None")),  # null replacement
         )
-        for node in nodes
-    }
-    from_tile_annotations = {
-        node.alias
-        + "_from_tile": FilteredRelation(
-            "resourceinstanceidfrom__tilemodel",
-            condition=Q(
-                resourceinstanceidfrom__tilemodel__nodegroup_id=node.nodegroup_id,
-            ),
-        )
-        for node in nodes
-    }
+
     data_annotations = {
-        node.alias: NullIf(
-            Case(
-                When(
-                    Q(resourceinstanceidfrom=resource),
-                    then=ArchesGetNodeDisplayValue(
-                        F(node.alias + "_to_tile__data"),
-                        Value(node.pk),
-                        Value(request_language),
-                    ),
-                ),
-                When(
-                    Q(resourceinstanceidto=resource),
-                    then=ArchesGetNodeDisplayValue(
-                        F(node.alias + "_from_tile__data"),
-                        Value(node.pk),
-                        Value(request_language),
-                    ),
-                ),
+        node.alias: Case(
+            When(
+                Q(resourceinstanceidfrom=resource),
+                then=make_tile_annotations(node, "to"),
             ),
-            Value("", output_field=TextField()),
+            When(
+                Q(resourceinstanceidfrom=resource),
+                then=make_tile_annotations(node, "from"),
+            ),
         )
         for node in nodes
     }
@@ -147,6 +141,7 @@ def get_sorted_filtered_relations(
                 resourceinstancefrom_graphid=related_graphid,
             )
         )
+        .distinct()
         .annotate(
             relation_name_json=Subquery(
                 models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
@@ -170,8 +165,6 @@ def get_sorted_filtered_relations(
         )
         # TODO: add fallback to active language
         .annotate(**{"@display_name": KT(f"display_name_json__{request_language}")})
-        .annotate(**from_tile_annotations)
-        .annotate(**to_tile_annotations)
         .annotate(**data_annotations)
     )
 
