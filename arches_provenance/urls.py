@@ -21,12 +21,13 @@ from arches_provenance.app.views.provenance_report import ProvenanceGroupReportV
 from arches_provenance.app.views.provenance_report import ProvenanceEditorView
 from arches_provenance.app.views.provenance_report import ProvenanceSourceReferences
 from arches_provenance.app.views.editable_report import (
+    CardFromNodegroupIdView,
     ChildTileDataView,
     EditableReportAwareResourceReportView,
+    NodegroupTileDataView,
     NodePresentationView,
     ProvenanceEditableReportConfigView,
-    NodegroupTileDataView,
-    CardFromNodegroupIdView,
+    RelatedResourceView,
 )
 
 uuid_regex = settings.UUID_REGEX
@@ -249,6 +250,11 @@ urlpatterns = [
         r"^report/(?P<resourceid>%s)$" % uuid_regex,
         EditableReportAwareResourceReportView.as_view(),
         name="resource_report",
+    ),
+    path(
+        "api/related_resources/<uuid:resourceid>/<uuid:related_graphid>",
+        RelatedResourceView.as_view(),
+        name="api_related_resources",
     ),
     path(
         "api/node_presentation/<uuid:resourceid>",

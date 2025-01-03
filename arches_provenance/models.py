@@ -22,7 +22,9 @@ class ReportConfig(models.Model):
         db_table = "arches_provenance_report_config"
 
     def __str__(self):
-        return f"Config for: {self.graph.name}: {self.config.get('name')}"
+        if self.config and self.graph:
+            return f"Config for: {self.graph.name}: {self.config.get('name')}"
+        return super().__str__()
 
     def clean(self):
         if self.graph_id and not self.config:
@@ -117,18 +119,19 @@ class ReportConfig(models.Model):
 
     def generate_related_resources_sections(self):
         other_graphs = GraphModel.objects.exclude(
-            pk__in=[self.graph.pk, settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID]
-        )
+            pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID
+        ).filter(isresource=True)
         return [
             {
-                "name": str(other_graph.name),  # not pluralized
+                "name": str(other_graph.name),
                 "components": [
                     {
                         "component": "RelatedResourcesSection",
                         "config": {
                             "graph_id": str(other_graph.pk),
+                            "additional_nodes": [],
                         },
-                    }
+                    },
                 ],
             }
             for other_graph in other_graphs
@@ -159,9 +162,11 @@ class ReportConfig(models.Model):
                         validate_components_config(v)
                     else:
                         raise ValidationError(f"Invalid key in components: {k}")
-                getattr(
+                method = getattr(
                     self, "validate_" + item["component"].lower(), lambda noop: None
-                )(item["config"])
+                )
+                # example method: validate_relatedresourcessection
+                method(item["config"])
 
         def validate_components_config(config_dict):
             for v in config_dict.values():
@@ -202,6 +207,30 @@ class ReportConfig(models.Model):
         for alias in card_config["nodes"]:
             if alias not in aliases:
                 raise ValidationError(f"Section contains invalid node alias: {alias}")
+
+    def validate_relatedresourcessection(self, rr_config):
+        if "graph_id" not in rr_config:
+            raise ValidationError("Related Resources section missing graph_id")
+        if "additional_nodes" not in rr_config:
+            raise ValidationError("Related Resources section missing additional_nodes")
+        try:
+            graph = GraphModel.objects.get(pk=rr_config["graph_id"])
+        except GraphModel.DoesNotExist:
+            raise ValidationError("Related Resources section contains invalid graph id")
+        nodes = graph.node_set.exclude(istopnode=True).select_related("nodegroup")
+        node_aliases = {node.alias for node in nodes}
+        requested_node_aliases = set(rr_config["additional_nodes"])
+        if extra_node_aliases := requested_node_aliases - node_aliases:
+            raise ValidationError(
+                f"Related Resources section {graph.name} contains extraneous node aliases: {extra_node_aliases}"
+            )
+        cardinality_1_node_aliases = {
+            node.alias for node in nodes if node.nodegroup.cardinality == "1"
+        }
+        if extra_node_aliases := requested_node_aliases - cardinality_1_node_aliases:
+            raise ValidationError(
+                f"Related Resources section {graph.name} contains cardinality 'n' node aliases: {extra_node_aliases}"
+            )
 
     @staticmethod
     def extract_substrings(template_string):
