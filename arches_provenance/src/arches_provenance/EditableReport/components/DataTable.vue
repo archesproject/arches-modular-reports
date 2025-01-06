@@ -374,7 +374,9 @@ function rowClass(data: LabelBasedCard) {
         >
             <template #header>
                 <div
-                    v-if="cardinality === CARDINALITY_N"
+                    v-if="
+                        RELATED_RESOURCE_MODE || cardinality === CARDINALITY_N
+                    "
                     style="display: flex; justify-content: space-between"
                 >
                     <div>
