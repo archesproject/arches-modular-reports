@@ -1,3 +1,5 @@
+from functools import reduce
+
 from django.contrib.postgres.expressions import ArraySubquery
 from django.db.models import (
     Case,
@@ -137,8 +139,6 @@ def get_sorted_filtered_relations(
             Value(_("None")),  # null replacement
         )
 
-    # TODO: do something with query.
-
     data_annotations = {
         node.alias: Case(
             When(
@@ -190,6 +190,21 @@ def get_sorted_filtered_relations(
         .annotate(**{"@display_name": KT(f"display_name_json__{request_language}")})
         .annotate(**data_annotations)
     )
+
+    if query:
+        # OR (|) Q() objects together to allow matching any annotation.
+        all_filters = reduce(
+            lambda left, right: left | right,
+            [
+                Q(**{"@relation_name__icontains": query}),
+                Q(**{"@display_name__icontains": query}),
+                *[
+                    Q(**{f"{annotation}__icontains": query})
+                    for annotation in data_annotations
+                ],
+            ],
+        )
+        relations = relations.filter(all_filters)
 
     if direction.lower().startswith("asc"):
         relations = relations.order_by(F(sort_field).asc(nulls_last=True))
