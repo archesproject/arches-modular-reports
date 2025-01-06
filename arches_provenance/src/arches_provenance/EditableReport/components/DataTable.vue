@@ -163,6 +163,15 @@ function rowClass(data: LabelBasedCard) {
                 </IconField>
             </div>
         </template>
+        <template #empty>
+            <Message
+                size="large"
+                severity="info"
+                icon="pi pi-info-circle"
+            >
+                {{ $gettext("No results match your search.") }}
+            </Message>
+        </template>
 
         <Column
             v-if="mode === 'data'"
