@@ -104,8 +104,9 @@ class RelatedResourceView(APIBase):
         additional_nodes = request.GET.get("nodes", "").split(",")
         page_number = request.GET.get("page", 1)
         rows_per_page = request.GET.get("rows_per_page", 10)
-        sort = request.GET.get("sort", "@relation_name")
+        sort_field = request.GET.get("sort_field", "@relation_name")
         direction = request.GET.get("direction", "asc")
+        query = request.GET.get("query", "")
         request_language = translation.get_language()
 
         nodes = annotate_related_graph_nodes_with_widget_labels(
@@ -115,11 +116,13 @@ class RelatedResourceView(APIBase):
             resource=resource,
             related_graphid=related_graphid,
             nodes=nodes,
-            sort=sort,
+            sort_field=sort_field,
             direction=direction,
+            query=query,
             request_language=request_language,
         )
         paginator = Paginator(relations, rows_per_page)
+        result_page = paginator.get_page(page_number)
 
         response_data = {
             "results": [
@@ -135,11 +138,11 @@ class RelatedResourceView(APIBase):
                         node.alias: getattr(relation, node.alias) for node in nodes
                     },
                 }
-                for relation in paginator.get_page(page_number)
+                for relation in result_page
             ],
             "widget_labels": {node.alias: node.widget_label for node in nodes},
             "total_count": paginator.count,
-            "page": page_number,
+            "page": result_page.number,
         }
 
         return JSONResponse(response_data)
@@ -193,16 +196,16 @@ class NodegroupTileDataView(APIBase):
         rows_per_page = request.GET.get("rows_per_page")
 
         query = request.GET.get("query")
-        sort_node_id = request.GET.get("sort_node_id")
-        sort_order = request.GET.get("sort_order", "asc")
+        sort_field = request.GET.get("sort_field")
+        direction = request.GET.get("direction", "asc")
 
         user_language = translation.get_language()
 
         tiles = get_sorted_filtered_tiles(
             resourceinstanceid=resourceinstanceid,
             nodegroupid=nodegroupid,
-            sort_node_id=sort_node_id,
-            sort_order=sort_order,
+            sort_field=sort_field,
+            direction=direction,
             query=query,
             user_language=user_language,
         )
@@ -246,7 +249,7 @@ class NodegroupTileDataView(APIBase):
                 for tile in page.object_list
             ],
             "total_count": paginator.count,
-            "page": page_number,
+            "page": page.number,
         }
 
         return JSONResponse(response_data)

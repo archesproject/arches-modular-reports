@@ -53,7 +53,7 @@ def annotate_related_graph_nodes_with_widget_labels(
 
 
 def get_sorted_filtered_tiles(
-    *, resourceinstanceid, nodegroupid, sort_node_id, sort_order, query, user_language
+    *, resourceinstanceid, nodegroupid, sort_field, direction, query, user_language
 ):
     # semantic, annotation, and geojson-feature-collection data types are excluded in __arches_get_node_display_value
     nodes = models.Node.objects.filter(nodegroup_id=nodegroupid).exclude(
@@ -61,7 +61,7 @@ def get_sorted_filtered_tiles(
     )
 
     annotations = {
-        f'field_{str(node.pk).replace("-", "_")}': ArchesGetNodeDisplayValue(
+        node.alias: ArchesGetNodeDisplayValue(
             F("data"), Value(str(node.pk)), Value(user_language)
         )
         for node in nodes
@@ -84,23 +84,27 @@ def get_sorted_filtered_tiles(
         .filter(search_text__icontains=query)
     )
 
-    if sort_node_id:
-        sort_field_name = f'field_{sort_node_id.replace("-", "_")}'
+    if sort_field:
+        # We're about to use this node alias as a SQL alias in a Django
+        # annotation. Django will raise ValueError if contains unsafe
+        # characters, but node aliases generated with __arches_slugify
+        # *should* already be sane. If not, ValueError is fine. If ever
+        # a problem in practice, let's add validation in core arches.
 
         sort_priority = Case(
-            When(**{f"{sort_field_name}__isnull": True}, then=Value(1)),
-            When(**{f"{sort_field_name}": ""}, then=Value(1)),
+            When(**{f"{sort_field}__isnull": True}, then=Value(1)),
+            When(**{f"{sort_field}": ""}, then=Value(1)),
             default=Value(0),
             output_field=IntegerField(),
         )
 
-        if sort_order == "asc":
+        if direction.lower().startswith("asc"):
             tiles = tiles.annotate(sort_priority=sort_priority).order_by(
-                "sort_priority", F(sort_field_name).asc()
+                "sort_priority", F(sort_field).asc()
             )
-        elif sort_order == "desc":
+        else:
             tiles = tiles.annotate(sort_priority=sort_priority).order_by(
-                "-sort_priority", F(sort_field_name).desc()
+                "-sort_priority", F(sort_field).desc()
             )
     else:
         # default sort order for consistent pagination
@@ -110,7 +114,7 @@ def get_sorted_filtered_tiles(
 
 
 def get_sorted_filtered_relations(
-    *, resource, related_graphid, nodes, sort, direction, request_language
+    *, resource, related_graphid, nodes, sort_field, direction, query, request_language
 ):
     def make_tile_annotations(node, direction):
         return ArrayToString(
@@ -127,11 +131,13 @@ def get_sorted_filtered_relations(
                 )
                 .order_by("sortorder")
                 .values("display_value")
-                # TODO: consider distinct, especially for concept values.
+                .distinct()  # TODO: parameterize this?
             ),
             Value(", "),  # delimiter
             Value(_("None")),  # null replacement
         )
+
+    # TODO: do something with query.
 
     data_annotations = {
         node.alias: Case(
@@ -185,10 +191,10 @@ def get_sorted_filtered_relations(
         .annotate(**data_annotations)
     )
 
-    if direction.startswith("asc"):
-        relations = relations.order_by(F(sort).asc(nulls_last=True))
+    if direction.lower().startswith("asc"):
+        relations = relations.order_by(F(sort_field).asc(nulls_last=True))
     else:
-        relations = relations.order_by(F(sort).desc(nulls_last=True))
+        relations = relations.order_by(F(sort_field).desc(nulls_last=True))
 
     return relations
 

@@ -58,3 +58,9 @@ export interface LabelBasedNode {
     "@node_id": string;
     "@tile_id": string;
 }
+
+// DataTable display
+export interface ColumnDatum {
+    nodeAlias: string;
+    widgetLabel: string;
+}
