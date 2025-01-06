@@ -99,14 +99,14 @@ class ReportConfig(models.Model):
                 "name": str(card.name),
                 "components": [
                     {
-                        "component": "DataTable",
+                        "component": "DataSection",
                         "config": {
                             "nodegroup_id": str(card.nodegroup_id),
                             "nodes": [
                                 node.alias
                                 for node in sorted(
                                     card.nodegroup.node_set.all(),
-                                    key=lambda node: int(node.sortorder or 0),
+                                    key=lambda node: node.sortorder or 0,
                                 )
                                 if node.datatype != "semantic"
                             ],
@@ -126,7 +126,7 @@ class ReportConfig(models.Model):
                 "name": str(other_graph.name),
                 "components": [
                     {
-                        "component": "DataTable",
+                        "component": "RelatedResourcesSection",
                         "config": {
                             "graph_id": str(other_graph.pk),
                             "additional_nodes": [],
@@ -194,9 +194,7 @@ class ReportConfig(models.Model):
         if len(nodes) != len(tombstone_nodes):
             raise ValidationError("Tombstone config contains invalid node aliases.")
 
-    def validate_datatable(self, card_config):
-        if "additional_nodes" in card_config:
-            return self.validate_relatedresourcessection(card_config)
+    def validate_datasection(self, card_config):
         nodegroup_id = card_config["nodegroup_id"]
         nodegroup = (
             NodeGroup.objects.filter(pk=nodegroup_id, node__graph=self.graph)

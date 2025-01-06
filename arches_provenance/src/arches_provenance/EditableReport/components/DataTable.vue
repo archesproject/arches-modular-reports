@@ -37,7 +37,7 @@ interface CardData {
 const props = defineProps<{
     component: {
         config: {
-            nodegroup_id: string;
+            nodegroup_id?: string;
             nodes?: string[];
             additional_nodes?: string[];
             graph_id?: string;
