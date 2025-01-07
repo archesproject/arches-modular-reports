@@ -72,7 +72,11 @@ function exportData(exportFormat: ExportFormat) {
             v-for="exportFormat in component.config.export_formats"
             :key="exportFormat"
             :label="exportFormat"
+            :aria-label="
+                $gettext('Export as: %{exportFormat}', { exportFormat })
+            "
             variant="link"
+            style="font-size: 1.4rem"
             @click="exportData(exportFormat)"
         >
         </Button>
