@@ -1,3 +1,4 @@
+import operator
 from functools import reduce
 
 from django.contrib.postgres.expressions import ArraySubquery
@@ -194,7 +195,7 @@ def get_sorted_filtered_relations(
     if query:
         # OR (|) Q() objects together to allow matching any annotation.
         all_filters = reduce(
-            lambda left, right: left | right,
+            operator.or_,
             [
                 Q(**{"@relation_name__icontains": query}),
                 Q(**{"@display_name__icontains": query}),
