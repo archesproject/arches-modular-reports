@@ -91,7 +91,5 @@ onMounted(async () => {
 <style scoped>
 .section-container {
     gap: 2rem;
-    height: calc(100vh - 50px);
-    width: calc(100vw - 50px);
 }
 </style>
