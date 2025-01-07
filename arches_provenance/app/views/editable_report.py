@@ -63,9 +63,7 @@ class EditableReportAwareResourceReportView(ResourceReportView):
                 resourceid=resourceid,
                 templateid=graph.template.pk,
                 # To the extent possible, avoid DB queries needed for KO
-                report_templates=models.ReportTemplate.objects.filter(
-                    componentname="editable-report"
-                ),
+                report_templates=[graph.template],
                 card_components=models.CardComponent.objects.none(),
                 widgets=models.Widget.objects.none(),
                 map_markers=models.MapMarker.objects.none(),
