@@ -1,5 +1,9 @@
 <script setup lang="ts">
+import arches from "arches";
+
 import { inject } from "vue";
+
+import Button from "primevue/button";
 
 import type {
     LabelBasedNode,
@@ -52,7 +56,24 @@ function tileIdFromChild(child: LabelBasedTile): string {
                 class="node-pair"
             >
                 <dt>{{ nodePresentationLookup[nodeName].widget_label }}</dt>
-                <dd>{{ nodeValue["@display_value"] }}</dd>
+                <template v-if="nodeValue.instance_details?.length">
+                    <dd
+                        v-for="instanceDetail in nodeValue.instance_details"
+                        :key="instanceDetail.resourceId"
+                    >
+                        <Button
+                            as="a"
+                            variant="link"
+                            :href="
+                                arches.urls.resource_report +
+                                instanceDetail.resourceId
+                            "
+                        >
+                            {{ nodeValue["@display_value"] }}
+                        </Button>
+                    </dd>
+                </template>
+                <dd v-else>{{ nodeValue["@display_value"] }}</dd>
             </div>
             <ChildTile
                 v-for="child in children"
@@ -106,5 +127,10 @@ dl {
 .node-pair > dd {
     width: 50%;
     text-align: start;
+}
+
+.p-button {
+    font-size: inherit;
+    padding: 0;
 }
 </style>

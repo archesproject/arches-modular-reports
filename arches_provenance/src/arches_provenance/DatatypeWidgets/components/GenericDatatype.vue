@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import arches from "arches";
+
+import Button from "primevue/button";
+
 import type {
     NodePresentation,
     TileValue,
@@ -15,7 +19,26 @@ const props = defineProps<{
         <span>
             <strong>{{ props.nodePresentation.widget_label }}</strong>
         </span>
-        <span class="node-value">{{ tileValue }}</span>
+        <template v-if="tileValue.instance_details?.length">
+            <Button
+                v-for="relatedResourceDetail in tileValue.instance_details"
+                :key="relatedResourceDetail.resourceId"
+                as="a"
+                variant="link"
+                :href="
+                    arches.urls.resource_report +
+                    relatedResourceDetail.resourceId
+                "
+            >
+                {{ tileValue["@display_value"] }}
+            </Button>
+        </template>
+        <span
+            v-else
+            class="node-value"
+        >
+            {{ tileValue["@display_value"] }}
+        </span>
     </div>
 </template>
 
@@ -27,5 +50,11 @@ const props = defineProps<{
 
 .node-value {
     overflow-wrap: anywhere;
+}
+
+.p-button {
+    font-size: inherit;
+    padding: 0;
+    align-items: start;
 }
 </style>

@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import arches from "arches";
 
+import { computed, onMounted, ref, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
+import Button from "primevue/button";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
 import IconField from "primevue/iconfield";
@@ -138,8 +140,25 @@ function getDisplayValue(
     ) {
         return tileData.nodes[key] as string;
     }
-
     return null;
+}
+
+function getRelatedResourceIds(
+    tileData: Record<string, string | Record<string, unknown>>,
+    key: string,
+): string[] {
+    if (key === "@relation_name") {
+        return [];
+    } else if (key === "@display_name") {
+        return [tileData.related_resource_id as string];
+    } else if (
+        tileData.nodes &&
+        typeof tileData.nodes !== "string" &&
+        key in tileData.nodes
+    ) {
+        return ["TODO"];
+    }
+    return [];
 }
 
 async function fetchData(requested_page: number = 1) {
@@ -245,8 +264,34 @@ onMounted(fetchData);
             :header="columnDatum.widgetLabel"
             :sortable="true"
         >
-            <template #body="slotProps">
-                {{ getDisplayValue(slotProps.data, slotProps.field) }}
+        <template #body="{ data, field }">
+                <template
+                    v-if="
+                        field !== '@relation_name' &&
+                        getRelatedResourceIds(data, field).length
+                    "
+                >
+                    <template
+                        v-for="(item, index) in getRelatedResourceIds(
+                            data,
+                            field,
+                        )"
+                        :key="item"
+                    >
+                        <span v-if="index !== 0">, </span>
+                        <Button
+                            as="a"
+                            variant="link"
+                            :href="arches.urls.resource_report + item"
+                            style="font-size: inherit; padding: 0"
+                        >
+                            {{ getDisplayValue(data, field) }}
+                        </Button>
+                    </template>
+                </template>
+                <template v-else>
+                    {{ getDisplayValue(data, field) }}
+                </template>
             </template>
         </Column>
     </DataTable>
