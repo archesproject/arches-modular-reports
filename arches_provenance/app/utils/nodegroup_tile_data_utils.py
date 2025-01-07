@@ -136,10 +136,23 @@ def get_sorted_filtered_relations(
                 )
                 .order_by("sortorder")
                 .values("display_value")
-                .distinct()  # TODO: parameterize this?
+                .distinct()
             ),
             Value(", "),  # delimiter
             Value(_("None")),  # null replacement
+        )
+
+    def make_tile_instance_details_annotations(node, direction):
+        return ArraySubquery(
+            models.TileModel.objects.filter(
+                resourceinstance=OuterRef(f"resourceinstanceid{direction}"),
+                nodegroup_id=node.nodegroup_id,
+            )
+            .exclude(**{f"data__{node.pk}__isnull": True})
+            .order_by("sortorder")
+            .annotate(node_value=F(f"data__{node.pk}"))
+            .values("node_value")
+            .distinct()
         )
 
     data_annotations = {
@@ -154,6 +167,21 @@ def get_sorted_filtered_relations(
             ),
         )
         for node in nodes
+    }
+    instance_details_annotations = {
+        node.alias
+        + "_instance_details": Case(
+            When(
+                Q(resourceinstanceidfrom=resource),
+                then=make_tile_instance_details_annotations(node, "to"),
+            ),
+            When(
+                Q(resourceinstanceidfrom=resource),
+                then=make_tile_instance_details_annotations(node, "from"),
+            ),
+        )
+        for node in nodes
+        if node.datatype in ["resource-instance", "resource-instance-list"]
     }
 
     relations = (
@@ -192,6 +220,7 @@ def get_sorted_filtered_relations(
         )
         .annotate(**{"@display_name": KT(f"display_name_json__{request_language}")})
         .annotate(**data_annotations)
+        .annotate(**instance_details_annotations)
     )
 
     if query:

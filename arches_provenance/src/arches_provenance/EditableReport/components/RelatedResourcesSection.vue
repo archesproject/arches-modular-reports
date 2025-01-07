@@ -126,7 +126,10 @@ watch(currentPage, () => {
 });
 
 function getDisplayValue(
-    tileData: Record<string, string | Record<string, unknown>>,
+    tileData: Record<
+        string,
+        string | Record<string, string | { "@display_value": string }>
+    >,
     key: string,
 ): string | null {
     if (key === "@relation_name") {
@@ -136,15 +139,23 @@ function getDisplayValue(
     } else if (
         tileData.nodes &&
         typeof tileData.nodes !== "string" &&
-        key in tileData.nodes
+        key in tileData.nodes &&
+        typeof tileData.nodes[key] !== "string"
     ) {
-        return tileData.nodes[key] as string;
+        return tileData.nodes[key]["@display_value"];
     }
     return null;
 }
 
 function getRelatedResourceIds(
-    tileData: Record<string, string | Record<string, unknown>>,
+    tileData: Record<
+        string,
+        | string
+        | Record<
+              string,
+              string | { instance_details: { resourceId: string }[][] }
+          >
+    >,
     key: string,
 ): string[] {
     if (key === "@relation_name") {
@@ -154,9 +165,12 @@ function getRelatedResourceIds(
     } else if (
         tileData.nodes &&
         typeof tileData.nodes !== "string" &&
-        key in tileData.nodes
+        key in tileData.nodes &&
+        typeof tileData.nodes[key] !== "string"
     ) {
-        return ["TODO"];
+        return tileData.nodes[key]?.instance_details.flatMap((riList) =>
+            riList.map((riDetails) => riDetails.resourceId),
+        );
     }
     return [];
 }

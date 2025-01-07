@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
@@ -133,7 +134,14 @@ class RelatedResourceView(APIBase):
                     "@relation_name": getattr(relation, "@relation_name"),
                     "@display_name": getattr(relation, "@display_name"),
                     "nodes": {
-                        node.alias: getattr(relation, node.alias) for node in nodes
+                        node.alias: {
+                            "@display_value": getattr(relation, node.alias),
+                            "instance_details": getattr(
+                                relation, node.alias + "_instance_details", None
+                            )
+                            or [],
+                        }
+                        for node in nodes
                     },
                 }
                 for relation in result_page
