@@ -40,6 +40,10 @@ defineProps<{
     hasLoadingError: boolean;
     isEmpty: boolean;
     sortable: boolean;
+    getDisplayValue: (
+        data: Record<string, string | Record<string, unknown>>,
+        key: string,
+    ) => string | null;
 }>();
 
 const currentPage = defineModel<number>("currentPage");
@@ -48,45 +52,6 @@ const rowsPerPage = defineModel<number>("rowsPerPage");
 const sortField = defineModel<string>("sortField");
 const direction = defineModel<string>("direction");
 const query = defineModel<string>("query");
-
-function getDisplayValue(
-    tileData: Record<string, string | Record<string, unknown>>,
-    key: string,
-): string | null {
-    if (key === "@relation_name") {
-        return tileData["@relation_name"] as string;
-    } else if (key === "@display_name") {
-        return tileData["@display_name"] as string;
-    } else if (
-        tileData.nodes &&
-        typeof tileData.nodes !== "string" &&
-        key in tileData.nodes
-    ) {
-        return tileData.nodes[key] as string;
-    }
-
-    const queue: Array<Record<string, unknown>> = [tileData];
-
-    while (queue.length > 0) {
-        const currentItem = queue.shift();
-
-        if (Object.prototype.hasOwnProperty.call(currentItem, key)) {
-            const value = currentItem![key];
-
-            if ("@display_value" in (value as Record<string, unknown>)) {
-                return (value as Record<string, string>)["@display_value"];
-            }
-        }
-
-        for (const val of Object.values(currentItem!)) {
-            if (val && typeof val === "object") {
-                queue.push(val as Record<string, unknown>);
-            }
-        }
-    }
-
-    return null;
-}
 
 function tileIdFromData(tileData: Record<string, unknown>): string {
     const { ["@has_children"]: _hasChildren, ...cards } = tileData;

@@ -78,6 +78,25 @@ watch(currentPage, () => {
     }
 });
 
+function getDisplayValue(
+    tileData: Record<string, string | Record<string, unknown>>,
+    key: string,
+): string | null {
+    if (key === "@relation_name") {
+        return tileData["@relation_name"] as string;
+    } else if (key === "@display_name") {
+        return tileData["@display_name"] as string;
+    } else if (
+        tileData.nodes &&
+        typeof tileData.nodes !== "string" &&
+        key in tileData.nodes
+    ) {
+        return tileData.nodes[key] as string;
+    }
+
+    return null;
+}
+
 async function fetchData(page: number = 1) {
     isLoading.value = true;
 
@@ -127,6 +146,7 @@ onMounted(fetchData);
         mode="related-resources"
         :config="props.component.config"
         :paginator-key
+        :get-display-value
         :currently-displayed-table-data
         :search-results-total-count
         :column-data

@@ -65,6 +65,33 @@ watch(currentPage, () => {
     }
 });
 
+function getDisplayValue(
+    tileData: Record<string, string | Record<string, unknown>>,
+    key: string,
+): string | null {
+    const queue: Array<Record<string, unknown>> = [tileData];
+
+    while (queue.length > 0) {
+        const currentItem = queue.shift();
+
+        if (Object.prototype.hasOwnProperty.call(currentItem, key)) {
+            const value = currentItem![key];
+
+            if ("@display_value" in (value as Record<string, unknown>)) {
+                return (value as Record<string, string>)["@display_value"];
+            }
+        }
+
+        for (const val of Object.values(currentItem!)) {
+            if (val && typeof val === "object") {
+                queue.push(val as Record<string, unknown>);
+            }
+        }
+    }
+
+    return null;
+}
+
 function deriveColumnData(
     config: { nodes: string[] },
     cardData: {
@@ -149,6 +176,7 @@ onMounted(() => {
         mode="data"
         :config="props.component.config"
         :paginator-key
+        :get-display-value
         :currently-displayed-table-data
         :search-results-total-count
         :column-data
