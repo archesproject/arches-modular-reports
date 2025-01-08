@@ -192,7 +192,11 @@ class NodePresentationView(APIBase):
                 node.alias: {
                     "nodeid": node.nodeid,
                     "name": node.name,
-                    "card_name": node.nodegroup.cardmodel_set.all()[0].name,
+                    "card_name": (
+                        node.nodegroup.cardmodel_set.all()[0].name
+                        if node.nodegroup.cardmodel_set.all()
+                        else None
+                    ),
                     "widget_label": (
                         node.cardxnodexwidget_set.all()[0].label
                         if node.cardxnodexwidget_set.all()
