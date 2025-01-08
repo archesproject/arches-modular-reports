@@ -27,6 +27,19 @@ const EditableReportPreset = definePreset(Aura, {
             summary: { fontSize: '1.5rem' },
             detail: { fontSize: '1.25rem' },
         },
+        // custom button tokens and additional style
+        button: {
+            extend: {
+                baseButton: {
+                    fontSize: '1.4rem',
+                }
+            },
+            css: ({ dt }) => `
+                .p-button {
+                    font-size: ${dt('base.button.font.size')};
+                }
+            `
+        }
     },
 });
 

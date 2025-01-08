@@ -76,7 +76,6 @@ function exportData(exportFormat: ExportFormat) {
                 $gettext('Export as: %{exportFormat}', { exportFormat })
             "
             variant="link"
-            style="font-size: 1.4rem"
             @click="exportData(exportFormat)"
         >
         </Button>
