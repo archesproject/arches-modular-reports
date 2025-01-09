@@ -15,12 +15,18 @@ import {
     DESC,
     ROWS_PER_PAGE_OPTIONS,
 } from "@/arches_provenance/constants.ts";
-import HierarchicalTileViewer from "@/arches_provenance/EditableReport/components/HierarchicalTileViewer.vue";
 
 import type {
     ColumnDatum,
     LabelBasedCard,
 } from "@/arches_provenance/EditableReport/types";
+
+interface ExpansionProps {
+    // primevue uses explicit any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any;
+    index: number;
+}
 
 const { $gettext } = useGettext();
 
@@ -52,13 +58,6 @@ const rowsPerPage = defineModel<number>("rowsPerPage");
 const sortField = defineModel<string>("sortField");
 const direction = defineModel<string>("direction");
 const query = defineModel<string>("query");
-
-function tileIdFromData(tileData: Record<string, unknown>): string {
-    const { ["@has_children"]: _hasChildren, ...cards } = tileData;
-    return Object.values(cards as Record<string, Record<string, string>>)[0][
-        "@tile_id"
-    ];
-}
 
 function onUpdateSortOrder(event: number | undefined) {
     if (event === 1) {
@@ -154,11 +153,11 @@ function rowClass(data: LabelBasedCard) {
                 {{ getDisplayValue(slotProps.data, slotProps.field) }}
             </template>
         </Column>
-        <template
-            v-if="mode === 'data'"
-            #expansion="slotProps"
-        >
-            <HierarchicalTileViewer :tile-id="tileIdFromData(slotProps.data)" />
+        <template #expansion="slotProps: ExpansionProps">
+            <slot
+                name="expansion"
+                :data="slotProps.data"
+            />
         </template>
     </DataTable>
 

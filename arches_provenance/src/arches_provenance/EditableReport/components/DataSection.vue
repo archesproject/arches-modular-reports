@@ -7,6 +7,7 @@ import {
 } from "@/arches_provenance/EditableReport/api.ts";
 import { ASC, ROWS_PER_PAGE_OPTIONS } from "@/arches_provenance/constants.ts";
 import DataTable from "@/arches_provenance/EditableReport/components/DataTable.vue";
+import HierarchicalTileViewer from "@/arches_provenance/EditableReport/components/HierarchicalTileViewer.vue";
 
 import type { ColumnDatum } from "@/arches_provenance/EditableReport/types";
 
@@ -118,6 +119,13 @@ function deriveColumnData(
     });
 }
 
+function tileIdFromData(tileData: Record<string, unknown>): string {
+    const { ["@has_children"]: _hasChildren, ...cards } = tileData;
+    return Object.values(cards as Record<string, Record<string, string>>)[0][
+        "@tile_id"
+    ];
+}
+
 async function fetchData(page: number = 1) {
     isLoading.value = true;
 
@@ -181,5 +189,11 @@ onMounted(() => {
         :search-results-total-count
         :column-data
         :sortable="cardinality === 'n'"
-    />
+    >
+        <template #expansion="expansionProps">
+            <HierarchicalTileViewer
+                :tile-id="tileIdFromData(expansionProps.data)"
+            />
+        </template>
+    </DataTable>
 </template>
