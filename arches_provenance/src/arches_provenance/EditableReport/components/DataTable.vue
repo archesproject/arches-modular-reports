@@ -161,18 +161,15 @@ function rowClass(data: LabelBasedCard) {
         </template>
     </DataTable>
 
-    <div
+    <!-- PrimeVue paginator is 0-indexed. -->
+    <Paginator
         v-if="searchResultsTotalCount > rowsPerPage!"
+        :key="paginatorKey"
         style="display: flex; justify-content: flex-end"
-    >
-        <!-- PrimeVue paginator is 0-indexed. -->
-        <Paginator
-            :key="paginatorKey"
-            :rows="rowsPerPage"
-            :total-records="searchResultsTotalCount"
-            @page="currentPage = $event.page + 1"
-        />
-    </div>
+        :rows="rowsPerPage"
+        :total-records="searchResultsTotalCount"
+        @page="currentPage = $event.page + 1"
+    />
 </template>
 
 <style scoped>
