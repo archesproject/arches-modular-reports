@@ -23,7 +23,6 @@ const currentPage = ref(1);
 const query = ref("");
 const sortField = ref("@relation_name");
 const direction = ref(ASC);
-const paginatorKey = ref(0);
 const currentlyDisplayedTableData = ref<unknown[]>([]);
 const searchResultsTotalCount = ref(0);
 const isLoading = ref(false);
@@ -58,14 +57,12 @@ watch(query, () => {
 
     timeout = setTimeout(() => {
         pageNumberToNodegroupTileData.value = {};
-        paginatorKey.value += 1;
         fetchData(1);
     }, queryTimeoutValue);
 });
 
 watch([direction, sortField, rowsPerPage], () => {
     pageNumberToNodegroupTileData.value = {};
-    paginatorKey.value += 1;
     fetchData(1);
 });
 
@@ -145,7 +142,6 @@ onMounted(fetchData);
         :has-loading-error
         mode="related-resources"
         :config="props.component.config"
-        :paginator-key
         :get-display-value
         :currently-displayed-table-data
         :search-results-total-count

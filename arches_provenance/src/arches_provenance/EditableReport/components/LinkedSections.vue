@@ -119,7 +119,7 @@ onMounted(async () => {
                         :component="child"
                         :resource-instance-id
                     />
-                    <div style="height: 200px"></div>
+                    <div style="height: 24px"></div>
                 </div>
             </Panel>
         </div>

@@ -7,8 +7,6 @@ import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
 import InputText from "primevue/inputtext";
 import Message from "primevue/message";
-import Paginator from "primevue/paginator";
-import Select from "primevue/select";
 
 import {
     ASC,
@@ -41,7 +39,6 @@ defineProps<{
     columnData: ColumnDatum[];
     currentlyDisplayedTableData: unknown[];
     searchResultsTotalCount: number;
-    paginatorKey: number;
     isLoading: boolean;
     hasLoadingError: boolean;
     isEmpty: boolean;
@@ -96,23 +93,23 @@ function rowClass(data: LabelBasedCard) {
         :total-records="searchResultsTotalCount"
         :expanded-rows="[]"
         :row-class
+        paginator
+        :always-show-paginator="
+            searchResultsTotalCount >
+            Math.min(rowsPerPage!, ROWS_PER_PAGE_OPTIONS[0])
+        "
+        :lazy="true"
+        :rows="rowsPerPage"
+        :rows-per-page-options="ROWS_PER_PAGE_OPTIONS"
+        @page="(currentPage = $event.page + 1) && (rowsPerPage = $event.rows)"
         @update:sort-field="sortField = $event"
         @update:sort-order="onUpdateSortOrder"
     >
         <template #header>
             <div
                 v-if="sortable"
-                style="display: flex; justify-content: space-between"
+                style="display: flex; justify-content: flex-end"
             >
-                <div>
-                    <span>{{ $gettext("Number of rows:") }}</span>
-                    <Select
-                        v-model="rowsPerPage"
-                        style="margin: 0 1rem"
-                        :options="ROWS_PER_PAGE_OPTIONS"
-                    />
-                </div>
-
                 <IconField style="display: flex">
                     <InputIcon
                         class="pi pi-search"
@@ -160,23 +157,9 @@ function rowClass(data: LabelBasedCard) {
             />
         </template>
     </DataTable>
-
-    <!-- PrimeVue paginator is 0-indexed. -->
-    <Paginator
-        v-if="searchResultsTotalCount > rowsPerPage!"
-        :key="paginatorKey"
-        style="display: flex; justify-content: flex-end"
-        :rows="rowsPerPage"
-        :total-records="searchResultsTotalCount"
-        @page="currentPage = $event.page + 1"
-    />
 </template>
 
 <style scoped>
-:deep(.p-paginator) {
-    border-radius: 0;
-}
-
 :deep(.p-datatable-column-sorted) {
     background: var(--p-datatable-header-cell-background);
 }
