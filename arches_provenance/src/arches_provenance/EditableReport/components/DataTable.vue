@@ -205,24 +205,10 @@ function getDisplayValue(
     tileData: Record<string, unknown>,
     key: string,
 ): string | null {
-    const queue: Array<Record<string, unknown>> = [tileData];
+    const item = tileData[key] as { display_value?: string };
 
-    while (queue.length > 0) {
-        const currentItem = queue.shift();
-
-        if (Object.prototype.hasOwnProperty.call(currentItem, key)) {
-            const value = currentItem![key];
-
-            if ("@display_value" in (value as Record<string, unknown>)) {
-                return (value as Record<string, string>)["@display_value"];
-            }
-        }
-
-        for (const val of Object.values(currentItem!)) {
-            if (val && typeof val === "object") {
-                queue.push(val as Record<string, unknown>);
-            }
-        }
+    if (item && item.display_value) {
+        return item.display_value;
     }
 
     return null;
@@ -246,13 +232,6 @@ function onUpdatePagination(event: PageState) {
             query.value,
         );
     }
-}
-
-function tileIdFromData(tileData: Record<string, unknown>): string {
-    const { ["@has_children"]: _hasChildren, ...cards } = tileData;
-    return Object.values(cards as Record<string, Record<string, string>>)[0][
-        "@tile_id"
-    ];
 }
 
 function onUpdateSortField(event: string) {
@@ -347,9 +326,7 @@ function rowClass(data: LabelBasedCard) {
                 </template>
             </Column>
             <template #expansion="slotProps">
-                <HierarchicalTileViewer
-                    :tile-id="tileIdFromData(slotProps.data)"
-                />
+                <HierarchicalTileViewer :tile-id="slotProps.data['@tile_id']" />
             </template>
         </DataTable>
 

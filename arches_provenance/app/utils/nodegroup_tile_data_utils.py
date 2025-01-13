@@ -12,7 +12,7 @@ from django.db.models import (
     When,
 )
 from django.db.models.fields.json import KT
-from django.db.models.functions import Concat, NullIf
+from django.db.models.functions import Concat, JSONObject, NullIf
 
 from arches.app.models import models
 from arches.app.models.tile import Tile
@@ -23,7 +23,7 @@ from arches_provenance.app.utils.label_based_graph_with_branch_export import (
 
 
 class ArchesGetNodeDisplayValue(Func):
-    function = "__arches_get_node_display_value"
+    function = "__arches_get_node_display_value_v2"
     output_field = TextField()
     arity = 3
 
@@ -37,16 +37,24 @@ def get_sorted_filtered_tiles(
         datatype__in=["semantic", "annotation", "geojson-feature-collection"]
     )
 
-    annotations = {
-        f'field_{str(node.pk).replace("-", "_")}': ArchesGetNodeDisplayValue(
+    field_annotations = {}
+    alias_annotations = {}
+
+    for node in nodes:
+        field_key = f'field_{str(node.pk).replace("-", "_")}'
+
+        display_value = ArchesGetNodeDisplayValue(
             F("data"), Value(str(node.pk)), Value(user_language)
         )
-        for node in nodes
-    }
+
+        field_annotations[field_key] = display_value
+        alias_annotations[node.alias] = JSONObject(
+            display_value=display_value, datatype=Value(node.datatype)
+        )
 
     # adds spaces between fields
     display_values_with_spaces = []
-    for field in [F(field) for field in annotations.keys()]:
+    for field in [F(field) for field in field_annotations.keys()]:
         display_values_with_spaces.append(field)
         display_values_with_spaces.append(Value(" "))
 
@@ -54,7 +62,8 @@ def get_sorted_filtered_tiles(
         Tile.objects.filter(
             resourceinstance_id=resourceinstanceid, nodegroup_id=nodegroupid
         )
-        .annotate(**annotations)
+        .annotate(**field_annotations)
+        .annotate(alias_annotations=JSONObject(**alias_annotations))
         .annotate(
             search_text=Concat(*display_values_with_spaces, output_field=TextField())
         )
