@@ -147,7 +147,7 @@ def get_sorted_filtered_relations(
                 then=make_tile_annotations(node, "to"),
             ),
             When(
-                Q(resourceinstanceidfrom=resource),
+                Q(resourceinstanceidto=resource),
                 then=make_tile_annotations(node, "from"),
             ),
         )
