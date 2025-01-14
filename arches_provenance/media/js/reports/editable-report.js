@@ -8,6 +8,11 @@ import Aura from '@primevue/themes/aura';
 
 const EditableReportPreset = definePreset(Aura, {
     components: {
+        datatable: {
+            rowToggleButton: {
+                size: '2.5rem',
+            },
+        },
         toast: {
             summary: { fontSize: '1.5rem' },
             detail: { fontSize: '1.25rem' },

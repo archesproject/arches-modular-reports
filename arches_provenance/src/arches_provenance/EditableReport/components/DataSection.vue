@@ -290,12 +290,6 @@ onMounted(() => {
     background: var(--p-datatable-header-cell-background);
 }
 
-:deep(.p-datatable-row-toggle-button) {
-    padding-block: 6px;
-    width: var(--p-button-icon-width);
-    height: var(--p-button-icon-height);
-}
-
 :deep(.no-children .p-datatable-row-toggle-button) {
     visibility: hidden;
 }
