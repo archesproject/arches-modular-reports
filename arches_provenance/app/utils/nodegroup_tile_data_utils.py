@@ -122,22 +122,23 @@ def get_sorted_filtered_relations(
     *, resource, related_graphid, nodes, sort_field, direction, query, request_language
 ):
     def make_tile_annotations(node, direction):
+        tile_query = ArraySubquery(
+            models.TileModel.objects.filter(
+                resourceinstance=OuterRef(f"resourceinstanceid{direction}"),
+                nodegroup_id=node.nodegroup_id,
+            )
+            .exclude(**{f"data__{node.pk}__isnull": True})
+            .annotate(
+                display_value=ArchesGetNodeDisplayValue(
+                    F("data"), Value(node.pk), Value(request_language)
+                )
+            )
+            .order_by("sortorder")
+            .values("display_value")
+            .distinct()
+        )
         return ArrayToString(
-            ArraySubquery(
-                models.TileModel.objects.filter(
-                    resourceinstance=OuterRef(f"resourceinstanceid{direction}"),
-                    nodegroup_id=node.nodegroup_id,
-                )
-                .exclude(**{f"data__{node.pk}__isnull": True})
-                .annotate(
-                    display_value=ArchesGetNodeDisplayValue(
-                        F("data"), Value(node.pk), Value(request_language)
-                    )
-                )
-                .order_by("sortorder")
-                .values("display_value")
-                .distinct()
-            ),
+            tile_query,
             Value(", "),  # delimiter
             Value(_("None")),  # null replacement
         )
@@ -176,7 +177,7 @@ def get_sorted_filtered_relations(
                 then=make_tile_instance_details_annotations(node, "to"),
             ),
             When(
-                Q(resourceinstanceidfrom=resource),
+                Q(resourceinstanceidto=resource),
                 then=make_tile_instance_details_annotations(node, "from"),
             ),
         )
