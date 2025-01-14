@@ -75,9 +75,12 @@ function makeLink(linkData: {
     params: string[];
     label: string;
 }) {
-    let route = arches.urls[linkData.route];
-    if (route.includes("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")) {
-        return route.replace(
+    if (linkData.route === "external_link") {
+        return linkData.params[0];
+    }
+    const archesRoute = arches.urls[linkData.route];
+    if (archesRoute.includes("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")) {
+        return archesRoute.replace(
             "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
             linkData.params[0],
         );

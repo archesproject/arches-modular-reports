@@ -185,7 +185,13 @@ def get_sorted_filtered_relations(
         )
         for node in nodes
         if node.datatype
-        in {"concept", "concept-list", "resource-instance", "resource-instance-list"}
+        in {
+            "concept",
+            "concept-list",
+            "resource-instance",
+            "resource-instance-list",
+            "url",
+        }
     }
 
     relations = (
@@ -357,4 +363,12 @@ def prepare_links(annotated_relation, node, request_language):
                             "label": label,
                         }
                     )
+            case "url":
+                links.append(
+                    {
+                        "route": "external_link",
+                        "params": [tile_val["url"]],
+                        "label": tile_val["url_label"],
+                    }
+                )
     return links
