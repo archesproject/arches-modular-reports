@@ -1,5 +1,6 @@
 import operator
 from functools import reduce
+from uuid import UUID
 
 from django.contrib.postgres.expressions import ArraySubquery
 from django.db.models import (
@@ -270,3 +271,47 @@ def serialize_tiles_with_children(tile, serialized_graph):
             tile, node_ids_to_tiles_reference, {}, serialized_graph=serialized_graph
         ),
     }
+
+
+def prepare_links(annotated_relation, node, request_language):
+    links = []
+
+    def get_labels(tiledata):
+        """This is a source of N+1 queries, but we're working around the fact
+        that __arches_get_node_display_value() is lossy, i.e. if the display
+        values contain the delimiter (", ") we can't distinguish those.
+        So we just get the display values again, unfortunately.
+
+        TODO: graduate from the PG function to ORM expressions?
+        """
+        nonlocal request_language
+        ordered_ids = [innerTileVal["resourceId"] for innerTileVal in tiledata]
+        resources = models.ResourceInstance.objects.filter(pk__in=ordered_ids).in_bulk()
+        return [
+            resources[UUID(res_id)]
+            .descriptors.get(request_language, {})
+            .get("name", _("Undefined"))
+            for res_id in ordered_ids
+        ]
+
+    details = getattr(annotated_relation, node.alias + "_instance_details", None) or []
+    for detail_tile in details:
+        if node.datatype == "resource-instance":
+            links.append(
+                {
+                    "route": "resource_report",
+                    "params": [detail_tile[0]["resourceId"]],
+                    "label": getattr(annotated_relation, node.alias),
+                }
+            )
+        if node.datatype == "resource-instance-list":
+            labels = get_labels(detail_tile)
+            for related_resource, label in zip(detail_tile, labels, strict=True):
+                links.append(
+                    {
+                        "route": "resource_report",
+                        "params": [related_resource["resourceId"]],
+                        "label": label,
+                    }
+                )
+    return links

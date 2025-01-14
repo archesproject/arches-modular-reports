@@ -125,56 +125,6 @@ watch(currentPage, () => {
     }
 });
 
-function getDisplayValue(
-    tileData: Record<
-        string,
-        string | Record<string, string | { "@display_value": string }>
-    >,
-    key: string,
-): string | null {
-    if (key === "@relation_name") {
-        return tileData["@relation_name"] as string;
-    } else if (key === "@display_name") {
-        return tileData["@display_name"] as string;
-    } else if (
-        tileData.nodes &&
-        typeof tileData.nodes !== "string" &&
-        key in tileData.nodes &&
-        typeof tileData.nodes[key] !== "string"
-    ) {
-        return tileData.nodes[key]["@display_value"];
-    }
-    return null;
-}
-
-function getRelatedResourceIds(
-    tileData: Record<
-        string,
-        | string
-        | Record<
-              string,
-              string | { instance_details: { resourceId: string }[][] }
-          >
-    >,
-    key: string,
-): string[] {
-    if (key === "@relation_name") {
-        return [];
-    } else if (key === "@display_name") {
-        return [tileData.related_resource_id as string];
-    } else if (
-        tileData.nodes &&
-        typeof tileData.nodes !== "string" &&
-        key in tileData.nodes &&
-        typeof tileData.nodes[key] !== "string"
-    ) {
-        return tileData.nodes[key]?.instance_details.flatMap((riList) =>
-            riList.map((riDetails) => riDetails.resourceId),
-        );
-    }
-    return [];
-}
-
 async function fetchData(requested_page: number = 1) {
     isLoading.value = true;
 
@@ -278,33 +228,24 @@ onMounted(fetchData);
             :header="columnDatum.widgetLabel"
             :sortable="true"
         >
-        <template #body="{ data, field }">
+            <template #body="{ data, field }">
                 <template
-                    v-if="
-                        field !== '@relation_name' &&
-                        getRelatedResourceIds(data, field).length
-                    "
+                    v-for="link in data[field].links"
+                    :key="JSON.stringify(link)"
                 >
-                    <template
-                        v-for="(item, index) in getRelatedResourceIds(
-                            data,
-                            field,
-                        )"
-                        :key="item"
-                    >
-                        <span v-if="index !== 0">, </span>
+                    <div>
                         <Button
                             as="a"
                             variant="link"
-                            :href="arches.urls.resource_report + item"
+                            :href="arches.urls[link.route] + link.params[0]"
                             style="font-size: inherit; padding: 0"
                         >
-                            {{ getDisplayValue(data, field) }}
+                            {{ link.label }}
                         </Button>
-                    </template>
+                    </div>
                 </template>
-                <template v-else>
-                    {{ getDisplayValue(data, field) }}
+                <template v-if="data[field].links.length === 0">
+                    {{ data[field].display_value }}
                 </template>
             </template>
         </Column>

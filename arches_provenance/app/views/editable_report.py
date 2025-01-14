@@ -24,6 +24,7 @@ from arches_provenance.app.utils.nodegroup_tile_data_utils import (
     annotate_related_graph_nodes_with_widget_labels,
     get_sorted_filtered_relations,
     get_sorted_filtered_tiles,
+    prepare_links,
     serialize_tiles_with_children,
 )
 
@@ -125,20 +126,32 @@ class RelatedResourceView(APIBase):
         response_data = {
             "results": [
                 {
-                    "related_resource_id": (
-                        relation.resourceinstanceidto_id
-                        if relation.resourceinstanceidfrom_id == resourceid
-                        else relation.resourceinstanceidfrom_id
-                    ),
-                    "@relation_name": getattr(relation, "@relation_name"),
-                    "@display_name": getattr(relation, "@display_name"),
-                    "nodes": {
+                    "@relation_name": {
+                        "display_value": getattr(relation, "@relation_name"),
+                        "links": [],
+                    },
+                    "@display_name": {
+                        "display_value": getattr(relation, "@display_name"),
+                        "links": [
+                            {
+                                "route": "resource_report",
+                                "params": [
+                                    (
+                                        relation.resourceinstanceidto_id
+                                        # left-hand side is a UUID (came from ORM)
+                                        # right-hand side is a UUID (came from <uuid:resourceid>)
+                                        if relation.resourceinstanceidfrom_id
+                                        == resourceid
+                                        else relation.resourceinstanceidfrom_id
+                                    )
+                                ],
+                            }
+                        ],
+                    },
+                    **{
                         node.alias: {
-                            "@display_value": getattr(relation, node.alias),
-                            "instance_details": getattr(
-                                relation, node.alias + "_instance_details", None
-                            )
-                            or [],
+                            "display_value": getattr(relation, node.alias),
+                            "links": prepare_links(relation, node, request_language),
                         }
                         for node in nodes
                     },
