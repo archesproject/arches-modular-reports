@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import arches from "arches";
-
 import { computed, inject, onMounted, ref, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
@@ -133,7 +131,6 @@ watch(currentPage, () => {
 function getDisplayValue(
     tileData: Record<string, string | Record<string, unknown>>,
     key: string,
-    idx: number = 0,
 ): string | null {
     const queue: Array<Record<string, unknown>> = [tileData];
 
@@ -144,11 +141,7 @@ function getDisplayValue(
             const value = currentItem![key];
 
             if ("@display_value" in (value as Record<string, unknown>)) {
-                const valRecord = value as Record<string, string>;
-                if ("instance_details" in valRecord) {
-                    return valRecord["@display_value"].split(", ")[idx];
-                }
-                return valRecord["@display_value"];
+                return (value as Record<string, string>)["@display_value"];
             }
         }
 
@@ -160,38 +153,6 @@ function getDisplayValue(
     }
 
     return null;
-}
-
-function getRelatedResourceIds(
-    tileData: Record<string, string | Record<string, unknown>>,
-    key: string,
-): string[] {
-    const queue: Array<Record<string, unknown>> = [tileData];
-
-    while (queue.length > 0) {
-        const currentItem = queue.shift();
-
-        if (Object.prototype.hasOwnProperty.call(currentItem, key)) {
-            const value = currentItem![key];
-
-            if ("instance_details" in (value as Record<string, unknown>)) {
-                return (
-                    (
-                        value as { instance_details: { resourceId: string }[] }
-                    ).instance_details?.map((details) => details.resourceId) ??
-                    []
-                );
-            }
-        }
-
-        for (const val of Object.values(currentItem!)) {
-            if (val && typeof val === "object") {
-                queue.push(val as Record<string, unknown>);
-            }
-        }
-    }
-
-    return [];
 }
 
 function deriveColumnData(
@@ -371,34 +332,8 @@ onMounted(() => {
             :header="columnDatum.widgetLabel"
             :sortable="cardinality === CARDINALITY_N"
         >
-            <template #body="{ data, field }">
-                <template
-                    v-if="
-                        field !== '@relation_name' &&
-                        getRelatedResourceIds(data, field).length
-                    "
-                >
-                    <template
-                        v-for="(item, index) in getRelatedResourceIds(
-                            data,
-                            field,
-                        )"
-                        :key="item"
-                    >
-                        <span v-if="index !== 0">, </span>
-                        <Button
-                            as="a"
-                            variant="link"
-                            :href="arches.urls.resource_report + item"
-                            style="font-size: inherit; padding: 0"
-                        >
-                            {{ getDisplayValue(data, field, index) }}
-                        </Button>
-                    </template>
-                </template>
-                <template v-else>
-                    {{ getDisplayValue(data, field) }}
-                </template>
+            <template #body="slotProps">
+                {{ getDisplayValue(slotProps.data, slotProps.field) }}
             </template>
         </Column>
         <Column v-if="userCanEditResourceInstance">
