@@ -19,6 +19,7 @@ from django.db.models.fields.json import KT
 from django.db.models.functions import Concat
 from django.utils.translation import gettext as _
 
+from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
 from arches.app.models.tile import Tile
 
@@ -183,7 +184,8 @@ def get_sorted_filtered_relations(
             ),
         )
         for node in nodes
-        if node.datatype in ["resource-instance", "resource-instance-list"]
+        if node.datatype
+        in {"concept", "concept-list", "resource-instance", "resource-instance-list"}
     }
 
     relations = (
@@ -276,7 +278,10 @@ def serialize_tiles_with_children(tile, serialized_graph):
 def prepare_links(annotated_relation, node, request_language):
     links = []
 
-    def get_labels(tiledata):
+    ### TEMPORARY HELPERS
+    value_finder = BaseConceptDataType()  # fetches serially, but has a cache
+
+    def get_resource_labels(tiledata):
         """This is a source of N+1 queries, but we're working around the fact
         that __arches_get_node_display_value() is lossy, i.e. if the display
         values contain the delimiter (", ") we can't distinguish those.
@@ -294,24 +299,62 @@ def prepare_links(annotated_relation, node, request_language):
             for res_id in ordered_ids
         ]
 
-    details = getattr(annotated_relation, node.alias + "_instance_details", None) or []
-    for detail_tile in details:
-        if node.datatype == "resource-instance":
-            links.append(
-                {
-                    "route": "resource_report",
-                    "params": [detail_tile[0]["resourceId"]],
-                    "label": getattr(annotated_relation, node.alias),
-                }
-            )
-        if node.datatype == "resource-instance-list":
-            labels = get_labels(detail_tile)
-            for related_resource, label in zip(detail_tile, labels, strict=True):
+    def get_concept_labels(value_ids):
+        nonlocal value_finder
+        return [
+            value_finder.get_value(value_id_str).value for value_id_str in value_ids
+        ]
+
+    def get_concept_ids(value_ids):
+        nonlocal value_finder
+        return [
+            value_finder.get_value(value_id_str).concept_id
+            for value_id_str in value_ids
+        ]
+
+    ### BEGIN LINK GENERATION
+
+    tile_vals = (
+        getattr(annotated_relation, node.alias + "_instance_details", None) or []
+    )
+    for tile_val in tile_vals:
+        match node.datatype:
+            case "resource-instance":
                 links.append(
                     {
                         "route": "resource_report",
-                        "params": [related_resource["resourceId"]],
-                        "label": label,
+                        "params": [tile_val[0]["resourceId"]],
+                        "label": getattr(annotated_relation, node.alias),
                     }
                 )
+                break
+            case "resource-instance-list":
+                labels = get_resource_labels(tile_val)
+                for related_resource, label in zip(tile_val, labels, strict=True):
+                    links.append(
+                        {
+                            "route": "resource_report",
+                            "params": [related_resource["resourceId"]],
+                            "label": label,
+                        }
+                    )
+            case "concept":
+                links.append(
+                    {
+                        "route": "rdm",
+                        "params": get_concept_ids([tile_val]),
+                        "label": getattr(annotated_relation, node.alias),
+                    }
+                )
+            case "concept-list":
+                concept_ids = get_concept_ids(tile_val)
+                labels = get_concept_labels(tile_val)
+                for concept_id, label in zip(concept_ids, labels, strict=True):
+                    links.append(
+                        {
+                            "route": "rdm",
+                            "params": [concept_id],
+                            "label": label,
+                        }
+                    )
     return links

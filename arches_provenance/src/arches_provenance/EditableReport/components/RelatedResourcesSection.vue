@@ -70,6 +70,21 @@ function onPageTurn(event: DataTablePageEvent) {
     rowsPerPage.value = event.rows;
 }
 
+function makeLink(linkData: {
+    route: string;
+    params: string[];
+    label: string;
+}) {
+    let route = arches.urls[linkData.route];
+    if (route.includes("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")) {
+        return route.replace(
+            "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            linkData.params[0],
+        );
+    }
+    return arches.urls[linkData.route] + linkData.params[0];
+}
+
 function onUpdateSortOrder(event: number | undefined) {
     if (event === 1) {
         direction.value = ASC;
@@ -237,7 +252,7 @@ onMounted(fetchData);
                         <Button
                             as="a"
                             variant="link"
-                            :href="arches.urls[link.route] + link.params[0]"
+                            :href="makeLink(link)"
                             style="font-size: inherit; padding: 0"
                         >
                             {{ link.label }}
