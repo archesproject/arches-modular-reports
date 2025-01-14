@@ -116,31 +116,27 @@ function getDisplayValue(
     return null;
 }
 
-async function fetchData(page: number = 1) {
+async function fetchData(requested_page: number = 1) {
     isLoading.value = true;
 
     try {
-        const {
-            results,
-            page: fetchedPage,
-            total_count: totalCount,
-            widget_labels: widgetLabels,
-        } = await fetchRelatedResourceData(
-            props.resourceInstanceId,
-            props.component.config.graph_id,
-            props.component.config.additional_nodes!,
-            rowsPerPage.value,
-            page,
-            sortField.value,
-            direction.value,
-            query.value,
-        );
+        const { results, page, total_count, widget_labels } =
+            await fetchRelatedResourceData(
+                props.resourceInstanceId,
+                props.component.config.graph_id,
+                props.component.config.additional_nodes!,
+                rowsPerPage.value,
+                requested_page,
+                sortField.value,
+                direction.value,
+                query.value,
+            );
 
-        pageNumberToNodegroupTileData.value[fetchedPage] = results;
+        pageNumberToNodegroupTileData.value[page] = results;
         currentlyDisplayedTableData.value = results;
-        currentPage.value = fetchedPage;
-        searchResultsTotalCount.value = totalCount;
-        widgetLabelLookup.value = widgetLabels;
+        currentPage.value = page;
+        searchResultsTotalCount.value = total_count;
+        widgetLabelLookup.value = widget_labels;
     } catch (error) {
         hasLoadingError.value = true;
         throw error;
