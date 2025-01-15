@@ -326,7 +326,7 @@ function rowClass(data: LabelBasedCard) {
                                 v-for="item in slotProps.data[slotProps.field][
                                     'display_value'
                                 ]"
-                                :key="JSON.stringify(item['link'])"
+                                :key="item['link']"
                                 as="a"
                                 :href="arches.urls.url_subpath + item['link']"
                                 variant="link"
