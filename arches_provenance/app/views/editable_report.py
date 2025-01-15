@@ -233,15 +233,17 @@ class NodegroupTileDataView(APIBase):
         paginator = Paginator(tiles, rows_per_page)
         page = paginator.page(page_number)
 
+        foo = [
+            {
+                **tile.alias_annotations,
+                "@has_children": tile.tilemodel_set.exists(),
+                "@tile_id": tile.tileid,
+            }
+            for tile in page.object_list
+        ]
+
         response_data = {
-            "results": [
-                {
-                    **tile.alias_annotations,
-                    "@has_children": tile.tilemodel_set.exists(),
-                    "@tile_id": tile.tileid,
-                }
-                for tile in page.object_list
-            ],
+            "results": foo,
             "total_count": paginator.count,
             "page": page_number,
         }

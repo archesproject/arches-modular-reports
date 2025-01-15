@@ -1,3 +1,5 @@
+import json
+
 from django.db.models import (
     Case,
     F,
@@ -13,6 +15,7 @@ from django.db.models import (
 )
 from django.db.models.fields.json import KT
 from django.db.models.functions import Concat, JSONObject, NullIf
+from django.urls import reverse
 
 from arches.app.models import models
 from arches.app.models.tile import Tile
@@ -22,8 +25,14 @@ from arches_provenance.app.utils.label_based_graph_with_branch_export import (
 )
 
 
-class ArchesGetNodeDisplayValue(Func):
+class ArchesGetNodeDisplayValueV2(Func):
     function = "__arches_get_node_display_value_v2"
+    output_field = TextField()
+    arity = 3
+
+
+class ArchesGetValueId(Func):
+    function = "__arches_get_valueid"
     output_field = TextField()
     arity = 3
 
@@ -43,13 +52,22 @@ def get_sorted_filtered_tiles(
     for node in nodes:
         field_key = f'field_{str(node.pk).replace("-", "_")}'
 
-        display_value = ArchesGetNodeDisplayValue(
+        display_value = ArchesGetNodeDisplayValueV2(
             F("data"), Value(str(node.pk)), Value(user_language)
         )
 
+        foo = None
+        if (
+            node.datatype == "concept"
+            or node.datatype == "concept-list"
+            or node.datatype == "resource-instance"
+            or node.datatype == "resource-instance-list"
+        ):
+            foo = ArchesGetValueId(F("data"), Value(str(node.pk)), Value(user_language))
+
         field_annotations[field_key] = display_value
         alias_annotations[node.alias] = JSONObject(
-            display_value=display_value, datatype=Value(node.datatype)
+            display_value=display_value, datatype=Value(node.datatype), foo=foo
         )
 
     # adds spaces between fields
@@ -93,6 +111,75 @@ def get_sorted_filtered_tiles(
         # default sort order for consistent pagination
         tiles = tiles.order_by("sortorder")
 
+    tiles = list(tiles)
+
+    for tile in tiles:
+        new_alias_annotations = {}
+
+        for key, data in tile.alias_annotations.items():
+            datatype = data.get("datatype")
+
+            if datatype == "concept":
+                foo = data.get("foo")
+                display_value = data.get("display_value")
+
+                annotation = {
+                    "label": display_value,
+                    "link": reverse("rdm", args=[foo]),
+                }
+
+                new_alias_annotations[key] = {"display_value": [annotation]}
+
+            elif datatype == "concept-list":
+                foo = json.loads(data.get("foo", "[]"))
+                display_values = json.loads(data.get("display_value", "[]"))
+
+                annotations = []
+                for index, display_value in enumerate(display_values):
+                    annotation = {
+                        "label": display_value,
+                        "link": reverse("rdm", args=[foo[index]]),
+                    }
+                    annotations.append(annotation)
+
+                new_alias_annotations[key] = {"display_value": annotations}
+
+            elif datatype == "resource-instance":
+                foo = data.get("foo")
+                display_value = data.get("display_value")
+
+                annotation = {
+                    "label": display_value,
+                    "link": reverse("resource_report", args=[foo]),
+                }
+
+                new_alias_annotations[key] = {"display_value": [annotation]}
+
+            elif datatype == "resource-instance-list":
+                foo = json.loads(data.get("foo", "[]"))
+                display_values = json.loads(data.get("display_value", "[]"))
+
+                annotations = []
+                for index, display_value in enumerate(display_values):
+                    resource_instance_id = foo[index]
+
+                    if resource_instance_id:
+                        annotation = {
+                            "label": display_value,
+                            "link": reverse(
+                                "resource_report", args=[resource_instance_id]
+                            ),
+                        }
+                        annotations.append(annotation)
+
+                new_alias_annotations[key] = {"display_value": annotations}
+            else:
+                new_alias_annotations[key] = {
+                    "display_value": data.get("display_value")
+                }
+
+        tile.alias_annotations = new_alias_annotations
+
     return tiles
 
 
@@ -127,7 +214,7 @@ def get_sorted_filtered_relations(
             Case(
                 When(
                     Q(resourceinstanceidfrom=resource),
-                    then=ArchesGetNodeDisplayValue(
+                    then=ArchesGetNodeDisplayValueV2(
                         F(node.alias + "_to_tile__data"),
                         Value(node.pk),
                         Value(request_language),
@@ -135,7 +222,7 @@ def get_sorted_filtered_relations(
                 ),
                 When(
                     Q(resourceinstanceidto=resource),
-                    then=ArchesGetNodeDisplayValue(
+                    then=ArchesGetNodeDisplayValueV2(
                         F(node.alias + "_from_tile__data"),
                         Value(node.pk),
                         Value(request_language),

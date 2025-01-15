@@ -10,12 +10,15 @@ import InputText from "primevue/inputtext";
 import Message from "primevue/message";
 import Paginator from "primevue/paginator";
 import Select from "primevue/select";
+import Button from "primevue/button";
 
 import {
     fetchCardFromNodegroupId,
     fetchNodegroupTileData,
 } from "@/arches_provenance/EditableReport/api.ts";
 import HierarchicalTileViewer from "@/arches_provenance/EditableReport/components/HierarchicalTileViewer.vue";
+
+import arches from "arches";
 
 import type { PageState } from "primevue/paginator";
 import type { LabelBasedCard } from "@/arches_provenance/EditableReport/types";
@@ -201,19 +204,6 @@ function deriveColumnData(
     });
 }
 
-function getDisplayValue(
-    tileData: Record<string, unknown>,
-    key: string,
-): string | null {
-    const item = tileData[key] as { display_value?: string };
-
-    if (item && item.display_value) {
-        return item.display_value;
-    }
-
-    return null;
-}
-
 function onUpdatePagination(event: PageState) {
     const page = event.page + 1; // PrimeVue paginator is 0-indexed
 
@@ -278,7 +268,7 @@ function rowClass(data: LabelBasedCard) {
             :loading="isLoading"
             :total-records="searchResultsTotalCount"
             :expanded-rows="[]"
-            :row-class
+            :row-class="rowClass"
             @update:sort-field="onUpdateSortField"
             @update:sort-order="onUpdateSortOrder"
         >
@@ -322,7 +312,31 @@ function rowClass(data: LabelBasedCard) {
                 :sortable="cardinality === CARDINALITY_N"
             >
                 <template #body="slotProps">
-                    {{ getDisplayValue(slotProps.data, slotProps.field) }}
+                    <template
+                        v-for="item in slotProps.data[slotProps.field][
+                            'display_value'
+                        ]"
+                        v-if="
+                            Array.isArray(
+                                slotProps.data[slotProps.field][
+                                    'display_value'
+                                ],
+                            )
+                        "
+                    >
+                        <Button
+                            as="a"
+                            :href="arches.urls.url_subpath + item['link']"
+                            variant="link"
+                            target="_blank"
+                            style="display: block"
+                        >
+                            {{ item["label"] }}
+                        </Button>
+                    </template>
+                    <template v-else>
+                        {{ slotProps.data[slotProps.field]["display_value"] }}
+                    </template>
                 </template>
             </Column>
             <template #expansion="slotProps">
