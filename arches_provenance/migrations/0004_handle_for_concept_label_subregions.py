@@ -445,7 +445,6 @@ class Migration(migrations.Migration):
             drop function if exists __arches_get_concept_label_v2;
             drop function if exists __arches_get_concept_valueid;
             drop function if exists __arches_get_concept_list_valueids;
-            drop function if exists __arches_get_concept_or_concept_list_valueid;
             drop function if exists __arches_get_resourceinstance_list_label_v2;
             drop function if exists __arches_get_resourceinstance_id_list;
             drop function if exists __arches_get_resourceinstance_id;

@@ -312,31 +312,36 @@ function rowClass(data: LabelBasedCard) {
                 :sortable="cardinality === CARDINALITY_N"
             >
                 <template #body="slotProps">
-                    <template
-                        v-for="item in slotProps.data[slotProps.field][
-                            'display_value'
-                        ]"
-                        v-if="
-                            Array.isArray(
-                                slotProps.data[slotProps.field][
-                                    'display_value'
-                                ],
-                            )
-                        "
-                    >
-                        <Button
-                            as="a"
-                            :href="arches.urls.url_subpath + item['link']"
-                            variant="link"
-                            target="_blank"
-                            style="display: block"
+                    <div style="max-height: 12rem; overflow: auto">
+                        <template
+                            v-if="
+                                Array.isArray(
+                                    slotProps.data[slotProps.field][
+                                        'display_value'
+                                    ],
+                                )
+                            "
                         >
-                            {{ item["label"] }}
-                        </Button>
-                    </template>
-                    <template v-else>
-                        {{ slotProps.data[slotProps.field]["display_value"] }}
-                    </template>
+                            <Button
+                                v-for="item in slotProps.data[slotProps.field][
+                                    'display_value'
+                                ]"
+                                :key="JSON.stringify(item['link'])"
+                                as="a"
+                                :href="arches.urls.url_subpath + item['link']"
+                                variant="link"
+                                target="_blank"
+                                style="display: block; width: fit-content"
+                            >
+                                {{ item["label"] }}
+                            </Button>
+                        </template>
+                        <template v-else>
+                            {{
+                                slotProps.data[slotProps.field]["display_value"]
+                            }}
+                        </template>
+                    </div>
                 </template>
             </Column>
             <template #expansion="slotProps">

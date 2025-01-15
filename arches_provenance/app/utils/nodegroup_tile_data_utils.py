@@ -37,6 +37,49 @@ class ArchesGetValueId(Func):
     arity = 3
 
 
+def get_link(datatype, value_id):
+    if datatype in ["concept", "concept-list"]:
+        return reverse("rdm", args=[value_id])
+    elif datatype in ["resource-instance", "resource-instance-list"]:
+        return reverse("resource_report", args=[value_id])
+    return ""
+
+
+def build_valueid_annotation(data):
+    datatype = data.get("datatype", "")
+    display_value = data.get("display_value")
+
+    if datatype in ["concept", "resource-instance"]:
+        value_ids = data.get("value_ids")
+        if value_ids:
+            return {
+                "display_value": [
+                    {
+                        "label": display_value,
+                        "link": get_link(datatype, value_ids),
+                    }
+                ]
+            }
+        return {"display_value": display_value}
+
+    elif datatype in ["concept-list", "resource-instance-list"]:
+        value_ids = json.loads(data.get("value_ids", "[]"))
+        display_values = json.loads(data.get("display_value", "[]"))
+
+        annotations = []
+        for val_id, disp_val in zip(value_ids, display_values):
+            if val_id:
+                annotations.append(
+                    {
+                        "label": disp_val,
+                        "link": get_link(datatype, val_id),
+                    }
+                )
+        return {"display_value": annotations}
+
+    return {"display_value": display_value}
+
+
 def get_sorted_filtered_tiles(
     *, resourceinstanceid, nodegroupid, sort_node_id, sort_order, query, user_language
 ):
@@ -56,18 +99,22 @@ def get_sorted_filtered_tiles(
             F("data"), Value(str(node.pk)), Value(user_language)
         )
 
-        foo = None
+        value_ids = None
         if (
             node.datatype == "concept"
             or node.datatype == "concept-list"
             or node.datatype == "resource-instance"
             or node.datatype == "resource-instance-list"
         ):
-            foo = ArchesGetValueId(F("data"), Value(str(node.pk)), Value(user_language))
+            value_ids = ArchesGetValueId(
+                F("data"), Value(str(node.pk)), Value(user_language)
+            )
 
         field_annotations[field_key] = display_value
         alias_annotations[node.alias] = JSONObject(
-            display_value=display_value, datatype=Value(node.datatype), foo=foo
+            display_value=display_value,
+            datatype=Value(node.datatype),
+            value_ids=value_ids,
         )
 
     # adds spaces between fields
@@ -117,66 +164,7 @@ def get_sorted_filtered_tiles(
         new_alias_annotations = {}
 
         for key, data in tile.alias_annotations.items():
-            datatype = data.get("datatype")
-
-            if datatype == "concept":
-                foo = data.get("foo")
-                display_value = data.get("display_value")
-
-                annotation = {
-                    "label": display_value,
-                    "link": reverse("rdm", args=[foo]),
-                }
-
-                new_alias_annotations[key] = {"display_value": [annotation]}
-
-            elif datatype == "concept-list":
-                foo = json.loads(data.get("foo", "[]"))
-                display_values = json.loads(data.get("display_value", "[]"))
-
-                annotations = []
-                for index, display_value in enumerate(display_values):
-                    annotation = {
-                        "label": display_value,
-                        "link": reverse("rdm", args=[foo[index]]),
-                    }
-                    annotations.append(annotation)
-
-                new_alias_annotations[key] = {"display_value": annotations}
-
-            elif datatype == "resource-instance":
-                foo = data.get("foo")
-                display_value = data.get("display_value")
-
-                annotation = {
-                    "label": display_value,
-                    "link": reverse("resource_report", args=[foo]),
-                }
-
-                new_alias_annotations[key] = {"display_value": [annotation]}
-
-            elif datatype == "resource-instance-list":
-                foo = json.loads(data.get("foo", "[]"))
-                display_values = json.loads(data.get("display_value", "[]"))
-
-                annotations = []
-                for index, display_value in enumerate(display_values):
-                    resource_instance_id = foo[index]
-
-                    if resource_instance_id:
-                        annotation = {
-                            "label": display_value,
-                            "link": reverse(
-                                "resource_report", args=[resource_instance_id]
-                            ),
-                        }
-                        annotations.append(annotation)
-
-                new_alias_annotations[key] = {"display_value": annotations}
-            else:
-                new_alias_annotations[key] = {
-                    "display_value": data.get("display_value")
-                }
+            new_alias_annotations[key] = build_valueid_annotation(data)
 
         tile.alias_annotations = new_alias_annotations
 
