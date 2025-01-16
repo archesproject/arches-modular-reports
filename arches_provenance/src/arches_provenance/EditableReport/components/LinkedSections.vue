@@ -157,10 +157,6 @@ button.back-to-top {
     margin-bottom: 1.5rem;
 }
 
-:deep(.p-button-label),
-:deep(.pi) {
-    font-size: 1.4rem;
-}
 :deep(.p-panel-header) {
     padding: 10px 20px;
 }

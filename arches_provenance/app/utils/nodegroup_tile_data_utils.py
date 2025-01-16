@@ -58,7 +58,8 @@ def annotate_related_graph_nodes_with_widget_labels(
 def get_sorted_filtered_tiles(
     *, resourceinstanceid, nodegroupid, sort_field, direction, query, user_language
 ):
-    # semantic, annotation, and geojson-feature-collection data types are excluded in __arches_get_node_display_value
+    # semantic, annotation, and geojson-feature-collection data types are
+    # excluded in __arches_get_node_display_value
     nodes = models.Node.objects.filter(nodegroup_id=nodegroupid).exclude(
         datatype__in=["semantic", "annotation", "geojson-feature-collection"]
     )
@@ -85,6 +86,7 @@ def get_sorted_filtered_tiles(
             search_text=Concat(*display_values_with_spaces, output_field=TextField())
         )
         .filter(search_text__icontains=query)
+        .prefetch_related("tilemodel_set")
     )
 
     if sort_field:

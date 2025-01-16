@@ -64,9 +64,7 @@ class EditableReportAwareResourceReportView(ResourceReportView):
                 resourceid=resourceid,
                 templateid=graph.template.pk,
                 # To the extent possible, avoid DB queries needed for KO
-                report_templates=models.ReportTemplate.objects.filter(
-                    componentname="editable-report"
-                ),
+                report_templates=[graph.template],
                 card_components=models.CardComponent.objects.none(),
                 widgets=models.Widget.objects.none(),
                 map_markers=models.MapMarker.objects.none(),
@@ -176,7 +174,11 @@ class NodePresentationView(APIBase):
                 node.alias: {
                     "nodeid": node.nodeid,
                     "name": node.name,
-                    "card_name": node.nodegroup.cardmodel_set.first().name,
+                    "card_name": (
+                        node.nodegroup.cardmodel_set.all()[0].name
+                        if node.nodegroup.cardmodel_set.all()
+                        else None
+                    ),
                     "widget_label": (
                         node.cardxnodexwidget_set.all()[0].label
                         if node.cardxnodexwidget_set.all()
