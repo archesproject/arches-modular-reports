@@ -118,7 +118,6 @@ watch(query, (newQuery) => {
 onMounted(() => {
     fetchCardFromNodegroupId(props.component.config?.nodegroup_id).then(
         (fetchedCardData) => {
-            console.log(fetchedCardData);
             tableTitle.value = fetchedCardData?.name;
             columnData.value = deriveColumnData(
                 props.component.config,
