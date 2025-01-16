@@ -368,7 +368,25 @@ function rowClass(data: LabelBasedCard) {
                 </template>
             </Column>
             <Column v-if="userCanEditResourceInstance">
-                <template #header> </template>
+                <template #header>
+                    <div
+                        style="
+                            width: 100%;
+                            display: flex;
+                            justify-content: flex-end;
+                        "
+                    >
+                        <Button
+                            :label="
+                                $gettext('Add %{cardName}', {
+                                    cardName: cardData?.name as string,
+                                })
+                            "
+                            icon="pi pi-plus"
+                            class="p-button-outlined"
+                        />
+                    </div>
+                </template>
                 <template #body>
                     <div
                         style="
@@ -387,12 +405,14 @@ function rowClass(data: LabelBasedCard) {
                             <Button
                                 icon="pi pi-pencil"
                                 class="p-button-outlined"
+                                :aria-label="$gettext('Edit')"
                                 rounded
                             />
                             <Button
                                 icon="pi pi-trash"
                                 class="p-button-outlined"
                                 severity="danger"
+                                :aria-label="$gettext('Delete')"
                                 rounded
                             />
                         </div>
