@@ -20,6 +20,10 @@ from arches.app.views.resource import ResourceReportView
 
 from arches_provenance.models import ReportConfig
 
+from arches_provenance.app.utils.filter_report_configuration import (
+    filter_report_configuration_for_nodegroup_permissions,
+)
+
 from arches_provenance.app.utils.nodegroup_tile_data_utils import (
     get_sorted_filtered_relations,
     get_sorted_filtered_tiles,
@@ -35,12 +39,17 @@ class ProvenanceEditableReportConfigView(View):
         result = ReportConfig.objects.filter(
             graph__resourceinstance=request.GET.get("resourceId")
         ).first()
+
         if not result:
             return JSONErrorResponse(
                 _("No report config found."), status=HTTPStatus.NOT_FOUND
             )
-        # Config might expose nodegroup existence: TODO: check permissions?
-        return JSONResponse(result.config)
+
+        return JSONResponse(
+            filter_report_configuration_for_nodegroup_permissions(
+                result.config, request.user
+            )
+        )
 
 
 @method_decorator(can_read_resource_instance, name="dispatch")
