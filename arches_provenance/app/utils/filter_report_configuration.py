@@ -3,7 +3,7 @@ import copy
 from arches.app.utils.permission_backend import get_nodegroups_by_perm
 
 
-def _extract_nodegroup_ids_from_report_configuration(data):
+def extract_nodegroup_ids_from_report_configuration(data):
     nodegroup_ids = []
 
     def find_nodegroup_id(obj):
@@ -78,7 +78,7 @@ def filter_report_configuration_on_permitted_nodegroups(
 
 
 def filter_report_configuration_for_nodegroup_permissions(report_configuration, user):
-    nodegroup_ids = _extract_nodegroup_ids_from_report_configuration(
+    nodegroup_ids = extract_nodegroup_ids_from_report_configuration(
         report_configuration
     )
     user_nodegroup_ids = set(
