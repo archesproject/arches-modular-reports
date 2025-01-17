@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 import { useGettext } from "vue3-gettext";
 
@@ -21,6 +21,7 @@ import {
 } from "@/arches_provenance/EditableReport/api.ts";
 import HierarchicalTileViewer from "@/arches_provenance/EditableReport/components/HierarchicalTileViewer.vue";
 
+import type { DataTablePageEvent } from "primevue/datatable";
 import type {
     ColumnDatum,
     LabelBasedCard,
@@ -53,8 +54,21 @@ const isLoading = ref(false);
 const hasLoadingError = ref(false);
 const columnData = ref<ColumnDatum[]>([]);
 const cardinality = ref("");
+const resettingToFirstPage = ref(false);
 
 const pageNumberToNodegroupTileData = ref<Record<number, unknown[]>>({});
+
+const first = computed(() => {
+    if (resettingToFirstPage.value) {
+        return 0;
+    }
+    return (currentPage.value - 1) * rowsPerPage.value;
+});
+
+function onPageTurn(event: DataTablePageEvent) {
+    currentPage.value = resettingToFirstPage.value ? 1 : event.page + 1;
+    rowsPerPage.value = event.rows;
+}
 
 function onUpdateSortOrder(event: number | undefined) {
     if (event === 1) {
@@ -75,12 +89,14 @@ watch(query, () => {
 
     timeout = setTimeout(() => {
         pageNumberToNodegroupTileData.value = {};
+        resettingToFirstPage.value = true;
         fetchData(1);
     }, queryTimeoutValue);
 });
 
 watch([direction, sortField, rowsPerPage], () => {
     pageNumberToNodegroupTileData.value = {};
+    resettingToFirstPage.value = true;
     fetchData(1);
 });
 
@@ -89,6 +105,7 @@ watch(currentPage, () => {
         currentlyDisplayedTableData.value =
             pageNumberToNodegroupTileData.value[currentPage.value];
     } else {
+        resettingToFirstPage.value = false;
         fetchData(currentPage.value);
     }
 });
@@ -221,6 +238,7 @@ onMounted(() => {
         :loading="isLoading"
         :total-records="searchResultsTotalCount"
         :expanded-rows="[]"
+        :first
         :row-class
         paginator
         :always-show-paginator="
@@ -231,7 +249,8 @@ onMounted(() => {
         :rows="rowsPerPage"
         :rows-per-page-options="ROWS_PER_PAGE_OPTIONS"
         :sortable="cardinality === CARDINALITY_N"
-        @page="(currentPage = $event.page + 1) && (rowsPerPage = $event.rows)"
+        @page="onPageTurn"
+        @update:first="resettingToFirstPage = false"
         @update:sort-field="sortField = $event"
         @update:sort-order="onUpdateSortOrder"
     >

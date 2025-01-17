@@ -17,6 +17,8 @@ import {
 } from "@/arches_provenance/constants.ts";
 import { fetchRelatedResourceData } from "@/arches_provenance/EditableReport/api.ts";
 
+import type { DataTablePageEvent } from "primevue/datatable";
+
 const props = defineProps<{
     component: {
         config: {
@@ -42,8 +44,21 @@ const searchResultsTotalCount = ref(0);
 const isLoading = ref(false);
 const hasLoadingError = ref(false);
 const widgetLabelLookup = ref<Record<string, string>>({});
+const resettingToFirstPage = ref(false);
 
 const pageNumberToNodegroupTileData = ref<Record<number, unknown[]>>({});
+
+const first = computed(() => {
+    if (resettingToFirstPage.value) {
+        return 0;
+    }
+    return (currentPage.value - 1) * rowsPerPage.value;
+});
+
+function onPageTurn(event: DataTablePageEvent) {
+    currentPage.value = resettingToFirstPage.value ? 1 : event.page + 1;
+    rowsPerPage.value = event.rows;
+}
 
 function onUpdateSortOrder(event: number | undefined) {
     if (event === 1) {
@@ -79,12 +94,14 @@ watch(query, () => {
 
     timeout = setTimeout(() => {
         pageNumberToNodegroupTileData.value = {};
+        resettingToFirstPage.value = true;
         fetchData(1);
     }, queryTimeoutValue);
 });
 
 watch([direction, sortField, rowsPerPage], () => {
     pageNumberToNodegroupTileData.value = {};
+    resettingToFirstPage.value = true;
     fetchData(1);
 });
 
@@ -93,6 +110,7 @@ watch(currentPage, () => {
         currentlyDisplayedTableData.value =
             pageNumberToNodegroupTileData.value[currentPage.value];
     } else {
+        resettingToFirstPage.value = false;
         fetchData(currentPage.value);
     }
 });
@@ -171,6 +189,7 @@ onMounted(fetchData);
         :loading="isLoading"
         :total-records="searchResultsTotalCount"
         :expanded-rows="[]"
+        :first
         paginator
         :always-show-paginator="
             searchResultsTotalCount >
@@ -180,7 +199,8 @@ onMounted(fetchData);
         :rows="rowsPerPage"
         :rows-per-page-options="ROWS_PER_PAGE_OPTIONS"
         :sortable="true"
-        @page="(currentPage = $event.page + 1) && (rowsPerPage = $event.rows)"
+        @page="onPageTurn"
+        @update:first="resettingToFirstPage = false"
         @update:sort-field="sortField = $event"
         @update:sort-order="onUpdateSortOrder"
     >
