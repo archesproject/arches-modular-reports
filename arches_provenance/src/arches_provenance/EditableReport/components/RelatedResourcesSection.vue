@@ -247,21 +247,21 @@ onMounted(fetchData);
             :sortable="true"
         >
             <template #body="{ data, field }">
-                <template
+                <Button
                     v-for="link in data[field].links"
                     :key="JSON.stringify(link)"
+                    as="a"
+                    variant="link"
+                    :href="makeLink(link)"
+                    style="
+                        display: block;
+                        width: fit-content;
+                        font-size: inherit;
+                        padding: 0;
+                    "
                 >
-                    <div>
-                        <Button
-                            as="a"
-                            variant="link"
-                            :href="makeLink(link)"
-                            style="font-size: inherit; padding: 0"
-                        >
-                            {{ link.label }}
-                        </Button>
-                    </div>
-                </template>
+                    {{ link.label }}
+                </Button>
                 <template v-if="data[field].links.length === 0">
                     {{ data[field].display_value }}
                 </template>
