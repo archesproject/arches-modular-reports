@@ -13,6 +13,7 @@ def _extract_nodegroup_ids_from_report_configuration(data):
                     nodegroup_ids.append(value)
                 else:
                     find_nodegroup_id(value)
+
         elif isinstance(obj, list):
             for item in obj:
                 find_nodegroup_id(item)
