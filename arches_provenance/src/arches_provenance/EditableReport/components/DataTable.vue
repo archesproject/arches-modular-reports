@@ -280,6 +280,29 @@ function rowClass(data: LabelBasedCard) {
 </script>
 
 <template>
+    <div style="display: flex; align-items: center">
+        <h3>{{ tableTitle }}</h3>
+
+        <Button
+            v-if="
+                userCanEditResourceInstance &&
+                ((!isLoading &&
+                    !query &&
+                    !timeout &&
+                    !searchResultsTotalCount) ||
+                    cardinality === CARDINALITY_N)
+            "
+            :label="
+                $gettext('Add %{cardName}', {
+                    cardName: cardData?.name as string,
+                })
+            "
+            icon="pi pi-plus"
+            variant="outlined"
+            style="margin: 1rem 2rem 0 2rem"
+        />
+    </div>
+
     <Message
         v-if="hasLoadingError"
         size="large"
@@ -288,31 +311,15 @@ function rowClass(data: LabelBasedCard) {
     >
         {{ $gettext("An error occurred while fetching data.") }}
     </Message>
-    <div
+
+    <Message
         v-else-if="!isLoading && !query && !timeout && !searchResultsTotalCount"
-        style="display: flex"
+        size="large"
+        severity="info"
+        icon="pi pi-info-circle"
     >
-        <Button
-            v-if="userCanEditResourceInstance"
-            :label="
-                $gettext('Add %{cardName}', {
-                    cardName: cardData?.name as string,
-                })
-            "
-            icon="pi pi-plus"
-            class="p-button-outlined"
-        />
-        <Message
-            v-else
-            size="large"
-            severity="info"
-            icon="pi pi-info-circle"
-        >
-            <span>
-                {{ $gettext("No data found.") }}
-            </span>
-        </Message>
-    </div>
+        {{ $gettext("No data found.") }}
+    </Message>
     <div v-else>
         <DataTable
             :value="currentlyDisplayedTableData"
@@ -367,25 +374,6 @@ function rowClass(data: LabelBasedCard) {
                 </template>
             </Column>
             <Column v-if="userCanEditResourceInstance">
-                <template #header>
-                    <div
-                        style="
-                            width: 100%;
-                            display: flex;
-                            justify-content: flex-end;
-                        "
-                    >
-                        <Button
-                            :label="
-                                $gettext('Add %{cardName}', {
-                                    cardName: cardData?.name as string,
-                                })
-                            "
-                            icon="pi pi-plus"
-                            class="p-button-outlined"
-                        />
-                    </div>
-                </template>
                 <template #body>
                     <div
                         style="
