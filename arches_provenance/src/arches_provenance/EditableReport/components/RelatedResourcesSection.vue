@@ -55,6 +55,14 @@ const first = computed(() => {
     return (currentPage.value - 1) * rowsPerPage.value;
 });
 
+const isEmpty = computed(
+    () =>
+        !isLoading.value &&
+        !query.value &&
+        !searchResultsTotalCount.value &&
+        !timeout,
+);
+
 function onPageTurn(event: DataTablePageEvent) {
     currentPage.value = resettingToFirstPage.value ? 1 : event.page + 1;
     rowsPerPage.value = event.rows;
@@ -176,7 +184,7 @@ onMounted(fetchData);
         {{ $gettext("An error occurred while fetching data.") }}
     </Message>
     <Message
-        v-else-if="!isLoading && !query && !timeout && !searchResultsTotalCount"
+        v-else-if="isEmpty"
         size="large"
         severity="info"
         icon="pi pi-info-circle"
@@ -247,5 +255,9 @@ onMounted(fetchData);
 <style scoped>
 :deep(.p-datatable-column-sorted) {
     background: var(--p-datatable-header-cell-background);
+}
+
+:deep(.p-paginator) {
+    justify-content: end;
 }
 </style>
