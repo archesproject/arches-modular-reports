@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, ref, onMounted, watch } from "vue";
+import { inject, ref, onMounted, watch, computed } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Column from "primevue/column";
@@ -75,6 +75,14 @@ const sortNodeId = ref("");
 const sortOrder = ref(ASC);
 
 const query = ref("");
+
+const isEmpty = computed(
+    () =>
+        !isLoading.value &&
+        !query.value &&
+        !searchResultsTotalCount.value &&
+        !timeout,
+);
 
 watch(
     [sortOrder, sortNodeId, rowsPerPage],
@@ -286,11 +294,7 @@ function rowClass(data: LabelBasedCard) {
         <Button
             v-if="
                 userCanEditResourceInstance &&
-                ((!isLoading &&
-                    !query &&
-                    !timeout &&
-                    !searchResultsTotalCount) ||
-                    cardinality === CARDINALITY_N)
+                (isEmpty || cardinality === CARDINALITY_N)
             "
             :label="
                 $gettext('Add %{cardName}', {
@@ -313,7 +317,7 @@ function rowClass(data: LabelBasedCard) {
     </Message>
 
     <Message
-        v-else-if="!isLoading && !query && !timeout && !searchResultsTotalCount"
+        v-else-if="isEmpty"
         size="large"
         severity="info"
         icon="pi pi-info-circle"
