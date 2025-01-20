@@ -384,4 +384,8 @@ onMounted(() => {
 :deep(.no-children .p-datatable-row-toggle-button) {
     visibility: hidden;
 }
+
+:deep(.p-paginator) {
+    justify-content: end;
+}
 </style>
