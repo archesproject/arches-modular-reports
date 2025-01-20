@@ -64,6 +64,9 @@ def get_sorted_filtered_tiles(
         datatype__in=["semantic", "annotation", "geojson-feature-collection"]
     )
 
+    if not nodes:
+        return Tile.objects.none()
+
     annotations = {
         node.alias: ArchesGetNodeDisplayValue(
             F("data"), Value(str(node.pk)), Value(user_language)
