@@ -4,6 +4,7 @@ from django.core.paginator import Paginator
 from django.db.models import Prefetch
 from django.http import Http404
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils import translation
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
@@ -123,6 +124,15 @@ class RelatedResourceView(APIBase):
         paginator = Paginator(relations, rows_per_page)
         result_page = paginator.get_page(page_number)
 
+        def make_resource_report_link(relation):
+            nonlocal resourceid
+            # Both sides are UUID python types (from ORM, or from route)
+            if relation.resourceinstanceidfrom_id == resourceid:
+                target = relation.resourceinstanceidto_id
+            else:
+                target = relation.resourceinstanceidfrom_id
+            return reverse("resource_report", args=[target])
+
         response_data = {
             "results": [
                 {
@@ -134,17 +144,8 @@ class RelatedResourceView(APIBase):
                         "display_value": getattr(relation, "@display_name"),
                         "links": [
                             {
-                                "route": "resource_report",
-                                "params": [
-                                    (
-                                        relation.resourceinstanceidto_id
-                                        # left-hand side is a UUID (came from ORM)
-                                        # right-hand side is a UUID (came from <uuid:resourceid>)
-                                        if relation.resourceinstanceidfrom_id
-                                        == resourceid
-                                        else relation.resourceinstanceidfrom_id
-                                    )
-                                ],
+                                "label": getattr(relation, "@display_name"),
+                                "link": make_resource_report_link(relation),
                             }
                         ],
                     },
