@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { inject, ref, onMounted, watch, computed } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Column from "primevue/column";
@@ -24,6 +24,8 @@ import type { PageState } from "primevue/paginator";
 import type { LabelBasedCard } from "@/arches_provenance/EditableReport/types";
 
 const { $gettext } = useGettext();
+
+const userCanEditResourceInstance = inject("userCanEditResourceInstance");
 
 interface ColumnDatum {
     nodeAlias: string;
@@ -75,6 +77,14 @@ const sortNodeId = ref("");
 const sortOrder = ref(ASC);
 
 const query = ref("");
+
+const isEmpty = computed(
+    () =>
+        !isLoading.value &&
+        !query.value &&
+        !searchResultsTotalCount.value &&
+        !timeout,
+);
 
 watch(
     [sortOrder, sortNodeId, rowsPerPage],
@@ -246,6 +256,25 @@ function rowClass(data: LabelBasedCard) {
 </script>
 
 <template>
+    <div style="display: flex; align-items: center">
+        <h3>{{ tableTitle }}</h3>
+
+        <Button
+            v-if="
+                userCanEditResourceInstance &&
+                (isEmpty || cardinality === CARDINALITY_N)
+            "
+            :label="
+                $gettext('Add %{cardName}', {
+                    cardName: cardData?.name as string,
+                })
+            "
+            icon="pi pi-plus"
+            variant="outlined"
+            style="margin: 1rem 2rem 0 2rem"
+        />
+    </div>
+
     <Message
         v-if="hasLoadingError"
         size="large"
@@ -254,8 +283,9 @@ function rowClass(data: LabelBasedCard) {
     >
         {{ $gettext("An error occurred while fetching data.") }}
     </Message>
+
     <Message
-        v-else-if="!isLoading && !query && !timeout && !searchResultsTotalCount"
+        v-else-if="isEmpty"
         size="large"
         severity="info"
         icon="pi pi-info-circle"
@@ -341,6 +371,39 @@ function rowClass(data: LabelBasedCard) {
                                 slotProps.data[slotProps.field]["display_value"]
                             }}
                         </template>
+                    </div>
+                </template>
+            </Column>
+            <Column v-if="userCanEditResourceInstance">
+                <template #body>
+                    <div
+                        style="
+                            width: 100%;
+                            display: flex;
+                            justify-content: flex-end;
+                        "
+                    >
+                        <div
+                            style="
+                                display: flex;
+                                justify-content: space-evenly;
+                                width: 6rem;
+                            "
+                        >
+                            <Button
+                                icon="pi pi-pencil"
+                                class="p-button-outlined"
+                                :aria-label="$gettext('Edit')"
+                                rounded
+                            />
+                            <Button
+                                icon="pi pi-trash"
+                                class="p-button-outlined"
+                                severity="danger"
+                                :aria-label="$gettext('Delete')"
+                                rounded
+                            />
+                        </div>
                     </div>
                 </template>
             </Column>
