@@ -1,7 +1,10 @@
+import operator
+from functools import reduce
+
+from django.contrib.postgres.expressions import ArraySubquery
 from django.db.models import (
     Case,
     F,
-    FilteredRelation,
     Func,
     IntegerField,
     OuterRef,
@@ -12,7 +15,8 @@ from django.db.models import (
     When,
 )
 from django.db.models.fields.json import KT
-from django.db.models.functions import Concat, NullIf
+from django.db.models.functions import Concat
+from django.utils.translation import gettext as _
 
 from arches.app.models import models
 from arches.app.models.tile import Tile
@@ -28,8 +32,31 @@ class ArchesGetNodeDisplayValue(Func):
     arity = 3
 
 
+class ArrayToString(Func):
+    function = "ARRAY_TO_STRING"
+    output_field = TextField()
+    arity = 3
+
+
+def annotate_related_graph_nodes_with_widget_labels(
+    additional_nodes, related_graphid, request_language
+):
+    return (
+        models.Node.objects.filter(alias__in=additional_nodes, graph_id=related_graphid)
+        .exclude(datatype__in=["semantic", "annotation", "geojson-feature-collection"])
+        .annotate(
+            widget_label_json=Subquery(
+                models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
+                .order_by("sortorder")
+                .values("label")[:1]
+            )
+        )
+        .annotate(widget_label=KT(f"widget_label_json__{request_language}"))
+    )
+
+
 def get_sorted_filtered_tiles(
-    *, resourceinstanceid, nodegroupid, sort_node_id, sort_order, query, user_language
+    *, resourceinstanceid, nodegroupid, sort_field, direction, query, user_language
 ):
     # semantic, annotation, and geojson-feature-collection data types are
     # excluded in __arches_get_node_display_value
@@ -38,7 +65,7 @@ def get_sorted_filtered_tiles(
     )
 
     annotations = {
-        f'field_{str(node.pk).replace("-", "_")}': ArchesGetNodeDisplayValue(
+        node.alias: ArchesGetNodeDisplayValue(
             F("data"), Value(str(node.pk)), Value(user_language)
         )
         for node in nodes
@@ -62,23 +89,27 @@ def get_sorted_filtered_tiles(
         .prefetch_related("tilemodel_set")
     )
 
-    if sort_node_id:
-        sort_field_name = f'field_{sort_node_id.replace("-", "_")}'
+    if sort_field:
+        # We're about to use this node alias as a SQL alias in a Django
+        # annotation. Django will raise ValueError if contains unsafe
+        # characters, but node aliases generated with __arches_slugify
+        # *should* already be sane. If not, ValueError is fine. If ever
+        # a problem in practice, let's add validation in core arches.
 
         sort_priority = Case(
-            When(**{f"{sort_field_name}__isnull": True}, then=Value(1)),
-            When(**{f"{sort_field_name}": ""}, then=Value(1)),
+            When(**{f"{sort_field}__isnull": True}, then=Value(1)),
+            When(**{f"{sort_field}": ""}, then=Value(1)),
             default=Value(0),
             output_field=IntegerField(),
         )
 
-        if sort_order == "asc":
+        if direction.lower().startswith("asc"):
             tiles = tiles.annotate(sort_priority=sort_priority).order_by(
-                "sort_priority", F(sort_field_name).asc()
+                "sort_priority", F(sort_field).asc()
             )
-        elif sort_order == "desc":
+        else:
             tiles = tiles.annotate(sort_priority=sort_priority).order_by(
-                "-sort_priority", F(sort_field_name).desc()
+                "-sort_priority", F(sort_field).desc()
             )
     else:
         # default sort order for consistent pagination
@@ -88,52 +119,39 @@ def get_sorted_filtered_tiles(
 
 
 def get_sorted_filtered_relations(
-    *, resource, related_graphid, nodes, sort, direction, request_language
+    *, resource, related_graphid, nodes, sort_field, direction, query, request_language
 ):
-    for node in nodes:
-        # View should have already checked and raised JSONErrorResponse.
-        assert node.nodegroup.cardinality == "1"
-    to_tile_annotations = {
-        node.alias
-        + "_to_tile": FilteredRelation(
-            "resourceinstanceidto__tilemodel",
-            condition=Q(
-                resourceinstanceidto__tilemodel__nodegroup_id=node.nodegroup_id,
+    def make_tile_annotations(node, direction):
+        return ArrayToString(
+            ArraySubquery(
+                models.TileModel.objects.filter(
+                    resourceinstance=OuterRef(f"resourceinstanceid{direction}"),
+                    nodegroup_id=node.nodegroup_id,
+                )
+                .exclude(**{f"data__{node.pk}__isnull": True})
+                .annotate(
+                    display_value=ArchesGetNodeDisplayValue(
+                        F("data"), Value(node.pk), Value(request_language)
+                    )
+                )
+                .order_by("sortorder")
+                .values("display_value")
+                .distinct()  # TODO: parameterize this?
             ),
+            Value(", "),  # delimiter
+            Value(_("None")),  # null replacement
         )
-        for node in nodes
-    }
-    from_tile_annotations = {
-        node.alias
-        + "_from_tile": FilteredRelation(
-            "resourceinstanceidfrom__tilemodel",
-            condition=Q(
-                resourceinstanceidfrom__tilemodel__nodegroup_id=node.nodegroup_id,
-            ),
-        )
-        for node in nodes
-    }
+
     data_annotations = {
-        node.alias: NullIf(
-            Case(
-                When(
-                    Q(resourceinstanceidfrom=resource),
-                    then=ArchesGetNodeDisplayValue(
-                        F(node.alias + "_to_tile__data"),
-                        Value(node.pk),
-                        Value(request_language),
-                    ),
-                ),
-                When(
-                    Q(resourceinstanceidto=resource),
-                    then=ArchesGetNodeDisplayValue(
-                        F(node.alias + "_from_tile__data"),
-                        Value(node.pk),
-                        Value(request_language),
-                    ),
-                ),
+        node.alias: Case(
+            When(
+                Q(resourceinstanceidfrom=resource),
+                then=make_tile_annotations(node, "to"),
             ),
-            Value("", output_field=TextField()),
+            When(
+                Q(resourceinstanceidto=resource),
+                then=make_tile_annotations(node, "from"),
+            ),
         )
         for node in nodes
     }
@@ -149,14 +167,17 @@ def get_sorted_filtered_relations(
                 resourceinstancefrom_graphid=related_graphid,
             )
         )
+        .distinct()
         .annotate(
-            widget_label_json=Subquery(
+            relation_name_json=Subquery(
                 models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
                 .order_by("sortorder")
                 .values("label")[:1]
             )
         )
-        .annotate(widget_label=KT(f"widget_label_json__{request_language}"))
+        # TODO: add fallback to system language? Below also.
+        # https://github.com/archesproject/arches/issues/10028
+        .annotate(**{"@relation_name": KT(f"relation_name_json__{request_language}")})
         .annotate(
             display_name_json=Case(
                 When(
@@ -169,16 +190,29 @@ def get_sorted_filtered_relations(
                 ),
             )
         )
-        .annotate(display_name=KT(f"display_name_json__{request_language}"))
-        .annotate(**from_tile_annotations)
-        .annotate(**to_tile_annotations)
+        .annotate(**{"@display_name": KT(f"display_name_json__{request_language}")})
         .annotate(**data_annotations)
     )
 
-    if direction.startswith("asc"):
-        relations = relations.order_by(F(sort).asc(nulls_last=True))
+    if query:
+        # OR (|) Q() objects together to allow matching any annotation.
+        all_filters = reduce(
+            operator.or_,
+            [
+                Q(**{"@relation_name__icontains": query}),
+                Q(**{"@display_name__icontains": query}),
+                *[
+                    Q(**{f"{annotation}__icontains": query})
+                    for annotation in data_annotations
+                ],
+            ],
+        )
+        relations = relations.filter(all_filters)
+
+    if direction.lower().startswith("asc"):
+        relations = relations.order_by(F(sort_field).asc(nulls_last=True))
     else:
-        relations = relations.order_by(F(sort).desc(nulls_last=True))
+        relations = relations.order_by(F(sort_field).desc(nulls_last=True))
 
     return relations
 

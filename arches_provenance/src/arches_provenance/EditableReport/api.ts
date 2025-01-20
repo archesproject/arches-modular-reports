@@ -42,8 +42,8 @@ export const fetchNodegroupTileData = async (
     nodegroupId: string,
     rowsPerPage: number,
     page: number,
-    sortNodeId: string | null,
-    sortOrder: string | null,
+    sortField: string | null,
+    direction: string | null,
     query: string | null,
 ) => {
     const url = arches.urls.api_nodegroup_tile_data(
@@ -53,8 +53,8 @@ export const fetchNodegroupTileData = async (
     const params = new URLSearchParams({
         rows_per_page: rowsPerPage.toString(),
         page: page.toString(),
-        sort_node_id: sortNodeId || "",
-        sort_order: sortOrder || "",
+        sort_field: sortField || "",
+        direction: direction || "",
         query: query || "",
     });
 
@@ -81,8 +81,9 @@ export const fetchRelatedResourceData = async (
     nodes: string[],
     rowsPerPage: number,
     page: number,
-    sort: string,
+    sortField: string,
     direction: string,
+    query: string,
 ) => {
     const url = arches.urls.api_related_resources(
         resourceInstanceId,
@@ -92,8 +93,9 @@ export const fetchRelatedResourceData = async (
         nodes: nodes.join(","),
         rows_per_page: rowsPerPage.toString(),
         page: page.toString(),
-        sort: sort,
-        direction: direction,
+        sort_field: sortField,
+        direction,
+        query,
     });
 
     const response = await fetch(url + "?" + params.toString());
@@ -105,6 +107,17 @@ export const fetchRelatedResourceData = async (
 
 export const fetchCardFromNodegroupId = async (nodegroupId: string) => {
     const url = arches.urls.api_card_from_nodegroup_id(nodegroupId);
+    const response = await fetch(url);
+    const parsed = await response.json();
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};
+
+export const fetchUserCanEditResourcePermission = async (
+    resourceInstanceId: string,
+) => {
+    const url =
+        arches.urls.api_check_user_can_edit_resource(resourceInstanceId);
     const response = await fetch(url);
     const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);
