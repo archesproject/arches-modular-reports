@@ -14,6 +14,7 @@ import {
 
 import type {
     ComponentLookup,
+    NamedSection,
     SectionContent,
 } from "@/arches_provenance/EditableReport/types";
 
@@ -24,7 +25,14 @@ const { component, resourceInstanceId } = defineProps<{
     resourceInstanceId: string;
 }>();
 
-onMounted(() => importComponents(component.config.tabs, componentLookup));
+onMounted(() => {
+    importComponents(component.config.tabs, componentLookup);
+    component.config.tabs.forEach((tab: NamedSection) => {
+        tab.components.forEach((child: SectionContent) => {
+            child.config.id = uniqueId(child);
+        });
+    });
+});
 </script>
 
 <template>
@@ -44,11 +52,10 @@ onMounted(() => importComponents(component.config.tabs, componentLookup));
                 :key="tab.name"
                 :value="tab.name"
             >
-                <!--Consider <keep-alive> if future refactors cause these to be rerendered.-->
                 <component
                     :is="componentLookup[tabComponent.component]"
                     v-for="tabComponent in tab.components"
-                    :key="uniqueId(tabComponent)"
+                    :key="tabComponent.config.id"
                     :component="tabComponent"
                     :resource-instance-id
                 />

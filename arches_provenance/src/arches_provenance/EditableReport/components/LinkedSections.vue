@@ -121,7 +121,6 @@ onMounted(async () => {
                         :component="child"
                         :resource-instance-id
                     />
-                    <div style="height: 200px"></div>
                 </div>
             </Panel>
         </div>
@@ -154,5 +153,9 @@ button.back-to-top {
     width: 2.5rem;
     height: 2.5rem;
     padding: 10px;
+}
+
+.linked-section-container .p-panel:not(:last-child) {
+    margin-bottom: 1.5rem;
 }
 </style>
