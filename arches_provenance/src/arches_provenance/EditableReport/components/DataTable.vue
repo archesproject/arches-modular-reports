@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { inject, ref, onMounted, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Column from "primevue/column";
@@ -10,6 +10,7 @@ import InputText from "primevue/inputtext";
 import Message from "primevue/message";
 import Paginator from "primevue/paginator";
 import Select from "primevue/select";
+import Button from "primevue/button";
 
 import {
     fetchCardFromNodegroupId,
@@ -21,6 +22,8 @@ import type { PageState } from "primevue/paginator";
 import type { LabelBasedCard } from "@/arches_provenance/EditableReport/types";
 
 const { $gettext } = useGettext();
+
+const userCanEditResourceInstance = inject("userCanEditResourceInstance");
 
 interface ColumnDatum {
     nodeAlias: string;
@@ -277,6 +280,29 @@ function rowClass(data: LabelBasedCard) {
 </script>
 
 <template>
+    <div style="display: flex; align-items: center">
+        <h3>{{ tableTitle }}</h3>
+
+        <Button
+            v-if="
+                userCanEditResourceInstance &&
+                ((!isLoading &&
+                    !query &&
+                    !timeout &&
+                    !searchResultsTotalCount) ||
+                    cardinality === CARDINALITY_N)
+            "
+            :label="
+                $gettext('Add %{cardName}', {
+                    cardName: cardData?.name as string,
+                })
+            "
+            icon="pi pi-plus"
+            variant="outlined"
+            style="margin: 1rem 2rem 0 2rem"
+        />
+    </div>
+
     <Message
         v-if="hasLoadingError"
         size="large"
@@ -285,6 +311,7 @@ function rowClass(data: LabelBasedCard) {
     >
         {{ $gettext("An error occurred while fetching data.") }}
     </Message>
+
     <Message
         v-else-if="!isLoading && !query && !timeout && !searchResultsTotalCount"
         size="large"
@@ -344,6 +371,39 @@ function rowClass(data: LabelBasedCard) {
             >
                 <template #body="slotProps">
                     {{ getDisplayValue(slotProps.data, slotProps.field) }}
+                </template>
+            </Column>
+            <Column v-if="userCanEditResourceInstance">
+                <template #body>
+                    <div
+                        style="
+                            width: 100%;
+                            display: flex;
+                            justify-content: flex-end;
+                        "
+                    >
+                        <div
+                            style="
+                                display: flex;
+                                justify-content: space-evenly;
+                                width: 6rem;
+                            "
+                        >
+                            <Button
+                                icon="pi pi-pencil"
+                                class="p-button-outlined"
+                                :aria-label="$gettext('Edit')"
+                                rounded
+                            />
+                            <Button
+                                icon="pi pi-trash"
+                                class="p-button-outlined"
+                                severity="danger"
+                                :aria-label="$gettext('Delete')"
+                                rounded
+                            />
+                        </div>
+                    </div>
                 </template>
             </Column>
             <template #expansion="slotProps">

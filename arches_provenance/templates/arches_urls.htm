@@ -18,5 +18,6 @@
     api_child_tile_data = '(tileid) => { return "{% url "api_child_tile_data" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", tileid)}'
     api_related_resources = '(resourceinstanceid, relatedgraphid) => { return "{% url "api_related_resources" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resourceinstanceid).replace("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", relatedgraphid)}'
     api_card_from_nodegroup_id = '(nodegroupid) => { return "{% url "api_card_from_nodegroup_id" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", nodegroupid)}'
+    api_check_user_can_edit_resource = '(resource_instance_id) => { return "{% url "api_check_user_can_edit_resource" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resource_instance_id)}'
 ></div>
 {% endblock arches_urls %}
