@@ -20,6 +20,7 @@ const props = defineProps<{
             <strong>{{ props.nodePresentation.widget_label }}</strong>
         </span>
         <template v-if="tileValue.instance_details?.length">
+            <!-- TODO: update link generation pattern when refactoring backend. -->
             <Button
                 v-for="relatedResourceDetail in tileValue.instance_details"
                 :key="relatedResourceDetail.resourceId"

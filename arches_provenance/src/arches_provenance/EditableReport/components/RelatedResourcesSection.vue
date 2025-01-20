@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import arches from "arches";
-
 import { computed, onMounted, ref, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
@@ -68,24 +66,6 @@ const isEmpty = computed(
 function onPageTurn(event: DataTablePageEvent) {
     currentPage.value = resettingToFirstPage.value ? 1 : event.page + 1;
     rowsPerPage.value = event.rows;
-}
-
-function makeLink(linkData: {
-    route: string;
-    params: string[];
-    label: string;
-}) {
-    if (linkData.route === "external_link") {
-        return linkData.params[0];
-    }
-    const archesRoute = arches.urls[linkData.route];
-    if (archesRoute.includes("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")) {
-        return archesRoute.replace(
-            "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            linkData.params[0],
-        );
-    }
-    return arches.urls[linkData.route] + linkData.params[0];
 }
 
 function onUpdateSortOrder(event: number | undefined) {
@@ -253,13 +233,8 @@ onMounted(fetchData);
                     as="a"
                     variant="link"
                     target="_blank"
-                    :href="makeLink(link)"
-                    style="
-                        display: block;
-                        width: fit-content;
-                        font-size: inherit;
-                        padding: 0;
-                    "
+                    :href="link.link"
+                    class="node-value-link"
                 >
                     {{ link.label }}
                 </Button>
@@ -278,5 +253,12 @@ onMounted(fetchData);
 
 :deep(.p-paginator) {
     justify-content: end;
+}
+
+.node-value-link {
+    display: block;
+    width: fit-content;
+    font-size: inherit;
+    padding: 0;
 }
 </style>

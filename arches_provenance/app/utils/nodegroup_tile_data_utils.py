@@ -17,6 +17,7 @@ from django.db.models import (
 )
 from django.db.models.fields.json import KT
 from django.db.models.functions import Concat
+from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from arches.app.datatypes.concept_types import BaseConceptDataType
@@ -38,6 +39,14 @@ class ArrayToString(Func):
     function = "ARRAY_TO_STRING"
     output_field = TextField()
     arity = 3
+
+
+def get_link(datatype, value_id):
+    if datatype in ["concept", "concept-list"]:
+        return reverse("rdm", args=[value_id])
+    elif datatype in ["resource-instance", "resource-instance-list"]:
+        return reverse("resource_report", args=[value_id])
+    return ""
 
 
 def annotate_related_graph_nodes_with_widget_labels(
@@ -328,47 +337,45 @@ def prepare_links(annotated_relation, node, request_language):
             case "resource-instance":
                 links.append(
                     {
-                        "route": "resource_report",
-                        "params": [tile_val[0]["resourceId"]],
                         "label": getattr(annotated_relation, node.alias),
+                        "link": get_link(node.datatype, tile_val[0]["resourceId"]),
                     }
                 )
-                break
             case "resource-instance-list":
                 labels = get_resource_labels(tile_val)
                 for related_resource, label in zip(tile_val, labels, strict=True):
                     links.append(
                         {
-                            "route": "resource_report",
-                            "params": [related_resource["resourceId"]],
                             "label": label,
+                            "link": get_link(
+                                node.datatype, related_resource["resourceId"]
+                            ),
                         }
                     )
             case "concept":
-                links.append(
-                    {
-                        "route": "rdm",
-                        "params": get_concept_ids([tile_val]),
-                        "label": getattr(annotated_relation, node.alias),
-                    }
-                )
+                if concept_id_results := get_concept_ids([tile_val]):
+                    links.append(
+                        {
+                            "label": getattr(annotated_relation, node.alias),
+                            "link": get_link(node.datatype, concept_id_results[0]),
+                        }
+                    )
             case "concept-list":
                 concept_ids = get_concept_ids(tile_val)
                 labels = get_concept_labels(tile_val)
                 for concept_id, label in zip(concept_ids, labels, strict=True):
                     links.append(
                         {
-                            "route": "rdm",
-                            "params": [concept_id],
                             "label": label,
+                            "link": get_link(node.datatype, concept_id),
                         }
                     )
             case "url":
                 links.append(
                     {
-                        "route": "external_link",
-                        "params": [tile_val["url"]],
                         "label": tile_val["url_label"],
+                        "link": tile_val["url"],
                     }
                 )
+
     return links

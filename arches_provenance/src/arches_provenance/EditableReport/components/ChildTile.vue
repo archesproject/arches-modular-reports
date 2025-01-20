@@ -55,6 +55,7 @@ function tileIdFromChild(child: LabelBasedTile): string {
                 :key="nodeName"
                 class="node-pair"
             >
+                <!-- TODO: update link generation pattern when refactoring backend. -->
                 <dt>{{ nodePresentationLookup[nodeName].widget_label }}</dt>
                 <template v-if="nodeValue.instance_details?.length">
                     <dd
