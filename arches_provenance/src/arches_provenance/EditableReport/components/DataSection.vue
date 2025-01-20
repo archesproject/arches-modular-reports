@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, inject, onMounted, ref, watch } from "vue";
 
 import { useGettext } from "vue3-gettext";
 
+import Button from "primevue/button";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
 import IconField from "primevue/iconfield";
@@ -22,10 +23,18 @@ import {
 import HierarchicalTileViewer from "@/arches_provenance/EditableReport/components/HierarchicalTileViewer.vue";
 
 import type { DataTablePageEvent } from "primevue/datatable";
-import type {
-    ColumnDatum,
-    LabelBasedCard,
-} from "@/arches_provenance/EditableReport/types";
+import type { LabelBasedCard } from "@/arches_provenance/EditableReport/types";
+
+interface ColumnDatum {
+    nodeAlias: string;
+    widgetLabel: string;
+}
+
+interface CardData {
+    name: string;
+    nodes: { alias: string; nodeid: string }[];
+    widgets: { node_id: string; label: string }[];
+}
 
 const props = defineProps<{
     component: {
@@ -39,10 +48,10 @@ const props = defineProps<{
 
 const { $gettext } = useGettext();
 const CARDINALITY_N = "n";
-
 const queryTimeoutValue = 500;
 let timeout: ReturnType<typeof setTimeout> | null = null;
 
+const tableTitle = ref("");
 const rowsPerPage = ref(ROWS_PER_PAGE_OPTIONS[0]);
 const currentPage = ref(1);
 const query = ref("");
@@ -53,10 +62,12 @@ const searchResultsTotalCount = ref(0);
 const isLoading = ref(false);
 const hasLoadingError = ref(false);
 const columnData = ref<ColumnDatum[]>([]);
+const cardData = ref<CardData | null>(null);
 const cardinality = ref("");
 const resettingToFirstPage = ref(false);
-
 const pageNumberToNodegroupTileData = ref<Record<number, unknown[]>>({});
+
+const userCanEditResourceInstance = inject("userCanEditResourceInstance");
 
 const first = computed(() => {
     if (resettingToFirstPage.value) {
@@ -64,6 +75,14 @@ const first = computed(() => {
     }
     return (currentPage.value - 1) * rowsPerPage.value;
 });
+
+const isEmpty = computed(
+    () =>
+        !isLoading.value &&
+        !query.value &&
+        !searchResultsTotalCount.value &&
+        !timeout,
+);
 
 function onPageTurn(event: DataTablePageEvent) {
     currentPage.value = resettingToFirstPage.value ? 1 : event.page + 1;
@@ -216,6 +235,25 @@ onMounted(() => {
 </script>
 
 <template>
+    <div style="display: flex; align-items: center">
+        <h3>{{ tableTitle }}</h3>
+
+        <Button
+            v-if="
+                userCanEditResourceInstance &&
+                (isEmpty || cardinality === CARDINALITY_N)
+            "
+            :label="
+                $gettext('Add %{cardName}', {
+                    cardName: cardData?.name as string,
+                })
+            "
+            icon="pi pi-plus"
+            variant="outlined"
+            style="margin: 1rem 2rem 0 2rem"
+        />
+    </div>
+
     <Message
         v-if="hasLoadingError"
         size="large"
@@ -224,8 +262,9 @@ onMounted(() => {
     >
         {{ $gettext("An error occurred while fetching data.") }}
     </Message>
+
     <Message
-        v-else-if="!isLoading && !query && !timeout && !searchResultsTotalCount"
+        v-else-if="isEmpty"
         size="large"
         severity="info"
         icon="pi pi-info-circle"
@@ -296,6 +335,39 @@ onMounted(() => {
         >
             <template #body="slotProps">
                 {{ getDisplayValue(slotProps.data, slotProps.field) }}
+            </template>
+        </Column>
+        <Column v-if="userCanEditResourceInstance">
+            <template #body>
+                <div
+                    style="
+                        width: 100%;
+                        display: flex;
+                        justify-content: flex-end;
+                    "
+                >
+                    <div
+                        style="
+                            display: flex;
+                            justify-content: space-evenly;
+                            width: 6rem;
+                        "
+                    >
+                        <Button
+                            icon="pi pi-pencil"
+                            class="p-button-outlined"
+                            :aria-label="$gettext('Edit')"
+                            rounded
+                        />
+                        <Button
+                            icon="pi pi-trash"
+                            class="p-button-outlined"
+                            severity="danger"
+                            :aria-label="$gettext('Delete')"
+                            rounded
+                        />
+                    </div>
+                </div>
             </template>
         </Column>
         <template #expansion="slotProps">

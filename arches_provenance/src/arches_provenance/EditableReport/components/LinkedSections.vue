@@ -93,10 +93,12 @@ onMounted(async () => {
                 v-for="linked_section in linkedSections"
                 :key="linked_section.name"
                 :collapsed="linked_section.collapsed"
-                :header="linked_section.name"
                 toggleable
                 @toggle="linked_section.collapsed = !linked_section.collapsed"
             >
+                <template #header>
+                    <h2>{{ linked_section.name }}</h2>
+                </template>
                 <template #icons>
                     <Button
                         class="back-to-top"
@@ -155,9 +157,5 @@ button.back-to-top {
 
 .linked-section-container .p-panel:not(:last-child) {
     margin-bottom: 1.5rem;
-}
-
-:deep(.p-panel-header) {
-    padding: 10px 20px;
 }
 </style>

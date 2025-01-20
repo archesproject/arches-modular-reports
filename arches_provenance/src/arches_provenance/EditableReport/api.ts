@@ -112,3 +112,14 @@ export const fetchCardFromNodegroupId = async (nodegroupId: string) => {
     if (!response.ok) throw new Error(parsed.message || response.statusText);
     return parsed;
 };
+
+export const fetchUserCanEditResourcePermission = async (
+    resourceInstanceId: string,
+) => {
+    const url =
+        arches.urls.api_check_user_can_edit_resource(resourceInstanceId);
+    const response = await fetch(url);
+    const parsed = await response.json();
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};
