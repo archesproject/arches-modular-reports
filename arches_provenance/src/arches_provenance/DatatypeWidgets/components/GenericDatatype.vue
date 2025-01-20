@@ -58,5 +58,6 @@ const props = defineProps<{
     font-size: inherit;
     padding: 0;
     align-items: start;
+    overflow: unset;
 }
 </style>
