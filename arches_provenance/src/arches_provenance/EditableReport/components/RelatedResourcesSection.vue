@@ -252,6 +252,7 @@ onMounted(fetchData);
                     :key="JSON.stringify(link)"
                     as="a"
                     variant="link"
+                    target="_blank"
                     :href="makeLink(link)"
                     style="
                         display: block;

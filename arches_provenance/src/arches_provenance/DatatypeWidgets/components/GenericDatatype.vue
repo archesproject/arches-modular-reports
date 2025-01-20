@@ -24,6 +24,7 @@ const props = defineProps<{
                 v-for="relatedResourceDetail in tileValue.instance_details"
                 :key="relatedResourceDetail.resourceId"
                 as="a"
+                target="_blank"
                 variant="link"
                 :href="
                     arches.urls.resource_report +

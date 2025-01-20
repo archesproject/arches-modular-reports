@@ -64,6 +64,7 @@ function tileIdFromChild(child: LabelBasedTile): string {
                         <Button
                             as="a"
                             variant="link"
+                            target="_blank"
                             :href="
                                 arches.urls.resource_report +
                                 instanceDetail.resourceId
