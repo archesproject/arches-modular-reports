@@ -107,7 +107,7 @@ def get_sorted_filtered_tiles(
             or node.datatype == "resource-instance-list"
         ):
             value_ids = ArchesGetValueId(
-                F("data"), Value(str(node.pk)), Value(user_language)
+                F("data"), Value(node.pk), Value(user_language)
             )
 
         field_annotations[field_key] = display_value

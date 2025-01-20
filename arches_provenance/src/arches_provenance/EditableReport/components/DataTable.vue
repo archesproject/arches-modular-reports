@@ -341,24 +341,16 @@ function rowClass(data: LabelBasedCard) {
                 :header="columnDatum.widgetLabel"
                 :sortable="cardinality === CARDINALITY_N"
             >
-                <template #body="slotProps">
+                <template #body="{ data, field }">
                     <div style="max-height: 12rem; overflow: auto">
                         <template
-                            v-if="
-                                Array.isArray(
-                                    slotProps.data[slotProps.field][
-                                        'display_value'
-                                    ],
-                                )
-                            "
+                            v-if="Array.isArray(data[field]['display_value'])"
                         >
                             <Button
-                                v-for="item in slotProps.data[slotProps.field][
-                                    'display_value'
-                                ]"
-                                :key="item['link']"
+                                v-for="item in data[field]['display_value']"
+                                :key="item.link"
                                 as="a"
-                                :href="arches.urls.url_subpath + item['link']"
+                                :href="arches.urls.url_subpath + item.link"
                                 variant="link"
                                 target="_blank"
                                 style="display: block; width: fit-content"
@@ -367,9 +359,7 @@ function rowClass(data: LabelBasedCard) {
                             </Button>
                         </template>
                         <template v-else>
-                            {{
-                                slotProps.data[slotProps.field]["display_value"]
-                            }}
+                            {{ data[field]["display_value"] }}
                         </template>
                     </div>
                 </template>
