@@ -207,7 +207,6 @@ class NodePresentationView(APIBase):
                         if node.cardxnodexwidget_set.all()
                         else node.name.replace("_", " ").title()
                     ),
-                    "datatype": node.datatype,
                 }
                 for node in nodes
             }

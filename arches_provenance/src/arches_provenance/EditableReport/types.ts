@@ -25,7 +25,6 @@ export interface NodePresentation {
     name: string;
     card_name: string;
     widget_label: string;
-    datatype: string;
 }
 
 export interface NodePresentationLookup {
