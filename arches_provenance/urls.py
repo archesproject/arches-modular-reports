@@ -29,7 +29,6 @@ from arches_provenance.app.views.editable_report import (
     ProvenanceEditableReportConfigView,
     RelatedResourceView,
 )
-from arches_provenance.app.views.user import CheckUserCanEditResource
 
 uuid_regex = settings.UUID_REGEX
 logger = logging.getLogger(__name__)
@@ -276,11 +275,6 @@ urlpatterns = [
         "api/card_from_nodegroup_id/<uuid:nodegroupid>",
         CardFromNodegroupIdView.as_view(),
         name="api_card_from_nodegroup_id",
-    ),
-    path(
-        "api/user/check_user_can_edit_resource/<uuid:resource_instance_id>",
-        CheckUserCanEditResource.as_view(),
-        name="api_check_user_can_edit_resource",
     ),
 ]
 
