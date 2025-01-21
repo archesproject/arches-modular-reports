@@ -14,7 +14,10 @@ from arches.app.models import models
 from arches.app.models.card import Card
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.label_based_graph_v2 import LabelBasedGraph
-from arches.app.utils.permission_backend import get_nodegroups_by_perm
+from arches.app.utils.permission_backend import (
+    get_nodegroups_by_perm,
+    user_can_read_resource,
+)
 from arches.app.utils.response import JSONErrorResponse, JSONResponse
 from arches.app.views.resource import ResourceReportView
 
@@ -204,7 +207,7 @@ class NodePresentationView(APIBase):
 @method_decorator(can_read_resource_instance, name="dispatch")
 @method_decorator(user_can_read_nodegroup, name="dispatch")
 class NodegroupTileDataView(APIBase):
-    def get(self, request, resourceinstanceid, nodegroupid):
+    def get(self, request, resourceid, nodegroupid):
         page_number = request.GET.get("page")
         rows_per_page = request.GET.get("rows_per_page")
 
@@ -215,7 +218,7 @@ class NodegroupTileDataView(APIBase):
         user_language = translation.get_language()
 
         tiles = get_sorted_filtered_tiles(
-            resourceinstanceid=resourceinstanceid,
+            resourceinstanceid=resourceid,
             nodegroupid=nodegroupid,
             sort_field=sort_field,
             direction=direction,
@@ -268,7 +271,6 @@ class NodegroupTileDataView(APIBase):
         return JSONResponse(response_data)
 
 
-@method_decorator(can_read_resource_instance, name="dispatch")
 class ChildTileDataView(APIBase):
     def get(self, request, tileid):
         tile = (
@@ -276,6 +278,10 @@ class ChildTileDataView(APIBase):
             .select_related("resourceinstance__graph__publication")
             .get()
         )
+
+        if not user_can_read_resource(request.user, str(tile.resourceinstance_id)):
+            return JSONErrorResponse(status=HTTPStatus.FORBIDDEN)
+
         published_graph = models.PublishedGraph.objects.get(
             publication=tile.resourceinstance.graph.publication,
             language=translation.get_language(),
