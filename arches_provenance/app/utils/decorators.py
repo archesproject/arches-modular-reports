@@ -1,8 +1,6 @@
 import functools
 
-from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseBadRequest
-from django.shortcuts import get_object_or_404
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 
 from arches.app.models import models
 
@@ -18,10 +16,10 @@ def user_can_read_nodegroup(view_func):
     def _wrapped_view(request, *args, **kwargs):
         nodegroup_id = kwargs.get("nodegroupid")
 
-        if not nodegroup_id:
-            return HttpResponseBadRequest("Missing 'nodegroupid' parameter.")
-
-        nodegroup = get_object_or_404(models.NodeGroup, pk=nodegroup_id)
+        try:
+            nodegroup = models.NodeGroup.objects.get(pk=nodegroup_id)
+        except ObjectDoesNotExist:
+            raise ValueError
 
         if request.user.has_perm("models.read_nodegroup", nodegroup):
             return view_func(request, *args, **kwargs)
