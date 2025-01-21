@@ -12,7 +12,6 @@ from django.views.generic import View
 
 from arches.app.views.api import APIBase
 from arches.app.models import models
-from arches.app.models.card import Card
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.label_based_graph_v2 import LabelBasedGraph
 from arches.app.utils.permission_backend import (

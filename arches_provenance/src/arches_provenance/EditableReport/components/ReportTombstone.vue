@@ -5,20 +5,17 @@ import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
 
-import { findNodeValue } from "@/arches_provenance/EditableReport/utils.ts";
 import GenericDatatype from "@/arches_provenance/DatatypeWidgets/components/GenericDatatype.vue";
 
 import type {
     NodePresentationLookup,
     SectionContent,
-    Tile,
 } from "@/arches_provenance/EditableReport/types";
 
-const resource = inject("resource") as { resource: Tile };
+const resourceInstanceId = inject("resourceInstanceId") as string;
 
 const props = defineProps<{
     component: SectionContent;
-    resourceInstanceId: string;
 }>();
 
 const nodePresentationLookup = inject(
@@ -30,14 +27,14 @@ const { $gettext } = useGettext();
 <template>
     <Panel>
         <div
-            v-if="resource && nodePresentationLookup"
+            v-if="resourceInstanceId && nodePresentationLookup"
             class="data-container"
         >
             <GenericDatatype
                 v-for="nodeAlias in props.component.config.nodes"
                 :key="nodeAlias"
                 :node-presentation="nodePresentationLookup[nodeAlias]"
-                :tile-value="findNodeValue(resource, nodeAlias)"
+                :tile-value="console.info(nodeAlias)"
             />
         </div>
         <div class="image-container">
