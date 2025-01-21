@@ -59,6 +59,11 @@ onMounted(fetchData);
                 :display-data="displayDataByAlias[nodeAlias]"
             />
         </div>
+        <!-- Spacer to avoid late-shifting image. -->
+        <div
+            v-else
+            role="presentation"
+        ></div>
         <div class="image-container">
             <img
                 :src="arches.urls.media + 'img/photo_missing.png'"
