@@ -13,7 +13,6 @@ from arches.app.views.api import APIBase
 from arches.app.models import models
 from arches.app.models.card import Card
 from arches.app.utils.decorators import can_read_resource_instance
-from arches.app.utils.permission_backend import get_nodegroups_by_perm
 from arches.app.utils.permission_backend import (
     get_nodegroups_by_perm,
     user_can_read_resource,
