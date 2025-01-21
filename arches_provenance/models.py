@@ -99,14 +99,14 @@ class ReportConfig(models.Model):
                 "name": str(card.name),
                 "components": [
                     {
-                        "component": "DataTable",
+                        "component": "DataSection",
                         "config": {
                             "nodegroup_id": str(card.nodegroup_id),
                             "nodes": [
                                 node.alias
                                 for node in sorted(
                                     card.nodegroup.node_set.all(),
-                                    key=lambda node: int(node.sortorder or 0),
+                                    key=lambda node: node.sortorder or 0,
                                 )
                                 if node.datatype != "semantic"
                             ],
@@ -194,7 +194,7 @@ class ReportConfig(models.Model):
         if len(nodes) != len(tombstone_nodes):
             raise ValidationError("Tombstone config contains invalid node aliases.")
 
-    def validate_datatable(self, card_config):
+    def validate_datasection(self, card_config):
         nodegroup_id = card_config["nodegroup_id"]
         nodegroup = (
             NodeGroup.objects.filter(pk=nodegroup_id, node__graph=self.graph)
@@ -217,19 +217,11 @@ class ReportConfig(models.Model):
             graph = GraphModel.objects.get(pk=rr_config["graph_id"])
         except GraphModel.DoesNotExist:
             raise ValidationError("Related Resources section contains invalid graph id")
-        nodes = graph.node_set.exclude(istopnode=True).select_related("nodegroup")
-        node_aliases = {node.alias for node in nodes}
+        node_aliases = {node.alias for node in graph.node_set.all()}
         requested_node_aliases = set(rr_config["additional_nodes"])
         if extra_node_aliases := requested_node_aliases - node_aliases:
             raise ValidationError(
                 f"Related Resources section {graph.name} contains extraneous node aliases: {extra_node_aliases}"
-            )
-        cardinality_1_node_aliases = {
-            node.alias for node in nodes if node.nodegroup.cardinality == "1"
-        }
-        if extra_node_aliases := requested_node_aliases - cardinality_1_node_aliases:
-            raise ValidationError(
-                f"Related Resources section {graph.name} contains cardinality 'n' node aliases: {extra_node_aliases}"
             )
 
     @staticmethod

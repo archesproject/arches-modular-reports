@@ -79,7 +79,6 @@ onMounted(async () => {
 <template>
     <div class="section-container">
         <h2>{{ config.name }}</h2>
-        <!--Consider <keep-alive> if future refactors cause these to be rerendered.-->
         <component
             :is="componentLookup[component.component]"
             v-for="component in config.components"
