@@ -1,7 +1,6 @@
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
-from django.db.models import Prefetch
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
@@ -185,10 +184,7 @@ class NodePresentationView(APIBase):
             .select_related("nodegroup")
             .prefetch_related(
                 "nodegroup__cardmodel_set",
-                Prefetch(
-                    "cardxnodexwidget_set",
-                    queryset=models.CardXNodeXWidget.objects.order_by("sortorder"),
-                ),
+                "cardxnodexwidget_set",
             )
         )
 
@@ -206,6 +202,11 @@ class NodePresentationView(APIBase):
                         node.cardxnodexwidget_set.all()[0].label
                         if node.cardxnodexwidget_set.all()
                         else node.name.replace("_", " ").title()
+                    ),
+                    "widget_sort": (
+                        node.cardxnodexwidget_set.all()[0].sortorder
+                        if node.cardxnodexwidget_set.all()
+                        else 0
                     ),
                     "nodegroup": {
                         "nodegroup_id": node.nodegroup.pk,

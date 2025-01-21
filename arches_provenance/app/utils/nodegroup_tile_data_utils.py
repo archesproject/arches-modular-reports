@@ -57,9 +57,9 @@ def annotate_related_graph_nodes_with_widget_labels(
         .exclude(datatype__in=["semantic", "annotation", "geojson-feature-collection"])
         .annotate(
             widget_label_json=Subquery(
-                models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
-                .order_by("sortorder")
-                .values("label")[:1]
+                models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid")).values(
+                    "label"
+                )[:1]
             )
         )
         .annotate(widget_label=KT(f"widget_label_json__{request_language}"))
@@ -220,9 +220,9 @@ def get_sorted_filtered_relations(
         .distinct()
         .annotate(
             relation_name_json=Subquery(
-                models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
-                .order_by("sortorder")
-                .values("label")[:1]
+                models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid")).values(
+                    "label"
+                )[:1]
             )
         )
         # TODO: add fallback to system language? Below also.

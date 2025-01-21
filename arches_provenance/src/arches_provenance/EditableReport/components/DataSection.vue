@@ -92,12 +92,18 @@ const columnData = computed(() => {
     if (!nodePresentationLookup.value) {
         return [];
     }
-    return nodeAliases.value.map((nodeAlias) => {
-        return {
-            nodeAlias,
-            widgetLabel: nodePresentationLookup.value![nodeAlias].widget_label,
-        };
-    });
+    return nodeAliases.value
+        .map((nodeAlias) => {
+            const nodeDetails = nodePresentationLookup.value![nodeAlias];
+            return {
+                nodeAlias,
+                widgetLabel: nodeDetails.widget_label,
+                widgetSort: nodeDetails.widget_sort,
+            };
+        })
+        .sort((a, b) => {
+            return a.widgetSort - b.widgetSort;
+        });
 });
 
 const cardinality = computed(() => {
