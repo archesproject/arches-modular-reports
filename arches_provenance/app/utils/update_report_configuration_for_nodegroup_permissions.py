@@ -95,7 +95,7 @@ def update_report_configuration_with_nodegroup_permissions(
     return filter_node(copy_of_report_configuration)
 
 
-def filter_report_configuration_for_nodegroup_permissions(report_configuration, user):
+def update_report_configuration_for_nodegroup_permissions(report_configuration, user):
     report_nodegroup_ids = extract_nodegroup_ids_from_report_configuration(
         report_configuration
     )

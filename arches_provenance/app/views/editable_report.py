@@ -21,8 +21,8 @@ from arches.app.views.resource import ResourceReportView
 from arches_provenance.app.utils.decorators import user_can_read_nodegroup
 from arches_provenance.models import ReportConfig
 
-from arches_provenance.app.utils.filter_report_configuration import (
-    filter_report_configuration_for_nodegroup_permissions,
+from arches_provenance.app.utils.update_report_configuration_for_nodegroup_permissions import (
+    update_report_configuration_for_nodegroup_permissions,
 )
 
 from arches_provenance.app.utils.nodegroup_tile_data_utils import (
@@ -48,7 +48,7 @@ class ProvenanceEditableReportConfigView(View):
             )
 
         return JSONResponse(
-            filter_report_configuration_for_nodegroup_permissions(
+            update_report_configuration_for_nodegroup_permissions(
                 result.config, request.user
             )
         )
