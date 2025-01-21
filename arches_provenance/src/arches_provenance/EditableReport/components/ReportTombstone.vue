@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import arches from "arches";
-import { inject } from "vue";
+import { inject, onMounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
 
+import { fetchNodeTileData } from "@/arches_provenance/EditableReport/api.ts";
 import GenericDatatype from "@/arches_provenance/DatatypeWidgets/components/GenericDatatype.vue";
 
+import type { Ref } from "vue";
 import type {
     NodePresentationLookup,
     SectionContent,
+    TileValues,
 } from "@/arches_provenance/EditableReport/types";
 
 const resourceInstanceId = inject("resourceInstanceId") as string;
@@ -22,6 +25,25 @@ const nodePresentationLookup = inject(
     "nodePresentationLookup",
 ) as NodePresentationLookup;
 const { $gettext } = useGettext();
+
+const isError = ref(false);
+const displayValuesByAlias: Ref<TileValues> = ref({});
+
+async function fetchData() {
+    try {
+        displayValuesByAlias.value = await fetchNodeTileData(
+            resourceInstanceId,
+            props.component.config.nodes,
+        );
+        isError.value = false;
+    } catch (error) {
+        isError.value = true;
+        console.error(error);
+    }
+    // isLoading.value = false;
+}
+
+onMounted(fetchData);
 </script>
 
 <template>
@@ -34,7 +56,7 @@ const { $gettext } = useGettext();
                 v-for="nodeAlias in props.component.config.nodes"
                 :key="nodeAlias"
                 :node-presentation="nodePresentationLookup[nodeAlias]"
-                :tile-value="console.info(nodeAlias)"
+                :tile-values="displayValuesByAlias[nodeAlias].display_values"
             />
         </div>
         <div class="image-container">

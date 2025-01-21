@@ -41,10 +41,11 @@ export interface ComponentLookup {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SingleTileValue = any;
-export type TileValue = SingleTileValue | SingleTileValue[];
-export interface Tile {
-    [key: string]: TileValue;
+export type SingleTileValue = any;
+export interface TileValues {
+    [key: string]: {
+        display_values: SingleTileValue[];
+    };
 }
 
 export interface LabelBasedTile {

@@ -23,6 +23,7 @@ from arches_provenance.app.views.editable_report import (
     ChildTileDataView,
     EditableReportAwareResourceReportView,
     NodegroupTileDataView,
+    NodeTileDataView,
     NodePresentationView,
     ProvenanceEditableReportConfigView,
     RelatedResourceView,
@@ -264,6 +265,11 @@ urlpatterns = [
         "api/nodegroup_tile_data/<uuid:resourceid>/<uuid:nodegroupid>",
         NodegroupTileDataView.as_view(),
         name="api_nodegroup_tile_data",
+    ),
+    path(
+        "api/node_tile_data/<uuid:resourceid>",
+        NodeTileDataView.as_view(),
+        name="api_node_tile_data",
     ),
     path(
         "api/child_tile_data/<uuid:tileid>",

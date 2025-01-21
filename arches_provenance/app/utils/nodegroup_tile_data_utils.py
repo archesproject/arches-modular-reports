@@ -66,6 +66,36 @@ def annotate_related_graph_nodes_with_widget_labels(
     )
 
 
+def annotate_node_values(
+    node_aliases, resourceinstance_id, permitted_nodegroups, user_language
+):
+    return (
+        models.Node.objects.filter(
+            alias__in=node_aliases,
+            graph__resourceinstance__pk=resourceinstance_id,
+            nodegroup__in=permitted_nodegroups,
+        )
+        .exclude(datatype__in=["semantic", "annotation", "geojson-feature-collection"])
+        .annotate(
+            display_values=ArraySubquery(
+                models.TileModel.objects.filter(
+                    resourceinstance=resourceinstance_id,
+                    nodegroup_id=OuterRef("nodegroup_id"),
+                )
+                .annotate(
+                    display_value=ArchesGetNodeDisplayValue(
+                        F("data"), OuterRef("nodeid"), Value(user_language)
+                    )
+                )
+                .exclude(display_value="")
+                .order_by("sortorder")
+                .values("display_value")
+                .distinct()
+            )
+        )
+    )
+
+
 def get_sorted_filtered_tiles(
     *, resourceinstanceid, nodegroupid, sort_field, direction, query, user_language
 ):

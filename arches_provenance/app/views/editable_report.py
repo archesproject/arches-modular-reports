@@ -23,6 +23,7 @@ from arches.app.views.resource import ResourceReportView
 from arches_provenance.models import ReportConfig
 
 from arches_provenance.app.utils.nodegroup_tile_data_utils import (
+    annotate_node_values,
     annotate_related_graph_nodes_with_widget_labels,
     get_sorted_filtered_relations,
     get_sorted_filtered_tiles,
@@ -282,6 +283,27 @@ class NodegroupTileDataView(APIBase):
         }
 
         return JSONResponse(response_data)
+
+
+@method_decorator(can_read_resource_instance, name="dispatch")
+class NodeTileDataView(APIBase):
+    def get(self, request, resourceid):
+        permitted = get_nodegroups_by_perm(request.user, "read_nodegroup")
+        node_aliases = request.GET.getlist("node_alias", [])
+        user_lang = translation.get_language()
+
+        nodes_with_values = annotate_node_values(
+            node_aliases, resourceid, permitted, user_lang
+        )
+
+        return JSONResponse(
+            {
+                node.alias: {
+                    "display_values": node.display_values,
+                }
+                for node in nodes_with_values
+            }
+        )
 
 
 class ChildTileDataView(APIBase):

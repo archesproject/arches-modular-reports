@@ -1,16 +1,12 @@
 <script setup lang="ts">
-import arches from "arches";
-
-import Button from "primevue/button";
-
 import type {
     NodePresentation,
-    TileValue,
+    SingleTileValue,
 } from "@/arches_provenance/EditableReport/types";
 
 const props = defineProps<{
     nodePresentation: NodePresentation;
-    tileValue: TileValue;
+    tileValues: SingleTileValue[];
 }>();
 </script>
 
@@ -19,27 +15,12 @@ const props = defineProps<{
         <span>
             <strong>{{ props.nodePresentation.widget_label }}</strong>
         </span>
-        <template v-if="tileValue.instance_details?.length">
-            <!-- TODO: update link generation pattern when refactoring backend. -->
-            <Button
-                v-for="relatedResourceDetail in tileValue.instance_details"
-                :key="relatedResourceDetail.resourceId"
-                as="a"
-                target="_blank"
-                variant="link"
-                :href="
-                    arches.urls.resource_report +
-                    relatedResourceDetail.resourceId
-                "
-            >
-                {{ tileValue["@display_value"] }}
-            </Button>
-        </template>
         <span
-            v-else
+            v-for="tileValue in tileValues"
+            :key="`${tileValue}`"
             class="node-value"
         >
-            {{ tileValue["@display_value"] }}
+            {{ tileValue }}
         </span>
     </div>
 </template>
