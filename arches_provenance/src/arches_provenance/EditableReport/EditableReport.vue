@@ -29,7 +29,7 @@ const componentLookup: ComponentLookup = {};
 
 const resourceInstanceId = inject("resourceInstanceId") as string;
 
-const nodePresentationLookup: Ref<NodePresentationLookup | null> = ref(null);
+const nodePresentationLookup: Ref<NodePresentationLookup | undefined> = ref();
 provide("nodePresentationLookup", nodePresentationLookup);
 
 const userCanEditResourceInstance = ref(false);

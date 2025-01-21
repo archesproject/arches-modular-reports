@@ -25,6 +25,10 @@ export interface NodePresentation {
     name: string;
     card_name: string;
     widget_label: string;
+    nodegroup: {
+        nodegroup_id: string;
+        cardinality: string;
+    };
 }
 
 export interface NodePresentationLookup {

@@ -96,14 +96,6 @@ export const fetchRelatedResourceData = async (
     return parsed;
 };
 
-export const fetchCardFromNodegroupId = async (nodegroupId: string) => {
-    const url = arches.urls.api_card_from_nodegroup_id(nodegroupId);
-    const response = await fetch(url);
-    const parsed = await response.json();
-    if (!response.ok) throw new Error(parsed.message || response.statusText);
-    return parsed;
-};
-
 export const fetchUserCanEditResourcePermission = async (
     resourceInstanceId: string,
 ) => {

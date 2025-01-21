@@ -207,6 +207,10 @@ class NodePresentationView(APIBase):
                         if node.cardxnodexwidget_set.all()
                         else node.name.replace("_", " ").title()
                     ),
+                    "nodegroup": {
+                        "nodegroup_id": node.nodegroup.pk,
+                        "cardinality": node.nodegroup.cardinality,
+                    },
                 }
                 for node in nodes
             }
@@ -298,13 +302,3 @@ class ChildTileDataView(APIBase):
             tile, published_graph.serialized_graph
         )
         return JSONResponse(serialized["@children"])
-
-
-class CardFromNodegroupIdView(APIBase):
-    def get(self, request, nodegroupid):
-        try:
-            card = Card.objects.get(nodegroup_id=nodegroupid)
-        except models.Card.DoesNotExist:
-            return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
-
-        return JSONResponse(card)
