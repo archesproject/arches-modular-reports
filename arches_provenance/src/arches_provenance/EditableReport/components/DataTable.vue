@@ -18,8 +18,6 @@ import {
 } from "@/arches_provenance/EditableReport/api.ts";
 import HierarchicalTileViewer from "@/arches_provenance/EditableReport/components/HierarchicalTileViewer.vue";
 
-import arches from "arches";
-
 import type { PageState } from "primevue/paginator";
 import type { LabelBasedCard } from "@/arches_provenance/EditableReport/types";
 
@@ -349,10 +347,10 @@ function rowClass(data: LabelBasedCard) {
                             <Button
                                 v-for="item in data[field]['display_value']"
                                 :key="item.link"
-                                as="a"
-                                :href="arches.urls.url_subpath + item.link"
-                                variant="link"
+                                :href="item.link"
                                 target="_blank"
+                                as="a"
+                                variant="link"
                                 style="display: block; width: fit-content"
                             >
                                 {{ item["label"] }}

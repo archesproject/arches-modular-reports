@@ -158,8 +158,6 @@ def get_sorted_filtered_tiles(
         # default sort order for consistent pagination
         tiles = tiles.order_by("sortorder")
 
-    tiles = list(tiles)
-
     for tile in tiles:
         new_alias_annotations = {}
 
