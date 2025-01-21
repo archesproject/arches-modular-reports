@@ -40,12 +40,16 @@ export interface ComponentLookup {
     [key: string]: Component;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type SingleTileValue = any;
-export interface TileValues {
-    [key: string]: {
-        display_values: SingleTileValue[];
-    };
+export interface TileDisplayData {
+    display_value: string;
+    links: {
+        label: string;
+        link: string;
+    }[];
+}
+
+export interface NodeValueDisplayData {
+    [key: string]: TileDisplayData[];
 }
 
 export interface LabelBasedTile {

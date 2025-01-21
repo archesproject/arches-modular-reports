@@ -1,12 +1,14 @@
 <script setup lang="ts">
+import Button from "primevue/button";
+
 import type {
     NodePresentation,
-    SingleTileValue,
+    TileDisplayData,
 } from "@/arches_provenance/EditableReport/types";
 
 const props = defineProps<{
     nodePresentation: NodePresentation;
-    tileValues: SingleTileValue[];
+    displayData: TileDisplayData[];
 }>();
 </script>
 
@@ -15,13 +17,27 @@ const props = defineProps<{
         <span>
             <strong>{{ props.nodePresentation.widget_label }}</strong>
         </span>
-        <span
-            v-for="tileValue in tileValues"
-            :key="`${tileValue}`"
-            class="node-value"
+        <template
+            v-for="displayData in props.displayData"
+            :key="displayData.display_value"
         >
-            {{ tileValue }}
-        </span>
+            <template v-if="displayData.links.length === 0">
+                <span class="node-value">
+                    {{ displayData.display_value }}
+                </span>
+            </template>
+            <Button
+                v-for="link in displayData.links"
+                :key="JSON.stringify(link)"
+                as="a"
+                class="node-value"
+                target="_blank"
+                variant="link"
+                :href="link.link"
+            >
+                {{ displayData.display_value }}
+            </Button>
+        </template>
     </div>
 </template>
 
@@ -32,6 +48,7 @@ const props = defineProps<{
 }
 
 .node-value {
+    align-items: unset;
     overflow-wrap: anywhere;
 }
 

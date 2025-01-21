@@ -11,8 +11,8 @@ import GenericDatatype from "@/arches_provenance/DatatypeWidgets/components/Gene
 import type { Ref } from "vue";
 import type {
     NodePresentationLookup,
+    NodeValueDisplayData,
     SectionContent,
-    TileValues,
 } from "@/arches_provenance/EditableReport/types";
 
 const resourceInstanceId = inject("resourceInstanceId") as string;
@@ -27,11 +27,11 @@ const nodePresentationLookup = inject(
 const { $gettext } = useGettext();
 
 const isError = ref(false);
-const displayValuesByAlias: Ref<TileValues> = ref({});
+const displayDataByAlias: Ref<NodeValueDisplayData> = ref({});
 
 async function fetchData() {
     try {
-        displayValuesByAlias.value = await fetchNodeTileData(
+        displayDataByAlias.value = await fetchNodeTileData(
             resourceInstanceId,
             props.component.config.nodes,
         );
@@ -49,14 +49,14 @@ onMounted(fetchData);
 <template>
     <Panel>
         <div
-            v-if="resourceInstanceId && nodePresentationLookup"
+            v-if="displayDataByAlias && nodePresentationLookup"
             class="data-container"
         >
             <GenericDatatype
                 v-for="nodeAlias in props.component.config.nodes"
                 :key="nodeAlias"
                 :node-presentation="nodePresentationLookup[nodeAlias]"
-                :tile-values="displayValuesByAlias[nodeAlias].display_values"
+                :display-data="displayDataByAlias[nodeAlias]"
             />
         </div>
         <div class="image-container">

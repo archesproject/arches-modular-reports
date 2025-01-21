@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
@@ -154,7 +155,14 @@ class RelatedResourceView(APIBase):
                     **{
                         node.alias: {
                             "display_value": getattr(relation, node.alias),
-                            "links": prepare_links(relation, node, request_language),
+                            "links": prepare_links(
+                                node=node,
+                                tile_values=getattr(
+                                    relation, node.alias + "_instance_details", []
+                                ),
+                                node_display_value=getattr(relation, node.alias),
+                                request_language=request_language,
+                            ),
                         }
                         for node in nodes
                     },
@@ -292,16 +300,25 @@ class NodeTileDataView(APIBase):
         node_aliases = request.GET.getlist("node_alias", [])
         user_lang = translation.get_language()
 
-        nodes_with_values = annotate_node_values(
+        nodes_with_display_data = annotate_node_values(
             node_aliases, resourceid, permitted, user_lang
         )
 
         return JSONResponse(
             {
-                node.alias: {
-                    "display_values": node.display_values,
-                }
-                for node in nodes_with_values
+                node.alias: [
+                    {
+                        "display_value": display_object["display_value"],
+                        "links": prepare_links(
+                            node,
+                            [display_object["tile_value"]],
+                            display_object["display_value"],
+                            user_lang,
+                        ),
+                    }
+                    for display_object in node.display_data
+                ]
+                for node in nodes_with_display_data
             }
         )
 
