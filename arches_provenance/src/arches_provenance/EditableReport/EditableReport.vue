@@ -9,7 +9,7 @@ import {
     fetchNodePresentation,
     fetchReportConfig,
     fetchResource,
-    fetchUserCanEditResourcePermission,
+    fetchUserResourcePermissions,
 } from "@/arches_provenance/EditableReport/api.ts";
 import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_provenance/constants.ts";
 import {
@@ -56,9 +56,9 @@ onMounted(async () => {
             fetchNodePresentation(resourceInstanceId).then(
                 (data) => (nodePresentationLookup.value = data),
             ),
-            fetchUserCanEditResourcePermission(resourceInstanceId).then(
-                (data) => (userCanEditResourceInstance.value = data),
-            ),
+            fetchUserResourcePermissions(resourceInstanceId).then((data) => {
+                userCanEditResourceInstance.value = data.edit;
+            }),
             fetchReportConfig(resourceInstanceId).then((data) => {
                 importComponents([data], componentLookup);
                 config.value = data;

@@ -40,6 +40,7 @@ const props = defineProps<{
         config: {
             nodegroup_id: string;
             nodes: string[];
+            has_write_permission: boolean;
         };
     };
     resourceInstanceId: string;
@@ -81,6 +82,13 @@ const isEmpty = computed(
         !query.value &&
         !searchResultsTotalCount.value &&
         !timeout,
+);
+
+const shouldShowAddButton = computed(
+    () =>
+        userCanEditResourceInstance &&
+        props.component.config.has_write_permission &&
+        (isEmpty.value || cardinality.value === CARDINALITY_N),
 );
 
 function onPageTurn(event: DataTablePageEvent) {
@@ -238,10 +246,7 @@ onMounted(() => {
         <h3>{{ tableTitle }}</h3>
 
         <Button
-            v-if="
-                userCanEditResourceInstance &&
-                (isEmpty || cardinality === CARDINALITY_N)
-            "
+            v-if="shouldShowAddButton"
             :label="
                 $gettext('Add %{cardName}', {
                     cardName: cardData?.name as string,
@@ -336,7 +341,12 @@ onMounted(() => {
                 {{ getDisplayValue(slotProps.data, slotProps.field) }}
             </template>
         </Column>
-        <Column v-if="userCanEditResourceInstance">
+        <Column
+            v-if="
+                userCanEditResourceInstance &&
+                props.component.config.has_write_permission
+            "
+        >
             <template #body>
                 <div
                     style="
