@@ -20,6 +20,7 @@ from arches.app.utils.permission_backend import (
     user_can_read_resource,
 )
 from arches.app.utils.response import JSONErrorResponse, JSONResponse
+from arches.app.views.base import MapBaseManagerView
 from arches.app.views.resource import ResourceReportView
 
 from arches_provenance.models import ReportConfig
@@ -64,7 +65,9 @@ class EditableReportAwareResourceReportView(ResourceReportView):
 
         if graph.template.componentname == "editable-report":
             template = "views/resource/editable_report.htm"
-            context = self.get_context_data(
+            # Skip a few queries by jumping over the MapBaseManagerView
+            # and calling its parent. This report doesn't use a map.
+            context = super(MapBaseManagerView, self).get_context_data(
                 main_script="views/resource/report",
                 resourceid=resourceid,
                 templateid=graph.template.pk,
