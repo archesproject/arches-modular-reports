@@ -191,14 +191,6 @@ def get_sorted_filtered_tiles(
         # default sort order for consistent pagination
         tiles = tiles.order_by("sortorder")
 
-    for tile in tiles:
-        new_alias_annotations = {}
-
-        for key, data in tile.alias_annotations.items():
-            new_alias_annotations[key] = build_valueid_annotation(data)
-
-        tile.alias_annotations = new_alias_annotations
-
     return tiles
 
 
