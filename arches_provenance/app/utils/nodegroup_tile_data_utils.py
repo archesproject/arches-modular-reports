@@ -213,7 +213,7 @@ def get_sorted_filtered_relations(
             )
             .exclude(**{f"data__{node.pk}__isnull": True})
             .annotate(
-                display_value=ArchesGetNodeDisplayValue(
+                display_value=ArchesGetNodeDisplayValueV2(
                     F("data"), Value(node.pk), Value(request_language)
                 )
             )
