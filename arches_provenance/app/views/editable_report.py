@@ -21,7 +21,7 @@ from arches.app.utils.permission_backend import (
 from arches.app.utils.response import JSONErrorResponse, JSONResponse
 from arches.app.views.resource import ResourceReportView
 
-from arches_provenance.app.utils.decorators import user_can_read_nodegroup
+from arches_provenance.app.utils.decorators import can_read_nodegroup
 from arches_provenance.models import ReportConfig
 
 from arches_provenance.app.utils.update_report_configuration_for_nodegroup_permissions import (
@@ -205,7 +205,7 @@ class NodePresentationView(APIBase):
 
 
 @method_decorator(can_read_resource_instance, name="dispatch")
-@method_decorator(user_can_read_nodegroup, name="dispatch")
+@method_decorator(can_read_nodegroup, name="dispatch")
 class NodegroupTileDataView(APIBase):
     def get(self, request, resourceid, nodegroupid):
         page_number = request.GET.get("page")
