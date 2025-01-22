@@ -99,6 +99,8 @@ def annotate_node_values(
                 )
                 .exclude(json_object__display_value="")
                 .exclude(json_object__tile_value=None)
+                # This will work on Django 5.1+
+                # .distinct("json_object__display_value", "sortorder")
                 .order_by("sortorder")
                 .values("json_object")
             )
