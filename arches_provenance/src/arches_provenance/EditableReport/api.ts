@@ -3,8 +3,7 @@ import arches from "arches";
 import type { LabelBasedTile } from "@/arches_provenance/EditableReport/types";
 
 export const fetchResource = async (resourceId: string) => {
-    const url =
-        arches.urls.api_resources(resourceId) + "?format=json&version=beta";
+    const url = arches.urls.api_resources(resourceId) + "?format=json&v=beta";
     const response = await fetch(url);
     const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);

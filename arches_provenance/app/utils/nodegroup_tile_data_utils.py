@@ -1,6 +1,7 @@
 import json
 import operator
 from functools import reduce
+from uuid import UUID
 
 from django.contrib.postgres.expressions import ArraySubquery
 from django.db.models import (
@@ -19,8 +20,10 @@ from django.db.models.fields.json import KT
 from django.db.models.functions import Concat, JSONObject
 from django.urls import reverse
 from django.db.models.functions import Concat
+from django.urls import reverse
 from django.utils.translation import gettext as _
 
+from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
 from arches.app.models.tile import Tile
 
@@ -203,24 +206,38 @@ def get_sorted_filtered_relations(
     *, resource, related_graphid, nodes, sort_field, direction, query, request_language
 ):
     def make_tile_annotations(node, direction):
+        tile_query = ArraySubquery(
+            models.TileModel.objects.filter(
+                resourceinstance=OuterRef(f"resourceinstanceid{direction}"),
+                nodegroup_id=node.nodegroup_id,
+            )
+            .exclude(**{f"data__{node.pk}__isnull": True})
+            .annotate(
+                display_value=ArchesGetNodeDisplayValue(
+                    F("data"), Value(node.pk), Value(request_language)
+                )
+            )
+            .order_by("sortorder")
+            .values("display_value")
+            .distinct()
+        )
         return ArrayToString(
-            ArraySubquery(
-                models.TileModel.objects.filter(
-                    resourceinstance=OuterRef(f"resourceinstanceid{direction}"),
-                    nodegroup_id=node.nodegroup_id,
-                )
-                .exclude(**{f"data__{node.pk}__isnull": True})
-                .annotate(
-                    display_value=ArchesGetNodeDisplayValue(
-                        F("data"), Value(node.pk), Value(request_language)
-                    )
-                )
-                .order_by("sortorder")
-                .values("display_value")
-                .distinct()  # TODO: parameterize this?
-            ),
+            tile_query,
             Value(", "),  # delimiter
             Value(_("None")),  # null replacement
+        )
+
+    def make_tile_instance_details_annotations(node, direction):
+        return ArraySubquery(
+            models.TileModel.objects.filter(
+                resourceinstance=OuterRef(f"resourceinstanceid{direction}"),
+                nodegroup_id=node.nodegroup_id,
+            )
+            .exclude(**{f"data__{node.pk}__isnull": True})
+            .order_by("sortorder")
+            .annotate(node_value=F(f"data__{node.pk}"))
+            .values("node_value")
+            .distinct()
         )
 
     data_annotations = {
@@ -235,6 +252,28 @@ def get_sorted_filtered_relations(
             ),
         )
         for node in nodes
+    }
+    instance_details_annotations = {
+        node.alias
+        + "_instance_details": Case(
+            When(
+                Q(resourceinstanceidfrom=resource),
+                then=make_tile_instance_details_annotations(node, "to"),
+            ),
+            When(
+                Q(resourceinstanceidto=resource),
+                then=make_tile_instance_details_annotations(node, "from"),
+            ),
+        )
+        for node in nodes
+        if node.datatype
+        in {
+            "concept",
+            "concept-list",
+            "resource-instance",
+            "resource-instance-list",
+            "url",
+        }
     }
 
     relations = (
@@ -273,6 +312,7 @@ def get_sorted_filtered_relations(
         )
         .annotate(**{"@display_name": KT(f"display_name_json__{request_language}")})
         .annotate(**data_annotations)
+        .annotate(**instance_details_annotations)
     )
 
     if query:
@@ -321,3 +361,94 @@ def serialize_tiles_with_children(tile, serialized_graph):
             tile, node_ids_to_tiles_reference, {}, serialized_graph=serialized_graph
         ),
     }
+
+
+def prepare_links(annotated_relation, node, request_language):
+    links = []
+
+    ### TEMPORARY HELPERS
+    value_finder = BaseConceptDataType()  # fetches serially, but has a cache
+
+    def get_resource_labels(tiledata):
+        """This is a source of N+1 queries, but we're working around the fact
+        that __arches_get_node_display_value() is lossy, i.e. if the display
+        values contain the delimiter (", ") we can't distinguish those.
+        So we just get the display values again, unfortunately.
+
+        TODO: graduate from the PG function to ORM expressions?
+        """
+        nonlocal request_language
+        ordered_ids = [innerTileVal["resourceId"] for innerTileVal in tiledata]
+        resources = models.ResourceInstance.objects.filter(pk__in=ordered_ids).in_bulk()
+        return [
+            resources[UUID(res_id)]
+            .descriptors.get(request_language, {})
+            .get("name", _("Undefined"))
+            for res_id in ordered_ids
+        ]
+
+    def get_concept_labels(value_ids):
+        nonlocal value_finder
+        return [
+            value_finder.get_value(value_id_str).value for value_id_str in value_ids
+        ]
+
+    def get_concept_ids(value_ids):
+        nonlocal value_finder
+        return [
+            value_finder.get_value(value_id_str).concept_id
+            for value_id_str in value_ids
+        ]
+
+    ### BEGIN LINK GENERATION
+
+    tile_vals = (
+        getattr(annotated_relation, node.alias + "_instance_details", None) or []
+    )
+    for tile_val in tile_vals:
+        match node.datatype:
+            case "resource-instance":
+                links.append(
+                    {
+                        "label": getattr(annotated_relation, node.alias),
+                        "link": get_link(node.datatype, tile_val[0]["resourceId"]),
+                    }
+                )
+            case "resource-instance-list":
+                labels = get_resource_labels(tile_val)
+                for related_resource, label in zip(tile_val, labels, strict=True):
+                    links.append(
+                        {
+                            "label": label,
+                            "link": get_link(
+                                node.datatype, related_resource["resourceId"]
+                            ),
+                        }
+                    )
+            case "concept":
+                if concept_id_results := get_concept_ids([tile_val]):
+                    links.append(
+                        {
+                            "label": getattr(annotated_relation, node.alias),
+                            "link": get_link(node.datatype, concept_id_results[0]),
+                        }
+                    )
+            case "concept-list":
+                concept_ids = get_concept_ids(tile_val)
+                labels = get_concept_labels(tile_val)
+                for concept_id, label in zip(concept_ids, labels, strict=True):
+                    links.append(
+                        {
+                            "label": label,
+                            "link": get_link(node.datatype, concept_id),
+                        }
+                    )
+            case "url":
+                links.append(
+                    {
+                        "label": tile_val["url_label"],
+                        "link": tile_val["url"],
+                    }
+                )
+
+    return links

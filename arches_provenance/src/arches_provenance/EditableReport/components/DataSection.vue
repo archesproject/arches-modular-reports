@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, inject, onMounted, ref, watch } from "vue";
-
 import { useGettext } from "vue3-gettext";
 
 import Button from "primevue/button";
