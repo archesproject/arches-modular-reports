@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
-
 import { useGettext } from "vue3-gettext";
 
+import Button from "primevue/button";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
 import IconField from "primevue/iconfield";
@@ -123,25 +123,6 @@ watch(currentPage, () => {
     }
 });
 
-function getDisplayValue(
-    tileData: Record<string, string | Record<string, unknown>>,
-    key: string,
-): string | null {
-    if (key === "@relation_name") {
-        return tileData["@relation_name"] as string;
-    } else if (key === "@display_name") {
-        return tileData["@display_name"] as string;
-    } else if (
-        tileData.nodes &&
-        typeof tileData.nodes !== "string" &&
-        key in tileData.nodes
-    ) {
-        return tileData.nodes[key] as string;
-    }
-
-    return null;
-}
-
 async function fetchData(requested_page: number = 1) {
     isLoading.value = true;
 
@@ -245,8 +226,21 @@ onMounted(fetchData);
             :header="columnDatum.widgetLabel"
             :sortable="true"
         >
-            <template #body="slotProps">
-                {{ getDisplayValue(slotProps.data, slotProps.field) }}
+            <template #body="{ data, field }">
+                <Button
+                    v-for="link in data[field].links"
+                    :key="JSON.stringify(link)"
+                    as="a"
+                    variant="link"
+                    target="_blank"
+                    :href="link.link"
+                    class="node-value-link"
+                >
+                    {{ link.label }}
+                </Button>
+                <template v-if="data[field].links.length === 0">
+                    {{ data[field].display_value }}
+                </template>
             </template>
         </Column>
     </DataTable>
@@ -259,5 +253,12 @@ onMounted(fetchData);
 
 :deep(.p-paginator) {
     justify-content: end;
+}
+
+.node-value-link {
+    display: block;
+    width: fit-content;
+    font-size: inherit;
+    padding: 0;
 }
 </style>

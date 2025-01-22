@@ -4,6 +4,7 @@ from django.core.paginator import Paginator
 from django.db.models import Prefetch
 from django.http import Http404
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils import translation
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
@@ -32,6 +33,7 @@ from arches_provenance.app.utils.nodegroup_tile_data_utils import (
     annotate_related_graph_nodes_with_widget_labels,
     get_sorted_filtered_relations,
     get_sorted_filtered_tiles,
+    prepare_links,
     serialize_tiles_with_children,
 )
 
@@ -135,18 +137,37 @@ class RelatedResourceView(APIBase):
         paginator = Paginator(relations, rows_per_page)
         result_page = paginator.get_page(page_number)
 
+        def make_resource_report_link(relation):
+            nonlocal resourceid
+            # Both sides are UUID python types (from ORM, or from route)
+            if relation.resourceinstanceidfrom_id == resourceid:
+                target = relation.resourceinstanceidto_id
+            else:
+                target = relation.resourceinstanceidfrom_id
+            return reverse("resource_report", args=[target])
+
         response_data = {
             "results": [
                 {
-                    "related_resource_id": (
-                        relation.resourceinstanceidto_id
-                        if relation.resourceinstanceidfrom_id == resourceid
-                        else relation.resourceinstanceidfrom_id
-                    ),
-                    "@relation_name": getattr(relation, "@relation_name"),
-                    "@display_name": getattr(relation, "@display_name"),
-                    "nodes": {
-                        node.alias: getattr(relation, node.alias) for node in nodes
+                    "@relation_name": {
+                        "display_value": getattr(relation, "@relation_name"),
+                        "links": [],
+                    },
+                    "@display_name": {
+                        "display_value": getattr(relation, "@display_name"),
+                        "links": [
+                            {
+                                "label": getattr(relation, "@display_name"),
+                                "link": make_resource_report_link(relation),
+                            }
+                        ],
+                    },
+                    **{
+                        node.alias: {
+                            "display_value": getattr(relation, node.alias),
+                            "links": prepare_links(relation, node, request_language),
+                        }
+                        for node in nodes
                     },
                 }
                 for relation in result_page
