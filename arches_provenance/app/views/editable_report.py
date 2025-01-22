@@ -25,6 +25,7 @@ from arches_provenance.models import ReportConfig
 
 from arches_provenance.app.utils.nodegroup_tile_data_utils import (
     annotate_related_graph_nodes_with_widget_labels,
+    build_valueid_annotation,
     get_sorted_filtered_relations,
     get_sorted_filtered_tiles,
     prepare_links,
@@ -241,7 +242,10 @@ class NodegroupTileDataView(APIBase):
         response_data = {
             "results": [
                 {
-                    **tile.alias_annotations,
+                    **{
+                        key: build_valueid_annotation(value)
+                        for key, value in tile.alias_annotations.items()
+                    },
                     "@has_children": tile.tilemodel_set.exists(),
                     "@tile_id": tile.tileid,
                 }
