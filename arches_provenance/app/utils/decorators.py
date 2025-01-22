@@ -20,7 +20,8 @@ def can_read_nodegroup(view_func):
 
         permission_backend = PermissionBackend()
 
-        if permission_backend.has_perm(
+        # TODO: remove superuser check once `has_perm` is updated to handle superusers
+        if request.user.is_superuser or permission_backend.has_perm(
             user_obj=request.user, perm="models.read_nodegroup", obj=nodegroup
         ):
             return view_func(request, *args, **kwargs)
