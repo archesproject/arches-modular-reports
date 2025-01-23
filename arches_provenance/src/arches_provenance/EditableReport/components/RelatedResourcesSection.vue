@@ -22,8 +22,9 @@ import type { DataTablePageEvent } from "primevue/datatable";
 const props = defineProps<{
     component: {
         config: {
-            additional_nodes: string[];
+            nodes: string[];
             graph_id: string;
+            custom_labels: Record<string, string>;
         };
     };
     resourceInstanceId: string;
@@ -86,10 +87,13 @@ const columnData = computed(() => {
             nodeAlias: "@display_name",
             widgetLabel: "Display Name",
         },
-        ...props.component.config.additional_nodes.map((nodeAlias: string) => {
+        ...props.component.config.nodes.map((nodeAlias: string) => {
             return {
                 nodeAlias,
-                widgetLabel: widgetLabelLookup.value[nodeAlias] ?? nodeAlias,
+                widgetLabel:
+                    props.component.config.custom_labels[nodeAlias] ??
+                    widgetLabelLookup.value[nodeAlias] ??
+                    nodeAlias,
             };
         }),
     ];
@@ -131,7 +135,7 @@ async function fetchData(requested_page: number = 1) {
             await fetchRelatedResourceData(
                 props.resourceInstanceId,
                 props.component.config.graph_id,
-                props.component.config.additional_nodes!,
+                props.component.config.nodes,
                 rowsPerPage.value,
                 requested_page,
                 sortField.value,

@@ -30,6 +30,7 @@ const props = defineProps<{
         config: {
             nodegroup_id: string;
             nodes: string[];
+            custom_labels: Record<string, string>;
             has_write_permission: boolean;
         };
     };
@@ -107,7 +108,10 @@ const columnData = computed(() => {
             const nodeDetails = nodePresentationLookup.value![nodeAlias];
             return {
                 nodeAlias,
-                widgetLabel: nodeDetails.widget_label,
+                widgetLabel:
+                    props.component.config.custom_labels[nodeAlias] ??
+                    nodeDetails.widget_label ??
+                    nodeAlias,
                 widgetSort: nodeDetails.widget_sort,
             };
         })
@@ -367,7 +371,10 @@ function rowClass(data: LabelBasedCard) {
             </template>
         </Column>
         <template #expansion="slotProps">
-            <HierarchicalTileViewer :tile-id="slotProps.data['@tile_id']" />
+            <HierarchicalTileViewer
+                :tile-id="slotProps.data['@tile_id']"
+                :custom-labels="props.component.config.custom_labels"
+            />
         </template>
     </DataTable>
 </template>

@@ -60,6 +60,11 @@ onMounted(fetchData);
                     v-for="nodeAlias in props.component.config.nodes"
                     :key="nodeAlias"
                     :node-presentation="nodePresentationLookup[nodeAlias]"
+                    :widget-label="
+                        props.component.config.custom_labels[nodeAlias] ??
+                        nodePresentationLookup[nodeAlias] ??
+                        nodeAlias
+                    "
                     :display-data="displayDataByAlias[nodeAlias]"
                 />
             </template>
