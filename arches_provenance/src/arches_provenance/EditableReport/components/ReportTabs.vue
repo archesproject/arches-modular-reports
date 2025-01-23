@@ -38,8 +38,8 @@ onMounted(() => {
     });
 });
 
-watch(activeTab, (newTab) => {
-    visitedTabs.value.add(newTab);
+watch(activeTab, (tab) => {
+    visitedTabs.value.add(tab);
 });
 </script>
 
