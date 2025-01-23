@@ -22,8 +22,13 @@
             "config": {
                 "image": null,
                 "nodes": [
-                    "name_content",
-                    "type"
+                    "exact_match",
+                    "production_part_actor",
+                    "material",
+                    "visual_image_shown",
+                    "identifier_content",
+                    "production_timespan_name_content",
+                    "text_carried"
                 ]
             },
             "component": "ReportTombstone"
