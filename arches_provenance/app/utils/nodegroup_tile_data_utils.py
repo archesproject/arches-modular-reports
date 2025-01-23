@@ -128,7 +128,7 @@ def annotate_node_values(
                 )
                 .annotate(
                     json_object=JSONObject(
-                        display_value=ArchesGetNodeDisplayValue(
+                        display_value=ArchesGetNodeDisplayValueV2(
                             F("data"), OuterRef("nodeid"), Value(user_language)
                         ),
                         tile_value=CombinedExpression(
