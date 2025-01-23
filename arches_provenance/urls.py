@@ -23,8 +23,8 @@ from arches_provenance.app.views.editable_report import (
     ChildTileDataView,
     EditableReportAwareResourceReportView,
     NodegroupTileDataView,
-    NodeTileDataView,
     NodePresentationView,
+    NodeTileDataView,
     ProvenanceEditableReportConfigView,
     RelatedResourceView,
 )
