@@ -275,16 +275,6 @@ urlpatterns = [
         ChildTileDataView.as_view(),
         name="api_child_tile_data",
     ),
-    path(
-        "api/user/check_user_can_edit_resource/<uuid:resource_instance_id>",
-        CheckUserCanEditResource.as_view(),
-        name="api_check_user_can_edit_resource",
-    ),
-    path(
-        "api/card_from_nodegroup_id/<uuid:nodegroupid>",
-        CardFromNodegroupIdView.as_view(),
-        name="api_card_from_nodegroup_id",
-    ),
 ]
 
 try:
