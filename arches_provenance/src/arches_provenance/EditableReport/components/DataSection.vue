@@ -55,7 +55,7 @@ const tableTitle = ref("");
 const rowsPerPage = ref(ROWS_PER_PAGE_OPTIONS[0]);
 const currentPage = ref(1);
 const query = ref("");
-const sortField = ref("");
+const sortNodeId = ref("");
 const direction = ref(ASC);
 const currentlyDisplayedTableData = ref<unknown[]>([]);
 const searchResultsTotalCount = ref(0);
@@ -91,23 +91,6 @@ const shouldShowAddButton = computed(
         (isEmpty.value || cardinality.value === CARDINALITY_N),
 );
 
-function onPageTurn(event: DataTablePageEvent) {
-    currentPage.value = resettingToFirstPage.value ? 1 : event.page + 1;
-    rowsPerPage.value = event.rows;
-}
-
-function onUpdateSortOrder(event: number | undefined) {
-    if (event === 1) {
-        direction.value = ASC;
-    } else if (event === -1) {
-        direction.value = DESC;
-    }
-}
-
-function rowClass(data: LabelBasedCard) {
-    return [{ "no-children": data["@has_children"] === false }];
-}
-
 watch(query, () => {
     if (timeout) {
         clearTimeout(timeout);
@@ -120,7 +103,7 @@ watch(query, () => {
     }, queryTimeoutValue);
 });
 
-watch([direction, sortField, rowsPerPage], () => {
+watch([direction, sortNodeId, rowsPerPage], () => {
     pageNumberToNodegroupTileData.value = {};
     resettingToFirstPage.value = true;
     fetchData(1);
@@ -136,32 +119,21 @@ watch(currentPage, () => {
     }
 });
 
-function getDisplayValue(
-    tileData: Record<string, string | Record<string, unknown>>,
-    key: string,
-): string | null {
-    const queue: Array<Record<string, unknown>> = [tileData];
+onMounted(() => {
+    fetchData();
+    fetchCardFromNodegroupId(props.component.config.nodegroup_id).then(
+        (fetchedCardData) => {
+            tableTitle.value = fetchedCardData?.name;
+            cardinality.value = fetchedCardData.cardinality;
+            cardData.value = fetchedCardData;
 
-    while (queue.length > 0) {
-        const currentItem = queue.shift();
-
-        if (Object.prototype.hasOwnProperty.call(currentItem, key)) {
-            const value = currentItem![key];
-
-            if ("@display_value" in (value as Record<string, unknown>)) {
-                return (value as Record<string, string>)["@display_value"];
-            }
-        }
-
-        for (const val of Object.values(currentItem!)) {
-            if (val && typeof val === "object") {
-                queue.push(val as Record<string, unknown>);
-            }
-        }
-    }
-
-    return null;
-}
+            columnData.value = deriveColumnData(
+                props.component.config,
+                fetchedCardData,
+            );
+        },
+    );
+});
 
 function deriveColumnData(
     config: { nodes: string[] },
@@ -189,13 +161,6 @@ function deriveColumnData(
     });
 }
 
-function tileIdFromData(tileData: Record<string, unknown>): string {
-    const { ["@has_children"]: _hasChildren, ...cards } = tileData;
-    return Object.values(cards as Record<string, Record<string, string>>)[0][
-        "@tile_id"
-    ];
-}
-
 async function fetchData(page: number = 1) {
     isLoading.value = true;
 
@@ -209,7 +174,7 @@ async function fetchData(page: number = 1) {
             props.component.config.nodegroup_id,
             rowsPerPage.value,
             page,
-            sortField.value,
+            sortNodeId.value,
             direction.value,
             query.value,
         );
@@ -226,19 +191,30 @@ async function fetchData(page: number = 1) {
     }
 }
 
-onMounted(() => {
-    fetchData();
-    fetchCardFromNodegroupId(props.component.config.nodegroup_id).then(
-        (fetchedCardData) => {
-            columnData.value = deriveColumnData(
-                props.component.config,
-                fetchedCardData,
-            );
+function onPageTurn(event: DataTablePageEvent) {
+    currentPage.value = resettingToFirstPage.value ? 1 : event.page + 1;
+    rowsPerPage.value = event.rows;
+}
 
-            cardinality.value = fetchedCardData.cardinality;
-        },
+function onUpdateSortField(event: string) {
+    const selectedNode = cardData.value?.nodes.find(
+        (node) => node.alias === event,
     );
-});
+
+    sortNodeId.value = selectedNode!.nodeid;
+}
+
+function onUpdateSortOrder(event: number | undefined) {
+    if (event === 1) {
+        direction.value = ASC;
+    } else if (event === -1) {
+        direction.value = DESC;
+    }
+}
+
+function rowClass(data: LabelBasedCard) {
+    return [{ "no-children": data["@has_children"] === false }];
+}
 </script>
 
 <template>
@@ -281,9 +257,8 @@ onMounted(() => {
         :loading="isLoading"
         :total-records="searchResultsTotalCount"
         :expanded-rows="[]"
-        :first
-        :row-class
-        paginator
+        :first="first"
+        :row-class="rowClass"
         :always-show-paginator="
             searchResultsTotalCount >
             Math.min(rowsPerPage, ROWS_PER_PAGE_OPTIONS[0])
@@ -292,9 +267,10 @@ onMounted(() => {
         :rows="rowsPerPage"
         :rows-per-page-options="ROWS_PER_PAGE_OPTIONS"
         :sortable="cardinality === CARDINALITY_N"
+        paginator
         @page="onPageTurn"
         @update:first="resettingToFirstPage = false"
-        @update:sort-field="sortField = $event"
+        @update:sort-field="onUpdateSortField"
         @update:sort-order="onUpdateSortOrder"
     >
         <template #header>
@@ -337,8 +313,27 @@ onMounted(() => {
             :header="columnDatum.widgetLabel"
             :sortable="cardinality === CARDINALITY_N"
         >
-            <template #body="slotProps">
-                {{ getDisplayValue(slotProps.data, slotProps.field) }}
+            <template #body="{ data, field }">
+                <div style="max-height: 12rem; overflow: auto">
+                    <template
+                        v-if="Array.isArray(data[field]['display_value'])"
+                    >
+                        <Button
+                            v-for="item in data[field]['display_value']"
+                            :key="item.link"
+                            :href="item.link"
+                            target="_blank"
+                            as="a"
+                            variant="link"
+                            style="display: block; width: fit-content"
+                        >
+                            {{ item["label"] }}
+                        </Button>
+                    </template>
+                    <template v-else>
+                        {{ data[field]["display_value"] }}
+                    </template>
+                </div>
             </template>
         </Column>
         <Column
@@ -380,7 +375,7 @@ onMounted(() => {
             </template>
         </Column>
         <template #expansion="slotProps">
-            <HierarchicalTileViewer :tile-id="tileIdFromData(slotProps.data)" />
+            <HierarchicalTileViewer :tile-id="slotProps.data['@tile_id']" />
         </template>
     </DataTable>
 </template>

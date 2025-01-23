@@ -14,7 +14,6 @@ from arches.app.views.api import APIBase
 from arches.app.models import models
 from arches.app.models.card import Card
 from arches.app.utils.decorators import can_read_resource_instance
-from arches.app.utils.label_based_graph_v2 import LabelBasedGraph
 from arches.app.utils.permission_backend import (
     get_nodegroups_by_perm,
     user_can_read_resource,
@@ -32,6 +31,7 @@ from arches_provenance.app.utils.update_report_configuration_for_nodegroup_permi
 
 from arches_provenance.app.utils.nodegroup_tile_data_utils import (
     annotate_related_graph_nodes_with_widget_labels,
+    build_valueid_annotation,
     get_sorted_filtered_relations,
     get_sorted_filtered_tiles,
     prepare_links,
@@ -236,7 +236,7 @@ class NodegroupTileDataView(APIBase):
         rows_per_page = request.GET.get("rows_per_page")
 
         query = request.GET.get("query")
-        sort_field = request.GET.get("sort_field")
+        sort_node_id = request.GET.get("sort_node_id")
         direction = request.GET.get("direction", "asc")
 
         user_language = translation.get_language()
@@ -244,7 +244,7 @@ class NodegroupTileDataView(APIBase):
         tiles = get_sorted_filtered_tiles(
             resourceinstanceid=resourceid,
             nodegroupid=nodegroupid,
-            sort_field=sort_field,
+            sort_node_id=sort_node_id,
             direction=direction,
             query=query,
             user_language=user_language,
@@ -253,38 +253,15 @@ class NodegroupTileDataView(APIBase):
         paginator = Paginator(tiles, rows_per_page)
         page = paginator.page(page_number)
 
-        # BEGIN serializer logic
-        node = models.Node.objects.select_related("graph__publication").get(
-            pk=nodegroupid
-        )
-
-        published_graph = models.PublishedGraph.objects.get(
-            publication=node.graph.publication, language=user_language
-        )
-
-        node_ids_to_tiles_reference = {}
-        for tile in page.object_list:
-            node_ids = list(tile.data.keys())
-
-            if str(tile.nodegroup_id) not in node_ids:
-                node_ids.append(str(tile.nodegroup_id))
-
-            for node_id in node_ids:
-                tile_list = node_ids_to_tiles_reference.get(node_id, [])
-                tile_list.append(tile)
-                node_ids_to_tiles_reference[node_id] = tile_list
-        # END serializer logic
-
         response_data = {
             "results": [
                 {
-                    **LabelBasedGraph.from_tile(
-                        tile,
-                        node_ids_to_tiles_reference,
-                        nodegroup_cardinality_reference={},
-                        serialized_graph=published_graph.serialized_graph,
-                    ),
+                    **{
+                        key: build_valueid_annotation(value)
+                        for key, value in tile.alias_annotations.items()
+                    },
                     "@has_children": tile.tilemodel_set.exists(),
+                    "@tile_id": tile.tileid,
                 }
                 for tile in page.object_list
             ],

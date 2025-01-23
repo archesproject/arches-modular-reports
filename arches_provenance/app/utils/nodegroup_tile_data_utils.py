@@ -1,3 +1,4 @@
+import json
 import operator
 from functools import reduce
 from uuid import UUID
@@ -16,6 +17,8 @@ from django.db.models import (
     When,
 )
 from django.db.models.fields.json import KT
+from django.db.models.functions import Concat, JSONObject
+from django.urls import reverse
 from django.db.models.functions import Concat
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -29,8 +32,14 @@ from arches_provenance.app.utils.label_based_graph_with_branch_export import (
 )
 
 
-class ArchesGetNodeDisplayValue(Func):
-    function = "__arches_get_node_display_value"
+class ArchesGetNodeDisplayValueV2(Func):
+    function = "__arches_get_node_display_value_v2"
+    output_field = TextField()
+    arity = 3
+
+
+class ArchesGetValueId(Func):
+    function = "__arches_get_valueid"
     output_field = TextField()
     arity = 3
 
@@ -47,6 +56,41 @@ def get_link(datatype, value_id):
     elif datatype in ["resource-instance", "resource-instance-list"]:
         return reverse("resource_report", args=[value_id])
     return ""
+
+
+def build_valueid_annotation(data):
+    datatype = data.get("datatype", "")
+    display_value = data.get("display_value")
+
+    if datatype in ["concept", "resource-instance"]:
+        value_ids = data.get("value_ids")
+        if value_ids:
+            return {
+                "display_value": [
+                    {
+                        "label": display_value,
+                        "link": get_link(datatype, value_ids),
+                    }
+                ]
+            }
+        return {"display_value": display_value}
+
+    elif datatype in ["concept-list", "resource-instance-list"]:
+        value_ids = json.loads(data.get("value_ids", "[]"))
+        display_values = json.loads(data.get("display_value", "[]"))
+
+        annotations = []
+        for val_id, disp_val in zip(value_ids, display_values):
+            if val_id:
+                annotations.append(
+                    {
+                        "label": disp_val,
+                        "link": get_link(datatype, val_id),
+                    }
+                )
+        return {"display_value": annotations}
+
+    return {"display_value": display_value}
 
 
 def annotate_related_graph_nodes_with_widget_labels(
@@ -67,7 +111,7 @@ def annotate_related_graph_nodes_with_widget_labels(
 
 
 def get_sorted_filtered_tiles(
-    *, resourceinstanceid, nodegroupid, sort_field, direction, query, user_language
+    *, resourceinstanceid, nodegroupid, sort_node_id, direction, query, user_language
 ):
     # semantic, annotation, and geojson-feature-collection data types are
     # excluded in __arches_get_node_display_value
@@ -78,16 +122,37 @@ def get_sorted_filtered_tiles(
     if not nodes:
         return Tile.objects.none()
 
-    annotations = {
-        node.alias: ArchesGetNodeDisplayValue(
+    field_annotations = {}
+    alias_annotations = {}
+
+    for node in nodes:
+        field_key = f'field_{str(node.pk).replace("-", "_")}'
+
+        display_value = ArchesGetNodeDisplayValueV2(
             F("data"), Value(str(node.pk)), Value(user_language)
         )
-        for node in nodes
-    }
+
+        value_ids = None
+        if (
+            node.datatype == "concept"
+            or node.datatype == "concept-list"
+            or node.datatype == "resource-instance"
+            or node.datatype == "resource-instance-list"
+        ):
+            value_ids = ArchesGetValueId(
+                F("data"), Value(node.pk), Value(user_language)
+            )
+
+        field_annotations[field_key] = display_value
+        alias_annotations[node.alias] = JSONObject(
+            display_value=display_value,
+            datatype=Value(node.datatype),
+            value_ids=value_ids,
+        )
 
     # adds spaces between fields
     display_values_with_spaces = []
-    for field in [F(field) for field in annotations.keys()]:
+    for field in [F(field) for field in field_annotations.keys()]:
         display_values_with_spaces.append(field)
         display_values_with_spaces.append(Value(" "))
 
@@ -95,7 +160,8 @@ def get_sorted_filtered_tiles(
         Tile.objects.filter(
             resourceinstance_id=resourceinstanceid, nodegroup_id=nodegroupid
         )
-        .annotate(**annotations)
+        .annotate(**field_annotations)
+        .annotate(alias_annotations=JSONObject(**alias_annotations))
         .annotate(
             search_text=Concat(*display_values_with_spaces, output_field=TextField())
         )
@@ -103,27 +169,23 @@ def get_sorted_filtered_tiles(
         .prefetch_related("tilemodel_set")
     )
 
-    if sort_field:
-        # We're about to use this node alias as a SQL alias in a Django
-        # annotation. Django will raise ValueError if contains unsafe
-        # characters, but node aliases generated with __arches_slugify
-        # *should* already be sane. If not, ValueError is fine. If ever
-        # a problem in practice, let's add validation in core arches.
+    if sort_node_id:
+        sort_field_name = f'field_{sort_node_id.replace("-", "_")}'
 
         sort_priority = Case(
-            When(**{f"{sort_field}__isnull": True}, then=Value(1)),
-            When(**{f"{sort_field}": ""}, then=Value(1)),
+            When(**{f"{sort_field_name}__isnull": True}, then=Value(1)),
+            When(**{f"{sort_field_name}": ""}, then=Value(1)),
             default=Value(0),
             output_field=IntegerField(),
         )
 
         if direction.lower().startswith("asc"):
             tiles = tiles.annotate(sort_priority=sort_priority).order_by(
-                "sort_priority", F(sort_field).asc()
+                "sort_priority", F(sort_field_name).asc()
             )
         else:
             tiles = tiles.annotate(sort_priority=sort_priority).order_by(
-                "-sort_priority", F(sort_field).desc()
+                "-sort_priority", F(sort_field_name).desc()
             )
     else:
         # default sort order for consistent pagination
@@ -143,7 +205,7 @@ def get_sorted_filtered_relations(
             )
             .exclude(**{f"data__{node.pk}__isnull": True})
             .annotate(
-                display_value=ArchesGetNodeDisplayValue(
+                display_value=ArchesGetNodeDisplayValueV2(
                     F("data"), Value(node.pk), Value(request_language)
                 )
             )

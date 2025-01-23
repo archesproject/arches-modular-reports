@@ -41,7 +41,7 @@ export const fetchNodegroupTileData = async (
     nodegroupId: string,
     rowsPerPage: number,
     page: number,
-    sortField: string | null,
+    sortNodeId: string | null,
     direction: string | null,
     query: string | null,
 ) => {
@@ -52,7 +52,7 @@ export const fetchNodegroupTileData = async (
     const params = new URLSearchParams({
         rows_per_page: rowsPerPage.toString(),
         page: page.toString(),
-        sort_field: sortField || "",
+        sort_node_id: sortNodeId || "",
         direction: direction || "",
         query: query || "",
     });
