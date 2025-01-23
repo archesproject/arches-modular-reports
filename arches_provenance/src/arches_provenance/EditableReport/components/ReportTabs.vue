@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { onMounted, ref } from "vue";
 
 import Tab from "primevue/tab";
 import Tabs from "primevue/tabs";
