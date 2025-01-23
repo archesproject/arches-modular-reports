@@ -83,13 +83,14 @@ onMounted(fetchData);
     display: flex;
     justify-content: space-between;
     width: 100%;
+    gap: 1rem;
 }
 
 .data-container {
-    width: 75%;
+    width: 100%;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
+    gap: 2rem;
 }
 
 .image-container {
