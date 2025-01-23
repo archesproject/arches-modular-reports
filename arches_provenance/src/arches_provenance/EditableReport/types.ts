@@ -40,7 +40,7 @@ export interface ComponentLookup {
     [key: string]: Component;
 }
 
-export interface TileDisplayData {
+export interface NodeValueDisplayData {
     display_values: string[];
     links: {
         label: string;
@@ -48,8 +48,8 @@ export interface TileDisplayData {
     }[];
 }
 
-export interface NodeValueDisplayData {
-    [key: string]: TileDisplayData[];
+export interface NodeValueDisplayDataLookup {
+    [key: string]: NodeValueDisplayData[];
 }
 
 export interface LabelBasedTile {

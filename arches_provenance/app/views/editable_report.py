@@ -290,12 +290,12 @@ class NodegroupTileDataView(APIBase):
 @method_decorator(can_read_resource_instance, name="dispatch")
 class NodeTileDataView(APIBase):
     def get(self, request, resourceid):
-        permitted = get_nodegroups_by_perm(request.user, "read_nodegroup")
+        permitted_nodegroups = get_nodegroups_by_perm(request.user, "read_nodegroup")
         node_aliases = request.GET.getlist("node_alias", [])
         user_lang = translation.get_language()
 
         nodes_with_display_data = annotate_node_values(
-            node_aliases, resourceid, permitted, user_lang
+            node_aliases, resourceid, permitted_nodegroups, user_lang
         )
 
         return JSONResponse(

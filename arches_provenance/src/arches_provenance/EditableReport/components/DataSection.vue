@@ -41,7 +41,6 @@ const CARDINALITY_N = "n";
 const queryTimeoutValue = 500;
 let timeout: ReturnType<typeof setTimeout> | null = null;
 
-const tableTitle = ref("");
 const rowsPerPage = ref(ROWS_PER_PAGE_OPTIONS[0]);
 const currentPage = ref(1);
 const query = ref("");
@@ -85,14 +84,17 @@ const nodeAliases = computed(() => {
     if (!nodePresentationLookup.value) {
         return [];
     }
-    return (
-        Object.entries(nodePresentationLookup.value)
-            .filter(
-                ([_nodeAlias, nodeDetails]) =>
-                    nodeDetails.nodegroup.nodegroup_id ===
-                    props.component.config.nodegroup_id,
-            )
-            .map((keyVal) => keyVal[0]) ?? []
+    return Object.entries(nodePresentationLookup.value).reduce(
+        (acc, [nodeAlias, nodeDetails]) => {
+            if (
+                nodeDetails.nodegroup.nodegroup_id ===
+                props.component.config.nodegroup_id
+            ) {
+                acc.push(nodeAlias);
+            }
+            return acc;
+        },
+        [] as string[],
     );
 });
 
@@ -194,6 +196,10 @@ function onPageTurn(event: DataTablePageEvent) {
     rowsPerPage.value = event.rows;
 }
 
+function onUpdateSortField(event: string) {
+    sortNodeId.value = nodePresentationLookup.value![event].nodeid;
+}
+
 function onUpdateSortOrder(event: number | undefined) {
     if (event === 1) {
         direction.value = ASC;
@@ -209,7 +215,7 @@ function rowClass(data: LabelBasedCard) {
 
 <template>
     <div style="display: flex; align-items: center">
-        <h3>{{ tableTitle }}</h3>
+        <h3>{{ cardName }}</h3>
 
         <Button
             v-if="shouldShowAddButton"
@@ -256,7 +262,7 @@ function rowClass(data: LabelBasedCard) {
         paginator
         @page="onPageTurn"
         @update:first="resettingToFirstPage = false"
-        @update:sort-field="sortNodeId = nodePresentationLookup![$event].nodeid"
+        @update:sort-field="onUpdateSortField"
         @update:sort-order="onUpdateSortOrder"
     >
         <template #header>

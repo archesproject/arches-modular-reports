@@ -3,12 +3,12 @@ import Button from "primevue/button";
 
 import type {
     NodePresentation,
-    TileDisplayData,
+    NodeValueDisplayData,
 } from "@/arches_provenance/EditableReport/types";
 
 const props = defineProps<{
     nodePresentation: NodePresentation;
-    displayData: TileDisplayData[];
+    displayData: NodeValueDisplayData[];
 }>();
 </script>
 
@@ -19,21 +19,12 @@ const props = defineProps<{
         </dt>
         <div class="node-values-container">
             <template
-                v-for="tile in props.displayData"
-                :key="tile.display_values"
+                v-for="nodeValueDisplayData in props.displayData"
+                :key="nodeValueDisplayData.display_values"
             >
-                <template v-if="tile.links.length === 0">
+                <template v-if="nodeValueDisplayData.links.length">
                     <dd
-                        v-for="innerValue in tile.display_values"
-                        :key="innerValue"
-                        class="node-value"
-                    >
-                        {{ innerValue }}
-                    </dd>
-                </template>
-                <template v-else>
-                    <dd
-                        v-for="link in tile.links"
+                        v-for="link in nodeValueDisplayData.links"
                         :key="JSON.stringify(link)"
                         class="node-value"
                     >
@@ -46,6 +37,15 @@ const props = defineProps<{
                         >
                             {{ link.label }}
                         </Button>
+                    </dd>
+                </template>
+                <template v-else>
+                    <dd
+                        v-for="innerValue in nodeValueDisplayData.display_values"
+                        :key="innerValue"
+                        class="node-value"
+                    >
+                        {{ innerValue }}
                     </dd>
                 </template>
             </template>

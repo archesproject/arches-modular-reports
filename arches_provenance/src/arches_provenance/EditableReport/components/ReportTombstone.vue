@@ -3,15 +3,16 @@ import arches from "arches";
 import { inject, onMounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
+import Message from "primevue/message";
 import Panel from "primevue/panel";
 
 import { fetchNodeTileData } from "@/arches_provenance/EditableReport/api.ts";
-import GenericDatatype from "@/arches_provenance/DatatypeWidgets/components/GenericDatatype.vue";
+import LabeledNodeValues from "@/arches_provenance/EditableReport/components/LabeledNodeValues.vue";
 
 import type { Ref } from "vue";
 import type {
     NodePresentationLookup,
-    NodeValueDisplayData,
+    NodeValueDisplayDataLookup,
     SectionContent,
 } from "@/arches_provenance/EditableReport/types";
 
@@ -26,8 +27,8 @@ const nodePresentationLookup = inject(
 ) as NodePresentationLookup;
 const { $gettext } = useGettext();
 
-const isError = ref(false);
-const displayDataByAlias: Ref<NodeValueDisplayData> = ref({});
+const hasLoadingError = ref(false);
+const displayDataByAlias: Ref<NodeValueDisplayDataLookup> = ref({});
 
 async function fetchData() {
     try {
@@ -35,10 +36,9 @@ async function fetchData() {
             resourceInstanceId,
             props.component.config.nodes,
         );
-        isError.value = false;
-    } catch (error) {
-        isError.value = true;
-        console.error(error);
+        hasLoadingError.value = false;
+    } catch {
+        hasLoadingError.value = true;
     }
 }
 
@@ -47,16 +47,22 @@ onMounted(fetchData);
 
 <template>
     <Panel>
-        <div
-            v-if="displayDataByAlias && nodePresentationLookup"
-            class="data-container"
-        >
-            <GenericDatatype
-                v-for="nodeAlias in props.component.config.nodes"
-                :key="nodeAlias"
-                :node-presentation="nodePresentationLookup[nodeAlias]"
-                :display-data="displayDataByAlias[nodeAlias]"
-            />
+        <div class="data-container">
+            <Message
+                v-if="hasLoadingError"
+                severity="error"
+                style="height: 3rem"
+            >
+                {{ $gettext("Unable to fetch resource") }}
+            </Message>
+            <template v-else-if="displayDataByAlias && nodePresentationLookup">
+                <LabeledNodeValues
+                    v-for="nodeAlias in props.component.config.nodes"
+                    :key="nodeAlias"
+                    :node-presentation="nodePresentationLookup[nodeAlias]"
+                    :display-data="displayDataByAlias[nodeAlias]"
+                />
+            </template>
         </div>
         <div class="image-container">
             <img
@@ -88,14 +94,16 @@ onMounted(fetchData);
 }
 
 .image-container {
-    width: 15%;
-    height: 15%;
+    max-height: 18rem;
     margin-left: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 img {
-    width: 100%;
+    width: auto;
     height: 100%;
     object-fit: contain;
+    align-self: end;
 }
 </style>

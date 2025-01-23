@@ -34,11 +34,16 @@ export const fetchNodeTileData = async (
 ) => {
     const params = new URLSearchParams();
     nodeAliases.forEach((alias) => params.append("node_alias", alias));
+
     const response = await fetch(
         `${arches.urls.api_node_tile_data(resourceInstanceId)}?${params}`,
     );
     const parsed = await response.json();
-    if (!response.ok) throw new Error(parsed.message || response.statusText);
+
+    if (!response.ok) {
+        throw new Error(parsed.message || response.statusText);
+    }
+
     return parsed;
 };
 
