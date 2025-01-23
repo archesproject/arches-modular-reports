@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 
 import Tab from "primevue/tab";
 import Tabs from "primevue/tabs";
@@ -25,7 +25,8 @@ const { component, resourceInstanceId } = defineProps<{
     resourceInstanceId: string;
 }>();
 
-const activeTab = ref<string>(component.config.tabs[0].name);
+const activeTab = ref(component.config.tabs[0].name);
+const visitedTabs = ref<Set<string>>(new Set([activeTab.value]));
 
 onMounted(() => {
     importComponents(component.config.tabs, componentLookup);
@@ -35,6 +36,10 @@ onMounted(() => {
             child.config.id = uniqueId(child);
         });
     });
+});
+
+watch(activeTab, (newTab) => {
+    visitedTabs.value.add(newTab);
 });
 </script>
 
@@ -55,7 +60,7 @@ onMounted(() => {
                 :key="tab.name"
                 :value="tab.name"
             >
-                <div v-if="activeTab === tab.name">
+                <div v-if="visitedTabs.has(tab.name)">
                     <component
                         :is="componentLookup[tabComponent.component]"
                         v-for="tabComponent in tab.components"
