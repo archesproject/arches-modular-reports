@@ -47,7 +47,7 @@ export const fetchNodegroupTileData = async (
     nodegroupId: string,
     rowsPerPage: number,
     page: number,
-    sortField: string | null,
+    sortNodeId: string | null,
     direction: string | null,
     query: string | null,
 ) => {
@@ -58,7 +58,7 @@ export const fetchNodegroupTileData = async (
     const params = new URLSearchParams({
         rows_per_page: rowsPerPage.toString(),
         page: page.toString(),
-        sort_field: sortField || "",
+        sort_node_id: sortNodeId || "",
         direction: direction || "",
         query: query || "",
     });
@@ -110,11 +110,21 @@ export const fetchRelatedResourceData = async (
     return parsed;
 };
 
-export const fetchUserCanEditResourcePermission = async (
+export const fetchCardFromNodegroupId = async (nodegroupId: string) => {
+    const url = arches.urls.api_card_from_nodegroup_id(nodegroupId);
+    const response = await fetch(url);
+    const parsed = await response.json();
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};
+
+export const fetchUserResourcePermissions = async (
     resourceInstanceId: string,
 ) => {
     const url =
-        arches.urls.api_check_user_can_edit_resource(resourceInstanceId);
+        arches.urls.api_instance_permissions +
+        "?resourceId=" +
+        resourceInstanceId;
     const response = await fetch(url);
     const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);
