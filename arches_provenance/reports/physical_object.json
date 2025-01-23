@@ -124,7 +124,10 @@
                                                 {
                                                     "config": {
                                                         "nodes": [
-                                                            "production_data_assignment_property_assigned_type"
+                                                            "production_data_assignment_target_entity",
+                                                            "production_data_assignment_property_assigned_type",
+                                                            "production_data_assignment_type",
+                                                            "production_data_assignment_object_used"
                                                         ],
                                                         "nodegroup_id": "28cd69ee-c79e-11ea-ad1b-3af9d3b32b71"
                                                     },
