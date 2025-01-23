@@ -40,7 +40,6 @@ async function fetchData() {
         isError.value = true;
         console.error(error);
     }
-    // isLoading.value = false;
 }
 
 onMounted(fetchData);
