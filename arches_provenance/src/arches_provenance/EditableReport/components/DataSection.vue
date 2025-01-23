@@ -31,6 +31,7 @@ const props = defineProps<{
             nodegroup_id: string;
             nodes: string[];
             custom_labels: Record<string, string>;
+            custom_card_name: string | null;
             has_write_permission: boolean;
         };
     };
@@ -132,7 +133,10 @@ const cardName = computed(() => {
     if (!nodePresentationLookup.value) {
         return "";
     }
-    return nodePresentationLookup.value[nodeAliases.value[0]].card_name;
+    return (
+        props.component.config.custom_card_name ??
+        nodePresentationLookup.value[nodeAliases.value[0]].card_name
+    );
 });
 
 watch(query, () => {

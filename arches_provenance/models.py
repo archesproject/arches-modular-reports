@@ -123,7 +123,10 @@ class ReportConfig(models.Model):
                                 )
                                 if node.datatype not in self.excluded_datatypes
                             ],
+                            # custom_labels: {node alias: "my custom widget label"}
                             "custom_labels": {},
+                            # custom_card_name: "My Custom Card Name"
+                            "custom_card_name": None,
                         },
                     }
                 ],
