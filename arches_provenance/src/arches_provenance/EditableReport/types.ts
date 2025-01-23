@@ -41,7 +41,7 @@ export interface ComponentLookup {
 }
 
 export interface TileDisplayData {
-    display_value: string;
+    display_values: string[];
     links: {
         label: string;
         link: string;

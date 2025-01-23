@@ -30,6 +30,7 @@ from arches_provenance.app.utils.update_report_configuration_for_nodegroup_permi
 from arches_provenance.app.utils.nodegroup_tile_data_utils import (
     annotate_node_values,
     annotate_related_graph_nodes_with_widget_labels,
+    array_from_string,
     build_valueid_annotation,
     get_sorted_filtered_relations,
     get_sorted_filtered_tiles,
@@ -301,7 +302,9 @@ class NodeTileDataView(APIBase):
             {
                 node.alias: [
                     {
-                        "display_value": display_object["display_value"],
+                        "display_values": array_from_string(
+                            display_object["display_value"]
+                        ),
                         "links": prepare_links(
                             node,
                             [display_object["tile_value"]],

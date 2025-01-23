@@ -14,30 +14,42 @@ const props = defineProps<{
 
 <template>
     <div class="node-container">
-        <span>
+        <dt>
             <strong>{{ props.nodePresentation.widget_label }}</strong>
-        </span>
-        <template
-            v-for="displayData in props.displayData"
-            :key="displayData.display_value"
-        >
-            <template v-if="displayData.links.length === 0">
-                <span class="node-value">
-                    {{ displayData.display_value }}
-                </span>
-            </template>
-            <Button
-                v-for="link in displayData.links"
-                :key="JSON.stringify(link)"
-                as="a"
-                class="node-value"
-                target="_blank"
-                variant="link"
-                :href="link.link"
+        </dt>
+        <div class="node-values-container">
+            <template
+                v-for="tile in props.displayData"
+                :key="tile.display_values"
             >
-                {{ displayData.display_value }}
-            </Button>
-        </template>
+                <template v-if="tile.links.length === 0">
+                    <dd
+                        v-for="innerValue in tile.display_values"
+                        :key="innerValue"
+                        class="node-value"
+                    >
+                        {{ innerValue }}
+                    </dd>
+                </template>
+                <template v-else>
+                    <dd
+                        v-for="link in tile.links"
+                        :key="JSON.stringify(link)"
+                        class="node-value"
+                    >
+                        <Button
+                            as="a"
+                            class="node-value"
+                            target="_blank"
+                            variant="link"
+                            :href="link.link"
+                        >
+                            {{ link.label }}
+                        </Button>
+                    </dd>
+                </template>
+            </template>
+        </div>
     </div>
 </template>
 
