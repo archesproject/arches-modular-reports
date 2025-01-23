@@ -57,11 +57,19 @@ const props = defineProps<{
 .node-container {
     display: flex;
     gap: 10px;
+    max-height: 18rem;
+}
+
+.node-values-container {
+    height: 100%;
+    padding-right: 1.5rem;
+    overflow: auto;
 }
 
 .node-value {
     align-items: unset;
     overflow-wrap: anywhere;
+    margin-bottom: 1rem;
 }
 
 .p-button {
