@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { ref, onMounted } from "vue";
 
 import Tab from "primevue/tab";
 import Tabs from "primevue/tabs";
@@ -25,8 +25,11 @@ const { component, resourceInstanceId } = defineProps<{
     resourceInstanceId: string;
 }>();
 
+const activeTab = ref<string>(component.config.tabs[0].name);
+
 onMounted(() => {
     importComponents(component.config.tabs, componentLookup);
+
     component.config.tabs.forEach((tab: NamedSection) => {
         tab.components.forEach((child: SectionContent) => {
             child.config.id = uniqueId(child);
@@ -36,7 +39,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <Tabs :value="component.config.tabs[0].name">
+    <Tabs v-model:value="activeTab">
         <TabList>
             <Tab
                 v-for="tab in component.config.tabs"
@@ -52,13 +55,15 @@ onMounted(() => {
                 :key="tab.name"
                 :value="tab.name"
             >
-                <component
-                    :is="componentLookup[tabComponent.component]"
-                    v-for="tabComponent in tab.components"
-                    :key="tabComponent.config.id"
-                    :component="tabComponent"
-                    :resource-instance-id
-                />
+                <div v-if="activeTab === tab.name">
+                    <component
+                        :is="componentLookup[tabComponent.component]"
+                        v-for="tabComponent in tab.components"
+                        :key="tabComponent.config.id"
+                        :component="tabComponent"
+                        :resource-instance-id="resourceInstanceId"
+                    />
+                </div>
             </TabPanel>
         </TabPanels>
     </Tabs>
