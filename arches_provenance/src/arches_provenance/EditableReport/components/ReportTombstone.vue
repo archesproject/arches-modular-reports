@@ -28,7 +28,7 @@ const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
 const { $gettext } = useGettext();
 
 const hasLoadingError = ref(false);
-const displayDataByAlias: Ref<NodeValueDisplayDataLookup> = ref({});
+const displayDataByAlias: Ref<NodeValueDisplayDataLookup | null> = ref(null);
 
 function bestWidgetLabel(nodeAlias: string) {
     return (

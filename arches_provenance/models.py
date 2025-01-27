@@ -50,7 +50,7 @@ class ReportConfig(models.Model):
                 {
                     "component": "ReportHeader",
                     "config": {
-                        "descriptor": f"{self.graph.name} Descriptor",
+                        "descriptor": f"{self.graph.name} descriptor template",
                     },
                 },
                 {
