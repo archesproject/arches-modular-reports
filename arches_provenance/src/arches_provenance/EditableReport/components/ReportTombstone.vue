@@ -51,7 +51,7 @@ onMounted(fetchData);
             <Message
                 v-if="hasLoadingError"
                 severity="error"
-                style="height: 3rem"
+                style="height: 3rem; width: fit-content"
             >
                 {{ $gettext("Unable to fetch resource") }}
             </Message>
@@ -94,20 +94,17 @@ onMounted(fetchData);
 .data-container {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
     gap: 2rem;
 }
 
 .image-container {
-    max-height: 18rem;
-    margin-left: auto;
-    display: flex;
-    flex-direction: column;
+    max-width: 18rem;
 }
 
 img {
-    width: auto;
-    height: 100%;
+    max-width: 100%;
+    height: auto;
     object-fit: contain;
     align-self: end;
 }

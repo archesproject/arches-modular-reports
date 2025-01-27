@@ -25,6 +25,7 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     # When updating to arches 8, update the override of ResourceReportView
+    # and grep for "TODO: arches v8:" to find hints for breaking change updates
     "arches~=7.6",
 ]
 version = "1.0.0"

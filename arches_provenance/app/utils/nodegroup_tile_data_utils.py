@@ -208,6 +208,7 @@ def get_sorted_filtered_tiles(
             search_text=Concat(*display_values_with_spaces, output_field=TextField())
         )
         .filter(search_text__icontains=query)
+        # TODO: arches v8: .prefetch_related("children")
         .prefetch_related("tilemodel_set")
     )
 
@@ -386,6 +387,7 @@ def serialize_tiles_with_children(tile, serialized_graph):
 
     tile._children = [
         serialize_tiles_with_children(child, serialized_graph)
+        # TODO: arches v8: tile.children.order_by("sortorder")
         for child in tile.tilemodel_set.order_by("sortorder")
     ]
 
