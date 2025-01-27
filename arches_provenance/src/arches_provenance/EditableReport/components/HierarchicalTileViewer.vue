@@ -11,7 +11,7 @@ import type { LabelBasedTile } from "@/arches_provenance/EditableReport/types";
 
 const props = defineProps<{
     tileId: string;
-    customLabels: Record<string, string>;
+    customLabels?: Record<string, string>;
 }>();
 
 const { $gettext } = useGettext();

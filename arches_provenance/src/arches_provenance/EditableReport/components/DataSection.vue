@@ -110,7 +110,7 @@ const columnData = computed(() => {
             return {
                 nodeAlias,
                 widgetLabel:
-                    props.component.config.custom_labels[nodeAlias] ??
+                    props.component.config.custom_labels?.[nodeAlias] ??
                     nodeDetails.widget_label ??
                     nodeAlias,
                 widgetSort: nodeDetails.widget_sort,

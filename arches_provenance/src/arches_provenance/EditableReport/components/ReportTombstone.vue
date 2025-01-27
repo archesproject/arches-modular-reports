@@ -61,8 +61,8 @@ onMounted(fetchData);
                     :key="nodeAlias"
                     :node-presentation="nodePresentationLookup[nodeAlias]"
                     :widget-label="
-                        props.component.config.custom_labels[nodeAlias] ??
-                        nodePresentationLookup[nodeAlias] ??
+                        props.component.config.custom_labels?.[nodeAlias] ??
+                        nodePresentationLookup[nodeAlias].widget_label ??
                         nodeAlias
                     "
                     :display-data="displayDataByAlias[nodeAlias]"

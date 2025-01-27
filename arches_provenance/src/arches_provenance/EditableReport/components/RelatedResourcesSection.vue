@@ -91,7 +91,7 @@ const columnData = computed(() => {
             return {
                 nodeAlias,
                 widgetLabel:
-                    props.component.config.custom_labels[nodeAlias] ??
+                    props.component.config.custom_labels?.[nodeAlias] ??
                     widgetLabelLookup.value[nodeAlias] ??
                     nodeAlias,
             };

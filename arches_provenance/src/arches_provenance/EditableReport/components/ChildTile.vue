@@ -20,7 +20,7 @@ const {
     data: LabelBasedTile;
     depth: number;
     divider?: boolean;
-    customLabels: Record<string, string>;
+    customLabels?: Record<string, string>;
 }>();
 
 const nodePresentationLookup = inject(
@@ -64,7 +64,7 @@ function tileIdFromChild(child: LabelBasedTile): string {
                 <!-- TODO: update link generation pattern when refactoring backend. -->
                 <dt>
                     {{
-                        customLabels[nodeAlias] ??
+                        customLabels?.[nodeAlias] ??
                         nodePresentationLookup[nodeAlias].widget_label ??
                         nodeAlias
                     }}
