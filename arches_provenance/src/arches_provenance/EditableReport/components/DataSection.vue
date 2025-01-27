@@ -89,8 +89,9 @@ const nodeAliases = computed(() => {
     return Object.entries(nodePresentationLookup.value).reduce(
         (acc, [nodeAlias, nodeDetails]) => {
             if (
+                props.component.config.nodes.includes(nodeAlias) &&
                 nodeDetails.nodegroup.nodegroup_id ===
-                props.component.config.nodegroup_id
+                    props.component.config.nodegroup_id
             ) {
                 acc.push(nodeAlias);
             }
@@ -122,7 +123,7 @@ const columnData = computed(() => {
 });
 
 const cardinality = computed(() => {
-    if (!nodePresentationLookup.value) {
+    if (!nodePresentationLookup.value || !nodeAliases.value.length) {
         return "";
     }
     return nodePresentationLookup.value[nodeAliases.value[0]].nodegroup
@@ -130,7 +131,7 @@ const cardinality = computed(() => {
 });
 
 const cardName = computed(() => {
-    if (!nodePresentationLookup.value) {
+    if (!nodePresentationLookup.value || !nodeAliases.value.length) {
         return "";
     }
     return (
