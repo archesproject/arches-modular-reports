@@ -60,7 +60,7 @@ watch(activeTab, (tab) => {
                 :key="tab.name"
                 :value="tab.name"
             >
-                <div v-if="visitedTabs.has(tab.name)">
+                <template v-if="visitedTabs.has(tab.name)">
                     <component
                         :is="componentLookup[tabComponent.component]"
                         v-for="tabComponent in tab.components"
@@ -68,7 +68,7 @@ watch(activeTab, (tab) => {
                         :component="tabComponent"
                         :resource-instance-id="resourceInstanceId"
                     />
-                </div>
+                </template>
             </TabPanel>
         </TabPanels>
     </Tabs>
