@@ -98,7 +98,7 @@ onMounted(fetchData);
 }
 
 img {
-    max-width: 100%;
+    width: 100%;
     height: auto;
     object-fit: contain;
     align-self: end;

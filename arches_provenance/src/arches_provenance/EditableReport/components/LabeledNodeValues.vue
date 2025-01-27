@@ -67,6 +67,7 @@ const props = defineProps<{
 
 .node-value {
     align-items: unset;
+    overflow-wrap: anywhere;
 }
 
 .p-button {
