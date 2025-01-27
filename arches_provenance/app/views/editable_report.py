@@ -275,6 +275,7 @@ class NodegroupTileDataView(APIBase):
                         key: build_valueid_annotation(value)
                         for key, value in tile.alias_annotations.items()
                     },
+                    # TODO: arches v8: tile.children.exists(),
                     "@has_children": tile.tilemodel_set.exists(),
                     "@tile_id": tile.tileid,
                 }
