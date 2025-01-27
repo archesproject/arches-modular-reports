@@ -485,8 +485,8 @@ def prepare_links(node, tile_values, node_display_value, request_language):
     return links
 
 
-def array_from_string(in_str):
+def array_from_string(input_str):
     try:
-        return json.loads(in_str)
+        return json.loads(input_str)
     except json.JSONDecodeError:
-        return [in_str]
+        return [input_str]
