@@ -9,7 +9,10 @@ import ChildTile from "@/arches_provenance/EditableReport/components/ChildTile.v
 
 import type { LabelBasedTile } from "@/arches_provenance/EditableReport/types";
 
-const props = defineProps<{ tileId: string }>();
+const props = defineProps<{
+    tileId: string;
+    customLabels?: Record<string, string>;
+}>();
 
 const { $gettext } = useGettext();
 
@@ -38,6 +41,7 @@ onMounted(fetchData);
         <ChildTile
             :data="child"
             :depth="1"
+            :custom-labels
         />
     </template>
     <Message

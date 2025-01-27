@@ -30,6 +30,8 @@ const props = defineProps<{
         config: {
             nodegroup_id: string;
             nodes: string[];
+            custom_labels: Record<string, string>;
+            custom_card_name: string | null;
             has_write_permission: boolean;
         };
     };
@@ -80,55 +82,39 @@ const shouldShowAddButton = computed(
         (isEmpty.value || cardinality.value === CARDINALITY_N),
 );
 
-const nodeAliases = computed(() => {
-    if (!nodePresentationLookup.value) {
-        return [];
-    }
-    return Object.entries(nodePresentationLookup.value).reduce(
-        (acc, [nodeAlias, nodeDetails]) => {
-            if (
-                nodeDetails.nodegroup.nodegroup_id ===
-                props.component.config.nodegroup_id
-            ) {
-                acc.push(nodeAlias);
-            }
-            return acc;
-        },
-        [] as string[],
-    );
-});
-
 const columnData = computed(() => {
     if (!nodePresentationLookup.value) {
         return [];
     }
-    return nodeAliases.value
-        .map((nodeAlias) => {
-            const nodeDetails = nodePresentationLookup.value![nodeAlias];
-            return {
+    return props.component.config.nodes.map((nodeAlias) => {
+        const nodeDetails = nodePresentationLookup.value![nodeAlias];
+        return {
+            nodeAlias,
+            widgetLabel:
+                props.component.config.custom_labels?.[nodeAlias] ??
+                nodeDetails.widget_label ??
                 nodeAlias,
-                widgetLabel: nodeDetails.widget_label,
-                widgetSort: nodeDetails.widget_sort,
-            };
-        })
-        .sort((a, b) => {
-            return a.widgetSort - b.widgetSort;
-        });
+        };
+    });
 });
 
 const cardinality = computed(() => {
-    if (!nodePresentationLookup.value) {
+    const firstNodeAlias = props.component.config.nodes[0];
+    if (!nodePresentationLookup.value || !firstNodeAlias) {
         return "";
     }
-    return nodePresentationLookup.value[nodeAliases.value[0]].nodegroup
-        .cardinality;
+    return nodePresentationLookup.value[firstNodeAlias].nodegroup.cardinality;
 });
 
 const cardName = computed(() => {
-    if (!nodePresentationLookup.value) {
+    const firstNodeAlias = props.component.config.nodes[0];
+    if (!nodePresentationLookup.value || !firstNodeAlias) {
         return "";
     }
-    return nodePresentationLookup.value[nodeAliases.value[0]].card_name;
+    return (
+        props.component.config.custom_card_name ??
+        nodePresentationLookup.value[firstNodeAlias].card_name
+    );
 });
 
 watch(query, () => {
@@ -367,7 +353,10 @@ function rowClass(data: LabelBasedCard) {
             </template>
         </Column>
         <template #expansion="slotProps">
-            <HierarchicalTileViewer :tile-id="slotProps.data['@tile_id']" />
+            <HierarchicalTileViewer
+                :tile-id="slotProps.data['@tile_id']"
+                :custom-labels="props.component.config.custom_labels"
+            />
         </template>
     </DataTable>
 </template>
