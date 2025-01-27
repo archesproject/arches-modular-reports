@@ -229,17 +229,23 @@ class ReportConfig(models.Model):
         except GraphModel.DoesNotExist:
             raise ValidationError("Related Resources section contains invalid graph id")
 
-        self.validate_node_aliases(rr_config, "Related Resources")
+        related_graph_usable_aliases = graph.node_set.exclude(
+            datatype__in=self.excluded_datatypes
+        )
+        usable_aliases = {node.alias for node in related_graph_usable_aliases}
+        self.validate_node_aliases(rr_config, "Related Resources", usable_aliases)
 
-    def validate_node_aliases(self, config, section_name):
+    def validate_node_aliases(self, config, section_name, usable_aliases=None):
+        if usable_aliases is None:
+            usable_aliases = self.usable_node_aliases
         requested_node_aliases = set(config.get("nodes", {}))
-        if extra_node_aliases := requested_node_aliases - self.usable_node_aliases:
+        if extra_node_aliases := requested_node_aliases - usable_aliases:
             raise ValidationError(
                 f"{section_name} section contains extraneous "
                 f"aliases or unsupported datatypes: {extra_node_aliases}"
             )
         overridden_labels = set(config.get("custom_labels", {}))
-        if extra_overridden_labels := overridden_labels - self.usable_node_aliases:
+        if extra_overridden_labels := overridden_labels - usable_aliases:
             raise ValidationError(
                 f"{section_name} section contains extraneous "
                 f"overridden labels for nodes: {extra_overridden_labels}"
