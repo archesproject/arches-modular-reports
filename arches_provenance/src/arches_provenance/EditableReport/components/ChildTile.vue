@@ -23,10 +23,10 @@ const nodePresentationLookup = inject(
 
 const childKey = "@children";
 const { [childKey]: children, ...singleTileData } = data;
-const cardName = Object.keys(singleTileData)[0];
-const nodeNameValuePairs = Object.entries(singleTileData[cardName]).filter(
-    ([nodeName]) => !nodeName.startsWith("@"),
-);
+const nodeAliasValuePairs = Object.entries(
+    Object.values(singleTileData)[0],
+).filter(([nodeAlias]) => !nodeAlias.startsWith("@"));
+const firstAlias = nodeAliasValuePairs[0][0];
 
 const marginUnit = 1.5;
 const marginUnitRem = `${marginUnit}rem`;
@@ -47,16 +47,16 @@ function tileIdFromChild(child: LabelBasedTile): string {
     ></div>
     <details open="true">
         <summary>
-            <strong>{{ nodePresentationLookup[cardName].card_name }}</strong>
+            <strong>{{ nodePresentationLookup[firstAlias].card_name }}</strong>
         </summary>
         <dl>
             <div
-                v-for="[nodeName, nodeValue] in nodeNameValuePairs"
-                :key="nodeName"
+                v-for="[nodeAlias, nodeValue] in nodeAliasValuePairs"
+                :key="nodeAlias"
                 class="node-pair"
             >
                 <!-- TODO: update link generation pattern when refactoring backend. -->
-                <dt>{{ nodePresentationLookup[nodeName].widget_label }}</dt>
+                <dt>{{ nodePresentationLookup[nodeAlias].widget_label }}</dt>
                 <template v-if="nodeValue.instance_details?.length">
                     <dd
                         v-for="instanceDetail in nodeValue.instance_details"
