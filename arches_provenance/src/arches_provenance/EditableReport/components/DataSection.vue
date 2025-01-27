@@ -86,21 +86,16 @@ const columnData = computed(() => {
     if (!nodePresentationLookup.value) {
         return [];
     }
-    return props.component.config.nodes
-        .map((nodeAlias) => {
-            const nodeDetails = nodePresentationLookup.value![nodeAlias];
-            return {
+    return props.component.config.nodes.map((nodeAlias) => {
+        const nodeDetails = nodePresentationLookup.value![nodeAlias];
+        return {
+            nodeAlias,
+            widgetLabel:
+                props.component.config.custom_labels?.[nodeAlias] ??
+                nodeDetails.widget_label ??
                 nodeAlias,
-                widgetLabel:
-                    props.component.config.custom_labels?.[nodeAlias] ??
-                    nodeDetails.widget_label ??
-                    nodeAlias,
-                widgetSort: nodeDetails.widget_sort,
-            };
-        })
-        .sort((a, b) => {
-            return a.widgetSort - b.widgetSort;
-        });
+        };
+    });
 });
 
 const cardinality = computed(() => {
