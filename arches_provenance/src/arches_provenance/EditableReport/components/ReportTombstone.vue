@@ -22,13 +22,21 @@ const props = defineProps<{
     component: SectionContent;
 }>();
 
-const nodePresentationLookup = inject(
-    "nodePresentationLookup",
-) as NodePresentationLookup;
+const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
+    NodePresentationLookup | undefined
+>;
 const { $gettext } = useGettext();
 
 const hasLoadingError = ref(false);
 const displayDataByAlias: Ref<NodeValueDisplayDataLookup> = ref({});
+
+function bestWidgetLabel(nodeAlias: string) {
+    return (
+        props.component.config.custom_labels?.[nodeAlias] ??
+        nodePresentationLookup.value?.[nodeAlias].widget_label ??
+        nodeAlias
+    );
+}
 
 async function fetchData() {
     try {
@@ -60,11 +68,7 @@ onMounted(fetchData);
                     v-for="nodeAlias in props.component.config.nodes"
                     :key="nodeAlias"
                     :node-presentation="nodePresentationLookup[nodeAlias]"
-                    :widget-label="
-                        props.component.config.custom_labels?.[nodeAlias] ??
-                        nodePresentationLookup[nodeAlias].widget_label ??
-                        nodeAlias
-                    "
+                    :widget-label="bestWidgetLabel(nodeAlias)"
                     :display-data="displayDataByAlias[nodeAlias]"
                 />
             </template>

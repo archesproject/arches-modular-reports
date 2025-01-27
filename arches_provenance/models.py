@@ -35,8 +35,8 @@ class ReportConfig(models.Model):
     def usable_node_aliases(self):
         if not self.graph:
             return {}
-        qs = self.graph.node_set.exclude(datatype__in=self.excluded_datatypes)
-        return {node.alias for node in qs}
+        usable_nodes = self.graph.node_set.exclude(datatype__in=self.excluded_datatypes)
+        return {node.alias for node in usable_nodes}
 
     def clean(self):
         if self.graph_id and not self.config:

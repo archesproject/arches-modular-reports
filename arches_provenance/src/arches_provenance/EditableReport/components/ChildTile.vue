@@ -5,6 +5,7 @@ import { inject } from "vue";
 
 import Button from "primevue/button";
 
+import type { Ref } from "vue";
 import type {
     LabelBasedNode,
     LabelBasedTile,
@@ -23,9 +24,9 @@ const {
     customLabels?: Record<string, string>;
 }>();
 
-const nodePresentationLookup = inject(
-    "nodePresentationLookup",
-) as NodePresentationLookup;
+const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
+    NodePresentationLookup | undefined
+>;
 
 const childKey = "@children";
 const { [childKey]: children, ...singleTileData } = data;
@@ -43,6 +44,14 @@ function tileIdFromChild(child: LabelBasedTile): string {
     const nodegroup = singleTileData as unknown as LabelBasedNode;
     return Object.values(nodegroup)[0]["@tile_id"];
 }
+
+function bestWidgetLabel(nodeAlias: string) {
+    return (
+        customLabels?.[nodeAlias] ??
+        nodePresentationLookup.value?.[nodeAlias].widget_label ??
+        nodeAlias
+    );
+}
 </script>
 
 <template>
@@ -53,7 +62,9 @@ function tileIdFromChild(child: LabelBasedTile): string {
     ></div>
     <details open="true">
         <summary>
-            <strong>{{ nodePresentationLookup[firstAlias].card_name }}</strong>
+            <strong>
+                {{ nodePresentationLookup?.[firstAlias].card_name }}
+            </strong>
         </summary>
         <dl>
             <div
@@ -62,13 +73,7 @@ function tileIdFromChild(child: LabelBasedTile): string {
                 class="node-pair"
             >
                 <!-- TODO: update link generation pattern when refactoring backend. -->
-                <dt>
-                    {{
-                        customLabels?.[nodeAlias] ??
-                        nodePresentationLookup[nodeAlias].widget_label ??
-                        nodeAlias
-                    }}
-                </dt>
+                <dt>{{ bestWidgetLabel(nodeAlias) }}</dt>
                 <template v-if="nodeValue.instance_details?.length">
                     <dd
                         v-for="instanceDetail in nodeValue.instance_details"
