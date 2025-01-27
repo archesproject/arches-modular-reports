@@ -17,15 +17,14 @@ from arches.app.utils.data_management.resources.formats.rdffile import JsonLdWri
 from arches_provenance.app.views.provenance_report import provenance_report
 from arches_provenance.app.views.provenance_report import ProvenanceSummaryTables
 from arches_provenance.app.views.provenance_report import ProvenanceRelatedResources
-from arches_provenance.app.views.provenance_report import ProvenanceGroupReportView
 from arches_provenance.app.views.provenance_report import ProvenanceEditorView
 from arches_provenance.app.views.provenance_report import ProvenanceSourceReferences
 from arches_provenance.app.views.editable_report import (
-    CardFromNodegroupIdView,
     ChildTileDataView,
     EditableReportAwareResourceReportView,
     NodegroupTileDataView,
     NodePresentationView,
+    NodeTileDataView,
     ProvenanceEditableReportConfigView,
     RelatedResourceView,
 )
@@ -267,14 +266,14 @@ urlpatterns = [
         name="api_nodegroup_tile_data",
     ),
     path(
+        "api/node_tile_data/<uuid:resourceid>",
+        NodeTileDataView.as_view(),
+        name="api_node_tile_data",
+    ),
+    path(
         "api/child_tile_data/<uuid:tileid>",
         ChildTileDataView.as_view(),
         name="api_child_tile_data",
-    ),
-    path(
-        "api/card_from_nodegroup_id/<uuid:nodegroupid>",
-        CardFromNodegroupIdView.as_view(),
-        name="api_card_from_nodegroup_id",
     ),
 ]
 

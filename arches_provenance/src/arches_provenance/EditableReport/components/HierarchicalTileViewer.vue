@@ -14,16 +14,15 @@ const props = defineProps<{ tileId: string }>();
 const { $gettext } = useGettext();
 
 const isLoading = ref(true);
-const isError = ref(false);
+const hasLoadingError = ref(false);
 const childTileData = ref<LabelBasedTile[]>([]);
 
 async function fetchData() {
     try {
         childTileData.value = await fetchChildTileData(props.tileId);
-        isError.value = false;
-    } catch (error) {
-        isError.value = true;
-        console.error(error);
+        hasLoadingError.value = false;
+    } catch {
+        hasLoadingError.value = true;
     }
     isLoading.value = false;
 }
@@ -42,7 +41,7 @@ onMounted(fetchData);
         />
     </template>
     <Message
-        v-if="isError"
+        v-if="hasLoadingError"
         severity="error"
     >
         {{ $gettext("Unable to fetch resource") }}

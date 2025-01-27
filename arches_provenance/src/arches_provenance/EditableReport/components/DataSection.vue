@@ -15,25 +15,15 @@ import {
     DESC,
     ROWS_PER_PAGE_OPTIONS,
 } from "@/arches_provenance/constants.ts";
-import {
-    fetchCardFromNodegroupId,
-    fetchNodegroupTileData,
-} from "@/arches_provenance/EditableReport/api.ts";
+import { fetchNodegroupTileData } from "@/arches_provenance/EditableReport/api.ts";
 import HierarchicalTileViewer from "@/arches_provenance/EditableReport/components/HierarchicalTileViewer.vue";
 
+import type { Ref } from "vue";
 import type { DataTablePageEvent } from "primevue/datatable";
-import type { LabelBasedCard } from "@/arches_provenance/EditableReport/types";
-
-interface ColumnDatum {
-    nodeAlias: string;
-    widgetLabel: string;
-}
-
-interface CardData {
-    name: string;
-    nodes: { alias: string; nodeid: string }[];
-    widgets: { node_id: string; label: string }[];
-}
+import type {
+    LabelBasedCard,
+    NodePresentationLookup,
+} from "@/arches_provenance/EditableReport/types";
 
 const props = defineProps<{
     component: {
@@ -51,7 +41,6 @@ const CARDINALITY_N = "n";
 const queryTimeoutValue = 500;
 let timeout: ReturnType<typeof setTimeout> | null = null;
 
-const tableTitle = ref("");
 const rowsPerPage = ref(ROWS_PER_PAGE_OPTIONS[0]);
 const currentPage = ref(1);
 const query = ref("");
@@ -61,13 +50,13 @@ const currentlyDisplayedTableData = ref<unknown[]>([]);
 const searchResultsTotalCount = ref(0);
 const isLoading = ref(false);
 const hasLoadingError = ref(false);
-const columnData = ref<ColumnDatum[]>([]);
-const cardData = ref<CardData | null>(null);
-const cardinality = ref("");
 const resettingToFirstPage = ref(false);
 const pageNumberToNodegroupTileData = ref<Record<number, unknown[]>>({});
 
 const userCanEditResourceInstance = inject("userCanEditResourceInstance");
+const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
+    NodePresentationLookup | undefined
+>;
 
 const first = computed(() => {
     if (resettingToFirstPage.value) {
@@ -90,6 +79,57 @@ const shouldShowAddButton = computed(
         props.component.config.has_write_permission &&
         (isEmpty.value || cardinality.value === CARDINALITY_N),
 );
+
+const nodeAliases = computed(() => {
+    if (!nodePresentationLookup.value) {
+        return [];
+    }
+    return Object.entries(nodePresentationLookup.value).reduce(
+        (acc, [nodeAlias, nodeDetails]) => {
+            if (
+                nodeDetails.nodegroup.nodegroup_id ===
+                props.component.config.nodegroup_id
+            ) {
+                acc.push(nodeAlias);
+            }
+            return acc;
+        },
+        [] as string[],
+    );
+});
+
+const columnData = computed(() => {
+    if (!nodePresentationLookup.value) {
+        return [];
+    }
+    return nodeAliases.value
+        .map((nodeAlias) => {
+            const nodeDetails = nodePresentationLookup.value![nodeAlias];
+            return {
+                nodeAlias,
+                widgetLabel: nodeDetails.widget_label,
+                widgetSort: nodeDetails.widget_sort,
+            };
+        })
+        .sort((a, b) => {
+            return a.widgetSort - b.widgetSort;
+        });
+});
+
+const cardinality = computed(() => {
+    if (!nodePresentationLookup.value) {
+        return "";
+    }
+    return nodePresentationLookup.value[nodeAliases.value[0]].nodegroup
+        .cardinality;
+});
+
+const cardName = computed(() => {
+    if (!nodePresentationLookup.value) {
+        return "";
+    }
+    return nodePresentationLookup.value[nodeAliases.value[0]].card_name;
+});
 
 watch(query, () => {
     if (timeout) {
@@ -119,47 +159,7 @@ watch(currentPage, () => {
     }
 });
 
-onMounted(() => {
-    fetchData();
-    fetchCardFromNodegroupId(props.component.config.nodegroup_id).then(
-        (fetchedCardData) => {
-            tableTitle.value = fetchedCardData?.name;
-            cardinality.value = fetchedCardData.cardinality;
-            cardData.value = fetchedCardData;
-
-            columnData.value = deriveColumnData(
-                props.component.config,
-                fetchedCardData,
-            );
-        },
-    );
-});
-
-function deriveColumnData(
-    config: { nodes: string[] },
-    cardData: {
-        nodes: { alias: string; nodeid: string }[];
-        widgets: { node_id: string; label: string }[];
-    },
-): ColumnDatum[] {
-    return config.nodes!.map((nodeAlias: string) => {
-        const matchingNode = cardData.nodes.find(
-            (node) => node.alias === nodeAlias,
-        );
-
-        let matchingWidget = null;
-        if (matchingNode) {
-            matchingWidget = cardData.widgets.find(
-                (widget) => widget.node_id === matchingNode.nodeid,
-            );
-        }
-
-        return {
-            nodeAlias: nodeAlias,
-            widgetLabel: matchingWidget?.label || "",
-        };
-    });
-}
+onMounted(fetchData);
 
 async function fetchData(page: number = 1) {
     isLoading.value = true;
@@ -197,11 +197,7 @@ function onPageTurn(event: DataTablePageEvent) {
 }
 
 function onUpdateSortField(event: string) {
-    const selectedNode = cardData.value?.nodes.find(
-        (node) => node.alias === event,
-    );
-
-    sortNodeId.value = selectedNode!.nodeid;
+    sortNodeId.value = nodePresentationLookup.value![event].nodeid;
 }
 
 function onUpdateSortOrder(event: number | undefined) {
@@ -219,15 +215,11 @@ function rowClass(data: LabelBasedCard) {
 
 <template>
     <div style="display: flex; align-items: center">
-        <h3>{{ tableTitle }}</h3>
+        <h3>{{ cardName }}</h3>
 
         <Button
             v-if="shouldShowAddButton"
-            :label="
-                $gettext('Add %{cardName}', {
-                    cardName: cardData?.name as string,
-                })
-            "
+            :label="$gettext('Add %{cardName}', { cardName })"
             icon="pi pi-plus"
             variant="outlined"
             style="margin: 1rem 2rem 0 2rem"
