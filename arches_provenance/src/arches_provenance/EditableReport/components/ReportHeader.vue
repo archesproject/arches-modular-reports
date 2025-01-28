@@ -68,7 +68,7 @@ onMounted(fetchData);
 </script>
 
 <template>
-    <Panel>
+    <Panel style="border: 0">
         <template #header>
             <h2>{{ descriptor }}</h2>
         </template>

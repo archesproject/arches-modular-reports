@@ -44,7 +44,10 @@ const EditableReportPreset = definePreset(Aura, {
                     font-size: ${dt('base.button.font.size')};
                 }
             `
-        }
+        },
+        panel: {
+            border: { radius: 'none' },
+        },
     },
 });
 

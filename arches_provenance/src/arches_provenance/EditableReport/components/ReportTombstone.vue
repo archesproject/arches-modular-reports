@@ -54,7 +54,7 @@ onMounted(fetchData);
 </script>
 
 <template>
-    <Panel>
+    <Panel style="border: 0">
         <div class="data-container">
             <Message
                 v-if="hasLoadingError"
