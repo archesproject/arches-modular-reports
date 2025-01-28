@@ -1,1 +1,17 @@
-<div class="editable-report-mounting-point"></div>
+<div 
+    class="editable-report-mounting-point"
+    style="
+        /* 
+            This is a bad pattern that should not be reproduced.
+            We should avoid `calc`-ing the width and height of elements
+            in all new code. However this compensates for not having the 
+            correct width calculated at higher levels in Arches core. And
+            this keeps the `calc`-ing out of Vue components so that they can
+            be more easily reused in other contexts.
+        */
+        position: absolute;
+        width: calc(100vw - 50px);
+        height: calc(100vh - 100px);
+        overflow: auto;
+    "
+></div>
