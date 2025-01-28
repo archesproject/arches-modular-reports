@@ -26,19 +26,26 @@ const { $gettext } = useGettext();
 const hasLoadingError = ref(false);
 const displayDataByAlias: Ref<NodeValueDisplayDataLookup | null> = ref(null);
 
+const descriptorAliases = computed(() => {
+    const matches = props.component.config.descriptor.matchAll(/<(.*?)>/g);
+    return [
+        ...matches.map((match: RegExpMatchArray) => {
+            return match[1];
+        }),
+    ];
+});
+
 const descriptor = computed(() => {
     if (!nodePresentationLookup.value || !displayDataByAlias.value) {
         return null;
     }
 
     let returnVal = props.component.config.descriptor;
-    const matches = props.component.config.descriptor.matchAll(/<(.*?)>/g);
-    matches.forEach((match: RegExpMatchArray) => {
-        const [replace_target, alias] = match;
+    descriptorAliases.value.forEach((alias: string) => {
         const firstValue =
             displayDataByAlias.value![alias]?.[0]?.display_values[0];
         if (firstValue) {
-            returnVal = returnVal.replace(replace_target, firstValue);
+            returnVal = returnVal.replace(`<${alias}>`, firstValue);
         }
     });
 
@@ -46,13 +53,10 @@ const descriptor = computed(() => {
 });
 
 async function fetchData() {
-    const aliases = props.component.config.descriptor
-        .matchAll(/<(.*?)>/g)
-        .map((match: RegExpMatchArray) => match[1]);
     try {
         displayDataByAlias.value = await fetchNodeTileData(
             resourceInstanceId,
-            aliases,
+            descriptorAliases.value,
         );
         hasLoadingError.value = false;
     } catch {
