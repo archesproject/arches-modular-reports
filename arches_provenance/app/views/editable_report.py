@@ -228,11 +228,6 @@ class NodePresentationView(APIBase):
                         if node.cardxnodexwidget_set.all()
                         else node.name.replace("_", " ").title()
                     ),
-                    "widget_sort": (
-                        node.cardxnodexwidget_set.all()[0].sortorder
-                        if node.cardxnodexwidget_set.all()
-                        else 0
-                    ),
                     "nodegroup": {
                         "nodegroup_id": node.nodegroup.pk,
                         "cardinality": node.nodegroup.cardinality,

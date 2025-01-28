@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 
-import type {
-    NodePresentation,
-    NodeValueDisplayData,
-} from "@/arches_provenance/EditableReport/types";
+import type { NodeValueDisplayData } from "@/arches_provenance/EditableReport/types";
 
 const props = defineProps<{
-    nodePresentation: NodePresentation;
+    widgetLabel: string;
     displayData: NodeValueDisplayData[];
 }>();
 </script>
@@ -15,7 +12,7 @@ const props = defineProps<{
 <template>
     <div class="node-container">
         <dt>
-            <strong>{{ props.nodePresentation.widget_label }}</strong>
+            <strong>{{ widgetLabel }}</strong>
         </dt>
         <div class="node-values-container">
             <template
