@@ -86,9 +86,3 @@ onMounted(async () => {
         }"
     />
 </template>
-
-<style scoped>
-.section-container {
-    gap: 2rem;
-}
-</style>
