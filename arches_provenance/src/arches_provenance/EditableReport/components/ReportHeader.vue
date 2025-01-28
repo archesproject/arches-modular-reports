@@ -92,8 +92,4 @@ onMounted(fetchData);
     font-size: 2rem;
     margin: 1rem;
 }
-
-:deep(.p-panel-content) {
-    padding: 0;
-}
 </style>
