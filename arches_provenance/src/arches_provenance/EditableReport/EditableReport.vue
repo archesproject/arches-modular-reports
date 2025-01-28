@@ -71,7 +71,6 @@ onMounted(async () => {
 
 <template>
     <div class="section-container">
-        <h2>{{ config.name }}</h2>
         <component
             :is="componentLookup[component.component]"
             v-for="component in config.components"

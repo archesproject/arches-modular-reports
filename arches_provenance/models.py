@@ -50,7 +50,7 @@ class ReportConfig(models.Model):
                 {
                     "component": "ReportHeader",
                     "config": {
-                        "descriptor": f"{self.graph.name} Descriptor",
+                        "descriptor": f"{self.graph.name} descriptor template",
                     },
                 },
                 {
@@ -242,13 +242,15 @@ class ReportConfig(models.Model):
         if extra_node_aliases := requested_node_aliases - usable_aliases:
             raise ValidationError(
                 f"{section_name} section contains extraneous "
-                f"aliases or unsupported datatypes: {extra_node_aliases}"
+                "or invalid node aliases or unsupported datatypes: "
+                f"{extra_node_aliases}"
             )
         overridden_labels = set(config.get("custom_labels", {}))
         if extra_overridden_labels := overridden_labels - usable_aliases:
             raise ValidationError(
-                f"{section_name} section contains extraneous "
-                f"overridden labels for nodes: {extra_overridden_labels}"
+                f"{section_name} section overrides labels for "
+                "extraneous or invalid node aliases or unsupported "
+                f"datatypes: {extra_overridden_labels}"
             )
 
     @staticmethod
