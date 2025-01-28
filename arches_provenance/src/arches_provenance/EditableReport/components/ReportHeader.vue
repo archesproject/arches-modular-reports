@@ -9,7 +9,6 @@ import { fetchNodeTileData } from "@/arches_provenance/EditableReport/api.ts";
 
 import type { Ref } from "vue";
 import type {
-    NodePresentationLookup,
     NodeValueDisplayDataLookup,
     SectionContent,
 } from "@/arches_provenance/EditableReport/types";
@@ -18,9 +17,6 @@ const resourceInstanceId = inject("resourceInstanceId") as string;
 
 const props = defineProps<{ component: SectionContent }>();
 
-const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
-    NodePresentationLookup | undefined
->;
 const { $gettext } = useGettext();
 
 const hasLoadingError = ref(false);
@@ -36,19 +32,23 @@ const descriptorAliases = computed(() => {
 });
 
 const descriptor = computed(() => {
-    if (!nodePresentationLookup.value || !displayDataByAlias.value) {
+    if (!displayDataByAlias.value) {
         return null;
     }
 
     let returnVal = props.component.config.descriptor;
+
     descriptorAliases.value.forEach((alias: string) => {
-        const firstValue =
-            displayDataByAlias.value![alias]?.[0]?.display_values[0];
-        if (firstValue) {
+        // Drill into first tile.
+        const displayData = displayDataByAlias.value![alias][0];
+        if (displayData?.display_values.length) {
+            // Drill into first display value. (e.g. first concept in concept-list)
+            const firstValue = displayData.display_values[0];
             returnVal = returnVal.replace(`<${alias}>`, firstValue);
         }
     });
 
+    document.title = returnVal;
     return returnVal;
 });
 
