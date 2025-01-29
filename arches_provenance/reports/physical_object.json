@@ -264,9 +264,9 @@
                                                 {
                                                     "config": {
                                                         "nodes": [
-                                                            "identifier_type",
                                                             "identifier_content",
-                                                            "identifier_label"
+                                                            "identifier_type",
+                                                            "identifier_data_assignment_actor"
                                                         ],
                                                         "nodegroup_id": "e7cbda1e-bacf-11ea-81b2-3af9d3b32b71",
                                                         "custom_labels": {},
@@ -304,8 +304,8 @@
                                                 {
                                                     "config": {
                                                         "nodes": [
-                                                            "digital_reference_type",
-                                                            "digital_reference"
+                                                            "digital_reference",
+                                                            "digital_reference_type"
                                                         ],
                                                         "nodegroup_id": "657b45e0-c79a-11ea-b94e-3af9d3b32b71",
                                                         "custom_labels": {},
