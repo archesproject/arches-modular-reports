@@ -19,8 +19,8 @@ import {
 import type { Ref } from "vue";
 import type {
     ComponentLookup,
-    NamedSection,
     NodePresentationLookup,
+    ReportConfig,
 } from "@/arches_provenance/EditableReport/types";
 
 const toast = useToast();
@@ -35,8 +35,7 @@ provide("nodePresentationLookup", nodePresentationLookup);
 const userCanEditResourceInstance = ref(false);
 provide("userCanEditResourceInstance", userCanEditResourceInstance);
 
-const config: Ref<NamedSection> = ref({
-    name: $gettext("Loading data"),
+const config: Ref<ReportConfig> = ref({
     components: [{ component: "", config: {} }],
 });
 

@@ -23,8 +23,8 @@ class ReportConfig(models.Model):
         db_table = "arches_provenance_report_config"
 
     def __str__(self):
-        if self.config and self.graph:
-            return f"Config for: {self.graph.name}: {self.config.get('name')}"
+        if self.graph:
+            return f"Config for: {self.graph.name}"
         return super().__str__()
 
     @property
@@ -45,7 +45,6 @@ class ReportConfig(models.Model):
 
     def generate_config(self):
         return {
-            "name": "Untitled Report",
             "components": [
                 {
                     "component": "ReportHeader",
