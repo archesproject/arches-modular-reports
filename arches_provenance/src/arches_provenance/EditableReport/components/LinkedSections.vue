@@ -97,7 +97,7 @@ onMounted(async () => {
                 @toggle="linked_section.collapsed = !linked_section.collapsed"
             >
                 <template #header>
-                    <h2>{{ linked_section.name }}</h2>
+                    <h3>{{ linked_section.name }}</h3>
                 </template>
                 <template #icons>
                     <Button

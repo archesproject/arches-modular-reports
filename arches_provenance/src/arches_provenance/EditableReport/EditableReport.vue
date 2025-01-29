@@ -8,7 +8,6 @@ import { useToast } from "primevue/usetoast";
 import {
     fetchNodePresentation,
     fetchReportConfig,
-    fetchResource,
     fetchUserResourcePermissions,
 } from "@/arches_provenance/EditableReport/api.ts";
 import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_provenance/constants.ts";
@@ -22,7 +21,6 @@ import type {
     ComponentLookup,
     NamedSection,
     NodePresentationLookup,
-    Tile,
 } from "@/arches_provenance/EditableReport/types";
 
 const toast = useToast();
@@ -30,10 +28,8 @@ const { $gettext } = useGettext();
 const componentLookup: ComponentLookup = {};
 
 const resourceInstanceId = inject("resourceInstanceId") as string;
-const resource: Ref<{ resource: Tile } | null> = ref(null);
-provide("resource", resource);
 
-const nodePresentationLookup: Ref<NodePresentationLookup | null> = ref(null);
+const nodePresentationLookup: Ref<NodePresentationLookup | undefined> = ref();
 provide("nodePresentationLookup", nodePresentationLookup);
 
 const userCanEditResourceInstance = ref(false);
@@ -50,9 +46,6 @@ onMounted(async () => {
     }
     try {
         await Promise.all([
-            fetchResource(resourceInstanceId).then(
-                (data) => (resource.value = data),
-            ),
             fetchNodePresentation(resourceInstanceId).then(
                 (data) => (nodePresentationLookup.value = data),
             ),
@@ -78,7 +71,6 @@ onMounted(async () => {
 
 <template>
     <div class="section-container">
-        <h2>{{ config.name }}</h2>
         <component
             :is="componentLookup[component.component]"
             v-for="component in config.components"

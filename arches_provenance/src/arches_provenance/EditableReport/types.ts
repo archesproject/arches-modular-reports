@@ -25,7 +25,10 @@ export interface NodePresentation {
     name: string;
     card_name: string;
     widget_label: string;
-    datatype: string;
+    nodegroup: {
+        nodegroup_id: string;
+        cardinality: string;
+    };
 }
 
 export interface NodePresentationLookup {
@@ -36,11 +39,16 @@ export interface ComponentLookup {
     [key: string]: Component;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SingleTileValue = any;
-export type TileValue = SingleTileValue | SingleTileValue[];
-export interface Tile {
-    [key: string]: TileValue;
+export interface NodeValueDisplayData {
+    display_values: string[];
+    links: {
+        label: string;
+        link: string;
+    }[];
+}
+
+export interface NodeValueDisplayDataLookup {
+    [key: string]: NodeValueDisplayData[];
 }
 
 export interface LabelBasedTile {

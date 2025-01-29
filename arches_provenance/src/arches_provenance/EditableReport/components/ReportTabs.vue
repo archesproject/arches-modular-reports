@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, ref, watch } from "vue";
 
 import Tab from "primevue/tab";
 import Tabs from "primevue/tabs";
@@ -25,18 +25,26 @@ const { component, resourceInstanceId } = defineProps<{
     resourceInstanceId: string;
 }>();
 
+const activeTab = ref(component.config.tabs[0].name);
+const visitedTabs = ref<Set<string>>(new Set([activeTab.value]));
+
 onMounted(() => {
     importComponents(component.config.tabs, componentLookup);
+
     component.config.tabs.forEach((tab: NamedSection) => {
         tab.components.forEach((child: SectionContent) => {
             child.config.id = uniqueId(child);
         });
     });
 });
+
+watch(activeTab, (tab) => {
+    visitedTabs.value.add(tab);
+});
 </script>
 
 <template>
-    <Tabs :value="component.config.tabs[0].name">
+    <Tabs v-model:value="activeTab">
         <TabList>
             <Tab
                 v-for="tab in component.config.tabs"
@@ -52,13 +60,15 @@ onMounted(() => {
                 :key="tab.name"
                 :value="tab.name"
             >
-                <component
-                    :is="componentLookup[tabComponent.component]"
-                    v-for="tabComponent in tab.components"
-                    :key="tabComponent.config.id"
-                    :component="tabComponent"
-                    :resource-instance-id
-                />
+                <template v-if="visitedTabs.has(tab.name)">
+                    <component
+                        :is="componentLookup[tabComponent.component]"
+                        v-for="tabComponent in tab.components"
+                        :key="tabComponent.config.id"
+                        :component="tabComponent"
+                        :resource-instance-id="resourceInstanceId"
+                    />
+                </template>
             </TabPanel>
         </TabPanels>
     </Tabs>

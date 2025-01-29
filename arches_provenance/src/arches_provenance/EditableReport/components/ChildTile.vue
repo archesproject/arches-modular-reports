@@ -5,6 +5,7 @@ import { inject } from "vue";
 
 import Button from "primevue/button";
 
+import type { Ref } from "vue";
 import type {
     LabelBasedNode,
     LabelBasedTile,
@@ -15,18 +16,24 @@ const {
     data,
     depth,
     divider = false,
-} = defineProps<{ data: LabelBasedTile; depth: number; divider?: boolean }>();
+    customLabels,
+} = defineProps<{
+    data: LabelBasedTile;
+    depth: number;
+    divider?: boolean;
+    customLabels?: Record<string, string>;
+}>();
 
-const nodePresentationLookup = inject(
-    "nodePresentationLookup",
-) as NodePresentationLookup;
+const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
+    NodePresentationLookup | undefined
+>;
 
 const childKey = "@children";
 const { [childKey]: children, ...singleTileData } = data;
-const cardName = Object.keys(singleTileData)[0];
-const nodeNameValuePairs = Object.entries(singleTileData[cardName]).filter(
-    ([nodeName]) => !nodeName.startsWith("@"),
-);
+const nodeAliasValuePairs = Object.entries(
+    Object.values(singleTileData)[0],
+).filter(([nodeAlias]) => !nodeAlias.startsWith("@"));
+const firstAlias = nodeAliasValuePairs[0][0];
 
 const marginUnit = 1.5;
 const marginUnitRem = `${marginUnit}rem`;
@@ -36,6 +43,14 @@ function tileIdFromChild(child: LabelBasedTile): string {
     const { [childKey]: _grandchildren, ...singleTileData } = child;
     const nodegroup = singleTileData as unknown as LabelBasedNode;
     return Object.values(nodegroup)[0]["@tile_id"];
+}
+
+function bestWidgetLabel(nodeAlias: string) {
+    return (
+        customLabels?.[nodeAlias] ??
+        nodePresentationLookup.value?.[nodeAlias].widget_label ??
+        nodeAlias
+    );
 }
 </script>
 
@@ -47,16 +62,18 @@ function tileIdFromChild(child: LabelBasedTile): string {
     ></div>
     <details open="true">
         <summary>
-            <strong>{{ nodePresentationLookup[cardName].card_name }}</strong>
+            <strong>
+                {{ nodePresentationLookup?.[firstAlias].card_name }}
+            </strong>
         </summary>
         <dl>
             <div
-                v-for="[nodeName, nodeValue] in nodeNameValuePairs"
-                :key="nodeName"
+                v-for="[nodeAlias, nodeValue] in nodeAliasValuePairs"
+                :key="nodeAlias"
                 class="node-pair"
             >
                 <!-- TODO: update link generation pattern when refactoring backend. -->
-                <dt>{{ nodePresentationLookup[nodeName].widget_label }}</dt>
+                <dt>{{ bestWidgetLabel(nodeAlias) }}</dt>
                 <template v-if="nodeValue.instance_details?.length">
                     <dd
                         v-for="instanceDetail in nodeValue.instance_details"
@@ -83,6 +100,7 @@ function tileIdFromChild(child: LabelBasedTile): string {
                 :divider="true"
                 :data="child"
                 :depth="depth + 1"
+                :custom-labels
             />
         </dl>
     </details>

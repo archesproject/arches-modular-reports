@@ -9,6 +9,7 @@ from django.db.models import (
     F,
     Func,
     IntegerField,
+    JSONField,
     OuterRef,
     Q,
     Subquery,
@@ -16,10 +17,9 @@ from django.db.models import (
     Value,
     When,
 )
+from django.db.models.expressions import CombinedExpression
 from django.db.models.fields.json import KT
-from django.db.models.functions import Concat, JSONObject
-from django.urls import reverse
-from django.db.models.functions import Concat
+from django.db.models.functions import Cast, Concat, JSONObject
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
@@ -101,12 +101,54 @@ def annotate_related_graph_nodes_with_widget_labels(
         .exclude(datatype__in=["semantic", "annotation", "geojson-feature-collection"])
         .annotate(
             widget_label_json=Subquery(
-                models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
-                .order_by("sortorder")
-                .values("label")[:1]
+                models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid")).values(
+                    "label"
+                )[:1]
             )
         )
         .annotate(widget_label=KT(f"widget_label_json__{request_language}"))
+    )
+
+
+def annotate_node_values(
+    node_aliases, resourceinstance_id, permitted_nodegroups, user_language
+):
+    return (
+        models.Node.objects.filter(
+            alias__in=node_aliases,
+            graph__resourceinstance__pk=resourceinstance_id,
+            nodegroup__in=permitted_nodegroups,
+        )
+        .exclude(datatype__in=["semantic", "annotation", "geojson-feature-collection"])
+        .annotate(
+            display_data=ArraySubquery(
+                models.TileModel.objects.filter(
+                    resourceinstance=resourceinstance_id,
+                    nodegroup_id=OuterRef("nodegroup_id"),
+                )
+                .annotate(
+                    json_object=JSONObject(
+                        display_value=ArchesGetNodeDisplayValueV2(
+                            F("data"),
+                            OuterRef("nodeid"),
+                            Value(user_language),
+                        ),
+                        tile_value=CombinedExpression(
+                            F("data"),
+                            "->",
+                            Cast(OuterRef("nodeid"), output_field=TextField()),
+                            output_field=JSONField(),
+                        ),
+                    ),
+                )
+                .exclude(json_object__display_value="")
+                .exclude(json_object__tile_value=None)
+                # This will work on Django 5.1+
+                # .distinct("json_object__display_value", "sortorder")
+                .order_by("sortorder")
+                .values("json_object")
+            )
+        )
     )
 
 
@@ -166,6 +208,7 @@ def get_sorted_filtered_tiles(
             search_text=Concat(*display_values_with_spaces, output_field=TextField())
         )
         .filter(search_text__icontains=query)
+        # TODO: arches v8: .prefetch_related("children")
         .prefetch_related("tilemodel_set")
     )
 
@@ -282,9 +325,9 @@ def get_sorted_filtered_relations(
         .distinct()
         .annotate(
             relation_name_json=Subquery(
-                models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid"))
-                .order_by("sortorder")
-                .values("label")[:1]
+                models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid")).values(
+                    "label"
+                )[:1]
             )
         )
         # TODO: add fallback to system language? Below also.
@@ -344,6 +387,7 @@ def serialize_tiles_with_children(tile, serialized_graph):
 
     tile._children = [
         serialize_tiles_with_children(child, serialized_graph)
+        # TODO: arches v8: tile.children.order_by("sortorder")
         for child in tile.tilemodel_set.order_by("sortorder")
     ]
 
@@ -355,7 +399,7 @@ def serialize_tiles_with_children(tile, serialized_graph):
     }
 
 
-def prepare_links(annotated_relation, node, request_language):
+def prepare_links(node, tile_values, node_display_value, request_language):
     links = []
 
     ### TEMPORARY HELPERS
@@ -366,7 +410,6 @@ def prepare_links(annotated_relation, node, request_language):
         that __arches_get_node_display_value() is lossy, i.e. if the display
         values contain the delimiter (", ") we can't distinguish those.
         So we just get the display values again, unfortunately.
-
         TODO: graduate from the PG function to ORM expressions?
         """
         nonlocal request_language
@@ -393,16 +436,12 @@ def prepare_links(annotated_relation, node, request_language):
         ]
 
     ### BEGIN LINK GENERATION
-
-    tile_vals = (
-        getattr(annotated_relation, node.alias + "_instance_details", None) or []
-    )
-    for tile_val in tile_vals:
+    for tile_val in tile_values:
         match node.datatype:
             case "resource-instance":
                 links.append(
                     {
-                        "label": getattr(annotated_relation, node.alias),
+                        "label": node_display_value,
                         "link": get_link(node.datatype, tile_val[0]["resourceId"]),
                     }
                 )
@@ -421,7 +460,7 @@ def prepare_links(annotated_relation, node, request_language):
                 if concept_id_results := get_concept_ids([tile_val]):
                     links.append(
                         {
-                            "label": getattr(annotated_relation, node.alias),
+                            "label": node_display_value,
                             "link": get_link(node.datatype, concept_id_results[0]),
                         }
                     )
@@ -444,3 +483,10 @@ def prepare_links(annotated_relation, node, request_language):
                 )
 
     return links
+
+
+def array_from_string(input_str):
+    try:
+        return json.loads(input_str)
+    except json.JSONDecodeError:
+        return [input_str]

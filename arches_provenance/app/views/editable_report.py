@@ -1,7 +1,6 @@
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
-from django.db.models import Prefetch
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
@@ -12,7 +11,6 @@ from django.views.generic import View
 
 from arches.app.views.api import APIBase
 from arches.app.models import models
-from arches.app.models.card import Card
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.permission_backend import (
     get_nodegroups_by_perm,
@@ -30,7 +28,9 @@ from arches_provenance.app.utils.update_report_configuration_for_nodegroup_permi
 )
 
 from arches_provenance.app.utils.nodegroup_tile_data_utils import (
+    annotate_node_values,
     annotate_related_graph_nodes_with_widget_labels,
+    array_from_string,
     build_valueid_annotation,
     get_sorted_filtered_relations,
     get_sorted_filtered_tiles,
@@ -168,7 +168,14 @@ class RelatedResourceView(APIBase):
                     **{
                         node.alias: {
                             "display_value": getattr(relation, node.alias),
-                            "links": prepare_links(relation, node, request_language),
+                            "links": prepare_links(
+                                node=node,
+                                tile_values=getattr(
+                                    relation, node.alias + "_instance_details", []
+                                ),
+                                node_display_value=getattr(relation, node.alias),
+                                request_language=request_language,
+                            ),
                         }
                         for node in nodes
                     },
@@ -196,13 +203,13 @@ class NodePresentationView(APIBase):
         nodes = (
             models.Node.objects.filter(graph=graph)
             .filter(nodegroup__in=permitted_nodegroups)
+            .exclude(
+                datatype__in=["semantic", "annotation", "geojson-feature-collection"]
+            )
             .select_related("nodegroup")
             .prefetch_related(
                 "nodegroup__cardmodel_set",
-                Prefetch(
-                    "cardxnodexwidget_set",
-                    queryset=models.CardXNodeXWidget.objects.order_by("sortorder"),
-                ),
+                "cardxnodexwidget_set",
             )
         )
 
@@ -221,7 +228,10 @@ class NodePresentationView(APIBase):
                         if node.cardxnodexwidget_set.all()
                         else node.name.replace("_", " ").title()
                     ),
-                    "datatype": node.datatype,
+                    "nodegroup": {
+                        "nodegroup_id": node.nodegroup.pk,
+                        "cardinality": node.nodegroup.cardinality,
+                    },
                 }
                 for node in nodes
             }
@@ -260,6 +270,7 @@ class NodegroupTileDataView(APIBase):
                         key: build_valueid_annotation(value)
                         for key, value in tile.alias_annotations.items()
                     },
+                    # TODO: arches v8: tile.children.exists(),
                     "@has_children": tile.tilemodel_set.exists(),
                     "@tile_id": tile.tileid,
                 }
@@ -270,6 +281,38 @@ class NodegroupTileDataView(APIBase):
         }
 
         return JSONResponse(response_data)
+
+
+@method_decorator(can_read_resource_instance, name="dispatch")
+class NodeTileDataView(APIBase):
+    def get(self, request, resourceid):
+        permitted_nodegroups = get_nodegroups_by_perm(request.user, "read_nodegroup")
+        node_aliases = request.GET.getlist("node_alias", [])
+        user_lang = translation.get_language()
+
+        nodes_with_display_data = annotate_node_values(
+            node_aliases, resourceid, permitted_nodegroups, user_lang
+        )
+
+        return JSONResponse(
+            {
+                node.alias: [
+                    {
+                        "display_values": array_from_string(
+                            display_object["display_value"]
+                        ),
+                        "links": prepare_links(
+                            node,
+                            [display_object["tile_value"]],
+                            display_object["display_value"],
+                            user_lang,
+                        ),
+                    }
+                    for display_object in node.display_data
+                ]
+                for node in nodes_with_display_data
+            }
+        )
 
 
 class ChildTileDataView(APIBase):
@@ -291,13 +334,3 @@ class ChildTileDataView(APIBase):
             tile, published_graph.serialized_graph
         )
         return JSONResponse(serialized["@children"])
-
-
-class CardFromNodegroupIdView(APIBase):
-    def get(self, request, nodegroupid):
-        try:
-            card = Card.objects.get(nodegroup_id=nodegroupid)
-        except models.Card.DoesNotExist:
-            return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
-
-        return JSONResponse(card)
