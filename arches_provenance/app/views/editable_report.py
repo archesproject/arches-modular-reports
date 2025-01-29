@@ -125,6 +125,9 @@ class RelatedResourceView(APIBase):
         query = request.GET.get("query", "")
         request_language = translation.get_language()
 
+        permitted_nodegroups = get_nodegroups_by_perm(
+            request.user, "models.read_nodegroup"
+        )
         nodes = annotate_related_graph_nodes_with_widget_labels(
             additional_nodes, related_graphid, request_language
         )
@@ -132,6 +135,7 @@ class RelatedResourceView(APIBase):
             resource=resource,
             related_graphid=related_graphid,
             nodes=nodes,
+            permitted_nodegroups=permitted_nodegroups,
             sort_field=sort_field,
             direction=direction,
             query=query,
@@ -323,6 +327,9 @@ class ChildTileDataView(APIBase):
             .get()
         )
 
+        permitted_nodegroups = get_nodegroups_by_perm(
+            request.user, "models.read_nodegroup"
+        )
         if not user_can_read_resource(request.user, str(tile.resourceinstance_id)):
             return JSONErrorResponse(status=HTTPStatus.FORBIDDEN)
 
@@ -331,6 +338,9 @@ class ChildTileDataView(APIBase):
             language=translation.get_language(),
         )
         serialized = serialize_tiles_with_children(
-            tile, published_graph.serialized_graph
+            tile=tile,
+            serialized_graph=published_graph.serialized_graph,
+            permitted_nodegroups=permitted_nodegroups,
         )
+
         return JSONResponse(serialized["@children"])
