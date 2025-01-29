@@ -3,7 +3,7 @@
     "components": [
         {
             "config": {
-                "descriptor": "Physical Object Descriptor"
+                "descriptor": "<name_content> [<type>], <production_part_actor>"
             },
             "component": "ReportHeader"
         },
@@ -26,10 +26,12 @@
                     "production_part_actor",
                     "material",
                     "visual_image_shown",
-                    "identifier_content",
-                    "production_timespan_name_content",
+                    "type",
                     "text_carried"
-                ]
+                ],
+                "custom_labels": {
+                    "visual_image_shown": "Visual Work"
+                }
             },
             "component": "ReportTombstone"
         },
@@ -48,11 +50,9 @@
                                                 {
                                                     "config": {
                                                         "nodes": [
-                                                            "name_language",
-                                                            "name_source_reference",
                                                             "name_content",
                                                             "name_type",
-                                                            "name_label"
+                                                            "name_source_reference"
                                                         ],
                                                         "nodegroup_id": "10120250-bad0-11ea-81b2-3af9d3b32b71",
                                                         "custom_labels": {},
@@ -63,12 +63,9 @@
                                                 {
                                                     "config": {
                                                         "nodes": [
-                                                            "statement_source_reference",
-                                                            "statement_language",
-                                                            "statement_label",
-                                                            "statement_type_metatype",
+                                                            "statement_content",
                                                             "statement_type",
-                                                            "statement_content"
+                                                            "statement_source_reference"
                                                         ],
                                                         "nodegroup_id": "e2f83f46-bacf-11ea-81b2-3af9d3b32b71",
                                                         "custom_labels": {},
@@ -95,13 +92,10 @@
                                                 {
                                                     "config": {
                                                         "nodes": [
-                                                            "dimension_label",
-                                                            "dimension_source_reference",
-                                                            "dimension_lowest_possible_value",
-                                                            "dimension_type",
-                                                            "dimension_highest_possible_value",
+                                                            "dimension_value",
                                                             "dimension_unit",
-                                                            "dimension_value"
+                                                            "dimension_type",
+                                                            "dimension_source_reference"
                                                         ],
                                                         "nodegroup_id": "ead2cab0-bacf-11ea-81b2-3af9d3b32b71",
                                                         "custom_labels": {},
@@ -112,23 +106,16 @@
                                             ]
                                         },
                                         {
-                                            "name": "Historical Events",
+                                            "name": "Physical Object History",
                                             "components": [
                                                 {
                                                     "config": {
                                                         "nodes": [
-                                                            "production_timespan_type",
-                                                            "production_location",
                                                             "production_actor",
-                                                            "production_technique",
-                                                            "production_influence",
-                                                            "production_timespan_begin_of_the_begin",
-                                                            "production_type",
-                                                            "production_timespan_end_of_the_begin",
-                                                            "production_timespan_end_of_the_end",
-                                                            "production_timespan_label",
-                                                            "production_label",
-                                                            "production_timespan_begin_of_the_end"
+                                                            "production_location",
+                                                            "production_timespan_name_content",
+                                                            "production_type"
+
                                                         ],
                                                         "nodegroup_id": "ee570cc8-bacf-11ea-81b2-3af9d3b32b71",
                                                         "custom_labels": {},
@@ -153,12 +140,10 @@
                                                 {
                                                     "config": {
                                                         "nodes": [
-                                                            "modification_location",
                                                             "modification_actor",
-                                                            "modification_type",
-                                                            "modification_label",
-                                                            "modification_object_used",
-                                                            "modification_technique"
+                                                            "modification_location",
+                                                            "modification_timespan_name_content",
+                                                            "modification_type"
                                                         ],
                                                         "nodegroup_id": "88651a1e-bc68-11ea-b6b2-3af9d3b32b71",
                                                         "custom_labels": {},
@@ -169,9 +154,9 @@
                                                 {
                                                     "config": {
                                                         "nodes": [
-                                                            "destruction_type",
-                                                            "destruction_label",
-                                                            "destruction_location"
+                                                            "destruction_location",
+                                                            "destruction_timespan_name_content",
+                                                            "destruction_type"                                                        
                                                         ],
                                                         "nodegroup_id": "047fb304-bae6-11ea-81b2-3af9d3b32b71",
                                                         "custom_labels": {},
@@ -347,8 +332,8 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "graph_id": "9ffb6fcc-b4b4-11ea-84f7-3af9d3b32b71",
                                                         "nodes": [],
+                                                        "graph_id": "9ffb6fcc-b4b4-11ea-84f7-3af9d3b32b71",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -360,8 +345,8 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "graph_id": "bdba56bc-b4b5-11ea-84f7-3af9d3b32b71",
                                                         "nodes": [],
+                                                        "graph_id": "bdba56bc-b4b5-11ea-84f7-3af9d3b32b71",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -373,8 +358,8 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "graph_id": "0044f7da-b4b6-11ea-84f7-3af9d3b32b71",
                                                         "nodes": [],
+                                                        "graph_id": "0044f7da-b4b6-11ea-84f7-3af9d3b32b71",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -386,8 +371,8 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                                                         "nodes": [],
+                                                        "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -399,8 +384,8 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "graph_id": "3d461890-b4b5-11ea-84f7-3af9d3b32b71",
                                                         "nodes": [],
+                                                        "graph_id": "3d461890-b4b5-11ea-84f7-3af9d3b32b71",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -412,8 +397,8 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "graph_id": "6dad61aa-b4b5-11ea-84f7-3af9d3b32b71",
                                                         "nodes": [],
+                                                        "graph_id": "6dad61aa-b4b5-11ea-84f7-3af9d3b32b71",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -425,8 +410,8 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "graph_id": "f6e89030-b4b4-11ea-84f7-3af9d3b32b71",
                                                         "nodes": [],
+                                                        "graph_id": "f6e89030-b4b4-11ea-84f7-3af9d3b32b71",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -438,8 +423,8 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "graph_id": "933ee880-b4b5-11ea-84f7-3af9d3b32b71",
                                                         "nodes": [],
+                                                        "graph_id": "933ee880-b4b5-11ea-84f7-3af9d3b32b71",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -451,8 +436,8 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "graph_id": "d6774bfc-b4b4-11ea-84f7-3af9d3b32b71",
                                                         "nodes": [],
+                                                        "graph_id": "d6774bfc-b4b4-11ea-84f7-3af9d3b32b71",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -464,8 +449,8 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "graph_id": "1810d182-b4b5-11ea-84f7-3af9d3b32b71",
                                                         "nodes": [],
+                                                        "graph_id": "1810d182-b4b5-11ea-84f7-3af9d3b32b71",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
