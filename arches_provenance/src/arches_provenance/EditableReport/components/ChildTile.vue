@@ -109,7 +109,7 @@ function bestWidgetLabel(nodeAlias: string) {
 <style scoped>
 .divider {
     height: 2px;
-    margin: 2rem;
+    margin: 1rem;
     background: var(--p-content-border-color);
 }
 
@@ -129,6 +129,7 @@ dl {
     display: flex;
     flex-direction: column;
     margin-left: v-bind(marginUnitRem);
+    margin-bottom: 1rem;
     font-size: small;
     gap: var(--p-list-gap);
 }

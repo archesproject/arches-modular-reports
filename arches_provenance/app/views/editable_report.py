@@ -330,7 +330,10 @@ class ChildTileDataView(APIBase):
         permitted_nodegroups = get_nodegroups_by_perm(
             request.user, "models.read_nodegroup"
         )
-        if not user_can_read_resource(request.user, str(tile.resourceinstance_id)):
+        if (
+            not user_can_read_resource(request.user, str(tile.resourceinstance_id))
+            or tile.nodegroup_id not in permitted_nodegroups
+        ):
             return JSONErrorResponse(status=HTTPStatus.FORBIDDEN)
 
         published_graph = models.PublishedGraph.objects.get(
@@ -343,4 +346,4 @@ class ChildTileDataView(APIBase):
             permitted_nodegroups=permitted_nodegroups,
         )
 
-        return JSONResponse(serialized["@children"])
+        return JSONResponse(serialized)
