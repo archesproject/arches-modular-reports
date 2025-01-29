@@ -114,7 +114,8 @@ class RelatedResourceView(APIBase):
     def get(self, request, resourceid, related_graphid):
         try:
             resource = models.ResourceInstance.objects.get(pk=resourceid)
-        except models.ResourceInstance.DoesNotExist:
+            related_graph = models.GraphModel.objects.get(pk=related_graphid)
+        except (models.ResourceInstance.DoesNotExist, models.GraphModel.DoesNotExist):
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
 
         additional_nodes = request.GET.get("nodes", "").split(",")
@@ -186,6 +187,7 @@ class RelatedResourceView(APIBase):
                 }
                 for relation in result_page
             ],
+            "graph_name": related_graph.name,
             "widget_labels": {node.alias: node.widget_label for node in nodes},
             "total_count": paginator.count,
             "page": result_page.number,

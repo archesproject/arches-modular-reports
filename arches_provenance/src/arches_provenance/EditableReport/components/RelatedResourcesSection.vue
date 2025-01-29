@@ -44,6 +44,7 @@ const currentlyDisplayedTableData = ref<unknown[]>([]);
 const searchResultsTotalCount = ref(0);
 const isLoading = ref(false);
 const hasLoadingError = ref(false);
+const graphName = ref("");
 const widgetLabelLookup = ref<Record<string, string>>({});
 const resettingToFirstPage = ref(false);
 
@@ -131,7 +132,7 @@ async function fetchData(requested_page: number = 1) {
     isLoading.value = true;
 
     try {
-        const { results, page, total_count, widget_labels } =
+        const { results, page, total_count, graph_name, widget_labels } =
             await fetchRelatedResourceData(
                 props.resourceInstanceId,
                 props.component.config.graph_id,
@@ -147,6 +148,7 @@ async function fetchData(requested_page: number = 1) {
         currentlyDisplayedTableData.value = results;
         currentPage.value = page;
         searchResultsTotalCount.value = total_count;
+        graphName.value = graph_name;
         widgetLabelLookup.value = widget_labels;
     } catch (error) {
         hasLoadingError.value = true;
@@ -160,6 +162,7 @@ onMounted(fetchData);
 </script>
 
 <template>
+    <h3>{{ graphName }}</h3>
     <Message
         v-if="hasLoadingError"
         size="large"
