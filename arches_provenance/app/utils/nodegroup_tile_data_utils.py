@@ -238,7 +238,15 @@ def get_sorted_filtered_tiles(
 
 
 def get_sorted_filtered_relations(
-    *, resource, related_graphid, nodes, sort_field, direction, query, request_language
+    *,
+    resource,
+    related_graphid,
+    nodes,
+    permitted_nodegroups,
+    sort_field,
+    direction,
+    query,
+    request_language,
 ):
     def make_tile_annotations(node, direction):
         tile_query = ArraySubquery(
@@ -287,6 +295,7 @@ def get_sorted_filtered_relations(
             ),
         )
         for node in nodes
+        if node.nodegroup_id in permitted_nodegroups
     }
     instance_details_annotations = {
         node.alias
@@ -309,6 +318,7 @@ def get_sorted_filtered_relations(
             "resource-instance-list",
             "url",
         }
+        and node.nodegroup_id in permitted_nodegroups
     }
 
     relations = (
@@ -316,10 +326,12 @@ def get_sorted_filtered_relations(
             models.ResourceXResource.objects.filter(
                 resourceinstanceidfrom=resource,
                 resourceinstanceto_graphid=related_graphid,
+                nodeid__nodegroup_id__in=permitted_nodegroups,
             )
             | models.ResourceXResource.objects.filter(
                 resourceinstanceidto=resource,
                 resourceinstancefrom_graphid=related_graphid,
+                nodeid__nodegroup_id__in=permitted_nodegroups,
             )
         )
         .distinct()
@@ -373,7 +385,7 @@ def get_sorted_filtered_relations(
     return relations
 
 
-def serialize_tiles_with_children(tile, serialized_graph):
+def serialize_tiles_with_children(tile, serialized_graph, permitted_nodegroups):
     node_ids = list(tile.data.keys())
 
     if str(tile.nodegroup_id) not in node_ids:
@@ -386,9 +398,11 @@ def serialize_tiles_with_children(tile, serialized_graph):
         node_ids_to_tiles_reference[node_id] = tile_list
 
     tile._children = [
-        serialize_tiles_with_children(child, serialized_graph)
-        # TODO: arches v8: tile.children.order_by("sortorder")
-        for child in tile.tilemodel_set.order_by("sortorder")
+        serialize_tiles_with_children(child, serialized_graph, permitted_nodegroups)
+        # TODO: arches v8: tile.children.filter(...
+        for child in tile.tilemodel_set.filter(
+            nodegroup_id__in=permitted_nodegroups
+        ).order_by("sortorder")
     ]
 
     return {

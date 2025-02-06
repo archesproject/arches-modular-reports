@@ -5,6 +5,10 @@ export interface Settings {
     ACTIVE_LANGUAGE_DIRECTION: string;
 }
 
+export interface ReportConfig {
+    components: SectionContent[];
+}
+
 export interface NamedSection {
     name: string;
     components: SectionContent[];

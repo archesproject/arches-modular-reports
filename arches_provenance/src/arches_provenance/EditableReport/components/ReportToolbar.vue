@@ -1,9 +1,8 @@
 <script setup lang="ts">
+import arches from "arches";
 import { useGettext } from "vue3-gettext";
 
 import Button from "primevue/button";
-
-import arches from "arches";
 
 import type { SectionContent } from "@/arches_provenance/EditableReport/types";
 
@@ -86,10 +85,11 @@ function exportData(exportFormat: ExportFormat) {
 .export-links {
     display: flex;
     justify-content: flex-end;
-    padding: 10px;
     padding-inline-end: 20px;
+    background-color: var(--p-panel-background);
 }
 .export-links-label {
     padding: 10px;
+    color: var(--p-text-color);
 }
 </style>

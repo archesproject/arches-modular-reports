@@ -77,7 +77,7 @@ export const fetchNodegroupTileData = async (
 
 export const fetchChildTileData = async (
     tileId: string,
-): Promise<LabelBasedTile[]> => {
+): Promise<LabelBasedTile> => {
     const url = arches.urls.api_child_tile_data(tileId);
     const response = await fetch(url);
     const parsed = await response.json();

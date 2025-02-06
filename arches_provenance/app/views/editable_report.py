@@ -114,7 +114,8 @@ class RelatedResourceView(APIBase):
     def get(self, request, resourceid, related_graphid):
         try:
             resource = models.ResourceInstance.objects.get(pk=resourceid)
-        except models.ResourceInstance.DoesNotExist:
+            related_graph = models.GraphModel.objects.get(pk=related_graphid)
+        except (models.ResourceInstance.DoesNotExist, models.GraphModel.DoesNotExist):
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
 
         additional_nodes = request.GET.get("nodes", "").split(",")
@@ -125,6 +126,9 @@ class RelatedResourceView(APIBase):
         query = request.GET.get("query", "")
         request_language = translation.get_language()
 
+        permitted_nodegroups = get_nodegroups_by_perm(
+            request.user, "models.read_nodegroup"
+        )
         nodes = annotate_related_graph_nodes_with_widget_labels(
             additional_nodes, related_graphid, request_language
         )
@@ -132,6 +136,7 @@ class RelatedResourceView(APIBase):
             resource=resource,
             related_graphid=related_graphid,
             nodes=nodes,
+            permitted_nodegroups=permitted_nodegroups,
             sort_field=sort_field,
             direction=direction,
             query=query,
@@ -182,6 +187,7 @@ class RelatedResourceView(APIBase):
                 }
                 for relation in result_page
             ],
+            "graph_name": related_graph.name,
             "widget_labels": {node.alias: node.widget_label for node in nodes},
             "total_count": paginator.count,
             "page": result_page.number,
@@ -323,7 +329,13 @@ class ChildTileDataView(APIBase):
             .get()
         )
 
-        if not user_can_read_resource(request.user, str(tile.resourceinstance_id)):
+        permitted_nodegroups = get_nodegroups_by_perm(
+            request.user, "models.read_nodegroup"
+        )
+        if (
+            not user_can_read_resource(request.user, str(tile.resourceinstance_id))
+            or tile.nodegroup_id not in permitted_nodegroups
+        ):
             return JSONErrorResponse(status=HTTPStatus.FORBIDDEN)
 
         published_graph = models.PublishedGraph.objects.get(
@@ -331,6 +343,9 @@ class ChildTileDataView(APIBase):
             language=translation.get_language(),
         )
         serialized = serialize_tiles_with_children(
-            tile, published_graph.serialized_graph
+            tile=tile,
+            serialized_graph=published_graph.serialized_graph,
+            permitted_nodegroups=permitted_nodegroups,
         )
-        return JSONResponse(serialized["@children"])
+
+        return JSONResponse(serialized)

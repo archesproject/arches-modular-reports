@@ -2,7 +2,6 @@ import re
 
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.functional import cached_property
 
 from arches.app.models.models import GraphModel, NodeGroup
 from arches.app.models.system_settings import settings
@@ -23,20 +22,13 @@ class ReportConfig(models.Model):
         db_table = "arches_provenance_report_config"
 
     def __str__(self):
-        if self.config and self.graph:
-            return f"Config for: {self.graph.name}: {self.config.get('name')}"
+        if self.graph:
+            return f"Config for: {self.graph.name}"
         return super().__str__()
 
     @property
     def excluded_datatypes(self):
         return {"semantic", "annotation", "geojson-feature-collection"}
-
-    @cached_property
-    def usable_node_aliases(self):
-        if not self.graph:
-            return {}
-        usable_nodes = self.graph.node_set.exclude(datatype__in=self.excluded_datatypes)
-        return {node.alias for node in usable_nodes}
 
     def clean(self):
         if self.graph_id and not self.config:
@@ -45,12 +37,11 @@ class ReportConfig(models.Model):
 
     def generate_config(self):
         return {
-            "name": "Untitled Report",
             "components": [
                 {
                     "component": "ReportHeader",
                     "config": {
-                        "descriptor": f"{self.graph.name} Descriptor",
+                        "descriptor": f"{self.graph.name} descriptor template",
                     },
                 },
                 {
@@ -202,22 +193,32 @@ class ReportConfig(models.Model):
     def validate_reportheader(self, header_config):
         descriptor_template = header_config["descriptor"]
         substrings = self.extract_substrings(descriptor_template)
-        self.validate_node_aliases({"nodes": substrings}, "Header")
+        self.validate_node_aliases(
+            {"nodes": substrings},
+            "Header",
+            self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
+        )
 
     def validate_reporttombstone(self, tombstone_config):
-        self.validate_node_aliases(tombstone_config, "Tombstone")
+        self.validate_node_aliases(
+            tombstone_config,
+            "Tombstone",
+            self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
+        )
 
     def validate_datasection(self, card_config):
         nodegroup_id = card_config["nodegroup_id"]
-        nodegroup = (
-            NodeGroup.objects.filter(pk=nodegroup_id, node__graph=self.graph)
-            .prefetch_related("node_set")
-            .first()
-        )
+        nodegroup = NodeGroup.objects.filter(
+            pk=nodegroup_id, node__graph=self.graph
+        ).first()
         if not nodegroup:
             raise ValidationError(f"Section contains invalid nodegroup: {nodegroup_id}")
 
-        self.validate_node_aliases(card_config, "Data")
+        self.validate_node_aliases(
+            card_config,
+            "Data",
+            nodegroup.node_set.exclude(datatype__in=self.excluded_datatypes),
+        )
 
     def validate_relatedresourcessection(self, rr_config):
         if "graph_id" not in rr_config:
@@ -229,26 +230,26 @@ class ReportConfig(models.Model):
         except GraphModel.DoesNotExist:
             raise ValidationError("Related Resources section contains invalid graph id")
 
-        related_graph_usable_aliases = graph.node_set.exclude(
+        usable_related_nodes = graph.node_set.exclude(
             datatype__in=self.excluded_datatypes
         )
-        usable_aliases = {node.alias for node in related_graph_usable_aliases}
-        self.validate_node_aliases(rr_config, "Related Resources", usable_aliases)
+        self.validate_node_aliases(rr_config, "Related Resources", usable_related_nodes)
 
-    def validate_node_aliases(self, config, section_name, usable_aliases=None):
-        if usable_aliases is None:
-            usable_aliases = self.usable_node_aliases
+    def validate_node_aliases(self, config, section_name, usable_nodes_queryset):
+        usable_aliases = {node.alias for node in usable_nodes_queryset}
         requested_node_aliases = set(config.get("nodes", {}))
         if extra_node_aliases := requested_node_aliases - usable_aliases:
             raise ValidationError(
                 f"{section_name} section contains extraneous "
-                f"aliases or unsupported datatypes: {extra_node_aliases}"
+                "or invalid node aliases or unsupported datatypes: "
+                f"{extra_node_aliases}"
             )
         overridden_labels = set(config.get("custom_labels", {}))
         if extra_overridden_labels := overridden_labels - usable_aliases:
             raise ValidationError(
-                f"{section_name} section contains extraneous "
-                f"overridden labels for nodes: {extra_overridden_labels}"
+                f"{section_name} section overrides labels for "
+                "extraneous or invalid node aliases or unsupported "
+                f"datatypes: {extra_overridden_labels}"
             )
 
     @staticmethod
