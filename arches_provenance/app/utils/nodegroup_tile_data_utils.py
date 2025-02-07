@@ -111,8 +111,38 @@ def annotate_related_graph_nodes_with_widget_labels(
 
 
 def annotate_node_values(
-    node_aliases, resourceinstance_id, permitted_nodegroups, user_language
+    node_aliases, resourceinstance_id, permitted_nodegroups, user_language, tile_limit
 ):
+    tile_subquery = (
+        models.TileModel.objects.filter(
+            resourceinstance=resourceinstance_id,
+            nodegroup_id=OuterRef("nodegroup_id"),
+        )
+        .annotate(
+            json_object=JSONObject(
+                display_value=ArchesGetNodeDisplayValueV2(
+                    F("data"),
+                    OuterRef("nodeid"),
+                    Value(user_language),
+                ),
+                tile_value=CombinedExpression(
+                    F("data"),
+                    "->",
+                    Cast(OuterRef("nodeid"), output_field=TextField()),
+                    output_field=JSONField(),
+                ),
+            ),
+        )
+        .exclude(json_object__display_value="")
+        .exclude(json_object__tile_value=None)
+        # This will work on Django 5.1+
+        # .distinct("json_object__display_value", "sortorder")
+        .order_by("sortorder")
+        .values("json_object")
+    )
+    if tile_limit:
+        tile_subquery = tile_subquery[:tile_limit]
+
     return (
         models.Node.objects.filter(
             alias__in=node_aliases,
@@ -120,35 +150,7 @@ def annotate_node_values(
             nodegroup__in=permitted_nodegroups,
         )
         .exclude(datatype__in=["semantic", "annotation", "geojson-feature-collection"])
-        .annotate(
-            display_data=ArraySubquery(
-                models.TileModel.objects.filter(
-                    resourceinstance=resourceinstance_id,
-                    nodegroup_id=OuterRef("nodegroup_id"),
-                )
-                .annotate(
-                    json_object=JSONObject(
-                        display_value=ArchesGetNodeDisplayValueV2(
-                            F("data"),
-                            OuterRef("nodeid"),
-                            Value(user_language),
-                        ),
-                        tile_value=CombinedExpression(
-                            F("data"),
-                            "->",
-                            Cast(OuterRef("nodeid"), output_field=TextField()),
-                            output_field=JSONField(),
-                        ),
-                    ),
-                )
-                .exclude(json_object__display_value="")
-                .exclude(json_object__tile_value=None)
-                # This will work on Django 5.1+
-                # .distinct("json_object__display_value", "sortorder")
-                .order_by("sortorder")
-                .values("json_object")
-            )
-        )
+        .annotate(display_data=ArraySubquery(tile_subquery))
     )
 
 

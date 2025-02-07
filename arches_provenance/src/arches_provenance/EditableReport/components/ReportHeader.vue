@@ -57,6 +57,7 @@ async function fetchData() {
         displayDataByAlias.value = await fetchNodeTileData(
             resourceInstanceId,
             descriptorAliases.value,
+            1,
         );
         hasLoadingError.value = false;
     } catch {

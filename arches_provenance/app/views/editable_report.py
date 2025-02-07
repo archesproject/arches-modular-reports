@@ -295,9 +295,10 @@ class NodeTileDataView(APIBase):
         permitted_nodegroups = get_nodegroups_by_perm(request.user, "read_nodegroup")
         node_aliases = request.GET.getlist("node_alias", [])
         user_lang = translation.get_language()
+        tile_limit = int(request.GET.get("tile_limit", 0))
 
         nodes_with_display_data = annotate_node_values(
-            node_aliases, resourceid, permitted_nodegroups, user_lang
+            node_aliases, resourceid, permitted_nodegroups, user_lang, tile_limit
         )
 
         return JSONResponse(

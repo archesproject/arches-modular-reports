@@ -43,6 +43,7 @@ async function fetchData() {
         displayDataByAlias.value = await fetchNodeTileData(
             resourceInstanceId,
             props.component.config.nodes,
+            5,
         );
         hasLoadingError.value = false;
     } catch {
