@@ -2,7 +2,6 @@
 import { inject, onMounted, provide, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
-import Toast from "primevue/toast";
 import { useToast } from "primevue/usetoast";
 
 import {
@@ -76,13 +75,6 @@ onMounted(async () => {
             :key="uniqueId(component)"
             :component
             :resource-instance-id
-        />
-        <Toast
-            :pt="{
-                messageIcon: {
-                    style: { marginTop: 'var(--p-toast-content-gap)' },
-                },
-            }"
         />
     </div>
 </template>
