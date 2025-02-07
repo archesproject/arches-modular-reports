@@ -2,6 +2,7 @@
 import { inject, onMounted, provide, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
+import Toast from "primevue/toast";
 import { useToast } from "primevue/usetoast";
 
 import {
@@ -77,4 +78,6 @@ onMounted(async () => {
             :resource-instance-id
         />
     </div>
+
+    <Toast />
 </template>
