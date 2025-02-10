@@ -1,8 +1,14 @@
+from functools import partial
+
 from arches.app.utils.label_based_graph_v2 import LabelBasedGraph, LabelBasedNode
 
 
 class LabelBasedGraphWithBranchExport(LabelBasedGraph):
-    """Override to avoid parent_tree still being None after checking parent_tile."""
+    """
+    Override to:
+    1. avoid parent_tree still being None after checking parent_tile.
+    2. force include_hidden_nodes=False
+    """
 
     @classmethod
     def _build_graph(
@@ -67,5 +73,8 @@ class LabelBasedGraphWithBranchExport(LabelBasedGraph):
                             node_ids_to_serialized_nodes=node_ids_to_serialized_nodes,
                             edge_domain_node_ids_to_range_nodes=edge_domain_node_ids_to_range_nodes,
                         )
+
+        # This checks card visibility.
+        parent_tree.as_json = partial(parent_tree.as_json, include_hidden_nodes=False)
 
         return parent_tree

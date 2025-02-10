@@ -405,12 +405,40 @@ def serialize_tiles_with_children(tile, serialized_graph, permitted_nodegroups):
         ).order_by("sortorder")
     ]
 
-    return {
+    visibility_reference = {
+        str(config.node.pk): config.visible
+        for config in models.CardXNodeXWidget.objects.filter(
+            node__graph=serialized_graph["graphid"]
+        )
+    }
+
+    preliminary_result = {
         "@children": tile._children,
         **LabelBasedGraphWithBranchExport.from_tile(
             tile, node_ids_to_tiles_reference, {}, serialized_graph=serialized_graph
         ),
     }
+
+    return filter_hidden_nodes(preliminary_result, visibility_reference)
+
+
+def filter_hidden_nodes(list_or_dict_to_filter, visbility_reference):
+    if isinstance(list_or_dict_to_filter, list):
+        return [
+            filter_hidden_nodes(item, visbility_reference)
+            for item in list_or_dict_to_filter
+        ]
+    if isinstance(list_or_dict_to_filter, dict):
+        dict_to_filter = {**list_or_dict_to_filter}
+        for k, v in dict_to_filter.items():
+            if isinstance(v, dict) and "@node_id" in v:
+                if not visbility_reference.get(v["@node_id"], True):
+                    dict_to_filter[k] = None
+                else:
+                    dict_to_filter[k] = filter_hidden_nodes(v, visbility_reference)
+        return dict_to_filter
+    else:
+        raise TypeError
 
 
 def prepare_links(node, tile_values, node_display_value, request_language):
