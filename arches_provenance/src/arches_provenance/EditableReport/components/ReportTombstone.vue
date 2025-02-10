@@ -42,7 +42,7 @@ async function fetchData() {
     try {
         displayDataByAlias.value = await fetchNodeTileData(
             resourceInstanceId,
-            props.component.config.nodes,
+            props.component.config.node_aliases,
         );
         hasLoadingError.value = false;
     } catch {
@@ -65,7 +65,7 @@ onMounted(fetchData);
             </Message>
             <template v-else-if="displayDataByAlias && nodePresentationLookup">
                 <LabeledNodeValues
-                    v-for="nodeAlias in props.component.config.nodes"
+                    v-for="nodeAlias in props.component.config.node_aliases"
                     :key="nodeAlias"
                     :node-presentation="nodePresentationLookup[nodeAlias]"
                     :widget-label="bestWidgetLabel(nodeAlias)"

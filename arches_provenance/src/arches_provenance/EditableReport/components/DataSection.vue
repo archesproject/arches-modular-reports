@@ -29,7 +29,7 @@ const props = defineProps<{
     component: {
         config: {
             nodegroup_id: string;
-            nodes: string[];
+            node_aliases: string[];
             custom_labels: Record<string, string>;
             custom_card_name: string | null;
             has_write_permission: boolean;
@@ -86,7 +86,7 @@ const columnData = computed(() => {
     if (!nodePresentationLookup.value) {
         return [];
     }
-    return props.component.config.nodes.map((nodeAlias) => {
+    return props.component.config.node_aliases.map((nodeAlias) => {
         const nodeDetails = nodePresentationLookup.value![nodeAlias];
         return {
             nodeAlias,
@@ -99,7 +99,7 @@ const columnData = computed(() => {
 });
 
 const cardinality = computed(() => {
-    const firstNodeAlias = props.component.config.nodes[0];
+    const firstNodeAlias = props.component.config.node_aliases[0];
     if (!nodePresentationLookup.value || !firstNodeAlias) {
         return "";
     }
@@ -107,7 +107,7 @@ const cardinality = computed(() => {
 });
 
 const cardName = computed(() => {
-    const firstNodeAlias = props.component.config.nodes[0];
+    const firstNodeAlias = props.component.config.node_aliases[0];
     if (!nodePresentationLookup.value || !firstNodeAlias) {
         return "";
     }

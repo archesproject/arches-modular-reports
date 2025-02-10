@@ -54,7 +54,7 @@ class ReportConfig(models.Model):
                 {
                     "component": "ReportTombstone",
                     "config": {
-                        "nodes": [],
+                        "node_aliases": [],
                         "image": None,
                         "custom_labels": {},
                     },
@@ -117,7 +117,7 @@ class ReportConfig(models.Model):
                         "component": "DataSection",
                         "config": {
                             "nodegroup_id": str(card.nodegroup_id),
-                            "nodes": [
+                            "node_aliases": [
                                 node.alias for node in card.nodegroup.allowed_nodes
                             ],
                             # custom_labels: {node alias: "my custom widget label"}
@@ -143,7 +143,7 @@ class ReportConfig(models.Model):
                         "component": "RelatedResourcesSection",
                         "config": {
                             "graph_id": str(other_graph.pk),
-                            "nodes": [],
+                            "node_aliases": [],
                             "custom_labels": {},
                         },
                     },
@@ -200,7 +200,7 @@ class ReportConfig(models.Model):
         descriptor_template = header_config["descriptor"]
         substrings = self.extract_substrings(descriptor_template)
         self.validate_node_aliases(
-            {"nodes": substrings},
+            {"node_aliases": substrings},
             "Header",
             self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
         )
@@ -229,8 +229,8 @@ class ReportConfig(models.Model):
     def validate_relatedresourcessection(self, rr_config):
         if "graph_id" not in rr_config:
             raise ValidationError("Related Resources section missing graph_id")
-        if "nodes" not in rr_config:
-            raise ValidationError("Related Resources section missing nodes")
+        if "node_aliases" not in rr_config:
+            raise ValidationError("Related Resources section missing node_aliases")
         try:
             graph = GraphModel.objects.get(pk=rr_config["graph_id"])
         except GraphModel.DoesNotExist:
@@ -243,7 +243,7 @@ class ReportConfig(models.Model):
 
     def validate_node_aliases(self, config, section_name, usable_nodes_queryset):
         usable_aliases = {node.alias for node in usable_nodes_queryset}
-        requested_node_aliases = set(config.get("nodes", {}))
+        requested_node_aliases = set(config.get("node_aliases", {}))
         if extra_node_aliases := requested_node_aliases - usable_aliases:
             raise ValidationError(
                 f"{section_name} section contains extraneous "
