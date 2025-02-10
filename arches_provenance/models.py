@@ -95,7 +95,7 @@ class ReportConfig(models.Model):
         ordered_allowed_nodes = (
             Node.objects.filter(cardxnodexwidget__visible=True)
             .exclude(datatype__in=self.excluded_datatypes)
-            .order_by("sortorder")
+            .order_by("cardxnodexwidget__sortorder")
         )
         ordered_top_cards = (
             self.graph.cardmodel_set.filter(nodegroup__parentnodegroup__isnull=True)
