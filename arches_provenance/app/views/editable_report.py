@@ -111,10 +111,11 @@ class EditableReportAwareResourceReportView(ResourceReportView):
 
 @method_decorator(can_read_resource_instance, name="dispatch")
 class RelatedResourceView(APIBase):
-    def get(self, request, resourceid, related_graphid):
+    def get(self, request, resourceid, related_graph_slug):
         try:
             resource = models.ResourceInstance.objects.get(pk=resourceid)
-            related_graph = models.GraphModel.objects.get(pk=related_graphid)
+            # TODO: arches v8: add source_identifier=None
+            related_graph = models.GraphModel.objects.get(slug=related_graph_slug)
         except (models.ResourceInstance.DoesNotExist, models.GraphModel.DoesNotExist):
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
 
@@ -130,11 +131,11 @@ class RelatedResourceView(APIBase):
             request.user, "models.read_nodegroup"
         )
         nodes = annotate_related_graph_nodes_with_widget_labels(
-            additional_nodes, related_graphid, request_language
+            additional_nodes, related_graph, request_language
         )
         relations = get_sorted_filtered_relations(
             resource=resource,
-            related_graphid=related_graphid,
+            related_graph=related_graph,
             nodes=nodes,
             permitted_nodegroups=permitted_nodegroups,
             sort_field=sort_field,

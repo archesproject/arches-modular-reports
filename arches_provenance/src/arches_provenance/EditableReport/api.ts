@@ -87,7 +87,7 @@ export const fetchChildTileData = async (
 
 export const fetchRelatedResourceData = async (
     resourceInstanceId: string,
-    relatedGraphId: string,
+    relatedGraphSlug: string,
     nodeAliases: string[],
     rowsPerPage: number,
     page: number,
@@ -97,7 +97,7 @@ export const fetchRelatedResourceData = async (
 ) => {
     const url = arches.urls.api_related_resources(
         resourceInstanceId,
-        relatedGraphId,
+        relatedGraphSlug,
     );
     const params = new URLSearchParams({
         node_aliases: nodeAliases.join(","),

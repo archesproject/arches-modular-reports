@@ -251,7 +251,7 @@ urlpatterns = [
         name="resource_report",
     ),
     path(
-        "api/related_resources/<uuid:resourceid>/<uuid:related_graphid>",
+        "api/related_resources/<uuid:resourceid>/<slug:related_graph_slug>",
         RelatedResourceView.as_view(),
         name="api_related_resources",
     ),

@@ -23,7 +23,7 @@ const props = defineProps<{
     component: {
         config: {
             node_aliases: string[];
-            graph_id: string;
+            graph_slug: string;
             custom_labels: Record<string, string>;
         };
     };
@@ -135,7 +135,7 @@ async function fetchData(requested_page: number = 1) {
         const { results, page, total_count, graph_name, widget_labels } =
             await fetchRelatedResourceData(
                 props.resourceInstanceId,
-                props.component.config.graph_id,
+                props.component.config.graph_slug,
                 props.component.config.node_aliases,
                 rowsPerPage.value,
                 requested_page,

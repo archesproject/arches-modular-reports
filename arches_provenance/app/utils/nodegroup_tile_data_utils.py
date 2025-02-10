@@ -12,7 +12,6 @@ from django.db.models import (
     JSONField,
     OuterRef,
     Q,
-    Subquery,
     TextField,
     Value,
     When,
@@ -94,13 +93,13 @@ def build_valueid_annotation(data):
 
 
 def annotate_related_graph_nodes_with_widget_labels(
-    additional_nodes, related_graphid, request_language
+    additional_nodes, related_graph, request_language
 ):
     return (
-        models.Node.objects.filter(alias__in=additional_nodes, graph_id=related_graphid)
+        models.Node.objects.filter(alias__in=additional_nodes, graph=related_graph)
         .exclude(datatype__in=["semantic", "annotation", "geojson-feature-collection"])
         .annotate(
-            widget_label_json=Subquery(
+            widget_label_json=(
                 models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid")).values(
                     "label"
                 )[:1]
@@ -240,7 +239,7 @@ def get_sorted_filtered_tiles(
 def get_sorted_filtered_relations(
     *,
     resource,
-    related_graphid,
+    related_graph,
     nodes,
     permitted_nodegroups,
     sort_field,
@@ -325,18 +324,18 @@ def get_sorted_filtered_relations(
         (
             models.ResourceXResource.objects.filter(
                 resourceinstanceidfrom=resource,
-                resourceinstanceto_graphid=related_graphid,
+                resourceinstanceto_graphid=related_graph,
                 nodeid__nodegroup_id__in=permitted_nodegroups,
             )
             | models.ResourceXResource.objects.filter(
                 resourceinstanceidto=resource,
-                resourceinstancefrom_graphid=related_graphid,
+                resourceinstancefrom_graphid=related_graph,
                 nodeid__nodegroup_id__in=permitted_nodegroups,
             )
         )
         .distinct()
         .annotate(
-            relation_name_json=Subquery(
+            relation_name_json=(
                 models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid")).values(
                     "label"
                 )[:1]

@@ -133,8 +133,11 @@ class ReportConfig(models.Model):
 
     def generate_related_resources_sections(self):
         other_graphs = GraphModel.objects.exclude(
-            pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID
-        ).filter(isresource=True)
+            pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID,
+            slug=None,
+        ).filter(
+            isresource=True,
+        )  # TODO: arches v8: add source_identifier=None
         return [
             {
                 "name": str(other_graph.name),
@@ -142,7 +145,7 @@ class ReportConfig(models.Model):
                     {
                         "component": "RelatedResourcesSection",
                         "config": {
-                            "graph_id": str(other_graph.pk),
+                            "graph_slug": other_graph.slug,
                             "node_aliases": [],
                             "custom_labels": {},
                         },
@@ -227,12 +230,13 @@ class ReportConfig(models.Model):
         )
 
     def validate_relatedresourcessection(self, rr_config):
-        if "graph_id" not in rr_config:
-            raise ValidationError("Related Resources section missing graph_id")
+        if "graph_slug" not in rr_config:
+            raise ValidationError("Related Resources section missing graph_slug")
         if "node_aliases" not in rr_config:
             raise ValidationError("Related Resources section missing node_aliases")
         try:
-            graph = GraphModel.objects.get(pk=rr_config["graph_id"])
+            # TODO: arches v8: add source_identifier=None
+            graph = GraphModel.objects.get(slug=rr_config["graph_slug"])
         except GraphModel.DoesNotExist:
             raise ValidationError("Related Resources section contains invalid graph id")
 
