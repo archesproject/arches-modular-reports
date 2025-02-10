@@ -44,18 +44,22 @@ class ProvenanceEditableReportConfigView(View):
     def get(self, request):
         """Just get first. But if there are multiple in the future,
         the vue component will need to know which one to request."""
-        result = ReportConfig.objects.filter(
-            graph__resourceinstance=request.GET.get("resourceId")
-        ).first()
+        config_instance = (
+            ReportConfig.objects.filter(
+                graph__resourceinstance=request.GET.get("resourceId")
+            )
+            .select_related("graph")
+            .first()
+        )
 
-        if not result:
+        if not config_instance:
             return JSONErrorResponse(
                 _("No report config found."), status=HTTPStatus.NOT_FOUND
             )
 
         return JSONResponse(
             update_report_configuration_for_nodegroup_permissions(
-                result.config, request.user
+                config_instance, request.user
             )
         )
 
@@ -246,7 +250,7 @@ class NodePresentationView(APIBase):
 @method_decorator(can_read_resource_instance, name="dispatch")
 @method_decorator(can_read_nodegroup, name="dispatch")
 class NodegroupTileDataView(APIBase):
-    def get(self, request, resourceid, nodegroupid):
+    def get(self, request, resourceid, nodegroup_alias):
         page_number = request.GET.get("page")
         rows_per_page = request.GET.get("rows_per_page")
 
@@ -258,7 +262,7 @@ class NodegroupTileDataView(APIBase):
 
         tiles = get_sorted_filtered_tiles(
             resourceinstanceid=resourceid,
-            nodegroupid=nodegroupid,
+            nodegroup_alias=nodegroup_alias,
             sort_node_id=sort_node_id,
             direction=direction,
             query=query,

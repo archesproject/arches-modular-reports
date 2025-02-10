@@ -261,7 +261,7 @@ urlpatterns = [
         name="api_node_presentation",
     ),
     path(
-        "api/nodegroup_tile_data/<uuid:resourceid>/<uuid:nodegroupid>",
+        "api/nodegroup_tile_data/<uuid:resourceid>/<slug:nodegroup_alias>",
         NodegroupTileDataView.as_view(),
         name="api_nodegroup_tile_data",
     ),

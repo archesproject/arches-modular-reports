@@ -116,7 +116,12 @@ class ReportConfig(models.Model):
                     {
                         "component": "DataSection",
                         "config": {
-                            "nodegroup_id": str(card.nodegroup_id),
+                            # TODO: arches v8: card.nodegroup.grouping_node.alias
+                            "nodegroup_alias": card.nodegroup.node_set.filter(
+                                pk=card.nodegroup.pk
+                            )
+                            .first()
+                            .alias,
                             "node_aliases": [
                                 node.alias for node in card.nodegroup.allowed_nodes
                             ],
@@ -216,12 +221,14 @@ class ReportConfig(models.Model):
         )
 
     def validate_datasection(self, card_config):
-        nodegroup_id = card_config["nodegroup_id"]
+        nodegroup_alias = card_config["nodegroup_alias"]
         nodegroup = NodeGroup.objects.filter(
-            pk=nodegroup_id, node__graph=self.graph
+            node__alias=nodegroup_alias, node__graph=self.graph
         ).first()
         if not nodegroup:
-            raise ValidationError(f"Section contains invalid nodegroup: {nodegroup_id}")
+            raise ValidationError(
+                f"Section contains invalid nodegroup: {nodegroup_alias}"
+            )
 
         self.validate_node_aliases(
             card_config,

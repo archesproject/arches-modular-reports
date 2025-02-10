@@ -28,7 +28,7 @@ import type {
 const props = defineProps<{
     component: {
         config: {
-            nodegroup_id: string;
+            nodegroup_alias: string;
             node_aliases: string[];
             custom_labels: Record<string, string>;
             custom_card_name: string | null;
@@ -157,7 +157,7 @@ async function fetchData(page: number = 1) {
             total_count: totalCount,
         } = await fetchNodegroupTileData(
             props.resourceInstanceId,
-            props.component.config.nodegroup_id,
+            props.component.config.nodegroup_alias,
             rowsPerPage.value,
             page,
             sortNodeId.value,

@@ -152,12 +152,21 @@ def annotate_node_values(
 
 
 def get_sorted_filtered_tiles(
-    *, resourceinstanceid, nodegroupid, sort_node_id, direction, query, user_language
+    *,
+    resourceinstanceid,
+    nodegroup_alias,
+    sort_node_id,
+    direction,
+    query,
+    user_language,
 ):
     # semantic, annotation, and geojson-feature-collection data types are
     # excluded in __arches_get_node_display_value
-    nodes = models.Node.objects.filter(nodegroup_id=nodegroupid).exclude(
-        datatype__in=["semantic", "annotation", "geojson-feature-collection"]
+    nodes = models.Node.objects.filter(
+        graph__resourceinstance=resourceinstanceid,
+        nodegroup__node__alias=nodegroup_alias,
+    ).exclude(
+        datatype__in={"semantic", "annotation", "geojson-feature-collection"},
     )
 
     if not nodes:
@@ -199,7 +208,7 @@ def get_sorted_filtered_tiles(
 
     tiles = (
         Tile.objects.filter(
-            resourceinstance_id=resourceinstanceid, nodegroup_id=nodegroupid
+            resourceinstance_id=resourceinstanceid, nodegroup_id=nodes[0].nodegroup_id
         )
         .annotate(**field_annotations)
         .annotate(alias_annotations=JSONObject(**alias_annotations))
