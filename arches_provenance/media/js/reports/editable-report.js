@@ -43,6 +43,22 @@ const EditableReportPreset = definePreset(Aura, {
                 .p-button {
                     font-size: ${dt('base.button.font.size')};
                 }
+                .p-button, .p-button-label, .p-tab {
+                    color: ${dt('sky.700')};
+                }
+                .p-button-link:not(:disabled):hover {
+                    color: ${dt('text-color')};
+                }
+                @media (prefers-color-scheme:dark) {
+                    .p-button, .p-button-label, .p-tab {
+                        color: ${dt('sky.500')};
+                    }
+                    .p-button-outlined:not(:disabled):hover,
+                    .p-button-outlined.p-button-info:not(:disabled):hover {
+                        background-color: ${dt('text-color')};
+                    }
+                    
+                }
             `
         }
     },
