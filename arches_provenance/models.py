@@ -205,7 +205,7 @@ class ReportConfig(models.Model):
         validate_dict(self.config)
 
     def validate_reportheader(self, header_config):
-        descriptor_template = header_config["descriptor"]
+        descriptor_template = self.get_or_raise(header_config, "descriptor", "Header")
         substrings = self.extract_substrings(descriptor_template)
         self.validate_node_aliases(
             {"node_aliases": substrings},
@@ -221,7 +221,7 @@ class ReportConfig(models.Model):
         )
 
     def validate_datasection(self, card_config):
-        nodegroup_alias = card_config["nodegroup_alias"]
+        nodegroup_alias = self.get_or_raise(card_config, "nodegroup_alias", "Data")
         nodegroup = NodeGroup.objects.filter(
             node__alias=nodegroup_alias, node__graph=self.graph
         ).first()
@@ -237,13 +237,10 @@ class ReportConfig(models.Model):
         )
 
     def validate_relatedresourcessection(self, rr_config):
-        if "graph_slug" not in rr_config:
-            raise ValidationError("Related Resources section missing graph_slug")
-        if "node_aliases" not in rr_config:
-            raise ValidationError("Related Resources section missing node_aliases")
+        slug = self.get_or_raise(rr_config, "graph_slug", "Related Resources")
         try:
             # TODO: arches v8: add source_identifier=None
-            graph = GraphModel.objects.get(slug=rr_config["graph_slug"])
+            graph = GraphModel.objects.get(slug=slug)
         except GraphModel.DoesNotExist:
             raise ValidationError("Related Resources section contains invalid graph id")
 
@@ -253,9 +250,9 @@ class ReportConfig(models.Model):
         self.validate_node_aliases(rr_config, "Related Resources", usable_related_nodes)
 
     def validate_node_aliases(self, config, section_name, usable_nodes_queryset):
+        requested_node_aliases = self.get_or_raise(config, "node_aliases", section_name)
         usable_aliases = {node.alias for node in usable_nodes_queryset}
-        requested_node_aliases = set(config.get("node_aliases", {}))
-        if extra_node_aliases := requested_node_aliases - usable_aliases:
+        if extra_node_aliases := set(requested_node_aliases) - usable_aliases:
             raise ValidationError(
                 f"{section_name} section contains extraneous "
                 "or invalid node aliases or unsupported datatypes: "
@@ -275,3 +272,9 @@ class ReportConfig(models.Model):
         substrings = re.findall(pattern, template_string)
 
         return substrings
+
+    @staticmethod
+    def get_or_raise(config, key, section_name):
+        if key not in config:
+            raise ValidationError(f"{section_name} missing key: {key}")
+        return config[key]
