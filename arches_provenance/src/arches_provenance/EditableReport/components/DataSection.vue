@@ -55,7 +55,9 @@ const hasLoadingError = ref(false);
 const resettingToFirstPage = ref(false);
 const pageNumberToNodegroupTileData = ref<Record<number, unknown[]>>({});
 
-const userCanEditResourceInstance = inject("userCanEditResourceInstance");
+const userCanEditResourceInstance = inject(
+    "userCanEditResourceInstance",
+) as Ref<boolean>;
 const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
     NodePresentationLookup | undefined
 >;
@@ -77,7 +79,7 @@ const isEmpty = computed(
 
 const shouldShowAddButton = computed(
     () =>
-        userCanEditResourceInstance &&
+        userCanEditResourceInstance.value &&
         props.component.config.has_write_permission &&
         (isEmpty.value || cardinality.value === CARDINALITY_N),
 );
