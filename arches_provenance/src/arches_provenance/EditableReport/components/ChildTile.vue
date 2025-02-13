@@ -80,24 +80,25 @@ function bestWidgetLabel(nodeAlias: string) {
                     <!-- TODO: update link generation pattern when refactoring backend. -->
                     <dt>{{ bestWidgetLabel(nodeAlias) }}</dt>
                     <template v-if="nodeValue.instance_details?.length">
-                        <dd
-                            v-for="instanceDetail in nodeValue.instance_details"
-                            :key="instanceDetail.resourceId"
-                        >
-                            <Button
-                                as="a"
-                                variant="link"
-                                target="_blank"
-                                :href="
-                                    arches.urls.resource_report +
-                                    instanceDetail.resourceId
-                                "
+                        <div style="flex-direction: column">
+                            <dd
+                                v-for="instanceDetail in nodeValue.instance_details"
+                                :key="instanceDetail.resourceId"
                             >
-                                {{ nodeValue["@display_value"] }}
-                            </Button>
-                        </dd>
+                                <Button
+                                    as="a"
+                                    variant="link"
+                                    target="_blank"
+                                    :href="
+                                        arches.urls.resource_report +
+                                        instanceDetail.resourceId
+                                    "
+                                >
+                                    {{ instanceDetail.display_value }}
+                                </Button>
+                            </dd>
+                        </div>
                     </template>
-                    <dd v-else>{{ nodeValue["@display_value"] }}</dd>
                 </template>
             </div>
             <ChildTile
@@ -126,7 +127,6 @@ details {
 }
 
 summary {
-    margin-bottom: 1.5rem;
     /* https://github.com/twbs/bootstrap/issues/21060 */
     display: list-item;
 }
@@ -142,7 +142,7 @@ dl {
 
 .node-pair {
     display: flex;
-    width: 50%;
+    width: 60%;
     gap: 2rem;
 }
 

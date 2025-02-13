@@ -3,7 +3,7 @@ import re
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from arches.app.models.models import GraphModel, NodeGroup
+from arches.app.models.models import GraphModel, Node, NodeGroup
 from arches.app.models.system_settings import settings
 from arches_provenance.utils import PrettyJSONEncoder
 
@@ -22,8 +22,8 @@ class ReportConfig(models.Model):
         db_table = "arches_provenance_report_config"
 
     def __str__(self):
-        if self.graph:
-            return f"Config for: {self.graph.name}"
+        if self.config and self.graph:
+            return f"Config for: {self.graph.name}: {self.config.get('name')}"
         return super().__str__()
 
     @property
@@ -37,6 +37,7 @@ class ReportConfig(models.Model):
 
     def generate_config(self):
         return {
+            "name": "Untitled Report",
             "components": [
                 {
                     "component": "ReportHeader",
@@ -55,7 +56,7 @@ class ReportConfig(models.Model):
                     "component": "ReportTombstone",
                     "config": {
                         "nodes": [],
-                        "image": None,
+                        "image_node": None,
                         "custom_labels": {},
                     },
                 },
@@ -92,10 +93,21 @@ class ReportConfig(models.Model):
         }
 
     def generate_card_sections(self):
+        ordered_allowed_nodes = (
+            Node.objects.filter(cardxnodexwidget__visible=True)
+            .exclude(datatype__in=self.excluded_datatypes)
+            .order_by("cardxnodexwidget__sortorder")
+        )
         ordered_top_cards = (
             self.graph.cardmodel_set.filter(nodegroup__parentnodegroup__isnull=True)
             .select_related("nodegroup")
-            .prefetch_related("nodegroup__node_set")
+            .prefetch_related(
+                models.Prefetch(
+                    "nodegroup__node_set",
+                    ordered_allowed_nodes,
+                    to_attr="allowed_nodes",
+                )
+            )
             .order_by("sortorder")
         )
         return [
@@ -107,12 +119,7 @@ class ReportConfig(models.Model):
                         "config": {
                             "nodegroup_id": str(card.nodegroup_id),
                             "nodes": [
-                                node.alias
-                                for node in sorted(
-                                    card.nodegroup.node_set.all(),
-                                    key=lambda node: node.sortorder or 0,
-                                )
-                                if node.datatype not in self.excluded_datatypes
+                                node.alias for node in card.nodegroup.allowed_nodes
                             ],
                             # custom_labels: {node alias: "my custom widget label"}
                             "custom_labels": {},
@@ -205,6 +212,13 @@ class ReportConfig(models.Model):
             "Tombstone",
             self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
         )
+        if image_node_alias := tombstone_config.get("image_node"):
+            if not self.graph.node_set.filter(
+                alias=tombstone_config["image_node"], datatype="file-list"
+            ).exists():
+                raise ValidationError(
+                    f"Tombstone section contains invalid image node alias: {image_node_alias}"
+                )
 
     def validate_datasection(self, card_config):
         nodegroup_id = card_config["nodegroup_id"]

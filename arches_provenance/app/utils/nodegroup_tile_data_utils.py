@@ -20,7 +20,7 @@ from django.db.models import (
 from django.db.models.expressions import CombinedExpression
 from django.db.models.fields.json import KT
 from django.db.models.functions import Cast, Concat, JSONObject
-from django.urls import reverse
+from django.urls import get_script_prefix, reverse
 from django.utils.translation import gettext as _
 
 from arches.app.datatypes.concept_types import BaseConceptDataType
@@ -477,6 +477,13 @@ def prepare_links(node, tile_values, node_display_value, request_language):
             for value_id_str in value_ids
         ]
 
+    def form_file_url(tile_url_string):
+        prefix = get_script_prefix()
+        if tile_url_string.startswith("http") or tile_url_string.startswith(prefix):
+            return tile_url_string
+        url = get_script_prefix() + tile_url_string
+        return url.replace("//", "/")
+
     ### BEGIN LINK GENERATION
     for tile_val in tile_values:
         match node.datatype:
@@ -523,6 +530,15 @@ def prepare_links(node, tile_values, node_display_value, request_language):
                         "link": tile_val["url"],
                     }
                 )
+            case "file-list":
+                for file in tile_val:
+                    alt = file.get("altText", {}).get(request_language)["value"]
+                    links.append(
+                        {
+                            "alt_text": alt,
+                            "link": form_file_url(file["url"]),
+                        }
+                    )
 
     return links
 
