@@ -44,18 +44,22 @@ class ProvenanceEditableReportConfigView(View):
     def get(self, request):
         """Just get first. But if there are multiple in the future,
         the vue component will need to know which one to request."""
-        result = ReportConfig.objects.filter(
-            graph__resourceinstance=request.GET.get("resourceId")
-        ).first()
+        config_instance = (
+            ReportConfig.objects.filter(
+                graph__resourceinstance=request.GET.get("resourceId")
+            )
+            .select_related("graph")
+            .first()
+        )
 
-        if not result:
+        if not config_instance:
             return JSONErrorResponse(
                 _("No report config found."), status=HTTPStatus.NOT_FOUND
             )
 
         return JSONResponse(
             update_report_configuration_for_nodegroup_permissions(
-                result.config, request.user
+                config_instance, request.user
             )
         )
 
@@ -111,10 +115,11 @@ class EditableReportAwareResourceReportView(ResourceReportView):
 
 @method_decorator(can_read_resource_instance, name="dispatch")
 class RelatedResourceView(APIBase):
-    def get(self, request, resourceid, related_graphid):
+    def get(self, request, resourceid, related_graph_slug):
         try:
             resource = models.ResourceInstance.objects.get(pk=resourceid)
-            related_graph = models.GraphModel.objects.get(pk=related_graphid)
+            # TODO: arches v8: add source_identifier=None
+            related_graph = models.GraphModel.objects.get(slug=related_graph_slug)
         except (models.ResourceInstance.DoesNotExist, models.GraphModel.DoesNotExist):
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
 
@@ -130,11 +135,11 @@ class RelatedResourceView(APIBase):
             request.user, "models.read_nodegroup"
         )
         nodes = annotate_related_graph_nodes_with_widget_labels(
-            additional_nodes, related_graphid, request_language
+            additional_nodes, related_graph, request_language
         )
         relations = get_sorted_filtered_relations(
             resource=resource,
-            related_graphid=related_graphid,
+            related_graph=related_graph,
             nodes=nodes,
             permitted_nodegroups=permitted_nodegroups,
             sort_field=sort_field,
@@ -245,7 +250,7 @@ class NodePresentationView(APIBase):
 @method_decorator(can_read_resource_instance, name="dispatch")
 @method_decorator(can_read_nodegroup, name="dispatch")
 class NodegroupTileDataView(APIBase):
-    def get(self, request, resourceid, nodegroupid):
+    def get(self, request, resourceid, nodegroup_alias):
         page_number = request.GET.get("page")
         rows_per_page = request.GET.get("rows_per_page")
 
@@ -257,7 +262,7 @@ class NodegroupTileDataView(APIBase):
 
         tiles = get_sorted_filtered_tiles(
             resourceinstanceid=resourceid,
-            nodegroupid=nodegroupid,
+            nodegroup_alias=nodegroup_alias,
             sort_node_id=sort_node_id,
             direction=direction,
             query=query,

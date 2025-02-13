@@ -38,7 +38,8 @@ interface ImageTileData {
 }
 
 const firstImageTileData = computed(() => {
-    const data = imageNodeData.value?.[props.component.config.image_node]?.[0];
+    const data =
+        imageNodeData.value?.[props.component.config.image_node_alias]?.[0];
     return data as ImageTileData | undefined;
 });
 
@@ -75,11 +76,11 @@ async function fetchData() {
     try {
         displayDataByAlias.value = await fetchNodeTileData(
             resourceInstanceId,
-            props.component.config.nodes,
+            props.component.config.node_aliases,
         );
-        if (props.component.config.image_node) {
+        if (props.component.config.image_node_alias) {
             imageNodeData.value = await fetchNodeTileData(resourceInstanceId, [
-                props.component.config.image_node,
+                props.component.config.image_node_alias,
             ]);
         }
         hasLoadingError.value = false;
@@ -105,7 +106,7 @@ onMounted(fetchData);
             </Message>
             <template v-else-if="displayDataByAlias && nodePresentationLookup">
                 <LabeledNodeValues
-                    v-for="nodeAlias in props.component.config.nodes"
+                    v-for="nodeAlias in props.component.config.node_aliases"
                     :key="nodeAlias"
                     :node-presentation="nodePresentationLookup[nodeAlias]"
                     :widget-label="bestWidgetLabel(nodeAlias)"
