@@ -114,7 +114,10 @@ onMounted(fetchData);
                 />
             </template>
         </div>
-        <div class="image-container">
+        <div
+            v-if="imageNodeData"
+            class="image-container"
+        >
             <img
                 :src="imageUrl"
                 :alt="imageAltText"
