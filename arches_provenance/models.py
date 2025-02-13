@@ -56,7 +56,7 @@ class ReportConfig(models.Model):
                     "component": "ReportTombstone",
                     "config": {
                         "nodes": [],
-                        "image": None,
+                        "image_node": None,
                         "custom_labels": {},
                     },
                 },
@@ -212,6 +212,13 @@ class ReportConfig(models.Model):
             "Tombstone",
             self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
         )
+        if image_node_alias := tombstone_config.get("image_node"):
+            if not self.graph.node_set.filter(
+                alias=tombstone_config["image_node"], datatype="file-list"
+            ).exists():
+                raise ValidationError(
+                    f"Tombstone section contains invalid image node alias: {image_node_alias}"
+                )
 
     def validate_datasection(self, card_config):
         nodegroup_id = card_config["nodegroup_id"]
