@@ -3,7 +3,7 @@ import re
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from arches.app.models.models import GraphModel, NodeGroup
+from arches.app.models.models import GraphModel, Node, NodeGroup
 from arches.app.models.system_settings import settings
 from arches_provenance.utils import PrettyJSONEncoder
 
@@ -22,8 +22,8 @@ class ReportConfig(models.Model):
         db_table = "arches_provenance_report_config"
 
     def __str__(self):
-        if self.graph:
-            return f"Config for: {self.graph.name}"
+        if self.config and self.graph:
+            return f"Config for: {self.graph.name}: {self.config.get('name')}"
         return super().__str__()
 
     @property
@@ -37,6 +37,7 @@ class ReportConfig(models.Model):
 
     def generate_config(self):
         return {
+            "name": "Untitled Report",
             "components": [
                 {
                     "component": "ReportHeader",
@@ -54,8 +55,8 @@ class ReportConfig(models.Model):
                 {
                     "component": "ReportTombstone",
                     "config": {
-                        "nodes": [],
-                        "image": None,
+                        "node_aliases": [],
+                        "image_node_alias": None,
                         "custom_labels": {},
                     },
                 },
@@ -92,10 +93,21 @@ class ReportConfig(models.Model):
         }
 
     def generate_card_sections(self):
+        ordered_allowed_nodes = (
+            Node.objects.filter(cardxnodexwidget__visible=True)
+            .exclude(datatype__in=self.excluded_datatypes)
+            .order_by("cardxnodexwidget__sortorder")
+        )
         ordered_top_cards = (
             self.graph.cardmodel_set.filter(nodegroup__parentnodegroup__isnull=True)
             .select_related("nodegroup")
-            .prefetch_related("nodegroup__node_set")
+            .prefetch_related(
+                models.Prefetch(
+                    "nodegroup__node_set",
+                    ordered_allowed_nodes,
+                    to_attr="allowed_nodes",
+                )
+            )
             .order_by("sortorder")
         )
         return [
@@ -105,14 +117,14 @@ class ReportConfig(models.Model):
                     {
                         "component": "DataSection",
                         "config": {
-                            "nodegroup_id": str(card.nodegroup_id),
-                            "nodes": [
-                                node.alias
-                                for node in sorted(
-                                    card.nodegroup.node_set.all(),
-                                    key=lambda node: node.sortorder or 0,
-                                )
-                                if node.datatype not in self.excluded_datatypes
+                            # TODO: arches v8: card.nodegroup.grouping_node.alias
+                            "nodegroup_alias": card.nodegroup.node_set.filter(
+                                pk=card.nodegroup.pk
+                            )
+                            .first()
+                            .alias,
+                            "node_aliases": [
+                                node.alias for node in card.nodegroup.allowed_nodes
                             ],
                             # custom_labels: {node alias: "my custom widget label"}
                             "custom_labels": {},
@@ -127,8 +139,11 @@ class ReportConfig(models.Model):
 
     def generate_related_resources_sections(self):
         other_graphs = GraphModel.objects.exclude(
-            pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID
-        ).filter(isresource=True)
+            pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID,
+            slug=None,
+        ).filter(
+            isresource=True,
+        )  # TODO: arches v8: add source_identifier=None
         return [
             {
                 "name": str(other_graph.name),
@@ -136,8 +151,8 @@ class ReportConfig(models.Model):
                     {
                         "component": "RelatedResourcesSection",
                         "config": {
-                            "graph_id": str(other_graph.pk),
-                            "nodes": [],
+                            "graph_slug": other_graph.slug,
+                            "node_aliases": [],
                             "custom_labels": {},
                         },
                     },
@@ -191,10 +206,10 @@ class ReportConfig(models.Model):
         validate_dict(self.config)
 
     def validate_reportheader(self, header_config):
-        descriptor_template = header_config["descriptor"]
+        descriptor_template = self.get_or_raise(header_config, "descriptor", "Header")
         substrings = self.extract_substrings(descriptor_template)
         self.validate_node_aliases(
-            {"nodes": substrings},
+            {"node_aliases": substrings},
             "Header",
             self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
         )
@@ -205,14 +220,22 @@ class ReportConfig(models.Model):
             "Tombstone",
             self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
         )
+        if image_node_alias := tombstone_config.get("image_node_alias"):
+            if not self.graph.node_set.filter(
+                alias=image_node_alias, datatype="file-list"
+            ).exists():
+                msg = f"Tombstone section contains invalid image node alias: {image_node_alias}"
+                raise ValidationError(msg)
 
     def validate_datasection(self, card_config):
-        nodegroup_id = card_config["nodegroup_id"]
+        nodegroup_alias = self.get_or_raise(card_config, "nodegroup_alias", "Data")
         nodegroup = NodeGroup.objects.filter(
-            pk=nodegroup_id, node__graph=self.graph
+            node__alias=nodegroup_alias, node__graph=self.graph
         ).first()
         if not nodegroup:
-            raise ValidationError(f"Section contains invalid nodegroup: {nodegroup_id}")
+            raise ValidationError(
+                f"Section contains invalid nodegroup: {nodegroup_alias}"
+            )
 
         self.validate_node_aliases(
             card_config,
@@ -221,12 +244,10 @@ class ReportConfig(models.Model):
         )
 
     def validate_relatedresourcessection(self, rr_config):
-        if "graph_id" not in rr_config:
-            raise ValidationError("Related Resources section missing graph_id")
-        if "nodes" not in rr_config:
-            raise ValidationError("Related Resources section missing nodes")
+        slug = self.get_or_raise(rr_config, "graph_slug", "Related Resources")
         try:
-            graph = GraphModel.objects.get(pk=rr_config["graph_id"])
+            # TODO: arches v8: add source_identifier=None
+            graph = GraphModel.objects.get(slug=slug)
         except GraphModel.DoesNotExist:
             raise ValidationError("Related Resources section contains invalid graph id")
 
@@ -236,9 +257,9 @@ class ReportConfig(models.Model):
         self.validate_node_aliases(rr_config, "Related Resources", usable_related_nodes)
 
     def validate_node_aliases(self, config, section_name, usable_nodes_queryset):
+        requested_node_aliases = self.get_or_raise(config, "node_aliases", section_name)
         usable_aliases = {node.alias for node in usable_nodes_queryset}
-        requested_node_aliases = set(config.get("nodes", {}))
-        if extra_node_aliases := requested_node_aliases - usable_aliases:
+        if extra_node_aliases := set(requested_node_aliases) - usable_aliases:
             raise ValidationError(
                 f"{section_name} section contains extraneous "
                 "or invalid node aliases or unsupported datatypes: "
@@ -258,3 +279,9 @@ class ReportConfig(models.Model):
         substrings = re.findall(pattern, template_string)
 
         return substrings
+
+    @staticmethod
+    def get_or_raise(config, key, section_name):
+        if key not in config:
+            raise ValidationError(f"{section_name} missing key: {key}")
+        return config[key]

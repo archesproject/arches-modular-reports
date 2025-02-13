@@ -9,14 +9,17 @@ from arches.app.utils.permission_backend import PermissionBackend
 def can_read_nodegroup(view_func):
     """
     Decorator to ensure that the user has read permissions for a specific NodeGroup.
-
-    The decorated view must accept 'nodegroupid' as a keyword argument.
+    The decorated view must accept 'nodegroup_alias' and 'resourceid' as keyword args.
     """
 
     @functools.wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
-        nodegroup_id = kwargs.get("nodegroupid")
-        nodegroup = models.NodeGroup.objects.get(pk=nodegroup_id)
+        nodegroup_alias = kwargs.get("nodegroup_alias")
+        resource_id = kwargs.get("resourceid")
+        # TODO: arches v8: add graph__source_identifier=None
+        nodegroup = models.NodeGroup.objects.get(
+            node__graph__resourceinstance=resource_id, node__alias=nodegroup_alias
+        )
 
         permission_backend = PermissionBackend()
 

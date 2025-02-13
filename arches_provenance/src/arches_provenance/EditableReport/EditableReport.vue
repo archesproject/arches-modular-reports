@@ -19,8 +19,8 @@ import {
 import type { Ref } from "vue";
 import type {
     ComponentLookup,
+    NamedSection,
     NodePresentationLookup,
-    ReportConfig,
 } from "@/arches_provenance/EditableReport/types";
 
 const toast = useToast();
@@ -35,7 +35,8 @@ provide("nodePresentationLookup", nodePresentationLookup);
 const userCanEditResourceInstance = ref(false);
 provide("userCanEditResourceInstance", userCanEditResourceInstance);
 
-const config: Ref<ReportConfig> = ref({
+const config: Ref<NamedSection> = ref({
+    name: $gettext("Loading data"),
     components: [{ component: "", config: {} }],
 });
 
@@ -69,7 +70,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="section-container">
+    <div style="position: absolute">
         <component
             :is="componentLookup[component.component]"
             v-for="component in config.components"
@@ -78,15 +79,6 @@ onMounted(async () => {
             :resource-instance-id
         />
     </div>
-    <Toast
-        :pt="{
-            messageIcon: { style: { marginTop: 'var(--p-toast-content-gap)' } },
-        }"
-    />
-</template>
 
-<style scoped>
-.section-container {
-    gap: 2rem;
-}
-</style>
+    <Toast />
+</template>
