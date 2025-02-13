@@ -31,7 +31,9 @@ class ReportConfig(models.Model):
         return {"semantic", "annotation", "geojson-feature-collection"}
 
     def clean(self):
-        if self.graph_id and not self.config:
+        if not self.graph.slug:
+            raise ValidationError("Graph must have a slug")
+        if not self.config:
             self.config = self.generate_config()
         self.validate_config()
 
@@ -140,8 +142,8 @@ class ReportConfig(models.Model):
     def generate_related_resources_sections(self):
         other_graphs = GraphModel.objects.exclude(
             pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID,
-            slug=None,
         ).filter(
+            slug__isnull=False,
             isresource=True,
         )  # TODO: arches v8: add source_identifier=None
         return [
@@ -248,8 +250,9 @@ class ReportConfig(models.Model):
         try:
             # TODO: arches v8: add source_identifier=None
             graph = GraphModel.objects.get(slug=slug)
-        except GraphModel.DoesNotExist:
-            raise ValidationError("Related Resources section contains invalid graph id")
+        except (GraphModel.DoesNotExist, GraphModel.MultipleObjectsReturned):
+            msg = "Related Resources section contains invalid graph slug"
+            raise ValidationError(msg)
 
         usable_related_nodes = graph.node_set.exclude(
             datatype__in=self.excluded_datatypes
