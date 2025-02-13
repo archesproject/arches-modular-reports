@@ -365,7 +365,7 @@ def get_sorted_filtered_relations(
     )
 
     if query:
-        # OR (|) Q() objects together to allow matching any annotation.
+        # OR Q objects together to allow matching any annotation.
         all_filters = reduce(
             operator.or_,
             [

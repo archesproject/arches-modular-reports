@@ -3,6 +3,8 @@ import { computed } from "vue";
 
 import Button from "primevue/button";
 
+import { RESOURCE_LIMIT_FOR_HEADER } from "@/arches_provenance/constants.ts";
+
 import type { NodeValueDisplayData } from "@/arches_provenance/EditableReport/types";
 
 const props = defineProps<{
@@ -10,15 +12,13 @@ const props = defineProps<{
     displayData: NodeValueDisplayData[];
 }>();
 
-const DISPLAY_VALUE_LIMIT = 5;
-
 const truncatedDisplayData = computed(() => {
     // The tiles were already fetched with a limit, but we unpack
     // multiple display values for *-list datatypes, so truncate.
     var counter = 0;
     return props.displayData.reduce((acc, tileData) => {
         counter += tileData.display_values.length;
-        const excess = counter - DISPLAY_VALUE_LIMIT;
+        const excess = counter - RESOURCE_LIMIT_FOR_HEADER;
         if (excess > 0) {
             acc.push({
                 display_values: tileData.display_values.slice(0, -excess),
