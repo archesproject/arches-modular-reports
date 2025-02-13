@@ -113,9 +113,7 @@
                                                         "nodes": [
                                                             "production_actor",
                                                             "production_location",
-                                                            "production_timespan_name_content",
                                                             "production_type"
-
                                                         ],
                                                         "nodegroup_id": "ee570cc8-bacf-11ea-81b2-3af9d3b32b71",
                                                         "custom_labels": {},
@@ -142,7 +140,6 @@
                                                         "nodes": [
                                                             "modification_actor",
                                                             "modification_location",
-                                                            "modification_timespan_name_content",
                                                             "modification_type"
                                                         ],
                                                         "nodegroup_id": "88651a1e-bc68-11ea-b6b2-3af9d3b32b71",
@@ -155,8 +152,7 @@
                                                     "config": {
                                                         "nodes": [
                                                             "destruction_location",
-                                                            "destruction_timespan_name_content",
-                                                            "destruction_type"                                                        
+                                                            "destruction_type"
                                                         ],
                                                         "nodegroup_id": "047fb304-bae6-11ea-81b2-3af9d3b32b71",
                                                         "custom_labels": {},
@@ -265,8 +261,7 @@
                                                     "config": {
                                                         "nodes": [
                                                             "identifier_content",
-                                                            "identifier_type",
-                                                            "identifier_data_assignment_actor"
+                                                            "identifier_type"
                                                         ],
                                                         "nodegroup_id": "e7cbda1e-bacf-11ea-81b2-3af9d3b32b71",
                                                         "custom_labels": {},
