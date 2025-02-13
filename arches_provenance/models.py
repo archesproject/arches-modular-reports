@@ -22,8 +22,8 @@ class ReportConfig(models.Model):
         db_table = "arches_provenance_report_config"
 
     def __str__(self):
-        if self.graph:
-            return f"Config for: {self.graph.name}"
+        if self.config and self.graph:
+            return f"Config for: {self.graph.name}: {self.config.get('name')}"
         return super().__str__()
 
     @property
@@ -37,6 +37,7 @@ class ReportConfig(models.Model):
 
     def generate_config(self):
         return {
+            "name": "Untitled Report",
             "components": [
                 {
                     "component": "ReportHeader",
@@ -55,7 +56,7 @@ class ReportConfig(models.Model):
                     "component": "ReportTombstone",
                     "config": {
                         "node_aliases": [],
-                        "image": None,
+                        "image_node_alias": None,
                         "custom_labels": {},
                     },
                 },
@@ -219,6 +220,12 @@ class ReportConfig(models.Model):
             "Tombstone",
             self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
         )
+        if image_node_alias := tombstone_config.get("image_node_alias"):
+            if not self.graph.node_set.filter(
+                alias=image_node_alias, datatype="file-list"
+            ).exists():
+                msg = f"Tombstone section contains invalid image node alias: {image_node_alias}"
+                raise ValidationError(msg)
 
     def validate_datasection(self, card_config):
         nodegroup_alias = self.get_or_raise(card_config, "nodegroup_alias", "Data")

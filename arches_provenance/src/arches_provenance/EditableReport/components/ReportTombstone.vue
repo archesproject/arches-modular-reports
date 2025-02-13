@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import arches from "arches";
-import { inject, onMounted, ref } from "vue";
+import { computed, inject, onMounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Message from "primevue/message";
@@ -27,8 +27,41 @@ const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
 >;
 const { $gettext } = useGettext();
 
+const isLoading = ref(true);
 const hasLoadingError = ref(false);
 const displayDataByAlias: Ref<NodeValueDisplayDataLookup | null> = ref(null);
+const imageNodeData = ref(null);
+
+interface ImageTileData {
+    display_value: string;
+    links: { alt_text: string; link: string }[];
+}
+
+const firstImageTileData = computed(() => {
+    const data =
+        imageNodeData.value?.[props.component.config.image_node_alias]?.[0];
+    return data as ImageTileData | undefined;
+});
+
+const imageUrl = computed(() => {
+    if (isLoading.value) {
+        return "";
+    }
+    if (!firstImageTileData.value) {
+        return arches.urls.media + "img/photo_missing.png";
+    }
+    return firstImageTileData.value.links[0].link;
+});
+
+const imageAltText = computed(() => {
+    if (isLoading.value) {
+        return "";
+    }
+    if (!firstImageTileData.value) {
+        return $gettext("Image not available");
+    }
+    return firstImageTileData.value.links[0].alt_text;
+});
 
 function bestWidgetLabel(nodeAlias: string) {
     return (
@@ -39,14 +72,22 @@ function bestWidgetLabel(nodeAlias: string) {
 }
 
 async function fetchData() {
+    isLoading.value = true;
     try {
         displayDataByAlias.value = await fetchNodeTileData(
             resourceInstanceId,
             props.component.config.node_aliases,
         );
+        if (props.component.config.image_node_alias) {
+            imageNodeData.value = await fetchNodeTileData(resourceInstanceId, [
+                props.component.config.image_node_alias,
+            ]);
+        }
         hasLoadingError.value = false;
     } catch {
         hasLoadingError.value = true;
+    } finally {
+        isLoading.value = false;
     }
 }
 
@@ -75,8 +116,8 @@ onMounted(fetchData);
         </div>
         <div class="image-container">
             <img
-                :src="arches.urls.media + 'img/photo_missing.png'"
-                :alt="$gettext('Image not available')"
+                :src="imageUrl"
+                :alt="imageAltText"
             />
         </div>
     </Panel>
