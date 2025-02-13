@@ -7,9 +7,11 @@ import Button from "primevue/button";
 
 import type { Ref } from "vue";
 import type {
+    ConceptDetails,
     LabelBasedNode,
     LabelBasedTile,
     NodePresentationLookup,
+    ResourceDetails,
 } from "@/arches_provenance/EditableReport/types";
 
 const {
@@ -30,7 +32,7 @@ const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
 
 const childKey = "@children";
 const { [childKey]: children, ...singleTileData } = data;
-const nodeAliasValuePairs = Object.entries(
+const nodeAliasValuePairs: [string, LabelBasedNode][] = Object.entries(
     Object.values(singleTileData)[0],
 ).filter(([nodeAlias]) => !nodeAlias.startsWith("@"));
 const firstAlias = nodeAliasValuePairs[0][0];
@@ -77,12 +79,11 @@ function bestWidgetLabel(nodeAlias: string) {
             >
                 <!-- nodeValue is null if this is a hidden node -->
                 <template v-if="nodeValue">
-                    <!-- TODO: update link generation pattern when refactoring backend. -->
                     <dt>{{ bestWidgetLabel(nodeAlias) }}</dt>
                     <template v-if="nodeValue.instance_details?.length">
                         <div style="flex-direction: column">
                             <dd
-                                v-for="instanceDetail in nodeValue.instance_details"
+                                v-for="instanceDetail in nodeValue.instance_details as ResourceDetails[]"
                                 :key="instanceDetail.resourceId"
                             >
                                 <Button
@@ -99,6 +100,39 @@ function bestWidgetLabel(nodeAlias: string) {
                             </dd>
                         </div>
                     </template>
+                    <template v-else-if="nodeValue.concept_details?.length">
+                        <div style="flex-direction: column">
+                            <dd
+                                v-for="conceptDetail in nodeValue.concept_details as ConceptDetails[]"
+                                :key="conceptDetail.concept_id"
+                            >
+                                <Button
+                                    as="a"
+                                    variant="link"
+                                    target="_blank"
+                                    :href="
+                                        arches.urls.rdm +
+                                        conceptDetail.concept_id
+                                    "
+                                >
+                                    {{ conceptDetail.value }}
+                                </Button>
+                            </dd>
+                        </div>
+                    </template>
+                    <template v-else-if="nodeValue.url">
+                        <dd>
+                            <Button
+                                as="a"
+                                variant="link"
+                                target="_blank"
+                                :href="nodeValue.url"
+                            >
+                                {{ nodeValue.url_label }}
+                            </Button>
+                        </dd>
+                    </template>
+                    <dd v-else>{{ nodeValue["@display_value"] }}</dd>
                 </template>
             </div>
             <ChildTile
