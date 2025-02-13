@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Message from "primevue/message";
@@ -18,7 +18,11 @@ const { $gettext } = useGettext();
 
 const isLoading = ref(true);
 const hasLoadingError = ref(false);
-const childTileData = ref<LabelBasedTile[]>([]);
+const childTileData = ref<LabelBasedTile>({ "@children": [] });
+
+const hasData = computed(() => {
+    return childTileData.value["@children"].length > 0;
+});
 
 async function fetchData() {
     try {
@@ -34,16 +38,12 @@ onMounted(fetchData);
 </script>
 
 <template>
-    <template
-        v-for="child in childTileData"
-        :key="Object.values(child)[1]['@tile_id']"
-    >
-        <ChildTile
-            :data="child"
-            :depth="1"
-            :custom-labels
-        />
-    </template>
+    <ChildTile
+        v-if="hasData"
+        :data="childTileData"
+        :depth="1"
+        :custom-labels
+    />
     <Message
         v-if="hasLoadingError"
         severity="error"
@@ -51,7 +51,7 @@ onMounted(fetchData);
         {{ $gettext("Unable to fetch resource") }}
     </Message>
     <p
-        v-else-if="!isLoading && !childTileData.length"
+        v-else-if="!isLoading && !hasData"
         style="padding: 0 4.25rem; margin-bottom: 0"
     >
         {{ $gettext("No further data found") }}

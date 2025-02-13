@@ -70,7 +70,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="section-container">
+    <div style="position: absolute">
         <component
             :is="componentLookup[component.component]"
             v-for="component in config.components"
@@ -79,15 +79,6 @@ onMounted(async () => {
             :resource-instance-id
         />
     </div>
-    <Toast
-        :pt="{
-            messageIcon: { style: { marginTop: 'var(--p-toast-content-gap)' } },
-        }"
-    />
-</template>
 
-<style scoped>
-.section-container {
-    gap: 2rem;
-}
-</style>
+    <Toast />
+</template>

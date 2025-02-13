@@ -28,8 +28,8 @@ import type {
 const props = defineProps<{
     component: {
         config: {
-            nodegroup_id: string;
-            nodes: string[];
+            nodegroup_alias: string;
+            node_aliases: string[];
             custom_labels: Record<string, string>;
             custom_card_name: string | null;
             has_write_permission: boolean;
@@ -55,7 +55,9 @@ const hasLoadingError = ref(false);
 const resettingToFirstPage = ref(false);
 const pageNumberToNodegroupTileData = ref<Record<number, unknown[]>>({});
 
-const userCanEditResourceInstance = inject("userCanEditResourceInstance");
+const userCanEditResourceInstance = inject(
+    "userCanEditResourceInstance",
+) as Ref<boolean>;
 const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
     NodePresentationLookup | undefined
 >;
@@ -77,7 +79,7 @@ const isEmpty = computed(
 
 const shouldShowAddButton = computed(
     () =>
-        userCanEditResourceInstance &&
+        userCanEditResourceInstance.value &&
         props.component.config.has_write_permission &&
         (isEmpty.value || cardinality.value === CARDINALITY_N),
 );
@@ -86,7 +88,7 @@ const columnData = computed(() => {
     if (!nodePresentationLookup.value) {
         return [];
     }
-    return props.component.config.nodes.map((nodeAlias) => {
+    return props.component.config.node_aliases.map((nodeAlias) => {
         const nodeDetails = nodePresentationLookup.value![nodeAlias];
         return {
             nodeAlias,
@@ -99,7 +101,7 @@ const columnData = computed(() => {
 });
 
 const cardinality = computed(() => {
-    const firstNodeAlias = props.component.config.nodes[0];
+    const firstNodeAlias = props.component.config.node_aliases[0];
     if (!nodePresentationLookup.value || !firstNodeAlias) {
         return "";
     }
@@ -107,7 +109,7 @@ const cardinality = computed(() => {
 });
 
 const cardName = computed(() => {
-    const firstNodeAlias = props.component.config.nodes[0];
+    const firstNodeAlias = props.component.config.node_aliases[0];
     if (!nodePresentationLookup.value || !firstNodeAlias) {
         return "";
     }
@@ -157,7 +159,7 @@ async function fetchData(page: number = 1) {
             total_count: totalCount,
         } = await fetchNodegroupTileData(
             props.resourceInstanceId,
-            props.component.config.nodegroup_id,
+            props.component.config.nodegroup_alias,
             rowsPerPage.value,
             page,
             sortNodeId.value,
@@ -293,11 +295,9 @@ function rowClass(data: LabelBasedCard) {
         >
             <template #body="{ data, field }">
                 <div style="max-height: 12rem; overflow: auto">
-                    <template
-                        v-if="Array.isArray(data[field]['display_value'])"
-                    >
+                    <template v-if="Array.isArray(data[field]?.display_value)">
                         <Button
-                            v-for="item in data[field]['display_value']"
+                            v-for="item in data[field].display_value"
                             :key="item.link"
                             :href="item.link"
                             target="_blank"
@@ -309,7 +309,7 @@ function rowClass(data: LabelBasedCard) {
                         </Button>
                     </template>
                     <template v-else>
-                        {{ data[field]["display_value"] }}
+                        {{ data[field]?.display_value }}
                     </template>
                 </div>
             </template>

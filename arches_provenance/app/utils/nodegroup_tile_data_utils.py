@@ -12,7 +12,6 @@ from django.db.models import (
     JSONField,
     OuterRef,
     Q,
-    Subquery,
     TextField,
     Value,
     When,
@@ -20,7 +19,7 @@ from django.db.models import (
 from django.db.models.expressions import CombinedExpression
 from django.db.models.fields.json import KT
 from django.db.models.functions import Cast, Concat, JSONObject
-from django.urls import reverse
+from django.urls import get_script_prefix, reverse
 from django.utils.translation import gettext as _
 
 from arches.app.datatypes.concept_types import BaseConceptDataType
@@ -94,13 +93,13 @@ def build_valueid_annotation(data):
 
 
 def annotate_related_graph_nodes_with_widget_labels(
-    additional_nodes, related_graphid, request_language
+    additional_nodes, related_graph, request_language
 ):
     return (
-        models.Node.objects.filter(alias__in=additional_nodes, graph_id=related_graphid)
+        models.Node.objects.filter(alias__in=additional_nodes, graph=related_graph)
         .exclude(datatype__in=["semantic", "annotation", "geojson-feature-collection"])
         .annotate(
-            widget_label_json=Subquery(
+            widget_label_json=(
                 models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid")).values(
                     "label"
                 )[:1]
@@ -153,12 +152,21 @@ def annotate_node_values(
 
 
 def get_sorted_filtered_tiles(
-    *, resourceinstanceid, nodegroupid, sort_node_id, direction, query, user_language
+    *,
+    resourceinstanceid,
+    nodegroup_alias,
+    sort_node_id,
+    direction,
+    query,
+    user_language,
 ):
     # semantic, annotation, and geojson-feature-collection data types are
     # excluded in __arches_get_node_display_value
-    nodes = models.Node.objects.filter(nodegroup_id=nodegroupid).exclude(
-        datatype__in=["semantic", "annotation", "geojson-feature-collection"]
+    nodes = models.Node.objects.filter(
+        graph__resourceinstance=resourceinstanceid,
+        nodegroup__node__alias=nodegroup_alias,
+    ).exclude(
+        datatype__in={"semantic", "annotation", "geojson-feature-collection"},
     )
 
     if not nodes:
@@ -200,7 +208,7 @@ def get_sorted_filtered_tiles(
 
     tiles = (
         Tile.objects.filter(
-            resourceinstance_id=resourceinstanceid, nodegroup_id=nodegroupid
+            resourceinstance_id=resourceinstanceid, nodegroup_id=nodes[0].nodegroup_id
         )
         .annotate(**field_annotations)
         .annotate(alias_annotations=JSONObject(**alias_annotations))
@@ -238,7 +246,15 @@ def get_sorted_filtered_tiles(
 
 
 def get_sorted_filtered_relations(
-    *, resource, related_graphid, nodes, sort_field, direction, query, request_language
+    *,
+    resource,
+    related_graph,
+    nodes,
+    permitted_nodegroups,
+    sort_field,
+    direction,
+    query,
+    request_language,
 ):
     def make_tile_annotations(node, direction):
         tile_query = ArraySubquery(
@@ -287,6 +303,7 @@ def get_sorted_filtered_relations(
             ),
         )
         for node in nodes
+        if node.nodegroup_id in permitted_nodegroups
     }
     instance_details_annotations = {
         node.alias
@@ -309,22 +326,25 @@ def get_sorted_filtered_relations(
             "resource-instance-list",
             "url",
         }
+        and node.nodegroup_id in permitted_nodegroups
     }
 
     relations = (
         (
             models.ResourceXResource.objects.filter(
                 resourceinstanceidfrom=resource,
-                resourceinstanceto_graphid=related_graphid,
+                resourceinstanceto_graphid=related_graph,
+                nodeid__nodegroup_id__in=permitted_nodegroups,
             )
             | models.ResourceXResource.objects.filter(
                 resourceinstanceidto=resource,
-                resourceinstancefrom_graphid=related_graphid,
+                resourceinstancefrom_graphid=related_graph,
+                nodeid__nodegroup_id__in=permitted_nodegroups,
             )
         )
         .distinct()
         .annotate(
-            relation_name_json=Subquery(
+            relation_name_json=(
                 models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid")).values(
                     "label"
                 )[:1]
@@ -373,7 +393,7 @@ def get_sorted_filtered_relations(
     return relations
 
 
-def serialize_tiles_with_children(tile, serialized_graph):
+def serialize_tiles_with_children(tile, serialized_graph, permitted_nodegroups):
     node_ids = list(tile.data.keys())
 
     if str(tile.nodegroup_id) not in node_ids:
@@ -386,9 +406,11 @@ def serialize_tiles_with_children(tile, serialized_graph):
         node_ids_to_tiles_reference[node_id] = tile_list
 
     tile._children = [
-        serialize_tiles_with_children(child, serialized_graph)
-        # TODO: arches v8: tile.children.order_by("sortorder")
-        for child in tile.tilemodel_set.order_by("sortorder")
+        serialize_tiles_with_children(child, serialized_graph, permitted_nodegroups)
+        # TODO: arches v8: tile.children.filter(...
+        for child in tile.tilemodel_set.filter(
+            nodegroup_id__in=permitted_nodegroups
+        ).order_by("sortorder")
     ]
 
     return {
@@ -434,6 +456,13 @@ def prepare_links(node, tile_values, node_display_value, request_language):
             value_finder.get_value(value_id_str).concept_id
             for value_id_str in value_ids
         ]
+
+    def form_file_url(tile_url_string):
+        prefix = get_script_prefix()
+        if tile_url_string.startswith("http") or tile_url_string.startswith(prefix):
+            return tile_url_string
+        url = get_script_prefix() + tile_url_string
+        return url.replace("//", "/")
 
     ### BEGIN LINK GENERATION
     for tile_val in tile_values:
@@ -481,6 +510,15 @@ def prepare_links(node, tile_values, node_display_value, request_language):
                         "link": tile_val["url"],
                     }
                 )
+            case "file-list":
+                for file in tile_val:
+                    alt = file.get("altText", {}).get(request_language)["value"]
+                    links.append(
+                        {
+                            "alt_text": alt,
+                            "link": form_file_url(file["url"]),
+                        }
+                    )
 
     return links
 

@@ -49,7 +49,7 @@ export const fetchNodeTileData = async (
 
 export const fetchNodegroupTileData = async (
     resourceInstanceId: string,
-    nodegroupId: string,
+    nodegroupAlias: string,
     rowsPerPage: number,
     page: number,
     sortNodeId: string | null,
@@ -58,7 +58,7 @@ export const fetchNodegroupTileData = async (
 ) => {
     const url = arches.urls.api_nodegroup_tile_data(
         resourceInstanceId,
-        nodegroupId,
+        nodegroupAlias,
     );
     const params = new URLSearchParams({
         rows_per_page: rowsPerPage.toString(),
@@ -77,7 +77,7 @@ export const fetchNodegroupTileData = async (
 
 export const fetchChildTileData = async (
     tileId: string,
-): Promise<LabelBasedTile[]> => {
+): Promise<LabelBasedTile> => {
     const url = arches.urls.api_child_tile_data(tileId);
     const response = await fetch(url);
     const parsed = await response.json();
@@ -87,8 +87,8 @@ export const fetchChildTileData = async (
 
 export const fetchRelatedResourceData = async (
     resourceInstanceId: string,
-    relatedGraphId: string,
-    nodes: string[],
+    relatedGraphSlug: string,
+    nodeAliases: string[],
     rowsPerPage: number,
     page: number,
     sortField: string,
@@ -97,10 +97,10 @@ export const fetchRelatedResourceData = async (
 ) => {
     const url = arches.urls.api_related_resources(
         resourceInstanceId,
-        relatedGraphId,
+        relatedGraphSlug,
     );
     const params = new URLSearchParams({
-        nodes: nodes.join(","),
+        node_aliases: nodeAliases.join(","),
         rows_per_page: rowsPerPage.toString(),
         page: page.toString(),
         sort_field: sortField,

@@ -1,47 +1,57 @@
 import copy
-import uuid
 
+from django.db import models
+
+from arches.app.models.models import Node, NodeGroup
 from arches.app.permissions.arches_permission_base import (
     get_nodegroups_by_perm_for_user_or_group,
 )
 
 
-def extract_nodegroup_ids_from_report_configuration(data):
-    nodegroup_ids = set()
+def extract_nodegroup_ids_from_report_configuration(report_configuration_instance):
+    nodegroup_aliases = set()
 
-    def find_nodegroup_id(obj):
+    def find_nodegroup_alias(obj):
         if isinstance(obj, dict):
             for key, value in obj.items():
-                if key == "nodegroup_id":
-                    nodegroup_ids.add(uuid.UUID(value))
+                if key == "nodegroup_alias":
+                    nodegroup_aliases.add(value)
                 else:
-                    find_nodegroup_id(value)
+                    find_nodegroup_alias(value)
 
         elif isinstance(obj, list):
             for item in obj:
-                find_nodegroup_id(item)
+                find_nodegroup_alias(item)
 
-    find_nodegroup_id(data)
+    find_nodegroup_alias(report_configuration_instance.config)
 
-    return nodegroup_ids
+    return NodeGroup.objects.filter(
+        node__graph=report_configuration_instance.graph,
+        node__alias__in=nodegroup_aliases,
+    ).values_list("pk", flat=True)
 
 
 def update_report_configuration_with_nodegroup_permissions(
-    report_configuration,
+    report_configuration_instance,
     report_nodegroup_ids_with_user_read_permission,
     report_nodegroup_ids_with_user_write_permission,
 ):
-    copy_of_report_configuration = copy.deepcopy(report_configuration)
+    copy_of_report_configuration = copy.deepcopy(report_configuration_instance.config)
+
+    nodegroup_uuids_by_alias = {
+        node.alias: node.pk
+        for node in Node.objects.filter(
+            graph=report_configuration_instance.graph, nodegroup_id=models.F("pk")
+        )
+    }
 
     def filter_node(node):
         if isinstance(node, dict):
             config = node.get("config", {})
 
             if isinstance(config, dict):
-                nodegroup_id_string = config.get("nodegroup_id")
-                nodegroup_id = (
-                    uuid.UUID(nodegroup_id_string) if nodegroup_id_string else None
-                )
+                nodegroup_alias = config.get("nodegroup_alias")
+                nodegroup_id = nodegroup_uuids_by_alias.get(nodegroup_alias)
 
                 if (
                     nodegroup_id
@@ -95,9 +105,11 @@ def update_report_configuration_with_nodegroup_permissions(
     return filter_node(copy_of_report_configuration)
 
 
-def update_report_configuration_for_nodegroup_permissions(report_configuration, user):
+def update_report_configuration_for_nodegroup_permissions(
+    report_configuration_instance, user
+):
     report_nodegroup_ids = extract_nodegroup_ids_from_report_configuration(
-        report_configuration
+        report_configuration_instance
     )
 
     report_nodegroup_ids_with_user_read_permission = set()
@@ -124,7 +136,7 @@ def update_report_configuration_for_nodegroup_permissions(report_configuration, 
             report_nodegroup_ids_with_user_write_permission.add(nodegroup.pk)
 
     return update_report_configuration_with_nodegroup_permissions(
-        report_configuration=report_configuration,
+        report_configuration_instance=report_configuration_instance,
         report_nodegroup_ids_with_user_read_permission=report_nodegroup_ids_with_user_read_permission,
         report_nodegroup_ids_with_user_write_permission=report_nodegroup_ids_with_user_write_permission,
     )
