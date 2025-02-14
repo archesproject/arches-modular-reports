@@ -43,7 +43,7 @@ function scrollToSection(linked_section: CollapsibleSection): void {
         if (panelRoot) {
             panelRoot.scrollIntoView({
                 behavior: "smooth",
-                block: "nearest",
+                block: "start",
             });
         }
     }
