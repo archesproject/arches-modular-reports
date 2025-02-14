@@ -82,7 +82,6 @@ onMounted(async () => {
                 v-for="linked_section in linkedSections"
                 :key="linked_section.name"
                 :label="linked_section.name"
-                severity="secondary"
                 variant="outlined"
                 @click="scrollToSection(linked_section)"
             />
@@ -94,6 +93,7 @@ onMounted(async () => {
                 :key="linked_section.name"
                 :collapsed="linked_section.collapsed"
                 toggleable
+                header="$gettext('toggle section')"
                 @toggle="linked_section.collapsed = !linked_section.collapsed"
             >
                 <template #header>
