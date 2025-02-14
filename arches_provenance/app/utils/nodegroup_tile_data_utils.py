@@ -406,7 +406,7 @@ def serialize_tiles_with_children(tile, serialized_graph, permitted_nodegroups):
     ]
 
     visibility_reference = {
-        str(config.node.pk): config.visible
+        str(config.node_id): config.visible
         for config in models.CardXNodeXWidget.objects.filter(
             node__graph=serialized_graph["graphid"]
         )
