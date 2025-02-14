@@ -82,7 +82,6 @@ onMounted(async () => {
                 v-for="linked_section in linkedSections"
                 :key="linked_section.name"
                 :label="linked_section.name"
-                severity="info"
                 variant="outlined"
                 @click="scrollToSection(linked_section)"
             />

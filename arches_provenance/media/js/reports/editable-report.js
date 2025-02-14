@@ -3,8 +3,9 @@ import EditableReport from '@/arches_provenance/EditableReport/EditableReport.vu
 import createVueApplication from 'utils/create-vue-application';
 import EditableReportTemplate from 'templates/views/report-templates/editable-report.htm';
 
-import { definePreset } from '@primevue/themes';
+import { $dt, definePreset } from '@primevue/themes';
 import Aura from '@primevue/themes/aura';
+
 
 const EditableReportPreset = definePreset(Aura, {
     semantic: {
@@ -34,30 +35,38 @@ const EditableReportPreset = definePreset(Aura, {
         },
         // custom button tokens and additional style
         button: {
-            extend: {
-                baseButton: {
-                    fontSize: '1.4rem',
-                }
-            },
+            colorScheme: {  
+                light: { 
+                    primary: {
+                        color: '{primary-700}',
+                    },
+                    link: {  
+                        hoverColor: '{button-text-plain-color}',  
+                        color: '{button-primary-color}',  
+                    },  
+                    outlined: {  
+                        primary: { 
+                            color: '{button-primary-color}', 
+                        },
+                    },
+                },  
+                dark: {  
+                    link: {  
+                        hoverColor: '{button-text-plain-color}',  
+                    },
+                    outlined: {  
+                        primary: {
+                            hover:{  
+                                color: '{primary-700}', // this doesn't work, but should based on primevue docs
+                                background: '{button-text-plain-color}',  
+                            },      
+                        }
+                    }
+                },  
+            },  
             css: ({ dt }) => `
                 .p-button {
                     font-size: ${dt('base.button.font.size')};
-                }
-                .p-button, .p-button-label, .p-tab {
-                    color: ${dt('sky.700')};
-                }
-                .p-button-link:not(:disabled):hover {
-                    color: ${dt('text-color')};
-                }
-                @media (prefers-color-scheme:dark) {
-                    .p-button, .p-button-label, .p-tab {
-                        color: ${dt('sky.500')};
-                    }
-                    .p-button-outlined:not(:disabled):hover,
-                    .p-button-outlined.p-button-info:not(:disabled):hover {
-                        background-color: ${dt('text-color')};
-                    }
-                    
                 }
             `
         }
