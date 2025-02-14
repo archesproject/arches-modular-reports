@@ -21,7 +21,7 @@
         {
             "config": {
                 "image": null,
-                "nodes": [
+                "node_aliases": [
                     "exact_match",
                     "production_part_actor",
                     "material",
@@ -49,12 +49,12 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "name_content",
                                                             "name_type",
                                                             "name_source_reference"
                                                         ],
-                                                        "nodegroup_id": "10120250-bad0-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "name",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -62,12 +62,12 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "statement_content",
                                                             "statement_type",
                                                             "statement_source_reference"
                                                         ],
-                                                        "nodegroup_id": "e2f83f46-bacf-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "statement",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -80,10 +80,10 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "material"
                                                         ],
-                                                        "nodegroup_id": "9cdb7272-bad8-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "material",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -91,13 +91,13 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "dimension_value",
                                                             "dimension_unit",
                                                             "dimension_type",
                                                             "dimension_source_reference"
                                                         ],
-                                                        "nodegroup_id": "ead2cab0-bacf-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "dimension",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -110,12 +110,12 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "production_actor",
                                                             "production_location",
                                                             "production_type"
                                                         ],
-                                                        "nodegroup_id": "ee570cc8-bacf-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "production",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -123,13 +123,13 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "production_data_assignment_target_entity",
                                                             "production_data_assignment_property_assigned_type",
                                                             "production_data_assignment_type",
                                                             "production_data_assignment_object_used"
                                                         ],
-                                                        "nodegroup_id": "28cd69ee-c79e-11ea-ad1b-3af9d3b32b71",
+                                                        "nodegroup_alias": "production_data_assignment",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -137,12 +137,12 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "modification_actor",
                                                             "modification_location",
                                                             "modification_type"
                                                         ],
-                                                        "nodegroup_id": "88651a1e-bc68-11ea-b6b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "modification",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -150,11 +150,11 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "destruction_location",
                                                             "destruction_type"
                                                         ],
-                                                        "nodegroup_id": "047fb304-bae6-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "destruction",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -167,10 +167,10 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "part_of_object"
                                                         ],
-                                                        "nodegroup_id": "79bbd28c-bad8-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "part_of_object",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -183,10 +183,10 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "text_carried"
                                                         ],
-                                                        "nodegroup_id": "34226b82-bad8-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "text_carried",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -194,10 +194,10 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "visual_image_shown"
                                                         ],
-                                                        "nodegroup_id": "4f76b550-bad8-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "visual_image_shown",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -210,10 +210,10 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "current_owner"
                                                         ],
-                                                        "nodegroup_id": "7aa46d7c-bad7-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "current_owner",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -221,10 +221,10 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "current_custodian"
                                                         ],
-                                                        "nodegroup_id": "9141d6c8-bad7-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "current_custodian",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -232,10 +232,10 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "permanent_location"
                                                         ],
-                                                        "nodegroup_id": "07f265f8-bad8-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "permanent_location",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -243,10 +243,10 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "member_of_set"
                                                         ],
-                                                        "nodegroup_id": "ee666e8a-bad8-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "member_of_set",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -259,11 +259,11 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "identifier_content",
                                                             "identifier_type"
                                                         ],
-                                                        "nodegroup_id": "e7cbda1e-bacf-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "identifier",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -271,10 +271,10 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "exact_match"
                                                         ],
-                                                        "nodegroup_id": "0813a9a4-bad1-11ea-81b2-3af9d3b32b71",
+                                                        "nodegroup_alias": "exact_match",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -287,10 +287,10 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "source_reference"
                                                         ],
-                                                        "nodegroup_id": "3ffcd690-c799-11ea-b94e-3af9d3b32b71",
+                                                        "nodegroup_alias": "source_reference",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -298,11 +298,11 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [
+                                                        "node_aliases": [
                                                             "digital_reference",
                                                             "digital_reference_type"
                                                         ],
-                                                        "nodegroup_id": "657b45e0-c79a-11ea-b94e-3af9d3b32b71",
+                                                        "nodegroup_alias": "digital_reference",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -327,16 +327,16 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "nodes": [],
-                                                        "graph_id": "3d461890-b4b5-11ea-84f7-3af9d3b32b71",
+                                                        "node_aliases": [],
+                                                        "graph_slug": "provenance",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [],
-                                                        "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
+                                                        "node_aliases": [],
+                                                        "graph_slug": "activity",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -348,8 +348,8 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "nodes": [],
-                                                        "graph_id": "f6e89030-b4b4-11ea-84f7-3af9d3b32b71",
+                                                        "node_aliases": [],
+                                                        "graph_slug": "place",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -361,16 +361,16 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "nodes": [],
-                                                        "graph_id": "9ffb6fcc-b4b4-11ea-84f7-3af9d3b32b71",
+                                                        "node_aliases": [],
+                                                        "graph_slug": "person",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [],
-                                                        "graph_id": "d6774bfc-b4b4-11ea-84f7-3af9d3b32b71",
+                                                        "node_aliases": [],
+                                                        "graph_slug": "group",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -382,24 +382,24 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "nodes": [],
-                                                        "graph_id": "6dad61aa-b4b5-11ea-84f7-3af9d3b32b71",
+                                                        "node_aliases": [],
+                                                        "graph_slug": "textual_work",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [],
-                                                        "graph_id": "933ee880-b4b5-11ea-84f7-3af9d3b32b71",
+                                                        "node_aliases": [],
+                                                        "graph_slug": "visual_work",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
                                                 },
                                                 {
                                                     "config": {
-                                                        "nodes": [],
-                                                        "graph_id": "1810d182-b4b5-11ea-84f7-3af9d3b32b71",
+                                                        "node_aliases": [],
+                                                        "graph_slug": "object",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -411,8 +411,8 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "nodes": [],
-                                                        "graph_id": "bdba56bc-b4b5-11ea-84f7-3af9d3b32b71",
+                                                        "node_aliases": [],
+                                                        "graph_slug": "set",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
