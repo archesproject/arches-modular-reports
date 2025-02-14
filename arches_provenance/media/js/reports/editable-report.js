@@ -35,6 +35,11 @@ const EditableReportPreset = definePreset(Aura, {
         },
         // custom button tokens and additional style
         button: {
+            extend: {
+                baseButton: {
+                    fontSize: '1.4rem',
+                }
+            },
             colorScheme: {  
                 light: { 
                     primary: {
