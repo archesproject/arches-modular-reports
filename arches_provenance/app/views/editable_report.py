@@ -340,10 +340,24 @@ class ChildTileDataView(APIBase):
             publication=tile.resourceinstance.graph.publication,
             language=translation.get_language(),
         )
+
+        configs = models.CardXNodeXWidget.objects.filter(
+            node__graph=published_graph.serialized_graph["graphid"]
+        ).select_related("card")
+        card_visibility_reference = {
+            str(config.node_id): config.card.visible if config.card else True
+            for config in configs
+        }
+        node_visibility_reference = {
+            str(config.node_id): config.visible for config in configs
+        }
+
         serialized = serialize_tiles_with_children(
             tile=tile,
             serialized_graph=published_graph.serialized_graph,
             permitted_nodegroups=permitted_nodegroups,
+            card_visibility_reference=card_visibility_reference,
+            node_visibility_reference=node_visibility_reference,
         )
 
         return JSONResponse(serialized)
