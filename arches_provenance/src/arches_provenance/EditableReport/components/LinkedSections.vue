@@ -94,7 +94,7 @@ onMounted(async () => {
                 :key="linked_section.name"
                 :collapsed="linked_section.collapsed"
                 toggleable
-                header="toggle section"
+                header="$gettext('toggle section')"
                 @toggle="linked_section.collapsed = !linked_section.collapsed"
             >
                 <template #header>
