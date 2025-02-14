@@ -92,6 +92,17 @@
                                                 {
                                                     "config": {
                                                         "node_aliases": [
+                                                            "type"
+                                                        ],
+                                                        "nodegroup_alias": "type",
+                                                        "custom_labels": {},
+                                                        "custom_card_name": null
+                                                    },
+                                                    "component": "DataSection"
+                                                },
+                                                {
+                                                    "config": {
+                                                        "node_aliases": [
                                                             "dimension_value",
                                                             "dimension_unit",
                                                             "dimension_type",
