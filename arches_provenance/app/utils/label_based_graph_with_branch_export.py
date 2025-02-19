@@ -2,7 +2,10 @@ from arches.app.utils.label_based_graph_v2 import LabelBasedGraph, LabelBasedNod
 
 
 class LabelBasedGraphWithBranchExport(LabelBasedGraph):
-    """Override to avoid parent_tree still being None after checking parent_tile."""
+    """
+    Override to:
+    1. avoid parent_tree still being None after checking parent_tile.
+    """
 
     @classmethod
     def _build_graph(

@@ -395,7 +395,13 @@ def get_sorted_filtered_relations(
     return relations
 
 
-def serialize_tiles_with_children(tile, serialized_graph, permitted_nodegroups):
+def serialize_tiles_with_children(
+    tile,
+    serialized_graph,
+    permitted_nodegroups,
+    card_visibility_reference,
+    node_visibility_reference,
+):
     node_ids = list(tile.data.keys())
 
     if str(tile.nodegroup_id) not in node_ids:
@@ -408,19 +414,55 @@ def serialize_tiles_with_children(tile, serialized_graph, permitted_nodegroups):
         node_ids_to_tiles_reference[node_id] = tile_list
 
     tile._children = [
-        serialize_tiles_with_children(child, serialized_graph, permitted_nodegroups)
+        serialize_tiles_with_children(
+            child,
+            serialized_graph,
+            permitted_nodegroups,
+            card_visibility_reference,
+            node_visibility_reference,
+        )
         # TODO: arches v8: tile.children.filter(...
         for child in tile.tilemodel_set.filter(
             nodegroup_id__in=permitted_nodegroups
         ).order_by("sortorder")
     ]
 
-    return {
+    preliminary_result = {
         "@children": tile._children,
         **LabelBasedGraphWithBranchExport.from_tile(
             tile, node_ids_to_tiles_reference, {}, serialized_graph=serialized_graph
         ),
     }
+
+    return filter_hidden_nodes(
+        preliminary_result, card_visibility_reference, node_visibility_reference
+    )
+
+
+def filter_hidden_nodes(
+    list_or_dict_to_filter, card_visibility_reference, node_visibility_reference
+):
+    if isinstance(list_or_dict_to_filter, list):
+        return [
+            filter_hidden_nodes(
+                item, card_visibility_reference, node_visibility_reference
+            )
+            for item in list_or_dict_to_filter
+        ]
+    if isinstance(list_or_dict_to_filter, dict):
+        dict_to_filter = {**list_or_dict_to_filter}
+        for key, val in dict_to_filter.items():
+            if isinstance(val, dict) and "@node_id" in val:
+                if not card_visibility_reference.get(
+                    val["@node_id"], True
+                ) or not node_visibility_reference.get(val["@node_id"], True):
+                    dict_to_filter[key] = None
+                else:
+                    dict_to_filter[key] = filter_hidden_nodes(
+                        val, card_visibility_reference, node_visibility_reference
+                    )
+        return dict_to_filter
+    raise TypeError
 
 
 def prepare_links(node, tile_values, node_display_value, request_language):

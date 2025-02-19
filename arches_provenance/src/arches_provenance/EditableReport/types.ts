@@ -39,6 +39,22 @@ export interface ComponentLookup {
     [key: string]: Component;
 }
 
+export interface ResourceDetails {
+    display_value: string;
+    inverseOntologyProperty: string;
+    ontologyProperty: string;
+    resourceId: string;
+    resourceXresourceId: string;
+}
+
+export interface ConceptDetails {
+    concept_id: string;
+    language_id: string;
+    value: string;
+    valueid: string;
+    valuetype_id: string;
+}
+
 export interface NodeValueDisplayData {
     display_values: string[];
     links: {
@@ -53,16 +69,28 @@ export interface NodeValueDisplayDataLookup {
 
 export interface LabelBasedTile {
     "@children": LabelBasedTile[];
-    [key: string]: LabelBasedTile[] | LabelBasedCard;
+    [key: string]: LabelBasedTile[] | LabelBasedNode;
 }
 
 export interface LabelBasedCard {
     "@has_children": boolean;
-    [key: string]: boolean | LabelBasedNode;
+    "@node_id": string;
+    "@tile_id": string;
+    [key: string]: boolean | string | LabelBasedNode;
 }
 
 export interface LabelBasedNode {
     "@display_value": string;
     "@node_id": string;
     "@tile_id": string;
+    instance_details?: ResourceDetails[];
+    concept_details?: ConceptDetails[];
+    url?: string;
+    url_label?: string;
+    [key: string]:
+        | string
+        | ResourceDetails[]
+        | ConceptDetails[]
+        | null
+        | undefined;
 }
