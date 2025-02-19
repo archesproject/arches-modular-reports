@@ -48,6 +48,11 @@ const descriptor = computed(() => {
         }
     });
 
+    returnVal =
+        returnVal.split(" ").length > 30
+            ? returnVal.split(" ").slice(0, 30).join(" ") + "..."
+            : returnVal;
+
     document.title = returnVal;
     return returnVal;
 });
