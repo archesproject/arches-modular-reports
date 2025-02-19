@@ -31,9 +31,11 @@ export const fetchNodegroup = async (nodegroupId: string) => {
 export const fetchNodeTileData = async (
     resourceInstanceId: string,
     nodeAliases: string[],
+    tileLimit: number,
 ) => {
     const params = new URLSearchParams();
     nodeAliases.forEach((alias) => params.append("node_alias", alias));
+    params.append("tile_limit", tileLimit.toString());
 
     const response = await fetch(
         `${arches.urls.api_node_tile_data(resourceInstanceId)}?${params}`,

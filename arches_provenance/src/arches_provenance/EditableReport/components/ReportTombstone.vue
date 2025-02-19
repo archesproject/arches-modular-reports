@@ -7,6 +7,7 @@ import Message from "primevue/message";
 import Panel from "primevue/panel";
 
 import { fetchNodeTileData } from "@/arches_provenance/EditableReport/api.ts";
+import { RESOURCE_LIMIT_FOR_HEADER } from "@/arches_provenance/constants.ts";
 import LabeledNodeValues from "@/arches_provenance/EditableReport/components/LabeledNodeValues.vue";
 
 import type { Ref } from "vue";
@@ -77,11 +78,14 @@ async function fetchData() {
         displayDataByAlias.value = await fetchNodeTileData(
             resourceInstanceId,
             props.component.config.node_aliases,
+            RESOURCE_LIMIT_FOR_HEADER,
         );
         if (props.component.config.image_node_alias) {
-            imageNodeData.value = await fetchNodeTileData(resourceInstanceId, [
-                props.component.config.image_node_alias,
-            ]);
+            imageNodeData.value = await fetchNodeTileData(
+                resourceInstanceId,
+                [props.component.config.image_node_alias],
+                1,
+            );
         }
         hasLoadingError.value = false;
     } catch {
