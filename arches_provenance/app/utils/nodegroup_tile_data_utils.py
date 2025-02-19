@@ -441,19 +441,18 @@ def filter_hidden_nodes(
         ]
     if isinstance(list_or_dict_to_filter, dict):
         dict_to_filter = {**list_or_dict_to_filter}
-        for k, v in dict_to_filter.items():
-            if isinstance(v, dict) and "@node_id" in v:
+        for key, val in dict_to_filter.items():
+            if isinstance(val, dict) and "@node_id" in val:
                 if not card_visibility_reference.get(
-                    v["@node_id"], True
-                ) or not node_visibility_reference.get(v["@node_id"], True):
-                    dict_to_filter[k] = None
+                    val["@node_id"], True
+                ) or not node_visibility_reference.get(val["@node_id"], True):
+                    dict_to_filter[key] = None
                 else:
-                    dict_to_filter[k] = filter_hidden_nodes(
-                        v, card_visibility_reference, node_visibility_reference
+                    dict_to_filter[key] = filter_hidden_nodes(
+                        val, card_visibility_reference, node_visibility_reference
                     )
         return dict_to_filter
-    else:
-        raise TypeError
+    raise TypeError
 
 
 def prepare_links(node, tile_values, node_display_value, request_language):
