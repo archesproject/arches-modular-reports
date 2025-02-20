@@ -165,39 +165,39 @@ class ReportConfig(models.Model):
 
     def validate_config(self):
         def validate_dict(config_dict):
-            for k, v in config_dict.items():
-                if k == "name":
-                    if not isinstance(v, str):
-                        raise ValidationError(f"Name is not a string: {v}")
-                elif k == "components":
-                    if not isinstance(v, list):
-                        raise ValidationError(f"Components is not a list: {v}")
-                    validate_components(v)
+            for key, val in config_dict.items():
+                if key == "name":
+                    if not isinstance(val, str):
+                        raise ValidationError(f"Name is not a string: {val}")
+                elif key == "components":
+                    if not isinstance(val, list):
+                        raise ValidationError(f"Components is not a list: {val}")
+                    validate_components(val)
                 else:
-                    raise ValidationError(f"Invalid key in config: {k}")
+                    raise ValidationError(f"Invalid key in config: {key}")
 
         def validate_components(components):
             for item in components:
-                for k, v in item.items():
-                    if k == "component":
-                        if not isinstance(v, str):
-                            raise ValidationError(f"Component is not a string: {v}")
-                    elif k == "config":
-                        if not isinstance(v, dict):
-                            raise ValidationError(f"Config is not a dict: {v}")
-                        validate_components_config(v)
+                for key, val in item.items():
+                    if key == "component":
+                        if not isinstance(val, str):
+                            raise ValidationError(f"Component is not a string: {val}")
+                    elif key == "config":
+                        if not isinstance(val, dict):
+                            raise ValidationError(f"Config is not a dict: {val}")
+                        validate_components_config(val)
                     else:
-                        raise ValidationError(f"Invalid key in components: {k}")
-                method = getattr(
-                    self, "validate_" + item["component"].lower(), lambda noop: None
-                )
+                        raise ValidationError(f"Invalid key in components: {key}")
+                component = self.get_or_raise(item, "component", "")
+                config = self.get_or_raise(item, "config", "")
+                method = getattr(self, "validate_" + component.lower(), lambda _: None)
                 # example method: validate_relatedresourcessection
-                method(item["config"])
+                method(config)
 
         def validate_components_config(config_dict):
-            for v in config_dict.values():
-                if isinstance(v, list):
-                    for list_item in v:
+            for val in config_dict.values():
+                if isinstance(val, list):
+                    for list_item in val:
                         if (
                             isinstance(list_item, dict)
                             and "name" in list_item
@@ -209,6 +209,8 @@ class ReportConfig(models.Model):
 
     def validate_reportheader(self, header_config):
         descriptor_template = self.get_or_raise(header_config, "descriptor", "Header")
+        if not isinstance(descriptor_template, str):
+            raise ValidationError("Descriptor is not a string")
         substrings = self.extract_substrings(descriptor_template)
         self.validate_node_aliases(
             {"node_aliases": substrings},
@@ -286,5 +288,5 @@ class ReportConfig(models.Model):
     @staticmethod
     def get_or_raise(config, key, section_name):
         if key not in config:
-            raise ValidationError(f"{section_name} missing key: {key}")
+            raise ValidationError(f"{section_name} section missing key: {key}")
         return config[key]
