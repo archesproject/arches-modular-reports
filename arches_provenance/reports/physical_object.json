@@ -139,6 +139,7 @@
                                                             "production_data_assignment_target_entity",
                                                             "production_data_assignment_property_assigned_type",
                                                             "production_data_assignment_type",
+                                                            "production_data_assignment_actor",
                                                             "production_data_assignment_object_used"
                                                         ],
                                                         "nodegroup_alias": "production_data_assignment",
