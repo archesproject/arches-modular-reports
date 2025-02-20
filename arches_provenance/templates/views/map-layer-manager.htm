@@ -1,0 +1,310 @@
+{% extends "base-manager.htm" %}
+{% load static %}
+{% load template_tags %}
+{% load i18n %}
+
+
+{% block title %}
+{% trans "Map Layer Manager-Arches Provenance" %}
+{% endblock title %}
+
+
+{% block main_content %}
+<div class="content-panel" data-bind="click:function() { menuActive(false); }">
+    <div class="flex">
+        <div class="flex">
+            <div class="side-column-crud-container form-list">
+                <div class="layer-list">
+                    <!-- Layer Filter -->
+                    <div class="list-filter" data-bind="">
+                        <input type="text" class="form-control" placeholder="Find a layer..." data-bind="value: listFilter, valueUpdate: 'keyup'">
+
+                        <!-- Clear Search -->
+                        <span class="clear-node-search" data-bind="click: function () { listFilter(''); }"><i class="fa fa-times-circle"></i></span>
+                    </div>
+                </div>
+                <div class="layer-list">
+                    <div class="grid">
+                        <!-- ko foreach: { data: listItems(), as: "item" } -->
+                        <div class="library-card selected-card" data-bind="click: function () { $parent.selection(item) }, css: {'selected': $parent.selection() === item}">
+
+                            <div class="library-icon">
+                                <span class="icon-wrap icon-wrap-sm icon-circle branch-icon bg-primary">
+                                    <!-- ko if: item.nodeid -->
+                                    <i data-bind="css: item.config.layerIcon() || item.layer.icon"></i>
+                                    <!-- /ko -->
+                                    <!-- ko if: !item.nodeid -->
+                                    <i data-bind="css: item.icon"></i>
+                                    <!-- /ko -->
+                                </span>
+                            </div>
+                            <div class="library-card-content">
+                                <div class="crud-card-main">
+                                    <!-- ko if: item.nodeid -->
+                                    <a class="listitem_name" data-bind="text: (item.config.layerName ? item.config.layerName() : false) || item.layer.name"></a>
+                                    <!-- /ko -->
+                                    <!-- ko if: !item.nodeid -->
+                                    <a class="listitem_name" data-bind="text: item.name"></a>
+                                    <!-- /ko -->
+                                </div>
+                                <!-- ko if: item.nodeid -->
+                                <div class="crud-card-subtitle" data-bind="text: item.name"></div>
+                                <!-- /ko -->
+                                <!-- ko if: !item.nodeid -->
+                                <div class="crud-card-subtitle" data-bind="text: item.isoverlay ? '{% trans "Overlay" %}' : '{% trans "Basemap" %}'"></div>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Basemap/Overlays Config -->
+            <div class="card-form-preview-container" style="height: calc(100vh + 100px);">
+
+                <!-- Header -->
+                <div class="category-header">
+                    <!-- Resource/Graph Toggle -->
+                    <div style="display: block;">
+                        <a class="category-title" data-bind="css: { 'active': selectedList() && selectedList() === geomNodes  }, click: function() { selectedList(geomNodes); }">{% trans "Resource Layers" %}</a>
+                        <a class="category-title" data-bind="css: { 'active': selectedList() && selectedList() === basemaps  }, click: function() { selectedList(basemaps); }">{% trans "Basemaps" %}</a>
+                        <a class="category-title" data-bind="css: { 'active': selectedList() && selectedList() === overlays  }, click: function() { selectedList(overlays); }">{% trans "Overlays" %}</a>
+                    </div>
+                </div>
+                <div class="ep-card-crud-container">
+                    <div class="panel">
+                        <!-- ko if: !selection() -->
+                        <div class="panel-heading">
+                            <div class="panel-title h3"><span>{% trans 'No overlays available' %}</span></div>
+                        </div>
+                        <!-- /ko -->
+
+                        <!-- ko if: selection()  && selection().nodeid -->
+                        <div class="panel-heading">
+                            <div class="panel-title h3"><i data-bind="css: selection().config.layerIcon() || selection().layer.icon"></i> <span data-bind="text: selection().config.layerName() || selection().layer.name"></span></div>
+                        </div>
+
+                        <div class="panel-body map-preview-panel">
+                            <div data-bind='component: {
+                                name: selection().datatypeConfigComponent,
+                                params: selection()
+                            }'></div>
+                        </div>
+                        <!-- /ko -->
+
+                        <!-- ko if: selection()  && !selection().nodeid -->
+                        <div class="panel-heading">
+                            <div class="panel-title h3"><i data-bind="css: selection().icon"></i> <span data-bind="text: selection().name"></span></div>
+
+                            <!-- Service management buttons (for convenience) -->
+                            <div class="service-buttons-heading">
+                                <button class="btn btn-danger btn-labeled btn-active-dark fa fa-trash pull-right mar-top" data-bind="click: function () { selection().delete() }"><span>{% trans "Delete Layer" %}</span></button>
+
+                                <!-- ko if: selection().dirty() -->
+                                <button class="btn btn-primary btn-labeled btn-active-dark fa fa-check pull-right mar-top" data-bind="click: function () { selection().save() }"><span>{% trans "Save Edits" %}</span></button>
+                                <button class="btn btn-mint btn-labeled btn-active-dark fa fa-undo pull-right mar-top" data-bind="click: function () { selection().reset() }"><span>{% trans "Discard Edits" %}</span></button>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+
+                        <div class="panel-body map-preview-panel">
+                            <div class="map-service-container">
+                                <div>
+                                    <div class="config-title h3"><i class="fa fa-binoculars"></i> {% trans "Layer Preview" %}</div>
+
+                                    <div class="map-service-manage-buttons">
+                                        <div class="form-group">
+                                            <span class="control-label">{% trans "Activated:" %}</span>
+                                            <span class="switch switch-small" tabindex="0" role="switch" data-bind="css: {
+                                                    'on': selection().activated()
+                                                }, onEnterkeyClick, onSpaceClick, click: function () {
+                                                    selection().activated(!selection().activated());
+                                                },
+                                                attr: {'aria-label': $root.translations.activated, 'aria-checked': selection().activated()}">
+                                                <small></small>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group map-server-basemap-button" data-bind="if: selection().isoverlay">
+                                        <button class="dropdown-toggle btn" data-toggle="dropdown" aria-label="{% trans 'Overlays' %}" aria-expanded="false"><i class="fa fa-globe"></i></button>
+                                        <ul class="dropdown-menu dropdown-menu-right">
+                                            <!-- ko foreach: basemaps -->
+                                            <li><a href="#" data-bind="text: name, click: function () { select(); }"></a></li>
+                                            <!-- /ko -->
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="map-service-preview" style="padding:0;" data-bind="mapboxgl: {
+                                        mapOptions: {
+                                            style: mapStyle,
+                                            zoom: zoom,
+                                            minZoom: minZoom,
+                                            maxZoom: maxZoom,
+                                            centerX: centerX,
+                                            centerY: centerY,
+                                            pitch: pitch,
+                                            bearing: bearing
+                                        },
+                                        afterRender: function(map){
+                                            setupMap(map);
+                                        }
+                                    }">
+
+                                </div>
+                            </div>
+
+                            <!-- Service Styling -->
+                            <div class="map-service-container">
+                                <div>
+                                    <div class="tab-base map-service-tabs">
+
+                                        <!-- Resource Styling Tabs -->
+                                        <ul class="nav nav-tabs map-service-nav-tabs" role="tablist">
+                                            <li class="active">
+                                                <a class="config-title-tab mar-no" data-toggle="tab" href="#settings-panel" aria-expanded="false" aria-expanded="true" role="tab"
+                                                ><i class="ion-ios-settings-strong"></i> {% trans "Settings" %}</a>
+                                            </li>
+                                            <li>
+                                                <a class="config-title-tab mar-no" data-toggle="tab" href="#styling-panel" aria-expanded="false" aria-expanded="false" role="tab"
+                                                ><i class="ion-image"></i> {% trans "Service Styling" %}</a>
+                                            </li>
+                                        </ul>
+
+                                        <div class="tab-content">
+
+                                            <div id="settings-panel" class="tab-pane fade active in">
+                                                <div class="row service-widget-container">
+                                                    <div class="form-horizontal">
+                                                        <div class="panel-body">
+                                                            <div class="form-group map-service-manage-layer-name">
+                                                                <span class="col-sm-3 control-label map-service-manage-control-label">{% trans "Layer Name:" %}</span>
+                                                                <div class="col-sm-9">
+                                                                    <input type="text" class="form-control" data-bind="valueUpdate: 'keyup', value: selection().name, 
+                                                                        attr: {'aria-label': $root.translations.layerName}
+                                                                    ">
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group map-service-manage-layer-name" data-bind="let: {uid: Math.random().toString()}">
+                                                                <span class="col-sm-3 map-service-manage-control-label"
+                                                                    data-bind="attr: {id: uid}">{% trans "Visible by default:" %}</span>
+                                                                <div class="col-sm-9">
+                                                                    <span class="switch switch-small" data-bind="css: {
+                                                                                'on': selection().isPublic()
+                                                                            }, click: function () {
+                                                                                selection().isPublic(!selection().isPublic());
+                                                                            }, attr: {'aria-labeledby': uid, 'aria-checked': selection().isPublic()}">
+                                                                            <small></small>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group map-service-manage-layer-name" data-bind="let: {uid: Math.random().toString()}">
+                                                                <span class="col-sm-3 map-service-manage-control-label"
+                                                                    data-bind="text: selection().isoverlay ? {% quoted_trans _('Add to map by default:') %} : {% quoted_trans _('Default basemap:') %},
+                                                                    attr: {id: uid}
+                                                                "></span>
+                                                                <div class="col-sm-9">
+                                                                    <span class="switch switch-small" tabindex="0" role="switch" data-bind="css: {
+                                                                                'on': selection().addtomap()
+                                                                            }, onEnterkeyClick, onSpaceClick, click: function () {
+                                                                                selection().addtomap(!selection().addtomap());
+                                                                            }, attr: {'aria-labeledby': uid, 'aria-checked': selection().addtomap()}">
+                                                                            <small></small>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- ko if: selection().isoverlay-->
+                                                            <div class="form-group map-service-manage-layer-name" data-bind="let: {uid: Math.random().toString()}">
+                                                                <label class="col-sm-3 control-label map-service-manage-control-label" 
+                                                                    data-bind="attr: {id: uid}">{% trans "Only show on search map:" %}</label>
+                                                                <div class="col-sm-9">
+                                                                    <span class="switch switch-small" tabindex="0" role="switch" data-bind="css: {
+                                                                            'on': selection().searchonly()
+                                                                        }, onEnterkeyClick, onSpaceClick, click: function () {
+                                                                            selection().searchonly(!selection().searchonly());
+                                                                        }, attr: {'aria-labeledby': uid, 'aria-checked': selection().searchonly()}">
+                                                                        <small></small>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <!-- /ko -->
+                                                            <div class="form-group map-service-manage-layer-name" data-bind="let: {uid: Math.random().toString()}">
+                                                                <label class="col-sm-3 control-label map-service-manage-control-label" 
+                                                                    data-bind="attr: {id: uid}">{% trans "Sort Order:" %}</label>
+                                                                <div class="col-sm-3">
+                                                                    <input type="number" data-bind="value: selection().sortOrder, attr: {'aria-labeledby': uid}" 
+                                                                        class="form-control input-lg widget-input">
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <div data-bind="component: {
+                                                                    name: 'views/components/icon-selector',
+                                                                    params: {
+                                                                        selectedIconObservable: selection().icon,
+                                                                        iconFilter: iconFilter,
+                                                                        iconList: icons,
+                                                                        label: $root.translations.layerIcon
+                                                                    }
+                                                                }">
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- ko if: selection() && selection().isoverlay -->
+                                                            <!-- ko with: selection() -->
+                                                            <div class="form-group">
+                                                                <div style="padding:15px;">
+                                                                    <div class="row" style="padding-bottom: 10px;">
+                                                                        {% trans "Legend content:" %}
+                                                                    </div>
+                                                                    <div class="row">
+                                                                        <textarea rows="10" cols="80" data-bind="ckeditor: legend, ckeditorOptions: {},  valueUpdate: 'afterkeydown'"></textarea>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- /ko -->
+                                                            <!-- /ko -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div id="styling-panel" class="tab-pane fade">
+                                                <div class="row" style="margin-top: -5px; margin-left: -5px; margin-right: -5px; margin-bottom: 10px;">
+                                                    <div data-bind="codemirror: { value: selectedLayerJSON, mode: { name: 'javascript', json: true }, theme: 'monokai' }"></div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock main_content %}
+
+{% block pre_require_js %}
+{{block.super}}
+<div
+    id="mapLayerManagerData"
+    style="display: none;"
+    mapLayerManagerData='{
+        "geom_nodes": {{geom_nodes_json}},
+        "resource_map_layers": {{resource_map_layers_json}},
+        "resource_map_sources": {{resource_map_sources_json}},
+        "datatypes": {{ datatypes_json }},
+        "graphs": {{ graphs }},
+        "icons": {{icons}},
+        "node_permissions": {{node_permissions}}
+    }'
+></div>
+{% endblock pre_require_js %}
