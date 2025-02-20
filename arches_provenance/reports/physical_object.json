@@ -65,7 +65,8 @@
                                                         "node_aliases": [
                                                             "statement_content",
                                                             "statement_type",
-                                                            "statement_source_reference"
+                                                            "statement_source_reference",
+                                                            "statement_carrier"
                                                         ],
                                                         "nodegroup_alias": "statement",
                                                         "custom_labels": {},
