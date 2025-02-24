@@ -61,7 +61,7 @@ from arches.app.views.base import BaseManagerView, MapBaseManagerView
 from arches.app.views.concept import Concept
 from arches.app.datatypes.datatypes import DataTypeFactory
 
-from django.db import connection
+from arches.app.models.models import ResourceInstance
 
 import arches.app.utils.permission_backend as apb
 
@@ -72,11 +72,8 @@ class ResourceReportView(MapBaseManagerView):
     def get(self, request, resourceid=None):
         resource = Resource.objects.only("graph_id").get(pk=resourceid)
         graph = Graph.objects.get(graphid=resource.graph_id)
-        with connection.cursor() as cursor:
-                sqlquery = "select name from resource_instances where resourceinstanceid=%s"
-                cursor.execute(sqlquery,[str(resourceid)])
-                info_concept = cursor.fetchall()
-                name_resource=json.loads(info_concept[0][0])['en']
+        
+        name_resource=ResourceInstance.objects.get(resourceinstanceid=str(resourceid)).name
         try:
             map_markers = models.MapMarker.objects.all()
             geocoding_providers = models.Geocoder.objects.all()

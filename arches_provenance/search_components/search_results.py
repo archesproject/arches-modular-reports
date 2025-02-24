@@ -1,5 +1,5 @@
 import uuid
-from arches.app.models.models import Node
+from arches.app.models.models import Node, Value, ResourceInstance
 from arches.app.models.system_settings import settings
 from arches.app.search.elasticsearch_dsl_builder import (
     Bool,
@@ -15,7 +15,6 @@ from arches.app.search.components.base import BaseSearchFilter
 from arches.app.search.components.resource_type_filter import get_permitted_graphids
 from arches.app.utils.permission_backend import user_is_resource_reviewer
 from arches.app.utils import permission_backend
-from django.db import connection
 from django.utils.translation import get_language, gettext as _
 
 details = {
@@ -98,7 +97,6 @@ class SearchResultsFilter(BaseSearchFilter):
     def post_search_hook(self, search_query_object, response_object, **kwargs):
         permitted_nodegroups = kwargs.get("permitted_nodegroups")
         user_is_reviewer = user_is_resource_reviewer(self.request.user)
-
         descriptor_types = ("displaydescription", "displayname")
         active_and_default_language_codes = (get_language(), settings.LANGUAGE_CODE)
         groups = [group.id for group in self.request.user.groups.all()]
@@ -181,21 +179,13 @@ def take_type(inforamtio, id, resourceid=None):
     concept=[]
     for x in inforamtio:
         if x['nodegroup_id'] == id:
-            with connection.cursor() as cursor:
-                if resourceid is not None:
-                    
-                    for conceptId in x['data'][resourceid]:
-                        sqlquery = "select name from resource_instances where resourceinstanceid=%s"
-                        cursor.execute(sqlquery,[str(conceptId['resourceId'])])
-                        info_concept = cursor.fetchall()
-                        concept.append(json.loads(info_concept[0][0])['en'] )
-                else:
-                    for conceptId in x['data'][id]:
-                                                
-                        sqlQuyre="""SELECT value FROM values where valueid=%s"""
-                        cursor.execute(sqlQuyre,[str(conceptId)])
-                        info_concept = cursor.fetchall()
-                        concept.append(info_concept[0][0])
+            if resourceid is not None:
+                
+                for conceptId in x['data'][resourceid]:                       
+                    concept.append(ResourceInstance.objects.get(resourceinstanceid=str(conceptId['resourceId'])).name)
+            else:
+                for conceptId in x['data'][id]:
+                    concept.append(Value.objects.get(valueid=str(conceptId)).value)
     return concept
 
 def get_localized_descriptor(resource, descriptor_type, language_codes):
