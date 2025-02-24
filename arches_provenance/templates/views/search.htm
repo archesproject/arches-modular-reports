@@ -1,20 +1,7 @@
-{% extends "base-manager.htm" %}
+{% extends "views/search.htm" %}
 {% load i18n %}
 {% load template_tags %}
 {% load static %}
 
 {% block title %} {% trans "Search-Arches Provenance" %} {% endblock title %}
 
-{% block main_content %}
-<!-- ko if: sharedStateObject.searchViewComponentName -->
-<div data-bind="component: {
-    name: sharedStateObject.searchViewComponentName(),
-    params: sharedStateObject
-}">
-</div>
-<!-- /ko -->
-{% endblock main_content %}
-
-{% block pre_require_js %}
-{{block.super}}
-{% endblock pre_require_js %}
