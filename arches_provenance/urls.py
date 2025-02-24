@@ -20,17 +20,7 @@ from arches_provenance.app.views.provenance_report import ProvenanceRelatedResou
 from arches_provenance.app.views.provenance_report import ProvenanceGroupReportView
 from arches_provenance.app.views.provenance_report import ProvenanceEditorView
 from arches_provenance.app.views.provenance_report import ProvenanceSourceReferences
-from arches_provenance.app.views.resource import (
-    ResourceListView,
-    ResourceData,
-    ResourceCards,
-    ResourceReportView,
-    RelatedResourcesView,
-    ResourceDescriptors,
-    ResourceEditLogView,
-    ResourceTiles,
-    ResourcePermissionDataView,
-)
+from arches_provenance.app.views.resource import ResourceReportView
 uuid_regex = settings.UUID_REGEX
 logger = logging.getLogger(__name__)
 
@@ -216,57 +206,10 @@ urlpatterns = [
     re_path(r"^provenance_source_references$", ProvenanceSourceReferences.as_view(), name="provenance_source_references"),
     re_path(r"^provenance_related_resources$", ProvenanceRelatedResources.as_view(), name="provenance_related_resources"),
     re_path(r"^provenance_editor$", ProvenanceEditorView.as_view(), name="provenance_editor"),
-    re_path(r"^resource$", ResourceListView.as_view(), name="resource"),
-    re_path(
-        r"^resource/(?P<resourceid>%s)/history$" % uuid_regex,
-        ResourceEditLogView.as_view(),
-        name="resource_edit_log",
-    ),
-    re_path(
-        r"^resource/(?P<resourceid>%s)/data/(?P<formid>%s)$" % (uuid_regex, uuid_regex),
-        ResourceData.as_view(),
-        name="resource_data",
-    ),
-    re_path(
-        r"^resource/(?P<resourceid>%s)/cards$" % uuid_regex,
-        ResourceCards.as_view(),
-        name="resource_cards",
-    ),
-    re_path(r"^resource/history$", ResourceEditLogView.as_view(), name="edit_history"),
-    re_path(
-        r"^resource/related/(?P<resourceid>%s|())$" % uuid_regex,
-        RelatedResourcesView.as_view(),
-        name="related_resources",
-    ),
-    re_path(
-        r"^resource/related/candidates",
-        RelatedResourcesView.as_view(action="get_candidates"),
-        name="related_resource_candidates",
-    ),
-    re_path(
-        r"^resource/related/relatable",
-        RelatedResourcesView.as_view(action="get_relatable_resources"),
-        name="relatable_resources",
-    ),
-    re_path(
-        r"^resource/descriptors/(?P<resourceid>%s|())$" % uuid_regex,
-        ResourceDescriptors.as_view(),
-        name="resource_descriptors",
-    ),
-    re_path(
-        r"^resource/(?P<resourceid>%s)/tiles$" % uuid_regex,
-        ResourceTiles.as_view(),
-        name="resource_tiles",
-    ),
     re_path(
         r"^report/(?P<resourceid>%s)$" % uuid_regex,
         ResourceReportView.as_view(),
         name="resource_report",
-    ),
-    re_path(
-        r"^resource/permissions$",
-        ResourcePermissionDataView.as_view(),
-        name="resource_permission_data",
     ),
 ]
 
