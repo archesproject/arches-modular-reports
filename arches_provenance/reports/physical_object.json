@@ -65,7 +65,8 @@
                                                         "node_aliases": [
                                                             "statement_content",
                                                             "statement_type",
-                                                            "statement_source_reference"
+                                                            "statement_source_reference",
+                                                            "statement_carrier"
                                                         ],
                                                         "nodegroup_alias": "statement",
                                                         "custom_labels": {},
@@ -122,11 +123,9 @@
                                                 {
                                                     "config": {
                                                         "node_aliases": [
-                                                            "production_actor",
-                                                            "production_location",
-                                                            "production_type"
+                                                            "production_part_actor"
                                                         ],
-                                                        "nodegroup_alias": "production",
+                                                        "nodegroup_alias": "production_part",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
@@ -136,8 +135,10 @@
                                                     "config": {
                                                         "node_aliases": [
                                                             "production_data_assignment_target_entity",
+                                                            "production_data_assignment_property_assigned",
                                                             "production_data_assignment_property_assigned_type",
                                                             "production_data_assignment_type",
+                                                            "production_data_assignment_actor",
                                                             "production_data_assignment_object_used"
                                                         ],
                                                         "nodegroup_alias": "production_data_assignment",
@@ -149,23 +150,10 @@
                                                 {
                                                     "config": {
                                                         "node_aliases": [
-                                                            "modification_actor",
-                                                            "modification_location",
-                                                            "modification_type"
+                                                            "production_actor",
+                                                            "production_influence"
                                                         ],
-                                                        "nodegroup_alias": "modification",
-                                                        "custom_labels": {},
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "destruction_location",
-                                                            "destruction_type"
-                                                        ],
-                                                        "nodegroup_alias": "destruction",
+                                                        "nodegroup_alias": "production",
                                                         "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
