@@ -15,11 +15,12 @@ rdffile_cache = caches["rdffile"]
 
 class JsonLdWriterWithGraphCaching(JsonLdWriter):
     """This is a copy of get_rdf_graph() from core with one change:
-    
+
     - the graph_cache is now retrieved from the Django cache to be
       reused across requests. The default timeout is 5 minutes and
       can be further configured in settings.
     """
+
     def get_rdf_graph(self):
         archesproject = Namespace(settings.ARCHES_NAMESPACE_FOR_DATA_EXPORT)
         graph_uri = URIRef(
@@ -43,7 +44,7 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
 
             def getchildedges(node):
                 for edge in models.Edge.objects.filter(domainnode=node).select_related(
-                    "rangenode__nodegroup"
+                    "rangenode__nodegroup", "domainnode"
                 ):
                     if nodegroup == edge.rangenode.nodegroup:
                         edges.append(edge)
@@ -104,13 +105,13 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
 
         def add_edge_to_graph(graph, domainnode, rangenode, edge, tile, graph_info):
             pkg = {}
-            pkg["d_datatype"] = graph_info["nodedatatypes"].get(str(edge.domainnode.pk))
+            pkg["d_datatype"] = graph_info["nodedatatypes"].get(str(edge.domainnode_id))
             dom_dt = self.datatype_factory.get_instance(pkg["d_datatype"])
             # Don't process any further if the domain datatype is a literal
             if dom_dt.is_a_literal_in_rdf():
                 return
 
-            pkg["r_datatype"] = graph_info["nodedatatypes"].get(str(edge.rangenode.pk))
+            pkg["r_datatype"] = graph_info["nodedatatypes"].get(str(edge.rangenode_id))
             pkg["range_tile_data"] = None
             pkg["domain_tile_data"] = None
             if str(edge.rangenode_id) in tile.data:
@@ -198,18 +199,18 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
 
             # add the edges for the group of nodes that include the root (this group of nodes has no nodegroup)
             for edge in graph_cache[self.graph_id]["rootedges"]:
-                domainnode = archesproject[str(edge.domainnode.pk)]
-                rangenode = archesproject[str(edge.rangenode.pk)]
+                domainnode = archesproject[str(edge.domainnode_id)]
+                rangenode = archesproject[str(edge.rangenode_id)]
                 add_edge_to_graph(g, domainnode, rangenode, edge, None, graph_info)
 
             for tile in tiles:
                 # add all the edges for a given tile/nodegroup
                 for edge in graph_info["subgraphs"][tile.nodegroup]["edges"]:
                     domainnode = archesproject[
-                        "tile/%s/node/%s" % (str(tile.pk), str(edge.domainnode.pk))
+                        "tile/%s/node/%s" % (str(tile.pk), str(edge.domainnode_id))
                     ]
                     rangenode = archesproject[
-                        "tile/%s/node/%s" % (str(tile.pk), str(edge.rangenode.pk))
+                        "tile/%s/node/%s" % (str(tile.pk), str(edge.rangenode_id))
                     ]
                     add_edge_to_graph(g, domainnode, rangenode, edge, tile, graph_info)
 
@@ -225,9 +226,9 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                             reverse("resources", args=[resourceinstanceid]).lstrip("/")
                         ]
                     else:
-                        domainnode = archesproject[str(edge.domainnode.pk)]
+                        domainnode = archesproject[str(edge.domainnode_id)]
                     rangenode = archesproject[
-                        "tile/%s/node/%s" % (str(tile.pk), str(edge.rangenode.pk))
+                        "tile/%s/node/%s" % (str(tile.pk), str(edge.rangenode_id))
                     ]
                     add_edge_to_graph(g, domainnode, rangenode, edge, tile, graph_info)
 
@@ -240,10 +241,10 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                     edge = graph_info["subgraphs"][tile.nodegroup]["inedge"]
                     domainnode = archesproject[
                         "tile/%s/node/%s"
-                        % (str(tile.parenttile.pk), str(edge.domainnode.pk))
+                        % (str(tile.parenttile_id), str(edge.domainnode_id))
                     ]
                     rangenode = archesproject[
-                        "tile/%s/node/%s" % (str(tile.pk), str(edge.rangenode.pk))
+                        "tile/%s/node/%s" % (str(tile.pk), str(edge.rangenode_id))
                     ]
                     add_edge_to_graph(g, domainnode, rangenode, edge, tile, graph_info)
         return g
