@@ -158,31 +158,6 @@
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "modification_actor",
-                                                            "modification_location",
-                                                            "modification_type"
-                                                        ],
-                                                        "nodegroup_alias": "modification",
-                                                        "custom_labels": {},
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "destruction_location",
-                                                            "destruction_type"
-                                                        ],
-                                                        "nodegroup_alias": "destruction",
-                                                        "custom_labels": {},
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
                                                 }
                                             ]
                                         },
