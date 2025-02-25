@@ -36,7 +36,7 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
         g = Graph()
         g.bind("archesproject", archesproject, False)
         # graph_cache = {}
-        graph_cache = rdffile_cache.get("graphs", {})
+        # graph_cache = rdffile_cache.get("graphs", {})
 
         def get_nodegroup_edges_by_collector_node(node):
             edges = []
@@ -54,8 +54,9 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
             return edges
 
         def get_graph_parts(graphid):
-            if graphid not in graph_cache:
-                graph_cache[graphid] = {
+            graph_cache = rdffile_cache.get(f"graphs-{graphid}")
+            if graph_cache is None:
+                graph_cache = {
                     "rootedges": [],
                     "subgraphs": {},
                     "nodedatatypes": {},
@@ -67,32 +68,30 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                 )
                 nodegroups = set()
                 for node in graph.node_set.all():
-                    graph_cache[graphid]["nodedatatypes"][
-                        str(node.nodeid)
-                    ] = node.datatype
+                    graph_cache["nodedatatypes"][str(node.nodeid)] = node.datatype
                     if node.nodegroup:
                         nodegroups.add(node.nodegroup)
                     if node.istopnode:
                         for edge in get_nodegroup_edges_by_collector_node(node):
                             if edge.rangenode.nodegroup is None:
-                                graph_cache[graphid]["rootedges"].append(edge)
+                                graph_cache["rootedges"].append(edge)
                 for nodegroup in nodegroups:
-                    graph_cache[graphid]["subgraphs"][nodegroup] = {
+                    graph_cache["subgraphs"][nodegroup] = {
                         "edges": [],
                         "inedge": None,
                         "parentnode_nodegroup": None,
                     }
-                    graph_cache[graphid]["subgraphs"][nodegroup]["inedge"] = (
+                    graph_cache["subgraphs"][nodegroup]["inedge"] = (
                         models.Edge.objects.filter(rangenode_id=nodegroup.pk)
                         .select_related("domainnode__nodegroup")
                         .get()
                     )
-                    graph_cache[graphid]["subgraphs"][nodegroup][
-                        "parentnode_nodegroup"
-                    ] = graph_cache[graphid]["subgraphs"][nodegroup][
-                        "inedge"
-                    ].domainnode.nodegroup
-                    graph_cache[graphid]["subgraphs"][nodegroup]["edges"] = (
+                    graph_cache["subgraphs"][nodegroup]["parentnode_nodegroup"] = (
+                        graph_cache["subgraphs"][nodegroup][
+                            "inedge"
+                        ].domainnode.nodegroup
+                    )
+                    graph_cache["subgraphs"][nodegroup]["edges"] = (
                         get_nodegroup_edges_by_collector_node(
                             models.Node.objects.filter(pk=nodegroup.pk)
                             .select_related("nodegroup")
@@ -100,8 +99,8 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                         )
                     )
 
-            rdffile_cache.set("graphs", graph_cache)
-            return graph_cache[graphid]
+            rdffile_cache.set(f"graphs-{graphid}", graph_cache)
+            return graph_cache
 
         def add_edge_to_graph(graph, domainnode, rangenode, edge, tile, graph_info):
             pkg = {}
@@ -198,7 +197,7 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
             graph_info = get_graph_parts(self.graph_id)
 
             # add the edges for the group of nodes that include the root (this group of nodes has no nodegroup)
-            for edge in graph_cache[self.graph_id]["rootedges"]:
+            for edge in graph_info["rootedges"]:
                 domainnode = archesproject[str(edge.domainnode_id)]
                 rangenode = archesproject[str(edge.rangenode_id)]
                 add_edge_to_graph(g, domainnode, rangenode, edge, None, graph_info)
