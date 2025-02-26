@@ -1,3 +1,5 @@
+import logging
+
 from django.core.cache import caches
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -11,6 +13,8 @@ from arches.app.models.system_settings import settings
 from arches.app.utils.data_management.resources.formats.rdffile import JsonLdWriter
 
 rdffile_cache = caches["rdffile"]
+
+logger = logging.getLogger(__name__)
 
 
 class JsonLdWriterWithGraphCaching(JsonLdWriter):
@@ -54,53 +58,48 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
             return edges
 
         def get_graph_parts(graphid):
-            graph_cache = rdffile_cache.get(f"graphs-{graphid}")
-            if graph_cache is None:
-                graph_cache = {
-                    "rootedges": [],
-                    "subgraphs": {},
-                    "nodedatatypes": {},
+            graph_info = {
+                "rootedges": [],
+                "subgraphs": {},
+                "nodedatatypes": {},
+            }
+            graph = (
+                models.GraphModel.objects.filter(pk=graphid)
+                .prefetch_related("node_set__nodegroup")
+                .get()
+            )
+            nodegroups = set()
+            for node in graph.node_set.all():
+                graph_info["nodedatatypes"][str(node.nodeid)] = node.datatype
+                if node.nodegroup:
+                    nodegroups.add(node.nodegroup)
+                if node.istopnode:
+                    for edge in get_nodegroup_edges_by_collector_node(node):
+                        if edge.rangenode.nodegroup is None:
+                            graph_info["rootedges"].append(edge)
+            for nodegroup in nodegroups:
+                graph_info["subgraphs"][nodegroup] = {
+                    "edges": [],
+                    "inedge": None,
+                    "parentnode_nodegroup": None,
                 }
-                graph = (
-                    models.GraphModel.objects.filter(pk=graphid)
-                    .prefetch_related("node_set__nodegroup")
+                graph_info["subgraphs"][nodegroup]["inedge"] = (
+                    models.Edge.objects.filter(rangenode_id=nodegroup.pk)
+                    .select_related("domainnode__nodegroup")
                     .get()
                 )
-                nodegroups = set()
-                for node in graph.node_set.all():
-                    graph_cache["nodedatatypes"][str(node.nodeid)] = node.datatype
-                    if node.nodegroup:
-                        nodegroups.add(node.nodegroup)
-                    if node.istopnode:
-                        for edge in get_nodegroup_edges_by_collector_node(node):
-                            if edge.rangenode.nodegroup is None:
-                                graph_cache["rootedges"].append(edge)
-                for nodegroup in nodegroups:
-                    graph_cache["subgraphs"][nodegroup] = {
-                        "edges": [],
-                        "inedge": None,
-                        "parentnode_nodegroup": None,
-                    }
-                    graph_cache["subgraphs"][nodegroup]["inedge"] = (
-                        models.Edge.objects.filter(rangenode_id=nodegroup.pk)
-                        .select_related("domainnode__nodegroup")
+                graph_info["subgraphs"][nodegroup]["parentnode_nodegroup"] = graph_info[
+                    "subgraphs"
+                ][nodegroup]["inedge"].domainnode.nodegroup
+                graph_info["subgraphs"][nodegroup]["edges"] = (
+                    get_nodegroup_edges_by_collector_node(
+                        models.Node.objects.filter(pk=nodegroup.pk)
+                        .select_related("nodegroup")
                         .get()
                     )
-                    graph_cache["subgraphs"][nodegroup]["parentnode_nodegroup"] = (
-                        graph_cache["subgraphs"][nodegroup][
-                            "inedge"
-                        ].domainnode.nodegroup
-                    )
-                    graph_cache["subgraphs"][nodegroup]["edges"] = (
-                        get_nodegroup_edges_by_collector_node(
-                            models.Node.objects.filter(pk=nodegroup.pk)
-                            .select_related("nodegroup")
-                            .get()
-                        )
-                    )
+                )
 
-            rdffile_cache.set(f"graphs-{graphid}", graph_cache)
-            return graph_cache
+            return graph_info
 
         def add_edge_to_graph(graph, domainnode, rangenode, edge, tile, graph_info):
             pkg = {}
@@ -193,9 +192,15 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                 # both are single, 1 * 1
                 graph += rng_dt.to_rdf(pkg, edge)
 
-        for resourceinstanceid, tiles in self.resourceinstances.items():
+        graph_key = f"graphs-{self.graph_id}"
+        try:
+            graph_info = rdffile_cache.get(graph_key)
+        except Exception as e:
+            logger.error(e)
+        if not graph_info:
             graph_info = get_graph_parts(self.graph_id)
 
+        for resourceinstanceid, tiles in self.resourceinstances.items():
             # add the edges for the group of nodes that include the root (this group of nodes has no nodegroup)
             for edge in graph_info["rootedges"]:
                 domainnode = archesproject[str(edge.domainnode_id)]
@@ -246,4 +251,10 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                         "tile/%s/node/%s" % (str(tile.pk), str(edge.rangenode_id))
                     ]
                     add_edge_to_graph(g, domainnode, rangenode, edge, tile, graph_info)
+
+        try:
+            rdffile_cache.set(graph_key, graph_info)
+        except Exception as e:
+            logger.error(e)
+
         return g
