@@ -193,6 +193,7 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                 graph += rng_dt.to_rdf(pkg, edge)
 
         graph_key = f"graphs-{self.graph_id}"
+        graph_info = None
         try:
             graph_info = rdffile_cache.get(graph_key)
         except Exception as e:
