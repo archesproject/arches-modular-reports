@@ -20,7 +20,7 @@ from arches_provenance.app.views.provenance_report import ProvenanceRelatedResou
 from arches_provenance.app.views.provenance_report import ProvenanceGroupReportView
 from arches_provenance.app.views.provenance_report import ProvenanceEditorView
 from arches_provenance.app.views.provenance_report import ProvenanceSourceReferences
-
+from arches_provenance.app.views.resource import ResourceReportView
 uuid_regex = settings.UUID_REGEX
 logger = logging.getLogger(__name__)
 
@@ -206,6 +206,11 @@ urlpatterns = [
     re_path(r"^provenance_source_references$", ProvenanceSourceReferences.as_view(), name="provenance_source_references"),
     re_path(r"^provenance_related_resources$", ProvenanceRelatedResources.as_view(), name="provenance_related_resources"),
     re_path(r"^provenance_editor$", ProvenanceEditorView.as_view(), name="provenance_editor"),
+    re_path(
+        r"^report/(?P<resourceid>%s)$" % uuid_regex,
+        ResourceReportView.as_view(),
+        name="resource_report",
+    ),
 ]
 
 try:
