@@ -130,7 +130,7 @@ class RelatedResourceView(APIBase):
         except (models.ResourceInstance.DoesNotExist, models.GraphModel.DoesNotExist):
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
 
-        additional_nodes = request.GET.get("nodes", "").split(",")
+        additional_nodes = request.GET.get("node_aliases", "").split(",")
         page_number = request.GET.get("page", 1)
         rows_per_page = request.GET.get("rows_per_page", 10)
         sort_field = request.GET.get("sort_field", "@relation_name")
