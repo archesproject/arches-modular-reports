@@ -89,7 +89,7 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                     .get()
                 )
                 graph_info["subgraphs"][nodegroup.pk]["parentnode_nodegroup"] = (
-                    graph_info["subgraphs"][nodegroup]["inedge"].domainnode.nodegroup
+                    graph_info["subgraphs"][nodegroup.pk]["inedge"].domainnode.nodegroup
                 )
                 graph_info["subgraphs"][nodegroup.pk]["edges"] = (
                     get_nodegroup_edges_by_collector_node(
