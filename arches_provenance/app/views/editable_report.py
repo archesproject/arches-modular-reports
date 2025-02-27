@@ -93,6 +93,11 @@ class EditableReportAwareResourceReportView(ResourceReportView):
                 geocoding_providers=models.Geocoder.objects.none(),
             )
         else:
+            name_resource = (
+                models.ResourceInstance.objects.only("name")
+                .get(resourceinstanceid=str(resourceid))
+                .name
+            )
             template = "views/resource/report.htm"
             context = self.get_context_data(
                 main_script="views/resource/report",
@@ -102,6 +107,8 @@ class EditableReportAwareResourceReportView(ResourceReportView):
                 widgets=models.Widget.objects.all(),
                 map_markers=models.MapMarker.objects.all(),
                 geocoding_providers=models.Geocoder.objects.all(),
+                graph_name=graph.name,
+                name_resource=name_resource,
             )
 
         if graph.iconclass:

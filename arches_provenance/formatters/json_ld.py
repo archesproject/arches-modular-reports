@@ -1,3 +1,5 @@
+import logging
+
 from django.core.cache import caches
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -12,14 +14,17 @@ from arches.app.utils.data_management.resources.formats.rdffile import JsonLdWri
 
 rdffile_cache = caches["rdffile"]
 
+logger = logging.getLogger(__name__)
+
 
 class JsonLdWriterWithGraphCaching(JsonLdWriter):
     """This is a copy of get_rdf_graph() from core with one change:
-    
+
     - the graph_cache is now retrieved from the Django cache to be
       reused across requests. The default timeout is 5 minutes and
       can be further configured in settings.
     """
+
     def get_rdf_graph(self):
         archesproject = Namespace(settings.ARCHES_NAMESPACE_FOR_DATA_EXPORT)
         graph_uri = URIRef(
@@ -35,7 +40,7 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
         g = Graph()
         g.bind("archesproject", archesproject, False)
         # graph_cache = {}
-        graph_cache = rdffile_cache.get("graphs", {})
+        # graph_cache = rdffile_cache.get("graphs", {})
 
         def get_nodegroup_edges_by_collector_node(node):
             edges = []
@@ -43,7 +48,7 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
 
             def getchildedges(node):
                 for edge in models.Edge.objects.filter(domainnode=node).select_related(
-                    "rangenode__nodegroup"
+                    "rangenode__nodegroup", "domainnode"
                 ):
                     if nodegroup == edge.rangenode.nodegroup:
                         edges.append(edge)
@@ -53,64 +58,58 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
             return edges
 
         def get_graph_parts(graphid):
-            if graphid not in graph_cache:
-                graph_cache[graphid] = {
-                    "rootedges": [],
-                    "subgraphs": {},
-                    "nodedatatypes": {},
+            graph_info = {
+                "rootedges": [],
+                "subgraphs": {},
+                "nodedatatypes": {},
+            }
+            graph = (
+                models.GraphModel.objects.filter(pk=graphid)
+                .prefetch_related("node_set__nodegroup")
+                .get()
+            )
+            nodegroups = set()
+            for node in graph.node_set.all():
+                graph_info["nodedatatypes"][str(node.nodeid)] = node.datatype
+                if node.nodegroup:
+                    nodegroups.add(node.nodegroup)
+                if node.istopnode:
+                    for edge in get_nodegroup_edges_by_collector_node(node):
+                        if edge.rangenode.nodegroup is None:
+                            graph_info["rootedges"].append(edge)
+            for nodegroup in nodegroups:
+                graph_info["subgraphs"][nodegroup] = {
+                    "edges": [],
+                    "inedge": None,
+                    "parentnode_nodegroup": None,
                 }
-                graph = (
-                    models.GraphModel.objects.filter(pk=graphid)
-                    .prefetch_related("node_set__nodegroup")
+                graph_info["subgraphs"][nodegroup]["inedge"] = (
+                    models.Edge.objects.filter(rangenode_id=nodegroup.pk)
+                    .select_related("domainnode__nodegroup")
                     .get()
                 )
-                nodegroups = set()
-                for node in graph.node_set.all():
-                    graph_cache[graphid]["nodedatatypes"][
-                        str(node.nodeid)
-                    ] = node.datatype
-                    if node.nodegroup:
-                        nodegroups.add(node.nodegroup)
-                    if node.istopnode:
-                        for edge in get_nodegroup_edges_by_collector_node(node):
-                            if edge.rangenode.nodegroup is None:
-                                graph_cache[graphid]["rootedges"].append(edge)
-                for nodegroup in nodegroups:
-                    graph_cache[graphid]["subgraphs"][nodegroup] = {
-                        "edges": [],
-                        "inedge": None,
-                        "parentnode_nodegroup": None,
-                    }
-                    graph_cache[graphid]["subgraphs"][nodegroup]["inedge"] = (
-                        models.Edge.objects.filter(rangenode_id=nodegroup.pk)
-                        .select_related("domainnode__nodegroup")
+                graph_info["subgraphs"][nodegroup]["parentnode_nodegroup"] = graph_info[
+                    "subgraphs"
+                ][nodegroup]["inedge"].domainnode.nodegroup
+                graph_info["subgraphs"][nodegroup]["edges"] = (
+                    get_nodegroup_edges_by_collector_node(
+                        models.Node.objects.filter(pk=nodegroup.pk)
+                        .select_related("nodegroup")
                         .get()
                     )
-                    graph_cache[graphid]["subgraphs"][nodegroup][
-                        "parentnode_nodegroup"
-                    ] = graph_cache[graphid]["subgraphs"][nodegroup][
-                        "inedge"
-                    ].domainnode.nodegroup
-                    graph_cache[graphid]["subgraphs"][nodegroup]["edges"] = (
-                        get_nodegroup_edges_by_collector_node(
-                            models.Node.objects.filter(pk=nodegroup.pk)
-                            .select_related("nodegroup")
-                            .get()
-                        )
-                    )
+                )
 
-            rdffile_cache.set("graphs", graph_cache)
-            return graph_cache[graphid]
+            return graph_info
 
         def add_edge_to_graph(graph, domainnode, rangenode, edge, tile, graph_info):
             pkg = {}
-            pkg["d_datatype"] = graph_info["nodedatatypes"].get(str(edge.domainnode.pk))
+            pkg["d_datatype"] = graph_info["nodedatatypes"].get(str(edge.domainnode_id))
             dom_dt = self.datatype_factory.get_instance(pkg["d_datatype"])
             # Don't process any further if the domain datatype is a literal
             if dom_dt.is_a_literal_in_rdf():
                 return
 
-            pkg["r_datatype"] = graph_info["nodedatatypes"].get(str(edge.rangenode.pk))
+            pkg["r_datatype"] = graph_info["nodedatatypes"].get(str(edge.rangenode_id))
             pkg["range_tile_data"] = None
             pkg["domain_tile_data"] = None
             if str(edge.rangenode_id) in tile.data:
@@ -193,23 +192,30 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                 # both are single, 1 * 1
                 graph += rng_dt.to_rdf(pkg, edge)
 
-        for resourceinstanceid, tiles in self.resourceinstances.items():
+        graph_key = f"graphs-{self.graph_id}"
+        graph_info = None
+        try:
+            graph_info = rdffile_cache.get(graph_key)
+        except Exception as e:
+            logger.error(e)
+        if not graph_info:
             graph_info = get_graph_parts(self.graph_id)
 
+        for resourceinstanceid, tiles in self.resourceinstances.items():
             # add the edges for the group of nodes that include the root (this group of nodes has no nodegroup)
-            for edge in graph_cache[self.graph_id]["rootedges"]:
-                domainnode = archesproject[str(edge.domainnode.pk)]
-                rangenode = archesproject[str(edge.rangenode.pk)]
+            for edge in graph_info["rootedges"]:
+                domainnode = archesproject[str(edge.domainnode_id)]
+                rangenode = archesproject[str(edge.rangenode_id)]
                 add_edge_to_graph(g, domainnode, rangenode, edge, None, graph_info)
 
             for tile in tiles:
                 # add all the edges for a given tile/nodegroup
                 for edge in graph_info["subgraphs"][tile.nodegroup]["edges"]:
                     domainnode = archesproject[
-                        "tile/%s/node/%s" % (str(tile.pk), str(edge.domainnode.pk))
+                        "tile/%s/node/%s" % (str(tile.pk), str(edge.domainnode_id))
                     ]
                     rangenode = archesproject[
-                        "tile/%s/node/%s" % (str(tile.pk), str(edge.rangenode.pk))
+                        "tile/%s/node/%s" % (str(tile.pk), str(edge.rangenode_id))
                     ]
                     add_edge_to_graph(g, domainnode, rangenode, edge, tile, graph_info)
 
@@ -225,9 +231,9 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                             reverse("resources", args=[resourceinstanceid]).lstrip("/")
                         ]
                     else:
-                        domainnode = archesproject[str(edge.domainnode.pk)]
+                        domainnode = archesproject[str(edge.domainnode_id)]
                     rangenode = archesproject[
-                        "tile/%s/node/%s" % (str(tile.pk), str(edge.rangenode.pk))
+                        "tile/%s/node/%s" % (str(tile.pk), str(edge.rangenode_id))
                     ]
                     add_edge_to_graph(g, domainnode, rangenode, edge, tile, graph_info)
 
@@ -240,10 +246,16 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                     edge = graph_info["subgraphs"][tile.nodegroup]["inedge"]
                     domainnode = archesproject[
                         "tile/%s/node/%s"
-                        % (str(tile.parenttile.pk), str(edge.domainnode.pk))
+                        % (str(tile.parenttile_id), str(edge.domainnode_id))
                     ]
                     rangenode = archesproject[
-                        "tile/%s/node/%s" % (str(tile.pk), str(edge.rangenode.pk))
+                        "tile/%s/node/%s" % (str(tile.pk), str(edge.rangenode_id))
                     ]
                     add_edge_to_graph(g, domainnode, rangenode, edge, tile, graph_info)
+
+        try:
+            rdffile_cache.set(graph_key, graph_info)
+        except Exception as e:
+            logger.error(e)
+
         return g
