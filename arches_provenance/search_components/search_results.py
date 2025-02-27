@@ -133,23 +133,25 @@ class SearchResultsFilter(BaseSearchFilter):
                     result, descriptor_type, active_and_default_language_codes
                 )
                 if descriptor:
-                    if i==1:
+                    if i == 1:
                         result["_source"][descriptor_type] = descriptor["value"]
                         if descriptor_type == "displayname":
                             result["_source"]["displayname_language"] = descriptor[
                                 "language"
                             ]
                     else:
-                        if concept!=[]:
+                        if concept != []:
                             result["_source"][descriptor_type] = concept
-                        else: result["_source"][descriptor_type] = _("Undefined")
+                        else:
+                            result["_source"][descriptor_type] = _("Undefined")
                 else:
-                    if i==1:
+                    if i == 1:
                         result["_source"][descriptor_type] = _("Undefined")
                     else:
-                        if concept!=[]:
+                        if concept != []:
                             result["_source"][descriptor_type] = concept
-                        else: result["_source"][descriptor_type] = _("Undefined")
+                        else:
+                            result["_source"][descriptor_type] = _("Undefined")
 
 
 def get_nodegroups_by_datatype_and_perm(request, datatype, permission):
@@ -175,42 +177,88 @@ def select_geoms_for_results(features, geojson_nodes, user_is_reviewer):
 
     return res
 
+
 def take_type(inforamtio, id, resourceid=None):
-    concept=[]
+    concept = []
     for x in inforamtio:
-        if x['nodegroup_id'] == id:
+        if x["nodegroup_id"] == id:
             if resourceid is not None:
-                
-                for conceptId in x['data'][resourceid]:                       
-                    concept.append(ResourceInstance.objects.get(resourceinstanceid=str(conceptId['resourceId'])).name)
+
+                for conceptId in x["data"][resourceid]:
+                    concept.append(
+                        ResourceInstance.objects.get(
+                            resourceinstanceid=str(conceptId["resourceId"])
+                        ).name
+                    )
             else:
-                for conceptId in x['data'][id]:
+                for conceptId in x["data"][id]:
                     concept.append(Value.objects.get(valueid=str(conceptId)).value)
     return concept
 
+
 def get_localized_descriptor(resource, descriptor_type, language_codes):
-    concept=[]
-    if resource["_source"]['graph_id'] == '933ee880-b4b5-11ea-84f7-3af9d3b32b71': #visual_work
-        concept = take_type(resource["_source"]['tiles'], 'd515c3a8-bbd8-11ea-b6b2-3af9d3b32b71')
-    elif resource["_source"]['graph_id'] == '734d1558-bfad-11ea-a62b-3af9d3b32b71': #activity
-        concept = take_type(resource["_source"]['tiles'], 'e64f839c-bfad-11ea-a62b-3af9d3b32b71', resourceid='e64f839c-bfad-11ea-a62b-3af9d3b32b71')
-    elif resource["_source"]['graph_id'] == 'd6774bfc-b4b4-11ea-84f7-3af9d3b32b71': #group
-        concept = take_type(resource["_source"]['tiles'], '7275d2fe-2a65-11ec-b195-0a9473e82189')
-    elif resource["_source"]['graph_id'] == '9ffb6fcc-b4b4-11ea-84f7-3af9d3b32b71': #person
-        concept = take_type(resource["_source"]['tiles'], '292cf278-bb15-11ea-85a6-3af9d3b32b71')
-    elif resource["_source"]['graph_id'] == '1810d182-b4b5-11ea-84f7-3af9d3b32b71': #object
-        concept = take_type(resource["_source"]['tiles'], '2b1ab0a6-bae9-11ea-81b2-3af9d3b32b71', resourceid='2b1aeabc-bae9-11ea-81b2-3af9d3b32b71' )
-    elif resource["_source"]['graph_id'] == 'f6e89030-b4b4-11ea-84f7-3af9d3b32b71': #place
-        concept = take_type(resource["_source"]['tiles'], '7ee41e50-bb13-11ea-85a6-3af9d3b32b71')
-    elif resource["_source"]['graph_id'] == '3d461890-b4b5-11ea-84f7-3af9d3b32b71': #provenance
-        concept = take_type(resource["_source"]['tiles'], '4d4188c8-bba5-11ea-ad92-3af9d3b32b71')
-    elif resource["_source"]['graph_id'] == 'bdba56bc-b4b5-11ea-84f7-3af9d3b32b71': #set
-        concept = take_type(resource["_source"]['tiles'], '48d04315-747d-11ec-b195-0a9473e82189', resourceid='48d0433d-747d-11ec-b195-0a9473e82189')
-    elif resource["_source"]['graph_id'] == '6dad61aa-b4b5-11ea-84f7-3af9d3b32b71': #textual
-        concept = take_type(resource["_source"]['tiles'], '512f1128-df24-11eb-ba14-0a9473e82189')
-    
-    
-    
+    concept = []
+    if (
+        resource["_source"]["graph_id"] == "933ee880-b4b5-11ea-84f7-3af9d3b32b71"
+    ):  # visual_work
+        concept = take_type(
+            resource["_source"]["tiles"], "d515c3a8-bbd8-11ea-b6b2-3af9d3b32b71"
+        )
+    elif (
+        resource["_source"]["graph_id"] == "734d1558-bfad-11ea-a62b-3af9d3b32b71"
+    ):  # activity
+        concept = take_type(
+            resource["_source"]["tiles"],
+            "e64f839c-bfad-11ea-a62b-3af9d3b32b71",
+            resourceid="e64f839c-bfad-11ea-a62b-3af9d3b32b71",
+        )
+    elif (
+        resource["_source"]["graph_id"] == "d6774bfc-b4b4-11ea-84f7-3af9d3b32b71"
+    ):  # group
+        concept = take_type(
+            resource["_source"]["tiles"], "7275d2fe-2a65-11ec-b195-0a9473e82189"
+        )
+    elif (
+        resource["_source"]["graph_id"] == "9ffb6fcc-b4b4-11ea-84f7-3af9d3b32b71"
+    ):  # person
+        concept = take_type(
+            resource["_source"]["tiles"], "292cf278-bb15-11ea-85a6-3af9d3b32b71"
+        )
+    elif (
+        resource["_source"]["graph_id"] == "1810d182-b4b5-11ea-84f7-3af9d3b32b71"
+    ):  # object
+        concept = take_type(
+            resource["_source"]["tiles"],
+            "2b1ab0a6-bae9-11ea-81b2-3af9d3b32b71",
+            resourceid="2b1aeabc-bae9-11ea-81b2-3af9d3b32b71",
+        )
+    elif (
+        resource["_source"]["graph_id"] == "f6e89030-b4b4-11ea-84f7-3af9d3b32b71"
+    ):  # place
+        concept = take_type(
+            resource["_source"]["tiles"], "7ee41e50-bb13-11ea-85a6-3af9d3b32b71"
+        )
+    elif (
+        resource["_source"]["graph_id"] == "3d461890-b4b5-11ea-84f7-3af9d3b32b71"
+    ):  # provenance
+        concept = take_type(
+            resource["_source"]["tiles"], "4d4188c8-bba5-11ea-ad92-3af9d3b32b71"
+        )
+    elif (
+        resource["_source"]["graph_id"] == "bdba56bc-b4b5-11ea-84f7-3af9d3b32b71"
+    ):  # set
+        concept = take_type(
+            resource["_source"]["tiles"],
+            "48d04315-747d-11ec-b195-0a9473e82189",
+            resourceid="48d0433d-747d-11ec-b195-0a9473e82189",
+        )
+    elif (
+        resource["_source"]["graph_id"] == "6dad61aa-b4b5-11ea-84f7-3af9d3b32b71"
+    ):  # textual
+        concept = take_type(
+            resource["_source"]["tiles"], "512f1128-df24-11eb-ba14-0a9473e82189"
+        )
+
     descriptor = resource["_source"][descriptor_type]
     result = descriptor[0] if len(descriptor) > 0 else None
 
