@@ -326,7 +326,7 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "node_aliases": [],
+                                                        "node_aliases": ["type", "timespan_label"],
                                                         "graph_slug": "provenance",
                                                         "custom_labels": {}
                                                     },
@@ -334,7 +334,7 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "node_aliases": [],
+                                                        "node_aliases": ["type", "timespan_label"],
                                                         "graph_slug": "activity",
                                                         "custom_labels": {}
                                                     },
@@ -389,7 +389,7 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "node_aliases": [],
+                                                        "node_aliases": ["type"],
                                                         "graph_slug": "visual_work",
                                                         "custom_labels": {}
                                                     },
@@ -397,7 +397,7 @@
                                                 },
                                                 {
                                                     "config": {
-                                                        "node_aliases": [],
+                                                        "node_aliases": ["type"],
                                                         "graph_slug": "object",
                                                         "custom_labels": {}
                                                     },
@@ -410,7 +410,7 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "node_aliases": [],
+                                                        "node_aliases": ["type"],
                                                         "graph_slug": "set",
                                                         "custom_labels": {}
                                                     },
