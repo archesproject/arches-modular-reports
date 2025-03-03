@@ -212,16 +212,17 @@ class ReportConfig(models.Model):
         if not isinstance(descriptor_template, str):
             raise ValidationError("Descriptor is not a string")
         substrings = self.extract_node_aliases(descriptor_template)
+        usable_nodes = self.graph.node_set.exclude(datatype__in=self.excluded_datatypes)
         self.validate_node_aliases(
             {"node_aliases": substrings},
             "Header",
-            self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
+            usable_nodes,
         )
         if node_alias_options := header_config.get("node_alias_options"):
             self.validate_node_aliases(
                 {"node_aliases": node_alias_options.keys()},
                 "Header",
-                self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
+                usable_nodes,
             )
             self.validate_options(node_alias_options)
 
