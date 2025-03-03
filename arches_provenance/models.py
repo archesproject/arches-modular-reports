@@ -45,7 +45,6 @@ class ReportConfig(models.Model):
                     "component": "ReportHeader",
                     "config": {
                         "descriptor": f"{self.graph.name} descriptor template",
-                        "node_alias_options": {},
                     },
                 },
                 {
@@ -218,15 +217,13 @@ class ReportConfig(models.Model):
             "Header",
             self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
         )
-        node_alias_options = self.get_or_raise(
-            header_config, "node_alias_options", "Header"
-        )
-        self.validate_node_aliases(
-            {"node_aliases": node_alias_options.keys()},
-            "Header",
-            self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
-        )
-        self.validate_options(node_alias_options)
+        if node_alias_options := header_config.get("node_alias_options"):
+            self.validate_node_aliases(
+                {"node_aliases": node_alias_options.keys()},
+                "Header",
+                self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
+            )
+            self.validate_options(node_alias_options)
 
     def validate_reporttombstone(self, tombstone_config):
         self.validate_node_aliases(

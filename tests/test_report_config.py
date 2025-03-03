@@ -29,7 +29,11 @@ class ReportConfigTests(TestCase):
         )
 
     def test_header(self):
-        config = {
+        header = ReportConfig(graph=self.graph)
+        header.clean()
+        self.assertNotIn("node_alias_options", header.config["components"][0]["config"])
+
+        header.config = {
             "name": "Untitled Report",
             "components": [
                 {
@@ -46,10 +50,11 @@ class ReportConfigTests(TestCase):
                 },
             ],
         }
-        header = ReportConfig(config=config, graph=self.graph)
         header.clean()
 
-        invalid_config = json.loads(json.dumps(config).replace("limit", "garbage"))
+        invalid_config = json.loads(
+            json.dumps(header.config).replace("limit", "garbage")
+        )
         header.config = invalid_config
         with self.assertRaisesMessage(ValidationError, "Invalid option"):
             header.clean()
