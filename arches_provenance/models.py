@@ -45,6 +45,7 @@ class ReportConfig(models.Model):
                     "component": "ReportHeader",
                     "config": {
                         "descriptor": f"{self.graph.name} descriptor template",
+                        "node_alias_options": {},  # e.g. limit, separator
                     },
                 },
                 {

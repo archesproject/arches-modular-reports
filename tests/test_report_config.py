@@ -30,8 +30,8 @@ class ReportConfigTests(TestCase):
 
     def test_header(self):
         header = ReportConfig(graph=self.graph)
+        # Default config passes validation.
         header.clean()
-        self.assertNotIn("node_alias_options", header.config["components"][0]["config"])
 
         header.config = {
             "name": "Untitled Report",
