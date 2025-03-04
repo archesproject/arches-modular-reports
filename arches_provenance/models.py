@@ -45,6 +45,7 @@ class ReportConfig(models.Model):
                     "component": "ReportHeader",
                     "config": {
                         "descriptor": f"{self.graph.name} descriptor template",
+                        "node_alias_options": {},  # e.g. limit, separator
                     },
                 },
                 {
@@ -211,12 +212,20 @@ class ReportConfig(models.Model):
         descriptor_template = self.get_or_raise(header_config, "descriptor", "Header")
         if not isinstance(descriptor_template, str):
             raise ValidationError("Descriptor is not a string")
-        substrings = self.extract_substrings(descriptor_template)
+        substrings = self.extract_node_aliases(descriptor_template)
+        usable_nodes = self.graph.node_set.exclude(datatype__in=self.excluded_datatypes)
         self.validate_node_aliases(
             {"node_aliases": substrings},
             "Header",
-            self.graph.node_set.exclude(datatype__in=self.excluded_datatypes),
+            usable_nodes,
         )
+        if node_alias_options := header_config.get("node_alias_options"):
+            self.validate_node_aliases(
+                {"node_aliases": node_alias_options.keys()},
+                "Header",
+                usable_nodes,
+            )
+            self.validate_options(node_alias_options)
 
     def validate_reporttombstone(self, tombstone_config):
         self.validate_node_aliases(
@@ -278,12 +287,36 @@ class ReportConfig(models.Model):
                 f"datatypes: {extra_overridden_labels}"
             )
 
-    @staticmethod
-    def extract_substrings(template_string):
-        pattern = r"<(.*?)>"
-        substrings = re.findall(pattern, template_string)
+    def validate_options(self, options):
+        for alias, option_mapping in options.items():
+            for key, val in option_mapping.items():
+                match key:
+                    case "limit":
+                        if not isinstance(val, int):
+                            raise ValidationError(
+                                f"Limit for {alias} is not an integer"
+                            )
+                    case "separator":
+                        if not isinstance(val, str):
+                            raise ValidationError(
+                                f"Separator for {alias} is not a string"
+                            )
+                    case _:
+                        raise ValidationError(f"Invalid option for {alias}")
 
-        return substrings
+    @staticmethod
+    def extract_node_aliases(template_string):
+        alias_pattern = r"<(.*?)>"
+        options_pattern = r"\[(.*?)\]"
+        result = []
+        for substring in re.findall(alias_pattern, template_string):
+            if option_matches := re.findall(options_pattern, substring):
+                if len(option_matches) > 1:
+                    raise ValidationError("Too many options")
+                result.append(re.sub(options_pattern, "", substring, count=1))
+            else:
+                result.append(substring)
+        return result
 
     @staticmethod
     def get_or_raise(config, key, section_name):
