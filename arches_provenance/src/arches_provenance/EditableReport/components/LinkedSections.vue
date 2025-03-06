@@ -132,8 +132,6 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    flex: 1;
-    min-height: 0;
 }
 
 .linked-section-button-container {
@@ -155,11 +153,6 @@ button.back-to-top {
     width: 2.5rem;
     height: 2.5rem;
     padding: 10px;
-}
-
-.linked-section-container {
-    flex: 1;
-    overflow-y: auto;
 }
 
 .linked-section-container .p-panel:not(:last-child) {

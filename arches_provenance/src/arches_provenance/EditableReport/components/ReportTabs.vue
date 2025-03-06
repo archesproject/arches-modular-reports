@@ -44,10 +44,7 @@ watch(activeTab, (tab) => {
 </script>
 
 <template>
-    <Tabs
-        v-model:value="activeTab"
-        style="flex: 1; display: flex; flex-direction: column; min-height: 0"
-    >
+    <Tabs v-model:value="activeTab">
         <TabList>
             <Tab
                 v-for="tab in component.config.tabs"
@@ -57,24 +54,11 @@ watch(activeTab, (tab) => {
                 {{ tab.name }}
             </Tab>
         </TabList>
-        <TabPanels
-            style="
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                min-height: 0;
-            "
-        >
+        <TabPanels>
             <TabPanel
                 v-for="tab in component.config.tabs"
                 :key="tab.name"
                 :value="tab.name"
-                style="
-                    flex: 1;
-                    display: flex;
-                    flex-direction: column;
-                    min-height: 0;
-                "
             >
                 <template v-if="visitedTabs.has(tab.name)">
                     <component

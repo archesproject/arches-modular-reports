@@ -86,7 +86,7 @@ onMounted(fetchData);
 </script>
 
 <template>
-    <Panel style="border: 0; border-radius: 0">
+    <Panel class="report-header">
         <template #header>
             <h2>{{ descriptor }}</h2>
         </template>
@@ -101,6 +101,14 @@ onMounted(fetchData);
 </template>
 
 <style scoped>
+.report-header {
+    border: 0;
+    border-radius: 0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
 :deep(.p-panel-header) {
     justify-content: center;
     margin: 0;
