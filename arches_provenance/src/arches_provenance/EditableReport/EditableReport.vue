@@ -70,7 +70,15 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div style="position: absolute; width: 100%">
+    <div
+        style="
+            position: absolute;
+            width: 100%;
+            height: inherit;
+            display: flex;
+            flex-direction: column;
+        "
+    >
         <component
             :is="componentLookup[component.component]"
             v-for="component in config.components"
