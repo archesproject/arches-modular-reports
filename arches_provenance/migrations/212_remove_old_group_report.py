@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
     ]
 
     def forwards_func(apps, schema_editor):
-        ReportTemplate.objects.delete(componentname="provenance_group_report")
+        ReportTemplate.objects.filter(componentname="provenance_group_report").delete()
 
     def reverse_func(apps, schema_editor):
         pass
