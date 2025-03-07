@@ -1,10 +1,33 @@
+from functools import partial
+
+from django.utils.translation import get_language
+
+from arches.app.models.models import Value
 from arches.app.utils.label_based_graph_v2 import LabelBasedGraph, LabelBasedNode
+
+
+def concept_get_value(self, valueid):
+    try:
+        saved_value = Value.objects.prefetch_related("concept__value_set").get(
+            pk=valueid
+        )
+    except Value.DoesNotExist:
+        return Value()
+    user_language = get_language()
+    for other_value in saved_value.concept.value_set.all():
+        if (
+            other_value.language_id == user_language
+            and other_value.valuetype_id == saved_value.valuetype_id
+        ):
+            return other_value
+    return saved_value
 
 
 class LabelBasedGraphWithBranchExport(LabelBasedGraph):
     """
     Override to:
     1. avoid parent_tree still being None after checking parent_tile.
+    2. Use the request language for concept display values.
     """
 
     @classmethod
@@ -72,3 +95,15 @@ class LabelBasedGraphWithBranchExport(LabelBasedGraph):
                         )
 
         return parent_tree
+
+    @classmethod
+    def _get_display_value(cls, tile, serialized_node, datatype_factory):
+        # Swap in a better to_json() method for some datatypes.
+        dt_instance = datatype_factory.get_instance(serialized_node["datatype"])
+        class_name = dt_instance.__class__.__name__
+        if serialized_node["datatype"] in {"concept", "concept-list"}:
+            datatype_factory._datatype_instances[class_name].get_value = partial(
+                concept_get_value, dt_instance
+            )
+
+        return super()._get_display_value(tile, serialized_node, datatype_factory)
