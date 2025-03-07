@@ -19,7 +19,7 @@ class ReportConfig(models.Model):
         on_delete=models.CASCADE,
         related_name="report",
         # TODO: arches v8: models.Q(isresource=True, source_identifier=None),
-        limit_choices_to=models.Q(isresource=True),
+        limit_choices_to=models.Q(isresource=True) & ~models.Q(pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID),
     )
 
     class Meta:
