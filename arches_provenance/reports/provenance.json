@@ -3,7 +3,7 @@
     "components": [
         {
             "config": {
-                "descriptor": "<name_content> [<name_type>], Timespan of Prov Activity",
+                "descriptor": "<name_content>",
                 "node_alias_options": {}
             },
             "component": "ReportHeader"
@@ -23,11 +23,11 @@
             "config": {
                 "node_aliases": [
                     "transfer_of_custody_actor_receiving_custody",
-                    "type",
                     "transfer_of_custody_actor_ceding_custody",
+                    "type",
                     "timespan_name_content"
                 ],
-                "custom_labels": {},
+                "custom_labels": {"timespan_name_content": "Timespan of Provenance Activity"},
                 "image_node_alias": null
             },
             "component": "ReportTombstone"
