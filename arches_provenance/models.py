@@ -14,7 +14,12 @@ class ReportConfig(models.Model):
         blank=True, null=False, default=dict, encoder=PrettyJSONEncoder
     )
     graph = models.ForeignKey(
-        GraphModel, blank=False, on_delete=models.CASCADE, related_name="report"
+        GraphModel,
+        blank=False,
+        on_delete=models.CASCADE,
+        related_name="report",
+        # TODO: arches v8: models.Q(isresource=True, source_identifier=None),
+        limit_choices_to=models.Q(isresource=True) & ~models.Q(pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID),
     )
 
     class Meta:
