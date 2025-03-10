@@ -7,11 +7,6 @@
 {% block arches_urls %}
 {{ block.super }}
 <div class="arches-urls"
-    provenance_report = "{% url 'provenance_report' %}"
-    provenance_summary_table = "{% url 'provenance_summary_table' %}"
-    provenance_related_resources = "{% url 'provenance_related_resources' %}"
-    provenance_editor = "{% url 'provenance_editor' %}"
-    provenance_source_references = "{% url 'provenance_source_references' %}"
     provenance_editable_report_config = "{% url 'provenance_editable_report_config' %}"
     api_node_tile_data = '(resourceid) => { return "{% url "api_node_tile_data" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resourceid)}'
     api_node_presentation = '(resourceid) => { return "{% url "api_node_presentation" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resourceid)}'

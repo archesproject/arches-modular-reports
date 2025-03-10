@@ -567,8 +567,19 @@ def prepare_links(node, tile_values, node_display_value, request_language):
     return links
 
 
-def array_from_string(input_str):
+def is_number(s):
     try:
-        return json.loads(input_str)
-    except json.JSONDecodeError:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
+def array_from_string(input_str):
+    if is_number(input_str):
         return [input_str]
+    else:
+        try:
+            return json.loads(input_str)
+        except json.JSONDecodeError:
+            return [input_str]
