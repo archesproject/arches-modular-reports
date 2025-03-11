@@ -108,7 +108,6 @@ onMounted(fetchData);
     top: 0;
     z-index: 10;
     box-shadow: unset;
-    background: #f9f9f9;
 }
 
 .report-header h2 {
