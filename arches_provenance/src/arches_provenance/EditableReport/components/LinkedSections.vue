@@ -82,7 +82,8 @@ onMounted(async () => {
                 v-for="linked_section in linkedSections"
                 :key="linked_section.name"
                 :label="linked_section.name"
-                variant="outlined"
+                variant="link"
+                as="a"
                 @click="scrollToSection(linked_section)"
             />
         </div>
@@ -137,11 +138,8 @@ onMounted(async () => {
 .linked-section-button-container {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     width: 100%;
-    background-color: var(--p-content-background);
-    padding: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px 0px;
     gap: 10px;
 }
 
