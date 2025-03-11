@@ -202,8 +202,8 @@ function rowClass(data: LabelBasedCard) {
 </script>
 
 <template>
-    <div style="display: flex; align-items: center">
-        <h3>{{ cardName }}</h3>
+    <div class="section-card-header">
+        <h4>{{ cardName }}</h4>
 
         <Button
             v-if="shouldShowAddButton"
@@ -362,6 +362,16 @@ function rowClass(data: LabelBasedCard) {
 </template>
 
 <style scoped>
+.section-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-card-header h4 {
+    font-size: 1.8rem;
+}
+
 :deep(.p-datatable-column-sorted) {
     background: var(--p-datatable-header-cell-background);
 }
@@ -373,6 +383,7 @@ function rowClass(data: LabelBasedCard) {
 :deep(.p-paginator) {
     justify-content: end;
 }
+
 .p-button-link {
     padding: 0;
 }
