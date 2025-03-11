@@ -303,9 +303,9 @@ function rowClass(data: LabelBasedCard) {
                             target="_blank"
                             as="a"
                             variant="link"
+                            :label="item.label"
                             style="display: block; width: fit-content"
                         >
-                            {{ item["label"] }}
                         </Button>
                     </template>
                     <template v-else>
@@ -372,5 +372,8 @@ function rowClass(data: LabelBasedCard) {
 
 :deep(.p-paginator) {
     justify-content: end;
+}
+.p-button-link {
+    padding: 0;
 }
 </style>

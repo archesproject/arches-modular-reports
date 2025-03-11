@@ -37,9 +37,9 @@ const truncatedDisplayData = computed(() => {
                             class="node-value"
                             target="_blank"
                             variant="link"
+                            :label="link.label"
                             :href="link.link"
                         >
-                            {{ link.label }}
                         </Button>
                     </div>
                 </template>
@@ -74,7 +74,7 @@ const truncatedDisplayData = computed(() => {
     overflow-wrap: anywhere;
 }
 
-.p-button {
+.p-button-link {
     font-size: inherit;
     padding: 0;
     align-items: start;
