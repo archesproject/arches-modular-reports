@@ -33,6 +33,20 @@ const EditableReportPreset = definePreset(Aura, {
             summary: { fontSize: '1.5rem' },
             detail: { fontSize: '1.25rem' },
         },
+        tabs: {
+            colorScheme: {  
+                light: { 
+                    tabpanel: {
+                        background: '{surface-100}',
+                    }
+                },
+                dark: {
+                    tabpanel: {
+                        background: '{surface-800}',
+                    }
+                }
+            }
+        },
         card: {
             colorScheme: {  
                 light: { 
