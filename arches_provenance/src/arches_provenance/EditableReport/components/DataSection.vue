@@ -384,6 +384,10 @@ function rowClass(data: LabelBasedCard) {
     justify-content: end;
 }
 
+:deep(.p-datatable-header-cell) {
+    background-color: var(--p-slate-50);
+}
+
 .p-button-link {
     padding: 0;
 }
