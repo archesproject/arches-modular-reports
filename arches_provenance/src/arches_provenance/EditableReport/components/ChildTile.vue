@@ -38,7 +38,6 @@ const nodeAliasValuePairs: [string, LabelBasedNode][] = Object.entries(
 const firstAlias = nodeAliasValuePairs[0][0];
 
 const marginUnit = 1.5;
-const marginUnitRem = `${marginUnit}rem`;
 const cardIndentation = `${2.5 + depth * marginUnit}rem`;
 
 function tileIdFromChild(child: LabelBasedTile): string {
@@ -71,18 +70,20 @@ function bestWidgetLabel(nodeAlias: string) {
                 {{ nodePresentationLookup?.[firstAlias].card_name }}
             </strong>
         </summary>
-        <dl>
-            <div
+        <table style="width: 100%">
+            <tr
                 v-for="[nodeAlias, nodeValue] in nodeAliasValuePairs"
                 :key="nodeAlias"
                 class="node-pair"
             >
                 <!-- nodeValue is null if this is a hidden node -->
                 <template v-if="nodeValue">
-                    <dt>{{ bestWidgetLabel(nodeAlias) }}</dt>
+                    <td style="text-align: right; width: 25%">
+                        {{ bestWidgetLabel(nodeAlias) }}
+                    </td>
                     <template v-if="nodeValue.instance_details?.length">
-                        <div style="flex-direction: column">
-                            <dd
+                        <td style="flex-direction: column">
+                            <div
                                 v-for="instanceDetail in nodeValue.instance_details as ResourceDetails[]"
                                 :key="instanceDetail.resourceId"
                             >
@@ -97,12 +98,12 @@ function bestWidgetLabel(nodeAlias: string) {
                                 >
                                     {{ instanceDetail.display_value }}
                                 </Button>
-                            </dd>
-                        </div>
+                            </div>
+                        </td>
                     </template>
                     <template v-else-if="nodeValue.concept_details?.length">
-                        <div style="flex-direction: column">
-                            <dd
+                        <td style="flex-direction: column">
+                            <div
                                 v-for="conceptDetail in nodeValue.concept_details as ConceptDetails[]"
                                 :key="conceptDetail.concept_id"
                             >
@@ -117,11 +118,11 @@ function bestWidgetLabel(nodeAlias: string) {
                                 >
                                     {{ conceptDetail.value }}
                                 </Button>
-                            </dd>
-                        </div>
+                            </div>
+                        </td>
                     </template>
                     <template v-else-if="nodeValue.url">
-                        <dd>
+                        <td>
                             <Button
                                 as="a"
                                 variant="link"
@@ -130,20 +131,24 @@ function bestWidgetLabel(nodeAlias: string) {
                             >
                                 {{ nodeValue.url_label }}
                             </Button>
-                        </dd>
+                        </td>
                     </template>
-                    <dd v-else>{{ nodeValue["@display_value"] }}</dd>
+                    <td v-else>{{ nodeValue["@display_value"] }}</td>
                 </template>
-            </div>
-            <ChildTile
-                v-for="child in children"
-                :key="tileIdFromChild(child)"
-                :divider="true"
-                :data="child"
-                :depth="depth + 1"
-                :custom-labels
-            />
-        </dl>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <ChildTile
+                        v-for="child in children"
+                        :key="tileIdFromChild(child)"
+                        :divider="true"
+                        :data="child"
+                        :depth="depth + 1"
+                        :custom-labels
+                    />
+                </td>
+            </tr>
+        </table>
     </details>
 </template>
 
@@ -165,29 +170,17 @@ summary {
     display: list-item;
 }
 
-dl {
-    display: flex;
-    flex-direction: column;
-    margin-left: v-bind(marginUnitRem);
-    margin-bottom: 1rem;
-    font-size: small;
-    gap: var(--p-list-gap);
+td {
+    padding: 0px;
 }
 
 .node-pair {
     display: flex;
-    width: 60%;
     gap: 2rem;
 }
 
-.node-pair > dt {
-    width: 50%;
-    text-align: end;
-}
-
-.node-pair > dd {
-    width: 50%;
-    text-align: start;
+.node-pair > td:first-child {
+    font-weight: bold;
 }
 
 .p-button {
