@@ -162,7 +162,6 @@ onMounted(fetchData);
 </script>
 
 <template>
-    <h3>{{ graphName }}</h3>
     <Message
         v-if="hasLoadingError"
         size="large"
@@ -171,16 +170,21 @@ onMounted(fetchData);
     >
         {{ $gettext("An error occurred while fetching data.") }}
     </Message>
-    <Message
+    <div
         v-else-if="isEmpty"
-        size="large"
-        severity="info"
-        icon="pi pi-info-circle"
+        class="section-table"
     >
-        {{ $gettext("No data found.") }}
-    </Message>
+        <div class="p-datatable-header section-table-header">
+            <h4>{{ graphName }}</h4>
+        </div>
+        <div class="no-data-found">
+            {{ $gettext("No data found.") }}
+        </div>
+    </div>
+
     <DataTable
         v-else
+        class="section-table"
         :value="currentlyDisplayedTableData"
         :loading="isLoading"
         :total-records="searchResultsTotalCount"
@@ -201,19 +205,22 @@ onMounted(fetchData);
         @update:sort-order="onUpdateSortOrder"
     >
         <template #header>
-            <div style="display: flex; justify-content: flex-end">
-                <IconField style="display: flex">
-                    <InputIcon
-                        class="pi pi-search"
-                        aria-hidden="true"
-                        style="font-size: 1rem"
-                    />
-                    <InputText
-                        v-model="query"
-                        :placeholder="$gettext('Search')"
-                        :aria-label="$gettext('Search')"
-                    />
-                </IconField>
+            <div class="section-table-header">
+                <h4>{{ graphName }}</h4>
+                <div class="section-table-header-functions">
+                    <IconField>
+                        <InputIcon
+                            class="pi pi-search"
+                            aria-hidden="true"
+                            style="font-size: 1rem"
+                        />
+                        <InputText
+                            v-model="query"
+                            :placeholder="$gettext('Search')"
+                            :aria-label="$gettext('Search')"
+                        />
+                    </IconField>
+                </div>
             </div>
         </template>
         <template #empty>
@@ -254,6 +261,32 @@ onMounted(fetchData);
 </template>
 
 <style scoped>
+.panel-content .section-table:not(:first-child) {
+    padding-top: 18px;
+}
+
+.section-table-header {
+    display: flex;
+    align-items: center;
+}
+
+.section-table-header h4 {
+    font-size: 1.8rem;
+}
+
+.section-table-header-functions {
+    display: flex;
+    justify-content: flex-end;
+    flex-grow: 1;
+}
+
+.no-data-found {
+    padding: var(--p-datatable-body-cell-padding);
+    border-color: var(--p-datatable-body-cell-border-color);
+    border-style: solid;
+    border-width: 0px 0 1px 0;
+}
+
 :deep(.p-datatable-column-sorted) {
     background: var(--p-datatable-header-cell-background);
 }

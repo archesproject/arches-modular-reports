@@ -213,25 +213,16 @@ function rowClass(data: LabelBasedCard) {
 
     <div
         v-else-if="isEmpty"
-        class="data-section"
+        class="section-table"
     >
-        <div class="p-datatable-header section-card-header">
+        <div class="p-datatable-header section-table-header">
             <h4>{{ cardName }}</h4>
-
-            <div
-                style="
-                    display: flex;
-                    justify-content: space-between;
-                    flex-grow: 1;
-                "
-            >
-                <Button
-                    v-if="shouldShowAddButton"
-                    :label="$gettext('Add %{cardName}', { cardName })"
-                    icon="pi pi-plus"
-                    variant="outlined"
-                />
-            </div>
+            <Button
+                v-if="shouldShowAddButton"
+                :label="$gettext('Add %{cardName}', { cardName })"
+                icon="pi pi-plus"
+                variant="outlined"
+            />
         </div>
         <div class="no-data-found">
             {{ $gettext("No data found.") }}
@@ -240,7 +231,7 @@ function rowClass(data: LabelBasedCard) {
 
     <DataTable
         v-else
-        class="data-section"
+        class="section-table"
         :value="currentlyDisplayedTableData"
         :loading="isLoading"
         :total-records="searchResultsTotalCount"
@@ -262,26 +253,17 @@ function rowClass(data: LabelBasedCard) {
         @update:sort-order="onUpdateSortOrder"
     >
         <template #header>
-            <div class="section-card-header">
+            <div class="section-table-header">
                 <h4>{{ cardName }}</h4>
+                <Button
+                    v-if="shouldShowAddButton"
+                    :label="$gettext('Add %{cardName}', { cardName })"
+                    icon="pi pi-plus"
+                    variant="outlined"
+                />
 
-                <div
-                    style="
-                        display: flex;
-                        justify-content: space-between;
-                        flex-grow: 1;
-                    "
-                >
-                    <Button
-                        v-if="shouldShowAddButton"
-                        :label="$gettext('Add %{cardName}', { cardName })"
-                        icon="pi pi-plus"
-                        variant="outlined"
-                    />
-                    <IconField
-                        v-if="cardinality === CARDINALITY_N"
-                        style="display: flex"
-                    >
+                <div class="section-table-header-functions">
+                    <IconField v-if="cardinality === CARDINALITY_N">
                         <InputIcon
                             class="pi pi-search"
                             aria-hidden="true"
@@ -386,18 +368,28 @@ function rowClass(data: LabelBasedCard) {
 </template>
 
 <style scoped>
-.section-card-header {
+.panel-content .section-table:not(:first-child) {
+    padding-top: 18px;
+}
+
+.section-table-header {
     display: flex;
     align-items: center;
 }
 
-.section-card-header h4 {
+.section-table-header h4 {
     font-size: 1.8rem;
 }
 
-.section-card-header button {
+.section-table-header button {
     margin: 0 20px;
     padding: 3px 8px;
+}
+
+.section-table-header-functions {
+    display: flex;
+    justify-content: flex-end;
+    flex-grow: 1;
 }
 
 .no-data-found {
@@ -405,10 +397,6 @@ function rowClass(data: LabelBasedCard) {
     border-color: var(--p-datatable-body-cell-border-color);
     border-style: solid;
     border-width: 0px 0 1px 0;
-}
-
-.panel-content .data-section:not(:first-child) {
-    padding-top: 18px;
 }
 
 :deep(.p-datatable-column-sorted) {
