@@ -157,10 +157,6 @@ button.back-to-top {
     margin-bottom: 1.5rem;
 }
 
-/* .panel-content .data-section:not(:first-child) {
-    padding-top: 18px;
-} */
-
 .linked-section-container h3 {
     margin: 10px 0px;
 }
