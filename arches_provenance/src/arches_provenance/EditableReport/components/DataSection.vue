@@ -223,14 +223,13 @@ function rowClass(data: LabelBasedCard) {
         {{ $gettext("An error occurred while fetching data.") }}
     </Message>
 
-    <Message
+    <div
         v-else-if="isEmpty"
-        size="large"
-        severity="info"
-        icon="pi pi-info-circle"
+        class="no-data-found"
     >
         {{ $gettext("No data found.") }}
-    </Message>
+    </div>
+
     <DataTable
         v-else
         :value="currentlyDisplayedTableData"
@@ -370,6 +369,13 @@ function rowClass(data: LabelBasedCard) {
 
 .section-card-header h4 {
     font-size: 1.8rem;
+}
+
+.no-data-found {
+    padding: var(--p-datatable-body-cell-padding);
+    border-color: var(--p-datatable-body-cell-border-color);
+    border-style: solid;
+    border-width: 1px 0 1px 0;
 }
 
 :deep(.p-datatable-column-sorted) {
