@@ -202,18 +202,6 @@ function rowClass(data: LabelBasedCard) {
 </script>
 
 <template>
-    <div class="section-card-header">
-        <h4>{{ cardName }}</h4>
-
-        <Button
-            v-if="shouldShowAddButton"
-            :label="$gettext('Add %{cardName}', { cardName })"
-            icon="pi pi-plus"
-            variant="outlined"
-            style="margin: 1rem 2rem 0 2rem"
-        />
-    </div>
-
     <Message
         v-if="hasLoadingError"
         size="large"
@@ -225,13 +213,34 @@ function rowClass(data: LabelBasedCard) {
 
     <div
         v-else-if="isEmpty"
-        class="no-data-found"
+        class="data-section"
     >
-        {{ $gettext("No data found.") }}
+        <div class="p-datatable-header section-card-header">
+            <h4>{{ cardName }}</h4>
+
+            <div
+                style="
+                    display: flex;
+                    justify-content: space-between;
+                    flex-grow: 1;
+                "
+            >
+                <Button
+                    v-if="shouldShowAddButton"
+                    :label="$gettext('Add %{cardName}', { cardName })"
+                    icon="pi pi-plus"
+                    variant="outlined"
+                />
+            </div>
+        </div>
+        <div class="no-data-found">
+            {{ $gettext("No data found.") }}
+        </div>
     </div>
 
     <DataTable
         v-else
+        class="data-section"
         :value="currentlyDisplayedTableData"
         :loading="isLoading"
         :total-records="searchResultsTotalCount"
@@ -253,22 +262,38 @@ function rowClass(data: LabelBasedCard) {
         @update:sort-order="onUpdateSortOrder"
     >
         <template #header>
-            <div
-                v-if="cardinality === CARDINALITY_N"
-                style="display: flex; justify-content: flex-end"
-            >
-                <IconField style="display: flex">
-                    <InputIcon
-                        class="pi pi-search"
-                        aria-hidden="true"
-                        style="font-size: 1rem"
+            <div class="section-card-header">
+                <h4>{{ cardName }}</h4>
+
+                <div
+                    style="
+                        display: flex;
+                        justify-content: space-between;
+                        flex-grow: 1;
+                    "
+                >
+                    <Button
+                        v-if="shouldShowAddButton"
+                        :label="$gettext('Add %{cardName}', { cardName })"
+                        icon="pi pi-plus"
+                        variant="outlined"
                     />
-                    <InputText
-                        v-model="query"
-                        :placeholder="$gettext('Search')"
-                        :aria-label="$gettext('Search')"
-                    />
-                </IconField>
+                    <IconField
+                        v-if="cardinality === CARDINALITY_N"
+                        style="display: flex"
+                    >
+                        <InputIcon
+                            class="pi pi-search"
+                            aria-hidden="true"
+                            style="font-size: 1rem"
+                        />
+                        <InputText
+                            v-model="query"
+                            :placeholder="$gettext('Search')"
+                            :aria-label="$gettext('Search')"
+                        />
+                    </IconField>
+                </div>
             </div>
         </template>
         <template #empty>
@@ -363,7 +388,6 @@ function rowClass(data: LabelBasedCard) {
 <style scoped>
 .section-card-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
 }
 
@@ -371,11 +395,20 @@ function rowClass(data: LabelBasedCard) {
     font-size: 1.8rem;
 }
 
+.section-card-header button {
+    margin: 0 20px;
+    padding: 3px 8px;
+}
+
 .no-data-found {
     padding: var(--p-datatable-body-cell-padding);
     border-color: var(--p-datatable-body-cell-border-color);
     border-style: solid;
-    border-width: 1px 0 1px 0;
+    border-width: 0px 0 1px 0;
+}
+
+.panel-content .data-section:not(:first-child) {
+    padding-top: 18px;
 }
 
 :deep(.p-datatable-column-sorted) {
