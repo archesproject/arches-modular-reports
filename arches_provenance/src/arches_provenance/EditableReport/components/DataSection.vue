@@ -311,8 +311,7 @@ function rowClass(data: LabelBasedCard) {
                             variant="link"
                             :label="item.label"
                             style="display: block; width: fit-content"
-                        >
-                        </Button>
+                        />
                     </template>
                     <template v-else>
                         {{ data[field]?.display_value }}
