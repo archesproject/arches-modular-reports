@@ -3,7 +3,7 @@
     "components": [
         {
             "config": {
-                "descriptor": "<name_content> [<type>], <group_formation_timespan_begin_of_the_begin> - <timespan_begin_of_the_begin>",
+                "descriptor": "<name_content> [<type>]",
                 "node_alias_options": {}
             },
             "component": "ReportHeader"
@@ -120,11 +120,23 @@
                                                 {
                                                     "config": {
                                                         "node_aliases": [
-                                                            "group_formation_location"
+                                                            "group_formation_timespan_begin_of_the_begin",
+                                                            "group_formation_timespan_end_of_the_end"
                                                         ],
                                                         "custom_labels": {},
-                                                        "nodegroup_alias": "group_formation",
+                                                        "nodegroup_alias": "group_formation_timespan",
                                                         "custom_card_name": null
+                                                    },
+                                                    "component": "DataSection"
+                                                },
+                                                {
+                                                    "config": {
+                                                        "node_aliases": [
+                                                            "group_formation_influence"
+                                                        ],
+                                                        "custom_labels": {},
+                                                        "nodegroup_alias": "group_formation_influence",
+                                                        "custom_card_name": "Group Formation Influence"
                                                     },
                                                     "component": "DataSection"
                                                 },
@@ -213,7 +225,7 @@
                                                             "exact_match"
                                                         ],
                                                         "custom_labels": {
-                                                            "exact_match": "URI."
+                                                            "exact_match": "URI"
                                                         },
                                                         "nodegroup_alias": "exact_match",
                                                         "custom_card_name": null
