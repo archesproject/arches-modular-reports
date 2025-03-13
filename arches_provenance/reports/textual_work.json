@@ -26,8 +26,7 @@
                     "creation_actor",
                     "subject",
                     "part_of_textual_work",
-                    "creation_timespan_name_content",
-                    "physical_bearer"
+                    "creation_timespan_name_content"
                 ],
                 "custom_labels": {
                     "part_of_textual_work": "Part of Work",
@@ -115,17 +114,6 @@
                                                 {
                                                     "config": {
                                                         "node_aliases": [
-                                                            "text_language"
-                                                        ],
-                                                        "custom_labels": {},
-                                                        "nodegroup_alias": "text_language",
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
                                                             "physical_bearer"
                                                         ],
                                                         "custom_labels": {},
@@ -144,20 +132,6 @@
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "dimension_value",
-                                                            "dimension_unit",
-                                                            "dimension_type",
-                                                            "dimension_source_reference"
-                                                        ],
-                                                        "custom_labels": {},
-                                                        "nodegroup_alias": "dimension",
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
                                                 }
                                             ]
                                         },
@@ -172,19 +146,6 @@
                                                         ],
                                                         "custom_labels": {},
                                                         "nodegroup_alias": "creation",
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "publication_actor",
-                                                            "publication_location",
-                                                            "publication_type"
-                                                        ],
-                                                        "custom_labels": {},
-                                                        "nodegroup_alias": "publication",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
@@ -246,17 +207,6 @@
                                                         ],
                                                         "custom_labels": {},
                                                         "nodegroup_alias": "identifier",
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "exact_match"
-                                                        ],
-                                                        "custom_labels": {},
-                                                        "nodegroup_alias": "exact_match",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
