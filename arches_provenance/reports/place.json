@@ -3,7 +3,7 @@
     "components": [
         {
             "config": {
-                "descriptor": "<name_content> [<type>]. <part_of_location>",
+                "descriptor": "<name_content> [<type>], <part_of_location>",
                 "node_alias_options": {}
             },
             "component": "ReportHeader"
@@ -26,7 +26,9 @@
                     "type",
                     "part_of_location"
                 ],
-                "custom_labels": {},
+                "custom_labels": {
+                    "part_of_location": "Part of Place"
+                },
                 "image_node_alias": null
             },
             "component": "ReportTombstone"
@@ -82,17 +84,6 @@
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "approximated_location"
-                                                        ],
-                                                        "custom_labels": {},
-                                                        "nodegroup_alias": "approximated_location",
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
                                                 }
                                             ]
                                         },
@@ -115,18 +106,6 @@
                                         {
                                             "name": "Identifiers",
                                             "components": [
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "identifier_content",
-                                                            "identifier_type"
-                                                        ],
-                                                        "custom_labels": {},
-                                                        "nodegroup_alias": "identifier",
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
                                                 {
                                                     "config": {
                                                         "node_aliases": [
