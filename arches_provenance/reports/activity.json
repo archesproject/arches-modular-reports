@@ -3,7 +3,7 @@
     "components": [
         {
             "config": {
-                "descriptor": "<name_content_n1> [<name_type_n1>}",
+                "descriptor": "<name_content_n1> [<name_type_n1>]",
                 "node_alias_options": {}
             },
             "component": "ReportHeader"
@@ -26,7 +26,10 @@
                     "name_type_n1",
                     "timespan_name_content"
                 ],
-                "custom_labels": {},
+                "custom_labels": {
+                    "name_type_n1": "Type",
+                    "timespan_name_content": "Timespan of Activity"
+                },
                 "image_node_alias": null
             },
             "component": "ReportTombstone"
@@ -199,18 +202,6 @@
                                                             "source_reference": "Source Document"
                                                         },
                                                         "nodegroup_alias": "source_reference",
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "digital_reference",
-                                                            "digital_reference_type"
-                                                        ],
-                                                        "custom_labels": {},
-                                                        "nodegroup_alias": "digital_reference",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
