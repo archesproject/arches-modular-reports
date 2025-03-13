@@ -156,6 +156,8 @@ class Migration(migrations.Migration):
                         value := __arches_get_resourceinstance_id(in_tiledata -> in_nodeid::text, 'name', language_id);
                     when 'resource-instance-list' then
                         value := __arches_get_resourceinstance_id_list(in_tiledata -> in_nodeid::text, 'name', language_id);
+                    when 'url' then
+                        value := in_tiledata -> in_nodeid::text ->> 'url';
                     else
                         value := null;
                 end case;
@@ -420,7 +422,7 @@ class Migration(migrations.Migration):
                             when 'domain-value-list' then
                                 display_value := __arches_get_domain_list_label(in_tiledata -> in_nodeid::text, in_nodeid, language_id);
                             when 'url' then
-                                display_value := ((in_tiledata -> in_nodeid::text)::jsonb ->> 'url');
+                                display_value := ((in_tiledata -> in_nodeid::text)::jsonb ->> 'url_label');
                             when 'node-value' then
                                 display_value := __arches_get_nodevalue_label(in_tiledata -> in_nodeid::text, in_nodeid);
                             when 'resource-instance' then
