@@ -3,7 +3,7 @@
     "components": [
         {
             "config": {
-                "descriptor": "<name_content> [<type>], <creation_actor>",
+                "descriptor": "<name_content>",
                 "node_alias_options": {}
             },
             "component": "ReportHeader"
@@ -23,8 +23,7 @@
             "config": {
                 "node_aliases": [
                     "exact_match",
-                    "creation_actor",
-                    "subject",
+                    "type",
                     "type_depicted"
                 ],
                 "custom_labels": {
@@ -95,17 +94,6 @@
                                                         ],
                                                         "custom_labels": {},
                                                         "nodegroup_alias": "style",
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "subject"
-                                                        ],
-                                                        "custom_labels": {},
-                                                        "nodegroup_alias": "subject",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
