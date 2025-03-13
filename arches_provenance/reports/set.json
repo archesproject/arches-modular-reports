@@ -3,7 +3,7 @@
     "components": [
         {
             "config": {
-                "descriptor": "<name_content_n1> [<type>], <creation_actor>, <creation_timespan_begin_of_the_begin>",
+                "descriptor": "<name_content_n1> [<type>], <activity_part_actor>, <creation_timespan_name_content>",
                 "node_alias_options": {}
             },
             "component": "ReportHeader"
@@ -23,10 +23,11 @@
             "config": {
                 "node_aliases": [
                     "exact_match",
-                    "creation_actor",
+                    "activity_part_actor",
                     "creation_timespan_name_content"
                 ],
                 "custom_labels": {
+                    "activity_part_actor": "Creator",
                     "creation_timespan_name_content": "Timespan of Creation Event"
                 },
                 "image_node_alias": null
@@ -49,7 +50,8 @@
                                                     "config": {
                                                         "node_aliases": [
                                                             "name_content_n1",
-                                                            "name_type_n1"                                                        ],
+                                                            "name_type_n1"
+                                                        ],
                                                         "custom_labels": {},
                                                         "nodegroup_alias": "name",
                                                         "custom_card_name": null
@@ -92,29 +94,27 @@
                                                 {
                                                     "config": {
                                                         "node_aliases": [
-                                                            "creation_actor",
-                                                            "creation_location",
-                                                            "creation_type"
+                                                            "activity_part_actor",
+                                                            "activity_part_type"
                                                         ],
                                                         "custom_labels": {},
-                                                        "nodegroup_alias": "creation",
+                                                        "nodegroup_alias": "creation_part",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
-                                                },
-                                                {
+                                                },{
                                                     "config": {
                                                         "node_aliases": [
-                                                            "curation_actor",
-                                                            "curation_location",
-                                                            "curation_type"
+                                                            "creation_timespan_begin_of_the_begin",
+                                                            "creation_timespan_end_of_the_end"
                                                         ],
                                                         "custom_labels": {},
-                                                        "nodegroup_alias": "curation",
+                                                        "nodegroup_alias": "creation_timespan",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
                                                 }
+
                                             ]
                                         },
                                         {
@@ -131,22 +131,11 @@
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "exact_match"
-                                                        ],
-                                                        "custom_labels": {},
-                                                        "nodegroup_alias": "exact_match",
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
                                                 }
                                             ]
                                         },
                                         {
-                                            "name": "Referencse",
+                                            "name": "References",
                                             "components": [
                                                 {
                                                     "config": {
@@ -287,7 +276,8 @@
                                 "component": "LinkedSections"
                             }
                         ]
-                    }                ]
+                    }
+                ]
             },
             "component": "ReportTabs"
         }
