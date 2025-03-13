@@ -3,7 +3,7 @@
     "components": [
         {
             "config": {
-                "descriptor": "<name_content_n1> [<name_type_n1>]",
+                "descriptor": "<name_content_n1> [<type>]",
                 "node_alias_options": {}
             },
             "component": "ReportHeader"
@@ -23,11 +23,10 @@
             "config": {
                 "node_aliases": [
                     "activity_actor",
-                    "name_type_n1",
+                    "type",
                     "timespan_name_content"
                 ],
                 "custom_labels": {
-                    "name_type_n1": "Type",
                     "timespan_name_content": "Timespan of Activity"
                 },
                 "image_node_alias": null
