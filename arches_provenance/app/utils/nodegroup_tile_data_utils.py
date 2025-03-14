@@ -479,14 +479,14 @@ def prepare_links(node, tile_values, node_display_value, request_language):
         TODO: graduate from the PG function to ORM expressions?
         """
         nonlocal request_language
-        ordered_ids = [innerTileVal["resourceId"] for innerTileVal in tiledata]
+        ordered_ids = [UUID(innerTileVal["resourceId"]) for innerTileVal in tiledata]
         resources = models.ResourceInstance.objects.filter(pk__in=ordered_ids).in_bulk()
         return [
             (
-                resources[UUID(res_id)]
+                resources[res_id]
                 .descriptors.get(request_language, {})
                 .get("name", _("Undefined"))
-                if UUID(res_id) in resources
+                if res_id in resources
                 else _("Undefined")
             )
             for res_id in ordered_ids
