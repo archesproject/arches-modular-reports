@@ -482,9 +482,13 @@ def prepare_links(node, tile_values, node_display_value, request_language):
         ordered_ids = [innerTileVal["resourceId"] for innerTileVal in tiledata]
         resources = models.ResourceInstance.objects.filter(pk__in=ordered_ids).in_bulk()
         return [
-            resources[UUID(res_id)]
-            .descriptors.get(request_language, {})
-            .get("name", _("Undefined"))
+            (
+                resources[UUID(res_id)]
+                .descriptors.get(request_language, {})
+                .get("name", _("Undefined"))
+                if UUID(res_id) in resources
+                else _("Undefined")
+            )
             for res_id in ordered_ids
         ]
 
