@@ -20,16 +20,14 @@ const truncatedDisplayData = computed(() => {
 
 <template>
     <div class="node-container">
-        <dt>
-            <strong>{{ widgetLabel }}</strong>
-        </dt>
+        <strong>{{ widgetLabel }}</strong>
         <div class="node-values-container">
             <template
                 v-for="nodeValueDisplayData in truncatedDisplayData"
                 :key="nodeValueDisplayData.display_values"
             >
                 <template v-if="nodeValueDisplayData.links.length">
-                    <dd
+                    <div
                         v-for="link in nodeValueDisplayData.links"
                         :key="JSON.stringify(link)"
                         class="node-value"
@@ -39,20 +37,20 @@ const truncatedDisplayData = computed(() => {
                             class="node-value"
                             target="_blank"
                             variant="link"
+                            :label="link.label"
                             :href="link.link"
                         >
-                            {{ link.label }}
                         </Button>
-                    </dd>
+                    </div>
                 </template>
                 <template v-else>
-                    <dd
+                    <div
                         v-for="innerValue in nodeValueDisplayData.display_values"
                         :key="innerValue"
                         class="node-value"
                     >
                         {{ innerValue }}
-                    </dd>
+                    </div>
                 </template>
             </template>
         </div>
@@ -62,7 +60,7 @@ const truncatedDisplayData = computed(() => {
 <style scoped>
 .node-container {
     display: flex;
-    gap: 1rem;
+    flex-direction: column;
     max-height: 18rem;
 }
 
@@ -76,7 +74,7 @@ const truncatedDisplayData = computed(() => {
     overflow-wrap: anywhere;
 }
 
-.p-button {
+.p-button-link {
     font-size: inherit;
     padding: 0;
     align-items: start;

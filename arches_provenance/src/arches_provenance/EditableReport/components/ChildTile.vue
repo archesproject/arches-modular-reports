@@ -66,10 +66,8 @@ function bestWidgetLabel(nodeAlias: string) {
         role="presentation"
     ></div>
     <details open="true">
-        <summary>
-            <strong>
-                {{ nodePresentationLookup?.[firstAlias].card_name }}
-            </strong>
+        <summary class="p-datatable-column-title">
+            {{ nodePresentationLookup?.[firstAlias].card_name }}
         </summary>
         <dl>
             <div
@@ -79,7 +77,9 @@ function bestWidgetLabel(nodeAlias: string) {
             >
                 <!-- nodeValue is null if this is a hidden node -->
                 <template v-if="nodeValue">
-                    <dt>{{ bestWidgetLabel(nodeAlias) }}</dt>
+                    <dt class="p-datatable-column-title">
+                        {{ bestWidgetLabel(nodeAlias) }}
+                    </dt>
                     <template v-if="nodeValue.instance_details?.length">
                         <div style="flex-direction: column">
                             <dd
@@ -163,6 +163,8 @@ details {
 summary {
     /* https://github.com/twbs/bootstrap/issues/21060 */
     display: list-item;
+    margin-bottom: 10px;
+    font-size: 1.4rem;
 }
 
 dl {
@@ -177,16 +179,15 @@ dl {
 .node-pair {
     display: flex;
     width: 60%;
-    gap: 2rem;
 }
 
 .node-pair > dt {
-    width: 50%;
+    width: 40%;
     text-align: end;
+    padding-inline-end: 2rem;
 }
 
 .node-pair > dd {
-    width: 50%;
     text-align: start;
 }
 
