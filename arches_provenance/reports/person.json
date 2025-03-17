@@ -22,14 +22,12 @@
         {
             "config": {
                 "node_aliases": [
-                    "exact_match",
                     "nationality",
                     "profession",
                     "birth_timespan_name_content",
                     "death_timespan_name_content"
                 ],
                 "custom_labels": {
-                    "exact_match": "URI",
                     "birth_timespan_name_content": "Timespan of Birth Event",
                     "death_timespan_name_content": "Timespan of Death Event"
                 },

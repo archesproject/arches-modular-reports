@@ -22,7 +22,6 @@
         {
             "config": {
                 "node_aliases": [
-                    "exact_match",
                     "activity_part_actor",
                     "creation_timespan_name_content"
                 ],

@@ -22,7 +22,6 @@
             "config": {
                 "image": null,
                 "node_aliases": [
-                    "exact_match",
                     "production_part_actor",
                     "material",
                     "visual_image_shown",
