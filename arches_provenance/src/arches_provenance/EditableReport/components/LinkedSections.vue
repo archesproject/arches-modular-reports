@@ -103,7 +103,7 @@ onMounted(async () => {
                 <template #icons>
                     <Button
                         class="back-to-top"
-                        icon="pi pi-home"
+                        icon="pi pi-arrow-circle-up"
                         severity="secondary"
                         variant="text"
                         :aria-label="$gettext('back to top')"
@@ -151,6 +151,10 @@ button.back-to-top {
     width: 2.5rem;
     height: 2.5rem;
     padding: 10px;
+}
+
+:deep(button.back-to-top span.pi) {
+    font-size: 1.2rem;
 }
 
 .linked-section-container .p-panel:not(:last-child) {
