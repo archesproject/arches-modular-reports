@@ -22,7 +22,6 @@
         {
             "config": {
                 "node_aliases": [
-                    "exact_match",
                     "creation_actor",
                     "subject",
                     "part_of_textual_work",

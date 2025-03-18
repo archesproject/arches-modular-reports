@@ -22,7 +22,6 @@
         {
             "config": {
                 "node_aliases": [
-                    "exact_match",
                     "type",
                     "type_depicted"
                 ],

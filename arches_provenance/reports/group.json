@@ -22,14 +22,12 @@
         {
             "config": {
                 "node_aliases": [
-                    "exact_match",
                     "nationality",
                     "type",
                     "group_formation_timespan_begin_of_the_begin",
                     "timespan_begin_of_the_begin"
                 ],
                 "custom_labels": {
-                    "exact_match": "URI",
                     "group_formation_timespan_begin_of_the_begin": "Timespan of Group Formation",
                     "timespan_begin_of_the_begin": "Timespan of Group Dissolution"
                 },
