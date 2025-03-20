@@ -422,7 +422,12 @@ class Migration(migrations.Migration):
                             when 'domain-value-list' then
                                 display_value := __arches_get_domain_list_label(in_tiledata -> in_nodeid::text, in_nodeid, language_id);
                             when 'url' then
-                                display_value := ((in_tiledata -> in_nodeid::text)::jsonb ->> 'url_label');
+								if ((in_tiledata -> in_nodeid::text)::jsonb ->> 'url_label')::text = '' or
+									((in_tiledata -> in_nodeid::text)::jsonb ->> 'url_label')::text is null then
+									display_value := (in_tiledata -> in_nodeid::text)::jsonb ->> 'url';
+								else
+								 	display_value := (in_tiledata -> in_nodeid::text)::jsonb ->> 'url_label';
+								end if;
                             when 'node-value' then
                                 display_value := __arches_get_nodevalue_label(in_tiledata -> in_nodeid::text, in_nodeid);
                             when 'resource-instance' then
