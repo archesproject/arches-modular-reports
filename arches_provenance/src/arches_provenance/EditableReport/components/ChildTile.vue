@@ -33,7 +33,7 @@ const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
 const childKey = "@children";
 const { [childKey]: children, ...singleTileData } = data;
 const nodeAliasValuePairs: [string, LabelBasedNode][] = Object.entries(
-    Object.values(singleTileData)[0],
+    Object.values(singleTileData)[0] ?? [],
 ).filter(([nodeAlias]) => !nodeAlias.startsWith("@"));
 const firstAlias = nodeAliasValuePairs[0][0];
 
@@ -41,13 +41,20 @@ const marginUnit = 1.5;
 const marginUnitRem = `${marginUnit}rem`;
 const cardIndentation = `${2.5 + depth * marginUnit}rem`;
 
-function tileIdFromChild(child: LabelBasedTile): string {
+const visibleChildren = children.filter(
+    (child) => tileIdFromChild(child) !== null,
+);
+
+function tileIdFromChild(child: LabelBasedTile): string | null {
     const { [childKey]: _grandchildren, ...singleTileData } = child;
-    const nodegroup = singleTileData as unknown as LabelBasedNode;
-    // This will not be null since a hidden node won't have children.
-    return (Object.values(nodegroup)[0] as unknown as LabelBasedNode)[
-        "@tile_id"
-    ];
+    if (singleTileData === null) {
+        return null;
+    }
+    const firstNodeData = Object.values(singleTileData)[0];
+    if (firstNodeData === null) {
+        return null;
+    }
+    return (firstNodeData as LabelBasedNode)["@tile_id"];
 }
 
 function bestWidgetLabel(nodeAlias: string) {
@@ -136,8 +143,8 @@ function bestWidgetLabel(nodeAlias: string) {
                 </template>
             </div>
             <ChildTile
-                v-for="child in children"
-                :key="tileIdFromChild(child)"
+                v-for="child in visibleChildren"
+                :key="tileIdFromChild(child) as string"
                 :divider="true"
                 :data="child"
                 :depth="depth + 1"

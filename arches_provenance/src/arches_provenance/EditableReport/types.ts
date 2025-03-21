@@ -69,7 +69,7 @@ export interface NodeValueDisplayDataLookup {
 
 export interface LabelBasedTile {
     "@children": LabelBasedTile[];
-    [key: string]: LabelBasedTile[] | LabelBasedNode;
+    [key: string]: LabelBasedTile[] | LabelBasedNode | null;
 }
 
 export interface LabelBasedCard {
