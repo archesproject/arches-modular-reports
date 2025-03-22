@@ -31,11 +31,29 @@ const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
 >;
 
 const childKey = "@children";
+const nonAliasKeys = [
+    "url",
+    "url_label",
+    "instance_details",
+    "concept_details",
+];
 const { [childKey]: children, ...singleTileData } = data;
-const nodeAliasValuePairs: [string, LabelBasedNode][] = Object.entries(
+let nodeAliasValuePairs: [string, LabelBasedNode][] = Object.entries(
     Object.values(singleTileData)[0] ?? [],
-).filter(([nodeAlias]) => !nodeAlias.startsWith("@"));
-const firstAlias = nodeAliasValuePairs[0][0];
+).filter(
+    ([nodeAlias]) =>
+        !nodeAlias.startsWith("@") && !nonAliasKeys.includes(nodeAlias),
+);
+let firstAlias = "";
+if (nodeAliasValuePairs.length === 0) {
+    // Data-collecting parent node.
+    firstAlias = Object.keys(singleTileData)[0];
+    nodeAliasValuePairs = [
+        [firstAlias, singleTileData[firstAlias] as LabelBasedNode],
+    ];
+} else {
+    firstAlias = nodeAliasValuePairs[0][0];
+}
 
 const marginUnit = 1.5;
 const marginUnitRem = `${marginUnit}rem`;
