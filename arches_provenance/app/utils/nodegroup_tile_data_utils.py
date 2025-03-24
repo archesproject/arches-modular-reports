@@ -24,7 +24,6 @@ from django.utils.translation import gettext as _
 
 from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
-from arches.app.models.tile import Tile
 
 from arches_provenance.app.utils.label_based_graph_with_branch_export import (
     LabelBasedGraphWithBranchExport,
@@ -172,7 +171,7 @@ def get_sorted_filtered_tiles(
     )
 
     if not nodes:
-        return Tile.objects.none()
+        return models.TileModel.objects.none()
 
     field_annotations = {}
     alias_annotations = {}
@@ -209,7 +208,7 @@ def get_sorted_filtered_tiles(
         display_values_with_spaces.append(Value(" "))
 
     tiles = (
-        Tile.objects.filter(
+        models.TileModel.objects.filter(
             resourceinstance_id=resourceinstanceid, nodegroup_id=nodes[0].nodegroup_id
         )
         .annotate(**field_annotations)
