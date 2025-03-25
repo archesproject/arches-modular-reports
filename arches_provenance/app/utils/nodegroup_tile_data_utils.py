@@ -24,7 +24,6 @@ from django.utils.translation import gettext as _
 
 from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
-from arches.app.models.tile import Tile
 
 from arches_provenance.app.utils.label_based_graph_with_branch_export import (
     LabelBasedGraphWithBranchExport,
@@ -191,7 +190,7 @@ def get_sorted_filtered_tiles(
     )
 
     if not nodes:
-        return Tile.objects.none()
+        return models.TileModel.objects.none()
 
     field_annotations = {}
     alias_annotations = {}
@@ -229,7 +228,7 @@ def get_sorted_filtered_tiles(
         display_values_with_spaces.append(Value(" "))
 
     tiles = (
-        Tile.objects.filter(
+        models.TileModel.objects.filter(
             resourceinstance_id=resourceinstanceid, nodegroup_id=nodes[0].nodegroup_id
         )
         .annotate(**field_annotations)
@@ -499,12 +498,16 @@ def prepare_links(node, tile_values, node_display_value, request_language):
         TODO: graduate from the PG function to ORM expressions?
         """
         nonlocal request_language
-        ordered_ids = [innerTileVal["resourceId"] for innerTileVal in tiledata]
+        ordered_ids = [UUID(innerTileVal["resourceId"]) for innerTileVal in tiledata]
         resources = models.ResourceInstance.objects.filter(pk__in=ordered_ids).in_bulk()
         return [
-            resources[UUID(res_id)]
-            .descriptors.get(request_language, {})
-            .get("name", _("Undefined"))
+            (
+                resources[res_id]
+                .descriptors.get(request_language, {})
+                .get("name", _("Undefined"))
+                if res_id in resources
+                else _("Undefined")
+            )
             for res_id in ordered_ids
         ]
 

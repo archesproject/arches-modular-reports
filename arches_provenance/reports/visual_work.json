@@ -3,7 +3,8 @@
     "components": [
         {
             "config": {
-                "descriptor": "<name_content> [<type>], <production_part_actor>"
+                "descriptor": "<name_content>",
+                "node_alias_options": {}
             },
             "component": "ReportHeader"
         },
@@ -20,17 +21,14 @@
         },
         {
             "config": {
-                "image": null,
                 "node_aliases": [
-                    "production_part_actor",
-                    "material",
-                    "visual_image_shown",
                     "type",
-                    "text_carried"
+                    "type_depicted"
                 ],
                 "custom_labels": {
-                    "visual_image_shown": "Visual Work"
-                }
+                    "type_depicted": "Entity Type Depicted"
+                },
+                "image_node_alias": null
             },
             "component": "ReportTombstone"
         },
@@ -51,10 +49,10 @@
                                                         "node_aliases": [
                                                             "name_content",
                                                             "name_type",
-                                                            "name_source_reference"
+                                                            "name_source"
                                                         ],
-                                                        "nodegroup_alias": "name",
                                                         "custom_labels": {},
+                                                        "nodegroup_alias": "name",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
@@ -64,11 +62,10 @@
                                                         "node_aliases": [
                                                             "statement_content",
                                                             "statement_type",
-                                                            "statement_source_reference",
-                                                            "statement_carrier"
+                                                            "statement_language"
                                                         ],
-                                                        "nodegroup_alias": "statement",
                                                         "custom_labels": {},
+                                                        "nodegroup_alias": "statement",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
@@ -76,26 +73,15 @@
                                             ]
                                         },
                                         {
-                                            "name": "Material Qualities",
+                                            "name": "Visual Description",
                                             "components": [
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "material"
-                                                        ],
-                                                        "nodegroup_alias": "material",
-                                                        "custom_labels": {},
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
                                                 {
                                                     "config": {
                                                         "node_aliases": [
                                                             "type"
                                                         ],
-                                                        "nodegroup_alias": "type",
                                                         "custom_labels": {},
+                                                        "nodegroup_alias": "type",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
@@ -103,13 +89,32 @@
                                                 {
                                                     "config": {
                                                         "node_aliases": [
-                                                            "dimension_value",
-                                                            "dimension_unit",
-                                                            "dimension_type",
-                                                            "dimension_source_reference"
+                                                            "style"
                                                         ],
-                                                        "nodegroup_alias": "dimension",
                                                         "custom_labels": {},
+                                                        "nodegroup_alias": "style",
+                                                        "custom_card_name": null
+                                                    },
+                                                    "component": "DataSection"
+                                                },
+                                                {
+                                                    "config": {
+                                                        "node_aliases": [
+                                                            "type_depicted"
+                                                        ],
+                                                        "custom_labels": {},
+                                                        "nodegroup_alias": "type_depicted",
+                                                        "custom_card_name": null
+                                                    },
+                                                    "component": "DataSection"
+                                                },
+                                                {
+                                                    "config": {
+                                                        "node_aliases": [
+                                                            "entity_depicted"
+                                                        ],
+                                                        "custom_labels": {},
+                                                        "nodegroup_alias": "entity_depicted",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
@@ -117,43 +122,17 @@
                                             ]
                                         },
                                         {
-                                            "name": "Physical Object History",
+                                            "name": "Visual Work History",
                                             "components": [
                                                 {
                                                     "config": {
                                                         "node_aliases": [
-                                                            "production_part_actor"
+                                                            "creation_actor",
+                                                            "creation_location",
+                                                            "creation_type"
                                                         ],
-                                                        "nodegroup_alias": "production_part",
                                                         "custom_labels": {},
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "production_data_assignment_target_entity",
-                                                            "production_data_assignment_property_assigned",
-                                                            "production_data_assignment_property_assigned_type",
-                                                            "production_data_assignment_type",
-                                                            "production_data_assignment_actor",
-                                                            "production_data_assignment_object_used"
-                                                        ],
-                                                        "nodegroup_alias": "production_data_assignment",
-                                                        "custom_labels": {},
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "production_actor",
-                                                            "production_influence"
-                                                        ],
-                                                        "nodegroup_alias": "production",
-                                                        "custom_labels": {},
+                                                        "nodegroup_alias": "creation",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
@@ -166,86 +145,10 @@
                                                 {
                                                     "config": {
                                                         "node_aliases": [
-                                                            "part_of_object"
+                                                            "part_of_visual_work"
                                                         ],
-                                                        "nodegroup_alias": "part_of_object",
                                                         "custom_labels": {},
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            "name": "Works Carried",
-                                            "components": [
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "text_carried"
-                                                        ],
-                                                        "nodegroup_alias": "text_carried",
-                                                        "custom_labels": {},
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "visual_image_shown"
-                                                        ],
-                                                        "nodegroup_alias": "visual_image_shown",
-                                                        "custom_labels": {},
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            "name": "Status",
-                                            "components": [
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "current_owner"
-                                                        ],
-                                                        "nodegroup_alias": "current_owner",
-                                                        "custom_labels": {},
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "current_custodian"
-                                                        ],
-                                                        "nodegroup_alias": "current_custodian",
-                                                        "custom_labels": {},
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "permanent_location"
-                                                        ],
-                                                        "nodegroup_alias": "permanent_location",
-                                                        "custom_labels": {},
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "member_of_set"
-                                                        ],
-                                                        "nodegroup_alias": "member_of_set",
-                                                        "custom_labels": {},
+                                                        "nodegroup_alias": "part_of_visual_work",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
@@ -261,8 +164,8 @@
                                                             "identifier_content",
                                                             "identifier_type"
                                                         ],
-                                                        "nodegroup_alias": "identifier",
                                                         "custom_labels": {},
+                                                        "nodegroup_alias": "identifier",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
@@ -272,8 +175,8 @@
                                                         "node_aliases": [
                                                             "exact_match"
                                                         ],
-                                                        "nodegroup_alias": "exact_match",
                                                         "custom_labels": {},
+                                                        "nodegroup_alias": "exact_match",
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
@@ -281,27 +184,15 @@
                                             ]
                                         },
                                         {
-                                            "name": "References",
+                                            "name": "Reference",
                                             "components": [
                                                 {
                                                     "config": {
                                                         "node_aliases": [
                                                             "source_reference"
                                                         ],
+                                                        "custom_labels": {},
                                                         "nodegroup_alias": "source_reference",
-                                                        "custom_labels": {},
-                                                        "custom_card_name": null
-                                                    },
-                                                    "component": "DataSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [
-                                                            "digital_reference",
-                                                            "digital_reference_type"
-                                                        ],
-                                                        "nodegroup_alias": "digital_reference",
-                                                        "custom_labels": {},
                                                         "custom_card_name": null
                                                     },
                                                     "component": "DataSection"
@@ -321,83 +212,25 @@
                                 "config": {
                                     "sections": [
                                         {
-                                            "name": "Events",
+                                            "name": "Digital Object",
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "node_aliases": ["type", "timespan_label"],
-                                                        "graph_slug": "provenance",
+                                                        "graph_slug": "digital",
+                                                        "node_aliases": [],
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
-                                                },
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Activity",
+                                            "components": [
                                                 {
                                                     "config": {
-                                                        "node_aliases": ["type", "timespan_label"],
                                                         "graph_slug": "activity",
-                                                        "custom_labels": {}
-                                                    },
-                                                    "component": "RelatedResourcesSection"
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            "name": "Locations",
-                                            "components": [
-                                                {
-                                                    "config": {
                                                         "node_aliases": [],
-                                                        "graph_slug": "place",
-                                                        "custom_labels": {}
-                                                    },
-                                                    "component": "RelatedResourcesSection"
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            "name": "Actors",
-                                            "components": [
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [],
-                                                        "graph_slug": "person",
-                                                        "custom_labels": {}
-                                                    },
-                                                    "component": "RelatedResourcesSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [],
-                                                        "graph_slug": "group",
-                                                        "custom_labels": {}
-                                                    },
-                                                    "component": "RelatedResourcesSection"
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            "name": "Works",
-                                            "components": [
-                                                {
-                                                    "config": {
-                                                        "node_aliases": [],
-                                                        "graph_slug": "textual_work",
-                                                        "custom_labels": {}
-                                                    },
-                                                    "component": "RelatedResourcesSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": ["type"],
-                                                        "graph_slug": "visual_work",
-                                                        "custom_labels": {}
-                                                    },
-                                                    "component": "RelatedResourcesSection"
-                                                },
-                                                {
-                                                    "config": {
-                                                        "node_aliases": ["type"],
-                                                        "graph_slug": "object",
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"
@@ -409,8 +242,99 @@
                                             "components": [
                                                 {
                                                     "config": {
-                                                        "node_aliases": ["type"],
                                                         "graph_slug": "set",
+                                                        "node_aliases": [],
+                                                        "custom_labels": {}
+                                                    },
+                                                    "component": "RelatedResourcesSection"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Textual Work",
+                                            "components": [
+                                                {
+                                                    "config": {
+                                                        "graph_slug": "textual_work",
+                                                        "node_aliases": [],
+                                                        "custom_labels": {}
+                                                    },
+                                                    "component": "RelatedResourcesSection"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Provenance Activity",
+                                            "components": [
+                                                {
+                                                    "config": {
+                                                        "graph_slug": "provenance",
+                                                        "node_aliases": [],
+                                                        "custom_labels": {}
+                                                    },
+                                                    "component": "RelatedResourcesSection"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Place",
+                                            "components": [
+                                                {
+                                                    "config": {
+                                                        "graph_slug": "place",
+                                                        "node_aliases": [],
+                                                        "custom_labels": {}
+                                                    },
+                                                    "component": "RelatedResourcesSection"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Visual Work",
+                                            "components": [
+                                                {
+                                                    "config": {
+                                                        "graph_slug": "visual_work",
+                                                        "node_aliases": [],
+                                                        "custom_labels": {}
+                                                    },
+                                                    "component": "RelatedResourcesSection"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Physical Object",
+                                            "components": [
+                                                {
+                                                    "config": {
+                                                        "graph_slug": "object",
+                                                        "node_aliases": [],
+                                                        "custom_labels": {}
+                                                    },
+                                                    "component": "RelatedResourcesSection"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Group",
+                                            "components": [
+                                                {
+                                                    "config": {
+                                                        "graph_slug": "group",
+                                                        "node_aliases": [],
+                                                        "custom_labels": {}
+                                                    },
+                                                    "component": "RelatedResourcesSection"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Person",
+                                            "components": [
+                                                {
+                                                    "config": {
+                                                        "graph_slug": "person",
+                                                        "node_aliases": [],
                                                         "custom_labels": {}
                                                     },
                                                     "component": "RelatedResourcesSection"

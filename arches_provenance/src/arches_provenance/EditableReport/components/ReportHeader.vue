@@ -3,7 +3,7 @@ import { computed, inject, onMounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Message from "primevue/message";
-import Panel from "primevue/panel";
+import Card from "primevue/card";
 
 import { fetchNodeTileData } from "@/arches_provenance/EditableReport/api.ts";
 import { truncateDisplayData } from "@/arches_provenance/EditableReport/utils.ts";
@@ -86,8 +86,8 @@ onMounted(fetchData);
 </script>
 
 <template>
-    <Panel class="report-header">
-        <template #header>
+    <Card class="report-header">
+        <template #content>
             <h2>{{ descriptor }}</h2>
         </template>
         <Message
@@ -97,7 +97,7 @@ onMounted(fetchData);
         >
             {{ $gettext("Unable to fetch resource") }}
         </Message>
-    </Panel>
+    </Card>
 </template>
 
 <style scoped>
@@ -107,14 +107,10 @@ onMounted(fetchData);
     position: sticky;
     top: 0;
     z-index: 10;
+    box-shadow: unset;
 }
 
-:deep(.p-panel-header) {
-    justify-content: center;
-    margin: 0;
-}
-
-:deep(.p-panel-header) h2 {
+.report-header h2 {
     font-size: 2rem;
     margin: 1rem;
 }

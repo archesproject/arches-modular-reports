@@ -49,6 +49,7 @@ class ProvenanceEditableReportConfigView(View):
                 graph__resourceinstance=request.GET.get("resourceId")
             )
             .select_related("graph")
+            .prefetch_related("graph__node_set", "graph__node_set__nodegroup")
             .first()
         )
 

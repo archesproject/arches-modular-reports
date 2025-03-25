@@ -78,20 +78,20 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                         if edge.rangenode.nodegroup is None:
                             graph_info["rootedges"].append(edge)
             for nodegroup in nodegroups:
-                graph_info["subgraphs"][nodegroup] = {
+                graph_info["subgraphs"][nodegroup.pk] = {
                     "edges": [],
                     "inedge": None,
                     "parentnode_nodegroup": None,
                 }
-                graph_info["subgraphs"][nodegroup]["inedge"] = (
+                graph_info["subgraphs"][nodegroup.pk]["inedge"] = (
                     models.Edge.objects.filter(rangenode_id=nodegroup.pk)
                     .select_related("domainnode__nodegroup")
                     .get()
                 )
-                graph_info["subgraphs"][nodegroup]["parentnode_nodegroup"] = graph_info[
-                    "subgraphs"
-                ][nodegroup]["inedge"].domainnode.nodegroup
-                graph_info["subgraphs"][nodegroup]["edges"] = (
+                graph_info["subgraphs"][nodegroup.pk]["parentnode_nodegroup"] = (
+                    graph_info["subgraphs"][nodegroup.pk]["inedge"].domainnode.nodegroup
+                )
+                graph_info["subgraphs"][nodegroup.pk]["edges"] = (
                     get_nodegroup_edges_by_collector_node(
                         models.Node.objects.filter(pk=nodegroup.pk)
                         .select_related("nodegroup")
@@ -210,7 +210,7 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
 
             for tile in tiles:
                 # add all the edges for a given tile/nodegroup
-                for edge in graph_info["subgraphs"][tile.nodegroup]["edges"]:
+                for edge in graph_info["subgraphs"][tile.nodegroup.pk]["edges"]:
                     domainnode = archesproject[
                         "tile/%s/node/%s" % (str(tile.pk), str(edge.domainnode_id))
                     ]
@@ -222,10 +222,10 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                 # add the edge from the parent node to this tile's root node
                 # where the tile has no parent tile, which means the domain node has no tile_id
                 if (
-                    graph_info["subgraphs"][tile.nodegroup]["parentnode_nodegroup"]
+                    graph_info["subgraphs"][tile.nodegroup.pk]["parentnode_nodegroup"]
                     is None
                 ):
-                    edge = graph_info["subgraphs"][tile.nodegroup]["inedge"]
+                    edge = graph_info["subgraphs"][tile.nodegroup.pk]["inedge"]
                     if edge.domainnode.istopnode:
                         domainnode = archesproject[
                             reverse("resources", args=[resourceinstanceid]).lstrip("/")
@@ -240,10 +240,10 @@ class JsonLdWriterWithGraphCaching(JsonLdWriter):
                 # add the edge from the parent node to this tile's root node
                 # where the tile has a parent tile
                 if (
-                    graph_info["subgraphs"][tile.nodegroup]["parentnode_nodegroup"]
+                    graph_info["subgraphs"][tile.nodegroup.pk]["parentnode_nodegroup"]
                     is not None
                 ):
-                    edge = graph_info["subgraphs"][tile.nodegroup]["inedge"]
+                    edge = graph_info["subgraphs"][tile.nodegroup.pk]["inedge"]
                     domainnode = archesproject[
                         "tile/%s/node/%s"
                         % (str(tile.parenttile_id), str(edge.domainnode_id))
