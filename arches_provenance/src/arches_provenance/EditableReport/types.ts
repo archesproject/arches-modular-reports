@@ -72,13 +72,14 @@ export interface LabelBasedTile {
     [key: string]: LabelBasedTile[] | LabelBasedNode | null;
 }
 
+// NodegroupTileDataView produces this, not label-based graph.
 export interface LabelBasedCard {
     "@has_children": boolean;
-    "@node_id": string;
     "@tile_id": string;
-    [key: string]: boolean | string | LabelBasedNode;
+    [key: string]: boolean | string | null;
 }
 
+// Child Tile report (label-based graph) produces this.
 export interface LabelBasedNode {
     "@display_value": string;
     "@node_id": string;

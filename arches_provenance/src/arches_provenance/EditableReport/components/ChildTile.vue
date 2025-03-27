@@ -37,8 +37,24 @@ const nonAliasKeys = [
     "instance_details",
     "concept_details",
 ];
-const { [childKey]: children, ...singleTileData } = data;
-let nodeAliasValuePairs: [string, LabelBasedNode][] = Object.entries(
+const magicNodeKey = "@node_id";
+const magicTileKey = "@tile_id";
+
+const { [childKey]: children, ...rest } = data;
+
+let singleTileData = {};
+if ((Object.values(rest)[0] as LabelBasedNode)["@display_value"]) {
+    singleTileData = rest;
+} else {
+    const {
+        [magicNodeKey]: _1,
+        [magicTileKey]: _2,
+        ...innerData
+    } = Object.values(rest)[0] as LabelBasedNode;
+    singleTileData = innerData as LabelBasedNode;
+}
+let nodeAliasValuePairs: [string, LabelBasedNode][] = [];
+nodeAliasValuePairs = Object.entries(
     Object.values(singleTileData)[0] ?? [],
 ).filter(
     ([nodeAlias]) =>
@@ -49,7 +65,10 @@ if (nodeAliasValuePairs.length === 0) {
     // Data-collecting parent node.
     firstAlias = Object.keys(singleTileData)[0];
     nodeAliasValuePairs = [
-        [firstAlias, singleTileData[firstAlias] as LabelBasedNode],
+        [
+            firstAlias,
+            (singleTileData as LabelBasedTile)[firstAlias] as LabelBasedNode,
+        ],
     ];
 } else {
     firstAlias = nodeAliasValuePairs[0][0];
