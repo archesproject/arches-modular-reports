@@ -257,6 +257,9 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.dummy.DummyCache",
     },
+    "rdffile": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    },
     "user_permission": {
         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
         "LOCATION": "user_permission_cache",
@@ -419,6 +422,7 @@ SHOW_LANGUAGE_SWITCH = len(LANGUAGES) > 1
 # See tests.views.search_tests.TestEsMappingModifier class for example
 # ES_MAPPING_MODIFIER_CLASSES = ["arches_provenance.search.es_mapping_modifier.EsMappingModifier"]
 
+RESOURCE_FORMATTERS["json-ld"] = "arches_provenance.formatters.json_ld.JsonLdWriterWithGraphCaching"
 
 JSON_LD_SORT = True
 JSON_LD_SORT_CLASSIFIED = {
