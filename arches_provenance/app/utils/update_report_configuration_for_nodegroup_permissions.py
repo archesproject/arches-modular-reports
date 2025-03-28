@@ -44,10 +44,11 @@ def update_report_configuration_with_nodegroup_permissions(
                     if key in config:
                         filtered = filter_list(config[key])
 
-                        if not filtered:
-                            return None
-
                         config[key] = filtered
+
+                        looks_like_data_section = "graph_slug" not in config
+                        if not filtered and looks_like_data_section:
+                            return None
 
                 if descriptor := config.get("descriptor"):
                     config["descriptor"] = filter_descriptor(descriptor)
