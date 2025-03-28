@@ -43,18 +43,14 @@ const magicTileKey = "@tile_id";
 const { [childKey]: children, ...rest } = data;
 
 let singleTileData = {};
-if ((Object.values(rest)[0] as LabelBasedNode)["@display_value"]) {
+const firstNode = Object.values(rest)[0] as LabelBasedNode;
+if (firstNode["@display_value"]) {
     singleTileData = rest;
 } else {
-    const {
-        [magicNodeKey]: _1,
-        [magicTileKey]: _2,
-        ...innerData
-    } = Object.values(rest)[0] as LabelBasedNode;
+    const { [magicNodeKey]: _1, [magicTileKey]: _2, ...innerData } = firstNode;
     singleTileData = innerData as LabelBasedNode;
 }
-let nodeAliasValuePairs: [string, LabelBasedNode][] = [];
-nodeAliasValuePairs = Object.entries(
+let nodeAliasValuePairs: [string, LabelBasedNode][] = Object.entries(
     Object.values(singleTileData)[0] ?? [],
 ).filter(
     ([nodeAlias]) =>
