@@ -375,10 +375,16 @@ RESTRICT_MEDIA_ACCESS = False
 # value and is not signed in with a user account then the request will not be allowed.
 RESTRICT_CELERY_EXPORT_FOR_ANONYMOUS_USER = False
 
+TEMPLATES[0]["OPTIONS"]["context_processors"].append(
+    "arches_provenance.app.utils.context_processors.project_settings"
+)
+
 # Dictionary containing any additional context items for customising email templates
 EXTRA_EMAIL_CONTEXT = {
     "salutation": _("Hi"),
-    "expiration":(datetime.now() + timedelta(seconds=CELERY_SEARCH_EXPORT_EXPIRES)).strftime("%A, %d %B %Y")
+    "expiration": (
+        datetime.now() + timedelta(seconds=CELERY_SEARCH_EXPORT_EXPIRES)
+    ).strftime("%A, %d %B %Y"),
 }
 
 # see https://docs.djangoproject.com/en/1.9/topics/i18n/translation/#how-django-discovers-language-preference
