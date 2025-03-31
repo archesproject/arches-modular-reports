@@ -31,12 +31,9 @@ const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
 >;
 
 const childKey = "@children";
-const nonAliasKeys = [
-    "url",
-    "url_label",
-    "instance_details",
-    "concept_details",
-];
+const nonAliasKeys =
+    ["url", "url_label", "instance_details", "concept_details"] +
+    arches.languages.map((lang: { code: string }) => lang.code);
 const magicNodeKey = "@node_id";
 const magicTileKey = "@tile_id";
 
