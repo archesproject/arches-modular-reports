@@ -135,7 +135,7 @@ function bestWidgetLabel(nodeAlias: string) {
                                 target="_blank"
                                 :href="nodeValue.url"
                             >
-                                {{ nodeValue.url_label }}
+                                {{ nodeValue.url_label || nodeValue.url }}
                             </Button>
                         </dd>
                     </template>
