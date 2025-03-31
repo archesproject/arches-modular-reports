@@ -60,7 +60,7 @@ class LabelBasedGraphWithBranchExport(LabelBasedGraph):
                 ):
 
                     label_based_node = LabelBasedNode(
-                        name=input_node["name"],
+                        name=input_node["alias"],
                         node_id=input_node["nodeid"],
                         tile_id=str(associated_tile.pk),
                         value=cls._get_display_value(
