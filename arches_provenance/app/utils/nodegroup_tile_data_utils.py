@@ -22,7 +22,6 @@ from django.db.models.functions import Cast, Concat, JSONObject
 from django.urls import get_script_prefix, reverse
 from django.utils.translation import gettext as _
 
-from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
 
 from arches_provenance.app.utils.label_based_graph_with_branch_export import (
@@ -484,11 +483,12 @@ def filter_hidden_nodes(
     raise TypeError
 
 
-def prepare_links(node, tile_values, node_display_value, request_language):
+def prepare_links(
+    node, tile_values, node_display_value, request_language, value_finder
+):
     links = []
 
     ### TEMPORARY HELPERS
-    value_finder = BaseConceptDataType()  # fetches serially, but has a cache
 
     def get_resource_labels(tiledata):
         """This is a source of N+1 queries, but we're working around the fact
