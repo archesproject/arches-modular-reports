@@ -53,6 +53,8 @@ def get_link(datatype, value_id):
         return reverse("rdm", args=[value_id])
     elif datatype in ["resource-instance", "resource-instance-list"]:
         return reverse("resource_report", args=[value_id])
+    elif datatype in ["url"]:
+        return value_id
     return ""
 
 
@@ -87,6 +89,23 @@ def build_valueid_annotation(data):
                     }
                 )
         return {"display_value": annotations}
+
+    elif datatype in ["url"]:
+        value_ids = data.get("value_ids")
+        if value_ids:
+            return {
+                "display_value": [
+                    {
+                        "label": (
+                            display_value
+                            if display_value != ""
+                            else get_link(datatype, value_ids)
+                        ),
+                        "link": get_link(datatype, value_ids),
+                    }
+                ]
+            }
+        return {"display_value": display_value}
 
     return {"display_value": display_value}
 
@@ -189,6 +208,7 @@ def get_sorted_filtered_tiles(
             or node.datatype == "concept-list"
             or node.datatype == "resource-instance"
             or node.datatype == "resource-instance-list"
+            or node.datatype == "url"
         ):
             value_ids = ArchesGetValueId(
                 F("data"), Value(node.pk), Value(user_language)
@@ -553,7 +573,11 @@ def prepare_links(node, tile_values, node_display_value, request_language):
             case "url":
                 links.append(
                     {
-                        "label": tile_val["url_label"],
+                        "label": (
+                            tile_val["url_label"]
+                            if tile_val["url_label"]
+                            else tile_val["url"]
+                        ),
                         "link": tile_val["url"],
                     }
                 )
