@@ -202,18 +202,6 @@ function rowClass(data: LabelBasedCard) {
 </script>
 
 <template>
-    <div style="display: flex; align-items: center">
-        <h3>{{ cardName }}</h3>
-
-        <Button
-            v-if="shouldShowAddButton"
-            :label="$gettext('Add %{cardName}', { cardName })"
-            icon="pi pi-plus"
-            variant="outlined"
-            style="margin: 1rem 2rem 0 2rem"
-        />
-    </div>
-
     <Message
         v-if="hasLoadingError"
         size="large"
@@ -223,16 +211,27 @@ function rowClass(data: LabelBasedCard) {
         {{ $gettext("An error occurred while fetching data.") }}
     </Message>
 
-    <Message
+    <div
         v-else-if="isEmpty"
-        size="large"
-        severity="info"
-        icon="pi pi-info-circle"
+        class="section-table"
     >
-        {{ $gettext("No data found.") }}
-    </Message>
+        <div class="p-datatable-header section-table-header">
+            <h4>{{ cardName }}</h4>
+            <Button
+                v-if="shouldShowAddButton"
+                :label="$gettext('Add %{cardName}', { cardName })"
+                icon="pi pi-plus"
+                variant="outlined"
+            />
+        </div>
+        <div class="no-data-found">
+            {{ $gettext("No data found.") }}
+        </div>
+    </div>
+
     <DataTable
         v-else
+        class="section-table"
         :value="currentlyDisplayedTableData"
         :loading="isLoading"
         :total-records="searchResultsTotalCount"
@@ -254,22 +253,29 @@ function rowClass(data: LabelBasedCard) {
         @update:sort-order="onUpdateSortOrder"
     >
         <template #header>
-            <div
-                v-if="cardinality === CARDINALITY_N"
-                style="display: flex; justify-content: flex-end"
-            >
-                <IconField style="display: flex">
-                    <InputIcon
-                        class="pi pi-search"
-                        aria-hidden="true"
-                        style="font-size: 1rem"
-                    />
-                    <InputText
-                        v-model="query"
-                        :placeholder="$gettext('Search')"
-                        :aria-label="$gettext('Search')"
-                    />
-                </IconField>
+            <div class="section-table-header">
+                <h4>{{ cardName }}</h4>
+                <Button
+                    v-if="shouldShowAddButton"
+                    :label="$gettext('Add %{cardName}', { cardName })"
+                    icon="pi pi-plus"
+                    variant="outlined"
+                />
+
+                <div class="section-table-header-functions">
+                    <IconField v-if="cardinality === CARDINALITY_N">
+                        <InputIcon
+                            class="pi pi-search"
+                            aria-hidden="true"
+                            style="font-size: 1rem"
+                        />
+                        <InputText
+                            v-model="query"
+                            :placeholder="$gettext('Search')"
+                            :aria-label="$gettext('Search')"
+                        />
+                    </IconField>
+                </div>
             </div>
         </template>
         <template #empty>
@@ -303,10 +309,9 @@ function rowClass(data: LabelBasedCard) {
                             target="_blank"
                             as="a"
                             variant="link"
+                            :label="item.label"
                             style="display: block; width: fit-content"
-                        >
-                            {{ item["label"] }}
-                        </Button>
+                        />
                     </template>
                     <template v-else>
                         {{ data[field]?.display_value }}
@@ -362,6 +367,37 @@ function rowClass(data: LabelBasedCard) {
 </template>
 
 <style scoped>
+.panel-content .section-table:not(:first-child) {
+    padding-top: 18px;
+}
+
+.section-table-header {
+    display: flex;
+    align-items: center;
+}
+
+.section-table-header h4 {
+    font-size: 1.8rem;
+}
+
+.section-table-header button {
+    margin: 0 20px;
+    padding: 3px 8px;
+}
+
+.section-table-header-functions {
+    display: flex;
+    justify-content: flex-end;
+    flex-grow: 1;
+}
+
+.no-data-found {
+    padding: var(--p-datatable-body-cell-padding);
+    border-color: var(--p-datatable-body-cell-border-color);
+    border-style: solid;
+    border-width: 0px 0 1px 0;
+}
+
 :deep(.p-datatable-column-sorted) {
     background: var(--p-datatable-header-cell-background);
 }
@@ -372,5 +408,9 @@ function rowClass(data: LabelBasedCard) {
 
 :deep(.p-paginator) {
     justify-content: end;
+}
+
+.p-button-link {
+    padding: 0;
 }
 </style>

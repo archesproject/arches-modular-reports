@@ -14,11 +14,6 @@ from arches.app.models.system_settings import settings
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.data_management.resources.formats.rdffile import JsonLdWriter
 
-from arches_provenance.app.views.provenance_report import provenance_report
-from arches_provenance.app.views.provenance_report import ProvenanceSummaryTables
-from arches_provenance.app.views.provenance_report import ProvenanceRelatedResources
-from arches_provenance.app.views.provenance_report import ProvenanceEditorView
-from arches_provenance.app.views.provenance_report import ProvenanceSourceReferences
 from arches_provenance.app.views.editable_report import (
     ChildTileDataView,
     EditableReportAwareResourceReportView,
@@ -216,27 +211,6 @@ urlpatterns = [
         r"^graph_report/(?P<resourceid>%s|())$" % uuid_regex,
         GraphResourceReportView.as_view(),
         name="resource_graph_report",
-    ),
-    re_path(
-        r"^provenance_report$", provenance_report.as_view(), name="provenance_report"
-    ),
-    re_path(
-        r"^provenance_summary_table$",
-        ProvenanceSummaryTables.as_view(),
-        name="provenance_summary_table",
-    ),
-    re_path(
-        r"^provenance_source_references$",
-        ProvenanceSourceReferences.as_view(),
-        name="provenance_source_references",
-    ),
-    re_path(
-        r"^provenance_related_resources$",
-        ProvenanceRelatedResources.as_view(),
-        name="provenance_related_resources",
-    ),
-    re_path(
-        r"^provenance_editor$", ProvenanceEditorView.as_view(), name="provenance_editor"
     ),
     path(
         "provenance_editable_report_config",

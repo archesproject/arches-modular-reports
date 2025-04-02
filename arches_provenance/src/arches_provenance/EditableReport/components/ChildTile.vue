@@ -33,7 +33,7 @@ const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
 const childKey = "@children";
 const { [childKey]: children, ...singleTileData } = data;
 const nodeAliasValuePairs: [string, LabelBasedNode][] = Object.entries(
-    Object.values(singleTileData)[0],
+    Object.values(singleTileData)[0] ?? [],
 ).filter(([nodeAlias]) => !nodeAlias.startsWith("@"));
 const firstAlias = nodeAliasValuePairs[0][0];
 
@@ -41,13 +41,20 @@ const marginUnit = 1.5;
 const marginUnitRem = `${marginUnit}rem`;
 const cardIndentation = `${2.5 + depth * marginUnit}rem`;
 
-function tileIdFromChild(child: LabelBasedTile): string {
+const visibleChildren = children.filter(
+    (child) => tileIdFromChild(child) !== null,
+);
+
+function tileIdFromChild(child: LabelBasedTile): string | null {
     const { [childKey]: _grandchildren, ...singleTileData } = child;
-    const nodegroup = singleTileData as unknown as LabelBasedNode;
-    // This will not be null since a hidden node won't have children.
-    return (Object.values(nodegroup)[0] as unknown as LabelBasedNode)[
-        "@tile_id"
-    ];
+    if (singleTileData === null) {
+        return null;
+    }
+    const firstNodeData = Object.values(singleTileData)[0];
+    if (firstNodeData === null) {
+        return null;
+    }
+    return (firstNodeData as LabelBasedNode)["@tile_id"];
 }
 
 function bestWidgetLabel(nodeAlias: string) {
@@ -66,10 +73,8 @@ function bestWidgetLabel(nodeAlias: string) {
         role="presentation"
     ></div>
     <details open="true">
-        <summary>
-            <strong>
-                {{ nodePresentationLookup?.[firstAlias].card_name }}
-            </strong>
+        <summary class="p-datatable-column-title">
+            {{ nodePresentationLookup?.[firstAlias].card_name }}
         </summary>
         <dl>
             <div
@@ -79,7 +84,9 @@ function bestWidgetLabel(nodeAlias: string) {
             >
                 <!-- nodeValue is null if this is a hidden node -->
                 <template v-if="nodeValue">
-                    <dt>{{ bestWidgetLabel(nodeAlias) }}</dt>
+                    <dt class="p-datatable-column-title">
+                        {{ bestWidgetLabel(nodeAlias) }}
+                    </dt>
                     <template v-if="nodeValue.instance_details?.length">
                         <div style="flex-direction: column">
                             <dd
@@ -128,7 +135,7 @@ function bestWidgetLabel(nodeAlias: string) {
                                 target="_blank"
                                 :href="nodeValue.url"
                             >
-                                {{ nodeValue.url_label }}
+                                {{ nodeValue.url_label || nodeValue.url }}
                             </Button>
                         </dd>
                     </template>
@@ -136,8 +143,8 @@ function bestWidgetLabel(nodeAlias: string) {
                 </template>
             </div>
             <ChildTile
-                v-for="child in children"
-                :key="tileIdFromChild(child)"
+                v-for="child in visibleChildren"
+                :key="tileIdFromChild(child) as string"
                 :divider="true"
                 :data="child"
                 :depth="depth + 1"
@@ -163,6 +170,8 @@ details {
 summary {
     /* https://github.com/twbs/bootstrap/issues/21060 */
     display: list-item;
+    margin-bottom: 10px;
+    font-size: 1.4rem;
 }
 
 dl {
@@ -177,16 +186,15 @@ dl {
 .node-pair {
     display: flex;
     width: 60%;
-    gap: 2rem;
 }
 
 .node-pair > dt {
-    width: 50%;
+    width: 40%;
     text-align: end;
+    padding-inline-end: 2rem;
 }
 
 .node-pair > dd {
-    width: 50%;
     text-align: start;
 }
 
