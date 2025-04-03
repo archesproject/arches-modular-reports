@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import arches from "arches";
 
-import { inject } from "vue";
+import { computed, inject } from "vue";
 
 import Button from "primevue/button";
 
@@ -36,44 +36,36 @@ const nonAliasKeys =
     arches.languages.map((lang: { code: string }) => lang.code);
 const magicNodeKey = "@node_id";
 const magicTileKey = "@tile_id";
-
-const { [childKey]: children, ...rest } = data;
-
-let singleTileData = {};
-const firstNode = Object.values(rest)[0] as LabelBasedNode;
-if (firstNode["@display_value"]) {
-    singleTileData = rest;
-} else {
-    const { [magicNodeKey]: _1, [magicTileKey]: _2, ...innerData } = firstNode;
-    singleTileData = innerData as LabelBasedNode;
-}
-let nodeAliasValuePairs: [string, LabelBasedNode][] = Object.entries(
-    Object.values(singleTileData)[0] ?? [],
-).filter(
-    ([nodeAlias]) =>
-        !nodeAlias.startsWith("@") && !nonAliasKeys.includes(nodeAlias),
-);
-let firstAlias = "";
-if (nodeAliasValuePairs.length === 0) {
-    // Data-collecting parent node.
-    firstAlias = Object.keys(singleTileData)[0];
-    nodeAliasValuePairs = [
-        [
-            firstAlias,
-            (singleTileData as LabelBasedTile)[firstAlias] as LabelBasedNode,
-        ],
-    ];
-} else {
-    firstAlias = nodeAliasValuePairs[0][0];
-}
-
 const marginUnit = 1.5;
 const marginUnitRem = `${marginUnit}rem`;
 const cardIndentation = `${2.5 + depth * marginUnit}rem`;
 
-const visibleChildren = children.filter(
-    (child) => tileIdFromChild(child) !== null,
-);
+const singleTileData = computed(() => {
+    const { [childKey]: _children, ...rest } = data;
+    const firstNode = Object.values(rest)[0] as LabelBasedNode;
+    if (firstNode["@display_value"]) {
+        return rest;
+    } else {
+        const {
+            [magicNodeKey]: _1,
+            [magicTileKey]: _2,
+            ...innerData
+        } = firstNode;
+        return innerData as LabelBasedNode;
+    }
+});
+
+const nodeAliasValuePairs = computed(() => {
+    return Object.entries(singleTileData.value).filter(
+        ([nodeAlias]) =>
+            !nodeAlias.startsWith("@") && !nonAliasKeys.includes(nodeAlias),
+    );
+});
+
+const visibleChildren = computed(() => {
+    const { [childKey]: children } = data;
+    return children.filter((child) => tileIdFromChild(child) !== null);
+});
 
 function tileIdFromChild(child: LabelBasedTile): string | null {
     const { [childKey]: _grandchildren, ...singleTileData } = child;
@@ -104,7 +96,7 @@ function bestWidgetLabel(nodeAlias: string) {
     ></div>
     <details open="true">
         <summary class="p-datatable-column-title">
-            {{ nodePresentationLookup?.[firstAlias].card_name }}
+            {{ nodePresentationLookup?.[nodeAliasValuePairs[0][0]].card_name }}
         </summary>
         <dl>
             <div
