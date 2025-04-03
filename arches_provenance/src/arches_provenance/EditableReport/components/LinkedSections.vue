@@ -82,7 +82,8 @@ onMounted(async () => {
                 v-for="linked_section in linkedSections"
                 :key="linked_section.name"
                 :label="linked_section.name"
-                variant="outlined"
+                variant="link"
+                as="a"
                 @click="scrollToSection(linked_section)"
             />
         </div>
@@ -102,7 +103,7 @@ onMounted(async () => {
                 <template #icons>
                     <Button
                         class="back-to-top"
-                        icon="pi pi-home"
+                        icon="pi pi-arrow-circle-up"
                         severity="secondary"
                         variant="text"
                         :aria-label="$gettext('back to top')"
@@ -137,11 +138,8 @@ onMounted(async () => {
 .linked-section-button-container {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     width: 100%;
-    background-color: var(--p-content-background);
-    padding: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px 0px;
     gap: 10px;
 }
 
@@ -155,7 +153,15 @@ button.back-to-top {
     padding: 10px;
 }
 
+:deep(button.back-to-top span.pi) {
+    font-size: 1.2rem;
+}
+
 .linked-section-container .p-panel:not(:last-child) {
     margin-bottom: 1.5rem;
+}
+
+.linked-section-container h3 {
+    margin: 10px 0px;
 }
 </style>
