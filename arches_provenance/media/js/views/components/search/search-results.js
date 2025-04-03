@@ -71,7 +71,7 @@ define([
                         }
                     }, this);
                 }
-                
+
                 this.bulkResourceReportCache = ko.observable({});
                 this.bulkDisambiguatedResourceInstanceCache = ko.observable({});
                 this.shiftFocus = ariaUtils.shiftFocus;
@@ -322,6 +322,8 @@ define([
                                     result._source.graph_id,
                                 ),
                                 point: point,
+                                reportUrl:arches.urls.resource_report+result._source.resourceinstanceid,
+                                editUrl:arches.urls.resource_editor+result._source.resourceinstanceid,
                                 mapLinkClicked: function () {
                                     self.selectedResourceId(
                                         result._source.resourceinstanceid,
