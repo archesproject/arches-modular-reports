@@ -22,9 +22,7 @@ from django.db.models.functions import Cast, Concat, JSONObject
 from django.urls import get_script_prefix, reverse
 from django.utils.translation import gettext as _
 
-from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
-from arches.app.models.tile import Tile
 
 from arches_provenance.app.utils.label_based_graph_with_branch_export import (
     LabelBasedGraphWithBranchExport,
@@ -54,6 +52,8 @@ def get_link(datatype, value_id):
         return reverse("rdm", args=[value_id])
     elif datatype in ["resource-instance", "resource-instance-list"]:
         return reverse("resource_report", args=[value_id])
+    elif datatype in ["url"]:
+        return value_id
     return ""
 
 
@@ -88,6 +88,23 @@ def build_valueid_annotation(data):
                     }
                 )
         return {"display_value": annotations}
+
+    elif datatype in ["url"]:
+        value_ids = data.get("value_ids")
+        if value_ids:
+            return {
+                "display_value": [
+                    {
+                        "label": (
+                            display_value
+                            if display_value != ""
+                            else get_link(datatype, value_ids)
+                        ),
+                        "link": get_link(datatype, value_ids),
+                    }
+                ]
+            }
+        return {"display_value": display_value}
 
     return {"display_value": display_value}
 
@@ -172,7 +189,7 @@ def get_sorted_filtered_tiles(
     )
 
     if not nodes:
-        return Tile.objects.none()
+        return models.TileModel.objects.none()
 
     field_annotations = {}
     alias_annotations = {}
@@ -190,6 +207,7 @@ def get_sorted_filtered_tiles(
             or node.datatype == "concept-list"
             or node.datatype == "resource-instance"
             or node.datatype == "resource-instance-list"
+            or node.datatype == "url"
         ):
             value_ids = ArchesGetValueId(
                 F("data"), Value(node.pk), Value(user_language)
@@ -209,7 +227,7 @@ def get_sorted_filtered_tiles(
         display_values_with_spaces.append(Value(" "))
 
     tiles = (
-        Tile.objects.filter(
+        models.TileModel.objects.filter(
             resourceinstance_id=resourceinstanceid, nodegroup_id=nodes[0].nodegroup_id
         )
         .annotate(**field_annotations)
@@ -465,11 +483,12 @@ def filter_hidden_nodes(
     raise TypeError
 
 
-def prepare_links(node, tile_values, node_display_value, request_language):
+def prepare_links(
+    node, tile_values, node_display_value, request_language, value_finder
+):
     links = []
 
     ### TEMPORARY HELPERS
-    value_finder = BaseConceptDataType()  # fetches serially, but has a cache
 
     def get_resource_labels(tiledata):
         """This is a source of N+1 queries, but we're working around the fact
@@ -479,12 +498,16 @@ def prepare_links(node, tile_values, node_display_value, request_language):
         TODO: graduate from the PG function to ORM expressions?
         """
         nonlocal request_language
-        ordered_ids = [innerTileVal["resourceId"] for innerTileVal in tiledata]
+        ordered_ids = [UUID(innerTileVal["resourceId"]) for innerTileVal in tiledata]
         resources = models.ResourceInstance.objects.filter(pk__in=ordered_ids).in_bulk()
         return [
-            resources[UUID(res_id)]
-            .descriptors.get(request_language, {})
-            .get("name", _("Undefined"))
+            (
+                resources[res_id]
+                .descriptors.get(request_language, {})
+                .get("name", _("Undefined"))
+                if res_id in resources
+                else _("Undefined")
+            )
             for res_id in ordered_ids
         ]
 
@@ -550,7 +573,11 @@ def prepare_links(node, tile_values, node_display_value, request_language):
             case "url":
                 links.append(
                     {
-                        "label": tile_val["url_label"],
+                        "label": (
+                            tile_val["url_label"]
+                            if tile_val["url_label"]
+                            else tile_val["url"]
+                        ),
                         "link": tile_val["url"],
                     }
                 )
@@ -567,8 +594,19 @@ def prepare_links(node, tile_values, node_display_value, request_language):
     return links
 
 
-def array_from_string(input_str):
+def is_number(s):
     try:
-        return json.loads(input_str)
-    except json.JSONDecodeError:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
+def array_from_string(input_str):
+    if is_number(input_str):
         return [input_str]
+    else:
+        try:
+            return json.loads(input_str)
+        except json.JSONDecodeError:
+            return [input_str]

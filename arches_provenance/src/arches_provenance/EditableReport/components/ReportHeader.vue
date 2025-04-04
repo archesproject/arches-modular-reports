@@ -3,9 +3,10 @@ import { computed, inject, onMounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Message from "primevue/message";
-import Panel from "primevue/panel";
+import Card from "primevue/card";
 
 import { fetchNodeTileData } from "@/arches_provenance/EditableReport/api.ts";
+import { truncateDisplayData } from "@/arches_provenance/EditableReport/utils.ts";
 
 import type { Ref } from "vue";
 import type {
@@ -31,6 +32,13 @@ const descriptorAliases = computed(() => {
     ];
 });
 
+const maxTileLimit = computed(() => {
+    const limits = props.component.config.descriptor.node_alias_options?.map(
+        (option: { limit?: number; separator?: string }) => option.limit,
+    );
+    return Math.max(limits) || 1;
+});
+
 const descriptor = computed(() => {
     if (!displayDataByAlias.value) {
         return null;
@@ -39,13 +47,17 @@ const descriptor = computed(() => {
     let returnVal = props.component.config.descriptor;
 
     descriptorAliases.value.forEach((alias: string) => {
-        // Drill into first tile.
-        const displayData = displayDataByAlias.value![alias][0];
-        if (displayData?.display_values.length) {
-            // Drill into first display value. (e.g. first concept in concept-list)
-            const firstValue = displayData.display_values[0];
-            returnVal = returnVal.replace(`<${alias}>`, firstValue);
-        }
+        const options = props.component.config.node_alias_options?.[alias];
+        const limit = options?.limit ?? 1;
+        const separator = options?.separator ?? ", ";
+        const truncatedDisplayValues = truncateDisplayData(
+            displayDataByAlias.value![alias],
+            limit,
+        ).flatMap((data) => data.display_values);
+        returnVal = returnVal.replace(
+            `<${alias}>`,
+            truncatedDisplayValues.join(separator),
+        );
     });
 
     returnVal =
@@ -62,7 +74,7 @@ async function fetchData() {
         displayDataByAlias.value = await fetchNodeTileData(
             resourceInstanceId,
             descriptorAliases.value,
-            1,
+            maxTileLimit.value,
         );
         hasLoadingError.value = false;
     } catch {
@@ -74,8 +86,8 @@ onMounted(fetchData);
 </script>
 
 <template>
-    <Panel style="border: 0; border-radius: 0">
-        <template #header>
+    <Card class="report-header">
+        <template #content>
             <h2>{{ descriptor }}</h2>
         </template>
         <Message
@@ -85,16 +97,20 @@ onMounted(fetchData);
         >
             {{ $gettext("Unable to fetch resource") }}
         </Message>
-    </Panel>
+    </Card>
 </template>
 
 <style scoped>
-:deep(.p-panel-header) {
-    justify-content: center;
-    margin: 0;
+.report-header {
+    border: 0;
+    border-radius: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: unset;
 }
 
-:deep(.p-panel-header) h2 {
+.report-header h2 {
     font-size: 2rem;
     margin: 1rem;
 }

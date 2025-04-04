@@ -28,10 +28,56 @@ const EditableReportPreset = definePreset(Aura, {
             rowToggleButton: {
                 size: '2.5rem',
             },
+            colorScheme: {  
+                light: { 
+                    header: {
+                        cell: {
+                            background: '{surface-50}',
+                            hover: {
+                                background: '{surface-200}'
+                            }
+                        }
+                    }
+                },
+                dark: {
+                    header: {
+                        cell: {
+                            background: '{surface-800}',
+                            hover: {
+                                background: '{surface-700}'
+                            }
+                        }
+                    }
+                }
+            }
         },
         toast: {
             summary: { fontSize: '1.5rem' },
             detail: { fontSize: '1.25rem' },
+        },
+        tabs: {
+            colorScheme: {  
+                light: { 
+                    tabpanel: {
+                        background: '{surface-100}',
+                    }
+                },
+                dark: {
+                    tabpanel: {
+                        background: '{surface-800}',
+                    }
+                }
+            }
+        },
+        card: {
+            colorScheme: {  
+                light: { 
+                    background: '{surface-100}'
+                },
+                dark: {
+                    background: '{surface-800}'
+                }
+            }
         },
         // custom button tokens and additional style
         button: {

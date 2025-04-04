@@ -13,9 +13,6 @@
     font-weight: 700; 
     z-index:10000;
 }
-.machine-banner:before{
-    content: "STAGING"
-}
 
 div.rp-report-tile dl a[href] {
     color: blue;
