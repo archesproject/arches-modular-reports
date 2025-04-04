@@ -29,8 +29,8 @@
                         "en": "Occurs After Event"
                     },
                     "nodegroup_id": "09711b1e-e2e1-11ea-9fb6-0a1706e75f30",
-                    "sortorder": null,
-                    "visible": true
+                    "sortorder": 12,
+                    "visible": false
                 },
                 {
                     "active": true,
@@ -84,11 +84,11 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "Name for Statement about Activity"
+                        "en": "Name for Statement"
                     },
                     "nodegroup_id": "2904233d-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 1,
-                    "visible": true
+                    "visible": false
                 },
                 {
                     "active": true,
@@ -142,11 +142,11 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "Name for Duration of TimeSpan of Activity"
+                        "en": "Name for Duration of Timespan of Activity"
                     },
                     "nodegroup_id": "2dda4c07-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 0,
-                    "visible": true
+                    "visible": false
                 },
                 {
                     "active": true,
@@ -171,7 +171,7 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "Name for Statement about TimeSpan  of Activity"
+                        "en": "Name for Statement about Timespan of Activity"
                     },
                     "nodegroup_id": "2dda4c0a-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 1,
@@ -200,11 +200,11 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "Duration of Time Span of Activity"
+                        "en": "Duration of Timespan of Activity"
                     },
                     "nodegroup_id": "2dda4c0d-ddb7-11eb-ba14-0a9473e82189",
-                    "sortorder": null,
-                    "visible": true
+                    "sortorder": 1,
+                    "visible": false
                 },
                 {
                     "active": true,
@@ -229,7 +229,7 @@
                     },
                     "is_editable": false,
                     "name": {
-                        "en": "TimeSpan of Activity"
+                        "en": "Timespan of Activity"
                     },
                     "nodegroup_id": "2dda4c10-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 4,
@@ -258,11 +258,11 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "Statement about Time Span of Activity"
+                        "en": "Statement about Timespan of Activity"
                     },
                     "nodegroup_id": "2dda4c13-ddb7-11eb-ba14-0a9473e82189",
-                    "sortorder": null,
-                    "visible": true
+                    "sortorder": 2,
+                    "visible": false
                 },
                 {
                     "active": true,
@@ -287,10 +287,10 @@
                     },
                     "is_editable": false,
                     "name": {
-                        "en": "Name for Time Span of Activity"
+                        "en": "Name for Timespan of Activity"
                     },
                     "nodegroup_id": "2dda4c16-ddb7-11eb-ba14-0a9473e82189",
-                    "sortorder": null,
+                    "sortorder": 0,
                     "visible": true
                 },
                 {
@@ -316,7 +316,7 @@
                     },
                     "is_editable": false,
                     "name": {
-                        "en": "Activity Part"
+                        "en": "Part of Activity"
                     },
                     "nodegroup_id": "4ad60948-c059-11ea-b689-3af9d3b32b71",
                     "sortorder": 8,
@@ -345,7 +345,7 @@
                     },
                     "is_editable": false,
                     "name": {
-                        "en": "Set of Objects used in Activity"
+                        "en": "Set Used"
                     },
                     "nodegroup_id": "83cd2f52-bfae-11ea-a62b-3af9d3b32b71",
                     "sortorder": 5,
@@ -374,7 +374,7 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "LAP.036_Data_Assignment"
+                        "en": "Name of Activity Part Data Assignment "
                     },
                     "nodegroup_id": "8852e51b-185d-11ef-9196-c58946ffc07f",
                     "sortorder": 1,
@@ -403,7 +403,7 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "LAP.036_Data_Assignment"
+                        "en": "Timespan of Activity Part Data Assignment"
                     },
                     "nodegroup_id": "8852e51d-185d-11ef-9196-c58946ffc07f",
                     "sortorder": 0,
@@ -432,10 +432,10 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "LAP.036_Data_Assignment"
+                        "en": "Name of Timespan of Activity Part Data Assignment"
                     },
                     "nodegroup_id": "8852e51f-185d-11ef-9196-c58946ffc07f",
-                    "sortorder": 1,
+                    "sortorder": 0,
                     "visible": true
                 },
                 {
@@ -461,7 +461,7 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "LAP.036_Data_Assignment"
+                        "en": "Name of Statement about Timespan of Activity Part Data Assignment"
                     },
                     "nodegroup_id": "8852e521-185d-11ef-9196-c58946ffc07f",
                     "sortorder": 1,
@@ -490,7 +490,7 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "LAP.036_Data_Assignment"
+                        "en": "Statement about Timespan of Activity Part Data Assignment"
                     },
                     "nodegroup_id": "8852e523-185d-11ef-9196-c58946ffc07f",
                     "sortorder": 2,
@@ -517,11 +517,11 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "activity_part_data_assignment"
+                        "en": "Activity Part Data Assignment"
                     },
                     "nodegroup_id": "8852e525-185d-11ef-9196-c58946ffc07f",
-                    "sortorder": null,
-                    "visible": true
+                    "sortorder": 3,
+                    "visible": false
                 },
                 {
                     "active": true,
@@ -546,7 +546,7 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "LAP.036_Data_Assignment"
+                        "en": "Name of Duration of Timespan of Activity Part Data Assignment"
                     },
                     "nodegroup_id": "8852e527-185d-11ef-9196-c58946ffc07f",
                     "sortorder": 0,
@@ -575,10 +575,10 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "LAP.036_Data_Assignment"
+                        "en": "Duration of Timespan of Activity Part Data Assignment"
                     },
                     "nodegroup_id": "8852e529-185d-11ef-9196-c58946ffc07f",
-                    "sortorder": 0,
+                    "sortorder": 1,
                     "visible": true
                 },
                 {
@@ -662,10 +662,10 @@
                     },
                     "is_editable": false,
                     "name": {
-                        "en": "Activity Label"
+                        "en": "Label of Activity"
                     },
                     "nodegroup_id": "b2cd5e4a-bfad-11ea-a62b-3af9d3b32b71",
-                    "sortorder": 12,
+                    "sortorder": 13,
                     "visible": false
                 },
                 {
@@ -723,8 +723,8 @@
                         "en": "Name for Activity Part"
                     },
                     "nodegroup_id": "c47f4ed9-ddba-11eb-ba14-0a9473e82189",
-                    "sortorder": 0,
-                    "visible": true
+                    "sortorder": 1,
+                    "visible": false
                 },
                 {
                     "active": true,
@@ -753,7 +753,7 @@
                     },
                     "nodegroup_id": "df85e440-c762-11ea-921e-3af9d3b32b71",
                     "sortorder": 11,
-                    "visible": true
+                    "visible": false
                 },
                 {
                     "active": true,
@@ -807,7 +807,7 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "Name for Duration of TimeSpan of Activity Part"
+                        "en": "Name for Duration of Timespan of Part"
                     },
                     "nodegroup_id": "ed262795-ddba-11eb-ba14-0a9473e82189",
                     "sortorder": 0,
@@ -836,7 +836,7 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "Name for Statement about TimeSpan of Activity Part"
+                        "en": "Name for Statement about Timespan of Part"
                     },
                     "nodegroup_id": "ed262798-ddba-11eb-ba14-0a9473e82189",
                     "sortorder": 1,
@@ -865,10 +865,10 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "Duration of Time Span of Activity Part"
+                        "en": "Duration of Timespan of Part"
                     },
                     "nodegroup_id": "ed26279b-ddba-11eb-ba14-0a9473e82189",
-                    "sortorder": null,
+                    "sortorder": 1,
                     "visible": true
                 },
                 {
@@ -894,11 +894,11 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "Time Span of Activity Part"
+                        "en": "Timespan of Part"
                     },
                     "nodegroup_id": "ed26279e-ddba-11eb-ba14-0a9473e82189",
-                    "sortorder": 5,
-                    "visible": true
+                    "sortorder": 0,
+                    "visible": false
                 },
                 {
                     "active": true,
@@ -923,10 +923,10 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "Statement about Time Span of Activity Part"
+                        "en": "Statement about Timespan of Part"
                     },
                     "nodegroup_id": "ed2627a1-ddba-11eb-ba14-0a9473e82189",
-                    "sortorder": null,
+                    "sortorder": 2,
                     "visible": true
                 },
                 {
@@ -952,10 +952,10 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "Name for Time Span of Activity Part"
+                        "en": "Name for Timespan of Part"
                     },
                     "nodegroup_id": "ed2627a4-ddba-11eb-ba14-0a9473e82189",
-                    "sortorder": null,
+                    "sortorder": 0,
                     "visible": true
                 },
                 {
@@ -981,7 +981,7 @@
                     },
                     "is_editable": true,
                     "name": {
-                        "en": "Name for Statement about Activity Part"
+                        "en": "Name for Statement  about Activity Part"
                     },
                     "nodegroup_id": "f7ad0e3b-ddba-11eb-ba14-0a9473e82189",
                     "sortorder": 1,
@@ -1013,8 +1013,8 @@
                         "en": "Statement about Activity Part"
                     },
                     "nodegroup_id": "f7ad0e3e-ddba-11eb-ba14-0a9473e82189",
-                    "sortorder": 3,
-                    "visible": true
+                    "sortorder": 2,
+                    "visible": false
                 },
                 {
                     "active": true,
@@ -1287,7 +1287,7 @@
                         "en": "Statement Label"
                     },
                     "node_id": "29042343-ddb7-11eb-ba14-0a9473e82189",
-                    "sortorder": 4,
+                    "sortorder": 5,
                     "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000001"
                 },
@@ -1363,7 +1363,7 @@
                     },
                     "node_id": "29042349-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 3,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
                 {
@@ -1467,7 +1467,7 @@
                     },
                     "node_id": "2dda4c24-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 2,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
                 {
@@ -1511,7 +1511,7 @@
                     },
                     "node_id": "2dda4c26-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 1,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000004"
                 },
                 {
@@ -1546,7 +1546,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Time Span Label",
+                        "label": "Timespan Label",
                         "maxLength": null,
                         "placeholder": {
                             "en": "Enter text"
@@ -1556,11 +1556,11 @@
                     },
                     "id": "2dda4c3c-ddb7-11eb-ba14-0a9473e82189",
                     "label": {
-                        "en": "Time Span Label"
+                        "en": "Timespan Label"
                     },
                     "node_id": "2dda4c2f-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 5,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000001"
                 },
                 {
@@ -1580,7 +1580,7 @@
                     },
                     "node_id": "2dda4c2e-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 2,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000004"
                 },
                 {
@@ -1590,7 +1590,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Time Span Type",
+                        "label": "Timespan Type",
                         "options": [],
                         "placeholder": {
                             "en": "Select an option"
@@ -1598,11 +1598,11 @@
                     },
                     "id": "2dda4c3e-ddb7-11eb-ba14-0a9473e82189",
                     "label": {
-                        "en": "Time Span Type"
+                        "en": "Timespan Type"
                     },
                     "node_id": "2dda4c32-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 4,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
                 {
@@ -1651,7 +1651,7 @@
                     },
                     "node_id": "2dda4c1e-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 3,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000001"
                 },
                 {
@@ -1680,7 +1680,7 @@
                     },
                     "node_id": "2dda4c2a-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 0,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000001"
                 },
                 {
@@ -1702,7 +1702,7 @@
                     },
                     "node_id": "2dda4c1c-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 1,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
                 {
@@ -1724,7 +1724,7 @@
                     },
                     "node_id": "2dda4c1f-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 2,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
                 {
@@ -1852,7 +1852,7 @@
                     },
                     "node_id": "2dda4c1b-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 4,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
                 {
@@ -1881,7 +1881,7 @@
                     },
                     "node_id": "2dda4c35-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 5,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000001"
                 },
                 {
@@ -1917,7 +1917,7 @@
                     },
                     "node_id": "2dda4c2d-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 0,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000008"
                 },
                 {
@@ -1953,7 +1953,7 @@
                     },
                     "node_id": "2dda4c2b-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 1,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000008"
                 },
                 {
@@ -1989,7 +1989,7 @@
                     },
                     "node_id": "2dda4c34-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 2,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000008"
                 },
                 {
@@ -2011,7 +2011,7 @@
                     },
                     "node_id": "2dda4c2c-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 3,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
                 {
@@ -2050,7 +2050,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Statement Type MetaType",
+                        "label": "Statement Type Metatype",
                         "options": [],
                         "placeholder": {
                             "en": "Select an option"
@@ -2058,7 +2058,7 @@
                     },
                     "id": "2dda4c4f-ddb7-11eb-ba14-0a9473e82189",
                     "label": {
-                        "en": "Statement Type MetaType"
+                        "en": "Statement Type Metatype"
                     },
                     "node_id": "2dda4c28-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 3,
@@ -2138,7 +2138,7 @@
                     "node_id": "2dda4c30-ddb7-11eb-ba14-0a9473e82189",
                     "sortorder": 0,
                     "visible": true,
-                    "widget_id": "10000000-0000-0000-0000-000000000001"
+                    "widget_id": "10000000-0000-0000-0000-000000000005"
                 },
                 {
                     "card_id": "920c3418-c76b-11ea-a79d-3af9d3b32b71",
@@ -2147,19 +2147,19 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Source Document",
+                        "label": "Source Reference",
                         "placeholder": {
                             "en": ""
                         }
                     },
                     "id": "43fab0aa-c84d-11ea-9c7e-3af9d3b32b71",
                     "label": {
-                        "en": "Source Document"
+                        "en": "Source Reference"
                     },
                     "node_id": "920c0c18-c76b-11ea-a79d-3af9d3b32b71",
                     "sortorder": 0,
                     "visible": true,
-                    "widget_id": "31f3728c-7613-11e7-a139-784f435179ea"
+                    "widget_id": "ff3c400a-76ec-11e7-a793-784f435179ea"
                 },
                 {
                     "card_id": "df860d26-c762-11ea-921e-3af9d3b32b71",
@@ -2180,7 +2180,7 @@
                     },
                     "node_id": "36a7adf8-c763-11ea-921e-3af9d3b32b71",
                     "sortorder": 1,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
                 {
@@ -2205,7 +2205,7 @@
                     },
                     "node_id": "df85e440-c762-11ea-921e-3af9d3b32b71",
                     "sortorder": 0,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "ca0c43ff-af73-4349-bafd-53ff9f22eebd"
                 },
                 {
@@ -2248,7 +2248,7 @@
                     },
                     "node_id": "4ad61aa0-c059-11ea-b689-3af9d3b32b71",
                     "sortorder": 1,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "ff3c400a-76ec-11e7-a793-784f435179ea"
                 },
                 {
@@ -2319,6 +2319,27 @@
                     },
                     "node_id": "09711b1e-e2e1-11ea-9fb6-0a1706e75f30",
                     "sortorder": 0,
+                    "visible": false,
+                    "widget_id": "ff3c400a-76ec-11e7-a793-784f435179ea"
+                },
+                {
+                    "card_id": "29042342-ddb7-11eb-ba14-0a9473e82189",
+                    "config": {
+                        "defaultResourceInstance": [],
+                        "i18n_properties": [
+                            "placeholder"
+                        ],
+                        "label": "Statement Source",
+                        "placeholder": {
+                            "en": ""
+                        }
+                    },
+                    "id": "7c8ef801-5b5f-464d-9fe6-351052f79a75",
+                    "label": {
+                        "en": "Statement Source"
+                    },
+                    "node_id": "93a6b010-ebf3-11ec-b195-0a9473e82189",
+                    "sortorder": 4,
                     "visible": true,
                     "widget_id": "ff3c400a-76ec-11e7-a793-784f435179ea"
                 },
@@ -2338,7 +2359,7 @@
                         "en": "Earliest End Date"
                     },
                     "node_id": "8852e532-185d-11ef-9196-c58946ffc07f",
-                    "sortorder": 3,
+                    "sortorder": 2,
                     "visible": true,
                     "widget_id": "10000000-0000-0000-0000-000000000004"
                 },
@@ -2349,7 +2370,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Time Span Label",
+                        "label": "Timespan Label",
                         "maxLength": null,
                         "placeholder": {
                             "en": "Enter text"
@@ -2359,7 +2380,7 @@
                     },
                     "id": "8852e553-185d-11ef-9196-c58946ffc07f",
                     "label": {
-                        "en": "Time Span Label"
+                        "en": "Timespan Label"
                     },
                     "node_id": "8852e52d-185d-11ef-9196-c58946ffc07f",
                     "sortorder": 5,
@@ -2382,7 +2403,7 @@
                         "en": "Latest End Date"
                     },
                     "node_id": "8852e52c-185d-11ef-9196-c58946ffc07f",
-                    "sortorder": 4,
+                    "sortorder": 3,
                     "visible": true,
                     "widget_id": "10000000-0000-0000-0000-000000000004"
                 },
@@ -2402,7 +2423,7 @@
                         "en": "Latest Start Date"
                     },
                     "node_id": "8852e53a-185d-11ef-9196-c58946ffc07f",
-                    "sortorder": 2,
+                    "sortorder": 1,
                     "visible": true,
                     "widget_id": "10000000-0000-0000-0000-000000000004"
                 },
@@ -2413,7 +2434,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Time Span Type",
+                        "label": "Timespan Type",
                         "options": [],
                         "placeholder": {
                             "en": "Select an option"
@@ -2421,10 +2442,10 @@
                     },
                     "id": "8852e556-185d-11ef-9196-c58946ffc07f",
                     "label": {
-                        "en": "Time Span Type"
+                        "en": "Timespan Type"
                     },
                     "node_id": "8852e534-185d-11ef-9196-c58946ffc07f",
-                    "sortorder": 0,
+                    "sortorder": 4,
                     "visible": true,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
@@ -2444,7 +2465,7 @@
                         "en": "Earliest Start Date"
                     },
                     "node_id": "8852e544-185d-11ef-9196-c58946ffc07f",
-                    "sortorder": 1,
+                    "sortorder": 0,
                     "visible": true,
                     "widget_id": "10000000-0000-0000-0000-000000000004"
                 },
@@ -2521,7 +2542,7 @@
                         ],
                         "label": "Assigner",
                         "placeholder": {
-                            "en": null
+                            "en": ""
                         }
                     },
                     "id": "8852e55b-185d-11ef-9196-c58946ffc07f",
@@ -2529,7 +2550,7 @@
                         "en": "Assigner"
                     },
                     "node_id": "8852e54e-185d-11ef-9196-c58946ffc07f",
-                    "sortorder": 1,
+                    "sortorder": 0,
                     "visible": true,
                     "widget_id": "ff3c400a-76ec-11e7-a793-784f435179ea"
                 },
@@ -2551,7 +2572,7 @@
                         "en": "Data Assignment Type"
                     },
                     "node_id": "8852e53e-185d-11ef-9196-c58946ffc07f",
-                    "sortorder": 0,
+                    "sortorder": 1,
                     "visible": true,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
@@ -2632,7 +2653,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Name Content",
+                        "label": "Name ",
                         "maxLength": null,
                         "placeholder": {
                             "en": "Enter text"
@@ -2642,7 +2663,7 @@
                     },
                     "id": "8852e560-185d-11ef-9196-c58946ffc07f",
                     "label": {
-                        "en": "Name Content"
+                        "en": "Name "
                     },
                     "node_id": "8852e531-185d-11ef-9196-c58946ffc07f",
                     "sortorder": 0,
@@ -2753,7 +2774,7 @@
                             "prefix",
                             "suffix"
                         ],
-                        "label": "Value",
+                        "label": "Duration Value",
                         "max": "",
                         "min": "",
                         "placeholder": {
@@ -2772,7 +2793,7 @@
                     },
                     "id": "8852e564-185d-11ef-9196-c58946ffc07f",
                     "label": {
-                        "en": "Value"
+                        "en": "Duration Value"
                     },
                     "node_id": "8852e547-185d-11ef-9196-c58946ffc07f",
                     "sortorder": 0,
@@ -2810,7 +2831,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Unit",
+                        "label": "Duration Unit",
                         "options": [],
                         "placeholder": {
                             "en": "Select an option"
@@ -2818,7 +2839,7 @@
                     },
                     "id": "8852e566-185d-11ef-9196-c58946ffc07f",
                     "label": {
-                        "en": "Unit"
+                        "en": "Duration Unit"
                     },
                     "node_id": "8852e546-185d-11ef-9196-c58946ffc07f",
                     "sortorder": 3,
@@ -3140,7 +3161,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Statement Type MetaType",
+                        "label": "Statement Type Metatype",
                         "options": [],
                         "placeholder": {
                             "en": "Select an option"
@@ -3148,10 +3169,10 @@
                     },
                     "id": "8852e574-185d-11ef-9196-c58946ffc07f",
                     "label": {
-                        "en": "Statement Type MetaType"
+                        "en": "Statement Type Metatype"
                     },
                     "node_id": "8852e536-185d-11ef-9196-c58946ffc07f",
-                    "sortorder": 3,
+                    "sortorder": 2,
                     "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000002"
                 },
@@ -3221,7 +3242,7 @@
                         "en": "Statement Language"
                     },
                     "node_id": "8852e539-185d-11ef-9196-c58946ffc07f",
-                    "sortorder": 2,
+                    "sortorder": 3,
                     "visible": true,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
@@ -3307,14 +3328,14 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Place",
+                        "label": "Location",
                         "placeholder": {
                             "en": ""
                         }
                     },
                     "id": "c478f1e2-c6a9-11ea-a229-3af9d3b32b71",
                     "label": {
-                        "en": "Place"
+                        "en": "Location"
                     },
                     "node_id": "e64f839c-bfad-11ea-a62b-3af9d3b32b71",
                     "sortorder": 0,
@@ -3476,14 +3497,14 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Set",
+                        "label": "Set Used",
                         "placeholder": {
                             "en": ""
                         }
                     },
                     "id": "ddf7ee82-c6c9-11ea-b614-3af9d3b32b71",
                     "label": {
-                        "en": "Set"
+                        "en": "Set Used"
                     },
                     "node_id": "83cd2f52-bfae-11ea-a62b-3af9d3b32b71",
                     "sortorder": 0,
@@ -3648,7 +3669,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Time Span Label",
+                        "label": "Timespan Label",
                         "maxLength": null,
                         "placeholder": {
                             "en": "Enter text"
@@ -3658,7 +3679,7 @@
                     },
                     "id": "ed2627ca-ddba-11eb-ba14-0a9473e82189",
                     "label": {
-                        "en": "Time Span Label"
+                        "en": "Timespan Label"
                     },
                     "node_id": "ed2627bd-ddba-11eb-ba14-0a9473e82189",
                     "sortorder": 5,
@@ -3692,7 +3713,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Time Span Type",
+                        "label": "Timespan Type",
                         "options": [],
                         "placeholder": {
                             "en": "Select an option"
@@ -3700,7 +3721,7 @@
                     },
                     "id": "ed2627cc-ddba-11eb-ba14-0a9473e82189",
                     "label": {
-                        "en": "Time Span Type"
+                        "en": "Timespan Type"
                     },
                     "node_id": "ed2627c0-ddba-11eb-ba14-0a9473e82189",
                     "sortorder": 4,
@@ -3996,7 +4017,7 @@
                             "prefix",
                             "suffix"
                         ],
-                        "label": "Value",
+                        "label": "Duration Value",
                         "max": "",
                         "min": "",
                         "placeholder": {
@@ -4015,7 +4036,7 @@
                     },
                     "id": "ed2627d8-ddba-11eb-ba14-0a9473e82189",
                     "label": {
-                        "en": "Value"
+                        "en": "Duration Value"
                     },
                     "node_id": "ed2627bb-ddba-11eb-ba14-0a9473e82189",
                     "sortorder": 0,
@@ -4101,7 +4122,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Unit",
+                        "label": "Duration Unit",
                         "options": [],
                         "placeholder": {
                             "en": "Select an option"
@@ -4109,7 +4130,7 @@
                     },
                     "id": "ed2627db-ddba-11eb-ba14-0a9473e82189",
                     "label": {
-                        "en": "Unit"
+                        "en": "Duration Unit"
                     },
                     "node_id": "ed2627ba-ddba-11eb-ba14-0a9473e82189",
                     "sortorder": 3,
@@ -4163,7 +4184,7 @@
                         "en": "Statement Type MetaType"
                     },
                     "node_id": "ed2627b6-ddba-11eb-ba14-0a9473e82189",
-                    "sortorder": 3,
+                    "sortorder": 2,
                     "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000002"
                 },
@@ -4187,7 +4208,7 @@
                         "en": "Statement Language"
                     },
                     "node_id": "ed2627b3-ddba-11eb-ba14-0a9473e82189",
-                    "sortorder": 2,
+                    "sortorder": 3,
                     "visible": true,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
@@ -4249,7 +4270,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Statement Language",
+                        "label": "Name Language",
                         "options": [],
                         "placeholder": {
                             "en": "Select an option"
@@ -4257,7 +4278,7 @@
                     },
                     "id": "f7ad0e4a-ddba-11eb-ba14-0a9473e82189",
                     "label": {
-                        "en": "Statement Language"
+                        "en": "Name Language"
                     },
                     "node_id": "f7ad0e43-ddba-11eb-ba14-0a9473e82189",
                     "sortorder": 2,
@@ -4276,7 +4297,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Statement",
+                        "label": "Name",
                         "maxLength": null,
                         "placeholder": {
                             "en": "Enter text"
@@ -4286,12 +4307,12 @@
                     },
                     "id": "f7ad0e4b-ddba-11eb-ba14-0a9473e82189",
                     "label": {
-                        "en": "Statement"
+                        "en": "Name"
                     },
                     "node_id": "f7ad0e46-ddba-11eb-ba14-0a9473e82189",
                     "sortorder": 0,
                     "visible": true,
-                    "widget_id": "10000000-0000-0000-0000-000000000005"
+                    "widget_id": "10000000-0000-0000-0000-000000000001"
                 },
                 {
                     "card_id": "f7ad0e3d-ddba-11eb-ba14-0a9473e82189",
@@ -4305,7 +4326,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Statement Label",
+                        "label": "Name Label",
                         "maxLength": null,
                         "placeholder": {
                             "en": "Enter text"
@@ -4315,7 +4336,7 @@
                     },
                     "id": "f7ad0e4c-ddba-11eb-ba14-0a9473e82189",
                     "label": {
-                        "en": "Statement Label"
+                        "en": "Name Label"
                     },
                     "node_id": "f7ad0e45-ddba-11eb-ba14-0a9473e82189",
                     "sortorder": 3,
@@ -4329,7 +4350,7 @@
                         "i18n_properties": [
                             "placeholder"
                         ],
-                        "label": "Statement Type",
+                        "label": "Name Type",
                         "options": [],
                         "placeholder": {
                             "en": "Select an option"
@@ -4337,7 +4358,7 @@
                     },
                     "id": "f7ad0e4d-ddba-11eb-ba14-0a9473e82189",
                     "label": {
-                        "en": "Statement Type"
+                        "en": "Name Type"
                     },
                     "node_id": "f7ad0e44-ddba-11eb-ba14-0a9473e82189",
                     "sortorder": 1,
@@ -4369,7 +4390,7 @@
                         "en": "Statement Label"
                     },
                     "node_id": "f7ad0e41-ddba-11eb-ba14-0a9473e82189",
-                    "sortorder": null,
+                    "sortorder": 4,
                     "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000001"
                 },
@@ -4393,7 +4414,7 @@
                         "en": "Statement Type"
                     },
                     "node_id": "f7ad0e48-ddba-11eb-ba14-0a9473e82189",
-                    "sortorder": null,
+                    "sortorder": 1,
                     "visible": true,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
@@ -4422,7 +4443,7 @@
                         "en": "Statement"
                     },
                     "node_id": "f7ad0e42-ddba-11eb-ba14-0a9473e82189",
-                    "sortorder": null,
+                    "sortorder": 0,
                     "visible": true,
                     "widget_id": "10000000-0000-0000-0000-000000000005"
                 },
@@ -4446,7 +4467,7 @@
                         "en": "Statement Language"
                     },
                     "node_id": "f7ad0e47-ddba-11eb-ba14-0a9473e82189",
-                    "sortorder": null,
+                    "sortorder": 3,
                     "visible": true,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 },
@@ -4468,7 +4489,7 @@
                         "en": "Statement Type MetaType"
                     },
                     "node_id": "f7ad0e49-ddba-11eb-ba14-0a9473e82189",
-                    "sortorder": null,
+                    "sortorder": 2,
                     "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000002"
                 },
@@ -4575,7 +4596,7 @@
                     },
                     "node_id": "fe411e6c-ddb6-11eb-ba14-0a9473e82189",
                     "sortorder": 2,
-                    "visible": true,
+                    "visible": false,
                     "widget_id": "10000000-0000-0000-0000-000000000012"
                 }
             ],
@@ -6149,31 +6170,31 @@
                     "parentnodegroup_id": null
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "25439e6d-ddb7-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": null
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "2904233d-ddb7-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": "29042340-ddb7-11eb-ba14-0a9473e82189"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "29042340-ddb7-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": null
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "2dda4c07-ddb7-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": "2dda4c0d-ddb7-11eb-ba14-0a9473e82189"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "2dda4c0a-ddb7-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": "2dda4c13-ddb7-11eb-ba14-0a9473e82189"
@@ -6197,13 +6218,13 @@
                     "parentnodegroup_id": "2dda4c10-ddb7-11eb-ba14-0a9473e82189"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "2dda4c16-ddb7-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": "2dda4c10-ddb7-11eb-ba14-0a9473e82189"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "4ad60948-c059-11ea-b689-3af9d3b32b71",
                     "parentnodegroup_id": null
@@ -6245,7 +6266,7 @@
                     "parentnodegroup_id": "8852e51d-185d-11ef-9196-c58946ffc07f"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "8852e525-185d-11ef-9196-c58946ffc07f",
                     "parentnodegroup_id": "4ad60948-c059-11ea-b689-3af9d3b32b71"
@@ -6263,7 +6284,7 @@
                     "parentnodegroup_id": "8852e51d-185d-11ef-9196-c58946ffc07f"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "920c0c18-c76b-11ea-a79d-3af9d3b32b71",
                     "parentnodegroup_id": null
@@ -6287,13 +6308,13 @@
                     "parentnodegroup_id": null
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "c47f4ed9-ddba-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": "4ad60948-c059-11ea-b689-3af9d3b32b71"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "df85e440-c762-11ea-921e-3af9d3b32b71",
                     "parentnodegroup_id": null
@@ -6305,13 +6326,13 @@
                     "parentnodegroup_id": null
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "ed262795-ddba-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": "ed26279b-ddba-11eb-ba14-0a9473e82189"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "ed262798-ddba-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": "ed2627a1-ddba-11eb-ba14-0a9473e82189"
@@ -6335,19 +6356,19 @@
                     "parentnodegroup_id": "ed26279e-ddba-11eb-ba14-0a9473e82189"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "ed2627a4-ddba-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": "ed26279e-ddba-11eb-ba14-0a9473e82189"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "f7ad0e3b-ddba-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": "f7ad0e3e-ddba-11eb-ba14-0a9473e82189"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "f7ad0e3e-ddba-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": "4ad60948-c059-11ea-b689-3af9d3b32b71"
@@ -6359,7 +6380,7 @@
                     "parentnodegroup_id": null
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "fe411e67-ddb6-11eb-ba14-0a9473e82189",
                     "parentnodegroup_id": null
@@ -6372,11 +6393,19 @@
                         "graphs": [
                             {
                                 "graphid": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
-                                "name": "Activity"
+                                "inverseRelationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "name": "Activity",
+                                "relationshipCollection": "00000000-0000-0000-0000-000000000005",
+                                "relationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "useOntologyRelationship": false
                             },
                             {
                                 "graphid": "3d461890-b4b5-11ea-84f7-3af9d3b32b71",
-                                "name": "Provenance Activity"
+                                "inverseRelationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "name": "Provenance Activity",
+                                "relationshipCollection": "00000000-0000-0000-0000-000000000005",
+                                "relationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "useOntologyRelationship": false
                             }
                         ],
                         "searchDsl": "",
@@ -6390,14 +6419,14 @@
                     "hascustomalias": false,
                     "is_collector": true,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "occurs_after_event",
                     "nodegroup_id": "09711b1e-e2e1-11ea-9fb6-0a1706e75f30",
                     "nodeid": "09711b1e-e2e1-11ea-9fb6-0a1706e75f30",
                     "ontologyclass": "http://www.cidoc-crm.org/cidoc-crm/E7_Activity",
                     "parentproperty": "http://www.cidoc-crm.org/cidoc-crm/P183i_starts_after_the_end_of",
-                    "sortorder": 0,
+                    "sortorder": 12,
                     "sourcebranchpublication_id": null
                 },
                 {
@@ -6418,7 +6447,7 @@
                     "nodeid": "25439e6d-ddb7-11eb-ba14-0a9473e82189",
                     "ontologyclass": "http://www.cidoc-crm.org/cidoc-crm/E42_Identifier",
                     "parentproperty": "http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by",
-                    "sortorder": 0,
+                    "sortorder": 3,
                     "sourcebranchpublication_id": null
                 },
                 {
@@ -6428,7 +6457,7 @@
                     },
                     "datatype": "concept-list",
                     "description": "* Collection_id: LAP.2_Identifier\n* Field_id: PIRM.44_LAF.9_identifier_type\n* Category_id: CAT.1_Names_and_Classifications",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -6467,10 +6496,12 @@
                 },
                 {
                     "alias": "identifier_content",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "string",
                     "description": "* Collection_id: LAP.2_Identifier\n* Field_id: PIRM.44_LAF.10_identifier_content\n* Category_id: CAT.1_Names_and_Classifications",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -6525,7 +6556,7 @@
                     "nodeid": "29042340-ddb7-11eb-ba14-0a9473e82189",
                     "ontologyclass": "http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object",
                     "parentproperty": "http://www.cidoc-crm.org/cidoc-crm/P67i_is_referred_to_by",
-                    "sortorder": 0,
+                    "sortorder": 2,
                     "sourcebranchpublication_id": null
                 },
                 {
@@ -6551,10 +6582,12 @@
                 },
                 {
                     "alias": "statement_content",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "string",
                     "description": "* Collection_id: LAP.4_Statement\n* Field_id: PIRM.44_LAF.15_statement_content\n* Category_id: CAT.4_Description",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -6671,7 +6704,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "statement_language",
                     "nodegroup_id": "29042340-ddb7-11eb-ba14-0a9473e82189",
@@ -6688,7 +6721,7 @@
                     },
                     "datatype": "concept-list",
                     "description": "* Collection_id: LAP.4_Statement\n* Field_id: PIRM.44_LAF.14_statement_type\n* Category_id: CAT.4_Description",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -6808,7 +6841,7 @@
                     "nodeid": "2dda4c10-ddb7-11eb-ba14-0a9473e82189",
                     "ontologyclass": "http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span",
                     "parentproperty": "http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span",
-                    "sortorder": 0,
+                    "sortorder": 4,
                     "sourcebranchpublication_id": null
                 },
                 {
@@ -6855,10 +6888,12 @@
                 },
                 {
                     "alias": "timespan_name_content",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "string",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: PIRM.44_LAF.49_LAF.6_name_content\n* Category_id: CAT.10_Substance",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -6881,7 +6916,7 @@
                     },
                     "datatype": "concept-list",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: PIRM.44_LAF.49_LAF.5_name_type\n* Category_id: CAT.10_Substance",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -6910,7 +6945,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_duration_type",
                     "nodegroup_id": "2dda4c0d-ddb7-11eb-ba14-0a9473e82189",
@@ -6933,7 +6968,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_duration_name_type",
                     "nodegroup_id": "2dda4c07-ddb7-11eb-ba14-0a9473e82189",
@@ -6998,7 +7033,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_duration_name_language",
                     "nodegroup_id": "2dda4c07-ddb7-11eb-ba14-0a9473e82189",
@@ -7015,7 +7050,7 @@
                     },
                     "datatype": "date",
                     "description": "* Collection_id: LAP.6_TimeSpan\n* Field_id: PIRM.44_LAF.25_timespan_begin_of_the_begin\n* Category_id: CAT.10_Substance",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -7044,7 +7079,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_statement_type",
                     "nodegroup_id": "2dda4c13-ddb7-11eb-ba14-0a9473e82189",
@@ -7111,7 +7146,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_name_language",
                     "nodegroup_id": "2dda4c16-ddb7-11eb-ba14-0a9473e82189",
@@ -7134,7 +7169,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_statement_language",
                     "nodegroup_id": "2dda4c13-ddb7-11eb-ba14-0a9473e82189",
@@ -7157,7 +7192,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_end_of_the_begin",
                     "nodegroup_id": "2dda4c10-ddb7-11eb-ba14-0a9473e82189",
@@ -7234,7 +7269,9 @@
                 },
                 {
                     "alias": "timespan_duration_name_content",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "string",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: PIRM.44_LAF.22_LAF.100_LAF.6_name_content\n* Category_id: CAT.10_Substance",
                     "exportable": false,
@@ -7243,7 +7280,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": true,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_duration_name_content",
                     "nodegroup_id": "2dda4c07-ddb7-11eb-ba14-0a9473e82189",
@@ -7255,7 +7292,9 @@
                 },
                 {
                     "alias": "timespan_duration_highest_possible_value",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "number",
                     "description": "* Collection_id: LAP.8_Dimension\n* Field_id: PIRM.44_LAF.22_LAF.98_dimension_highest_possible_value\n* Category_id: CAT.10_Substance\n",
                     "exportable": false,
@@ -7264,7 +7303,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_duration_highest_possible_value",
                     "nodegroup_id": "2dda4c0d-ddb7-11eb-ba14-0a9473e82189",
@@ -7287,7 +7326,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_duration_unit",
                     "nodegroup_id": "2dda4c0d-ddb7-11eb-ba14-0a9473e82189",
@@ -7299,7 +7338,9 @@
                 },
                 {
                     "alias": "timespan_duration_value",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "number",
                     "description": "* Collection_id: LAP.8_Dimension\n* Field_id: PIRM.44_LAF.22_LAF.101_dimension_value\n* Category_id: CAT.10_Substance",
                     "exportable": false,
@@ -7308,7 +7349,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_duration_value",
                     "nodegroup_id": "2dda4c0d-ddb7-11eb-ba14-0a9473e82189",
@@ -7331,7 +7372,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_begin_of_the_end",
                     "nodegroup_id": "2dda4c10-ddb7-11eb-ba14-0a9473e82189",
@@ -7364,7 +7405,9 @@
                 },
                 {
                     "alias": "timespan_statement_content",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "string",
                     "description": "* Collection_id: LAP.4_Statement\n* Field_id: PIRM.44_LAF.47_LAF.15_statement_content\n* Category_id: CAT.10_Substance",
                     "exportable": false,
@@ -7373,7 +7416,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": true,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_statement_content",
                     "nodegroup_id": "2dda4c13-ddb7-11eb-ba14-0a9473e82189",
@@ -7419,7 +7462,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_type",
                     "nodegroup_id": "2dda4c10-ddb7-11eb-ba14-0a9473e82189",
@@ -7436,7 +7479,7 @@
                     },
                     "datatype": "date",
                     "description": "* Collection_id: LAP.6_TimeSpan\n* Field_id: PIRM.44_LAF.26_timespan_end_of_the_end\n* Category_id: CAT.10_Substance",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -7454,7 +7497,9 @@
                 },
                 {
                     "alias": "timespan_duration_lowest_possible_value",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "number",
                     "description": "* Collection_id: LAP.8_Dimension\n* Field_id: PIRM.44_LAF.22_LAF.98_dimension_highest_possible_value\n* Category_id: CAT.10_Substance",
                     "exportable": false,
@@ -7463,7 +7508,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "timespan_duration_lowest_possible_value",
                     "nodegroup_id": "2dda4c0d-ddb7-11eb-ba14-0a9473e82189",
@@ -7507,7 +7552,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "digital_reference_type",
                     "nodegroup_id": "df85e440-c762-11ea-921e-3af9d3b32b71",
@@ -7535,7 +7580,7 @@
                     "nodeid": "4ad60948-c059-11ea-b689-3af9d3b32b71",
                     "ontologyclass": "http://www.cidoc-crm.org/cidoc-crm/E7_Activity",
                     "parentproperty": "http://www.cidoc-crm.org/cidoc-crm/P9_consists_of",
-                    "sortorder": 0,
+                    "sortorder": 8,
                     "sourcebranchpublication_id": null
                 },
                 {
@@ -7544,7 +7589,11 @@
                         "graphs": [
                             {
                                 "graphid": "f6e89030-b4b4-11ea-84f7-3af9d3b32b71",
-                                "name": "Place"
+                                "inverseRelationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "name": "Place",
+                                "relationshipCollection": "00000000-0000-0000-0000-000000000005",
+                                "relationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "useOntologyRelationship": false
                             }
                         ],
                         "searchDsl": "",
@@ -7558,7 +7607,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_location",
                     "nodegroup_id": "4ad60948-c059-11ea-b689-3af9d3b32b71",
@@ -7574,13 +7623,21 @@
                         "graphs": [
                             {
                                 "graphid": "9ffb6fcc-b4b4-11ea-84f7-3af9d3b32b71",
+                                "inverseRelationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
                                 "name": "Person",
-                                "ontologyProperty": "http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by"
+                                "ontologyProperty": "http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by",
+                                "relationshipCollection": "00000000-0000-0000-0000-000000000005",
+                                "relationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "useOntologyRelationship": false
                             },
                             {
                                 "graphid": "d6774bfc-b4b4-11ea-84f7-3af9d3b32b71",
+                                "inverseRelationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
                                 "name": "Group",
-                                "ontologyProperty": "http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by"
+                                "ontologyProperty": "http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by",
+                                "relationshipCollection": "00000000-0000-0000-0000-000000000005",
+                                "relationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "useOntologyRelationship": false
                             }
                         ],
                         "searchDsl": "",
@@ -7588,7 +7645,7 @@
                     },
                     "datatype": "resource-instance-list",
                     "description": "* Collection_id: LAP.51_Activity_Part\n* Field_id: PIRM.44_PIRF.457_activity_part_actor\n* Category_id: CAT.3_Parthood",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -7611,7 +7668,7 @@
                     },
                     "datatype": "concept-list",
                     "description": "* Collection_id: LAP.51_Activity_Part\n* Field_id: PIRM.44_PIRF.459_activity_part_type\n* Category_id: CAT.3_Parthood",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -7675,7 +7732,11 @@
                         "graphs": [
                             {
                                 "graphid": "bdba56bc-b4b5-11ea-84f7-3af9d3b32b71",
-                                "name": "Set"
+                                "inverseRelationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "name": "Set",
+                                "relationshipCollection": "00000000-0000-0000-0000-000000000005",
+                                "relationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "useOntologyRelationship": false
                             }
                         ],
                         "searchDsl": "",
@@ -7683,7 +7744,7 @@
                     },
                     "datatype": "resource-instance-list",
                     "description": "* Collection_id: \n* Field_id: PIRM.44_LAF.40_activity_set_used\n* Category_id: CAT.19_Parameters&Outcomes\n",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -7696,7 +7757,7 @@
                     "nodeid": "83cd2f52-bfae-11ea-a62b-3af9d3b32b71",
                     "ontologyclass": "https://linked.art/ns/terms/Set",
                     "parentproperty": "http://www.cidoc-crm.org/cidoc-crm/P16_used_specific_object",
-                    "sortorder": 0,
+                    "sortorder": 5,
                     "sourcebranchpublication_id": null
                 },
                 {
@@ -7919,7 +7980,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_end_of_the_end",
                     "nodegroup_id": "8852e51d-185d-11ef-9196-c58946ffc07f",
@@ -7965,7 +8026,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_duration_lowest_possible_value",
                     "nodegroup_id": "8852e529-185d-11ef-9196-c58946ffc07f",
@@ -7988,7 +8049,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": true,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_name_content",
                     "nodegroup_id": "8852e51f-185d-11ef-9196-c58946ffc07f",
@@ -8011,7 +8072,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_statement_type",
                     "nodegroup_id": "8852e523-185d-11ef-9196-c58946ffc07f",
@@ -8034,7 +8095,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": true,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_duration_name_content",
                     "nodegroup_id": "8852e527-185d-11ef-9196-c58946ffc07f",
@@ -8057,7 +8118,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_begin_of_the_end",
                     "nodegroup_id": "8852e51d-185d-11ef-9196-c58946ffc07f",
@@ -8103,7 +8164,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_type",
                     "nodegroup_id": "8852e51d-185d-11ef-9196-c58946ffc07f",
@@ -8126,7 +8187,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_duration_type",
                     "nodegroup_id": "8852e529-185d-11ef-9196-c58946ffc07f",
@@ -8195,7 +8256,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": true,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_statement_content",
                     "nodegroup_id": "8852e523-185d-11ef-9196-c58946ffc07f",
@@ -8218,7 +8279,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_statement_language",
                     "nodegroup_id": "8852e523-185d-11ef-9196-c58946ffc07f",
@@ -8241,7 +8302,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_end_of_the_begin",
                     "nodegroup_id": "8852e51d-185d-11ef-9196-c58946ffc07f",
@@ -8264,7 +8325,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_name_language",
                     "nodegroup_id": "8852e51f-185d-11ef-9196-c58946ffc07f",
@@ -8333,7 +8394,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_type",
                     "nodegroup_id": "8852e525-185d-11ef-9196-c58946ffc07f",
@@ -8356,7 +8417,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_label",
                     "nodegroup_id": "8852e525-185d-11ef-9196-c58946ffc07f",
@@ -8402,7 +8463,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_name_type",
                     "nodegroup_id": "8852e51b-185d-11ef-9196-c58946ffc07f",
@@ -8425,7 +8486,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_name_language",
                     "nodegroup_id": "8852e51b-185d-11ef-9196-c58946ffc07f",
@@ -8448,7 +8509,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_activity_part_data_assignment_timespan_duration_name_type",
                     "nodegroup_id": "8852e527-185d-11ef-9196-c58946ffc07f",
@@ -8471,7 +8532,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_begin_of_the_begin",
                     "nodegroup_id": "8852e51d-185d-11ef-9196-c58946ffc07f",
@@ -8487,7 +8548,11 @@
                         "graphs": [
                             {
                                 "graphid": "933ee880-b4b5-11ea-84f7-3af9d3b32b71",
-                                "name": "Visual Work"
+                                "inverseRelationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "name": "Visual Work",
+                                "relationshipCollection": "00000000-0000-0000-0000-000000000005",
+                                "relationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "useOntologyRelationship": false
                             },
                             {
                                 "graphid": "6dad61aa-b4b5-11ea-84f7-3af9d3b32b71",
@@ -8533,7 +8598,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_object_used",
                     "nodegroup_id": "8852e525-185d-11ef-9196-c58946ffc07f",
@@ -8556,7 +8621,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_duration_unit",
                     "nodegroup_id": "8852e529-185d-11ef-9196-c58946ffc07f",
@@ -8579,7 +8644,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_duration_value",
                     "nodegroup_id": "8852e529-185d-11ef-9196-c58946ffc07f",
@@ -8625,7 +8690,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_duration_name_language",
                     "nodegroup_id": "8852e527-185d-11ef-9196-c58946ffc07f",
@@ -8671,7 +8736,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_assigned_property",
                     "nodegroup_id": "8852e525-185d-11ef-9196-c58946ffc07f",
@@ -8694,7 +8759,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": true,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_name_content",
                     "nodegroup_id": "8852e51b-185d-11ef-9196-c58946ffc07f",
@@ -8717,7 +8782,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_name_type",
                     "nodegroup_id": "8852e51f-185d-11ef-9196-c58946ffc07f",
@@ -8759,7 +8824,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_actor",
                     "nodegroup_id": "8852e525-185d-11ef-9196-c58946ffc07f",
@@ -8857,7 +8922,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_assigned_entity",
                     "nodegroup_id": "8852e525-185d-11ef-9196-c58946ffc07f",
@@ -8880,7 +8945,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_data_assignment_timespan_duration_highest_possible_value",
                     "nodegroup_id": "8852e529-185d-11ef-9196-c58946ffc07f",
@@ -8919,7 +8984,11 @@
                         "graphs": [
                             {
                                 "graphid": "6dad61aa-b4b5-11ea-84f7-3af9d3b32b71",
-                                "name": "Textual Work"
+                                "inverseRelationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "name": "Textual Work",
+                                "relationshipCollection": "00000000-0000-0000-0000-000000000005",
+                                "relationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "useOntologyRelationship": false
                             }
                         ],
                         "searchDsl": "",
@@ -8927,7 +8996,7 @@
                     },
                     "datatype": "resource-instance-list",
                     "description": "* Collection_id: \n* Field_id: PIRM.44_LAF.39_activity_source_reference\n* Category_id: CAT.10_Substance\n",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -8940,7 +9009,7 @@
                     "nodeid": "920c0c18-c76b-11ea-a79d-3af9d3b32b71",
                     "ontologyclass": "http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object",
                     "parentproperty": "http://www.cidoc-crm.org/cidoc-crm/P67i_is_referred_to_by",
-                    "sortorder": 0,
+                    "sortorder": 10,
                     "sourcebranchpublication_id": null
                 },
                 {
@@ -8949,7 +9018,11 @@
                         "graphs": [
                             {
                                 "graphid": "6dad61aa-b4b5-11ea-84f7-3af9d3b32b71",
-                                "name": "Textual Work"
+                                "inverseRelationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "name": "Textual Work",
+                                "relationshipCollection": "00000000-0000-0000-0000-000000000005",
+                                "relationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "useOntologyRelationship": false
                             }
                         ],
                         "searchDsl": "",
@@ -8957,7 +9030,7 @@
                     },
                     "datatype": "resource-instance-list",
                     "description": null,
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -8979,7 +9052,11 @@
                         "graphs": [
                             {
                                 "graphid": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
-                                "name": "Activity"
+                                "inverseRelationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "name": "Activity",
+                                "relationshipCollection": "00000000-0000-0000-0000-000000000005",
+                                "relationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "useOntologyRelationship": false
                             }
                         ],
                         "searchDsl": "",
@@ -8987,7 +9064,7 @@
                     },
                     "datatype": "resource-instance-list",
                     "description": "* Collection_id:\n* Field_id: PIRM.44_LAF.42_part_of_event_structural\n* Category_id: CAT.10_Substance\n",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -9000,7 +9077,7 @@
                     "nodeid": "9746db46-bfae-11ea-a62b-3af9d3b32b71",
                     "ontologyclass": "http://www.cidoc-crm.org/cidoc-crm/E7_Activity",
                     "parentproperty": "http://www.cidoc-crm.org/cidoc-crm/P9i_forms_part_of",
-                    "sortorder": 0,
+                    "sortorder": 9,
                     "sourcebranchpublication_id": null
                 },
                 {
@@ -9021,7 +9098,7 @@
                     "nodeid": "b2cd5e4a-bfad-11ea-a62b-3af9d3b32b71",
                     "ontologyclass": "http://www.w3.org/2001/XMLSchema#string",
                     "parentproperty": "http://www.w3.org/2000/01/rdf-schema#label",
-                    "sortorder": 0,
+                    "sortorder": 13,
                     "sourcebranchpublication_id": null
                 },
                 {
@@ -9031,7 +9108,7 @@
                     },
                     "datatype": "concept-list",
                     "description": "* Collection_id: LAP.3_Type\n* Field_id: PIRM.44_LAF.11_type\n* Category_id: CAT.1_Names_and_Classifications",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -9044,7 +9121,7 @@
                     "nodeid": "b4d344b6-bfad-11ea-a62b-3af9d3b32b71",
                     "ontologyclass": "http://www.cidoc-crm.org/cidoc-crm/E55_Type",
                     "parentproperty": "http://www.cidoc-crm.org/cidoc-crm/P2_has_type",
-                    "sortorder": 0,
+                    "sortorder": 1,
                     "sourcebranchpublication_id": null
                 },
                 {
@@ -9081,7 +9158,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "name_type",
                     "nodegroup_id": "c47f4ed9-ddba-11eb-ba14-0a9473e82189",
@@ -9125,7 +9202,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "name_language",
                     "nodegroup_id": "c47f4ed9-ddba-11eb-ba14-0a9473e82189",
@@ -9137,7 +9214,9 @@
                 },
                 {
                     "alias": "name_content",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "string",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: LAF.6_name_content\n* Category_id: CAT.1_Names_and_Classifications",
                     "exportable": false,
@@ -9146,7 +9225,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": true,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "name_content",
                     "nodegroup_id": "c47f4ed9-ddba-11eb-ba14-0a9473e82189",
@@ -9158,7 +9237,9 @@
                 },
                 {
                     "alias": "digital_reference",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "url",
                     "description": "* Collection_id: \n* Field_id: PIRM.44_PIRF.426_digital_reference\n* Category_id: CAT.10_Substance\n",
                     "exportable": false,
@@ -9167,14 +9248,14 @@
                     "hascustomalias": false,
                     "is_collector": true,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "digital_reference",
                     "nodegroup_id": "df85e440-c762-11ea-921e-3af9d3b32b71",
                     "nodeid": "df85e440-c762-11ea-921e-3af9d3b32b71",
                     "ontologyclass": "http://www.ics.forth.gr/isl/CRMdig/D1_Digital_Object",
                     "parentproperty": "http://www.cidoc-crm.org/cidoc-crm/P67i_is_referred_to_by",
-                    "sortorder": 0,
+                    "sortorder": 11,
                     "sourcebranchpublication_id": null
                 },
                 {
@@ -9183,7 +9264,11 @@
                         "graphs": [
                             {
                                 "graphid": "f6e89030-b4b4-11ea-84f7-3af9d3b32b71",
-                                "name": "Place"
+                                "inverseRelationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "name": "Place",
+                                "relationshipCollection": "00000000-0000-0000-0000-000000000005",
+                                "relationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "useOntologyRelationship": false
                             }
                         ],
                         "searchDsl": "",
@@ -9191,7 +9276,7 @@
                     },
                     "datatype": "resource-instance-list",
                     "description": "* Collection_id: \n* Field_id: PIRM.44_LAF.19_activity_location\n* Category_id: CAT.5_Location",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -9204,7 +9289,7 @@
                     "nodeid": "e64f839c-bfad-11ea-a62b-3af9d3b32b71",
                     "ontologyclass": "http://www.cidoc-crm.org/cidoc-crm/E53_Place",
                     "parentproperty": "http://www.cidoc-crm.org/cidoc-crm/P7_took_place_at",
-                    "sortorder": 0,
+                    "sortorder": 6,
                     "sourcebranchpublication_id": null
                 },
                 {
@@ -9335,7 +9420,9 @@
                 },
                 {
                     "alias": "activity_part_timespan_name_content",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "string",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: LAF.49_LAF.6_name_content\n* Category_id: CAT.10_Substance",
                     "exportable": false,
@@ -9344,7 +9431,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": true,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_name_content",
                     "nodegroup_id": "ed2627a4-ddba-11eb-ba14-0a9473e82189",
@@ -9367,7 +9454,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_name_type",
                     "nodegroup_id": "ed2627a4-ddba-11eb-ba14-0a9473e82189",
@@ -9390,7 +9477,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_duration_type",
                     "nodegroup_id": "ed26279b-ddba-11eb-ba14-0a9473e82189",
@@ -9413,7 +9500,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_duration_name_type",
                     "nodegroup_id": "ed262795-ddba-11eb-ba14-0a9473e82189",
@@ -9478,7 +9565,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_duration_name_language",
                     "nodegroup_id": "ed262795-ddba-11eb-ba14-0a9473e82189",
@@ -9501,7 +9588,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_begin_of_the_begin",
                     "nodegroup_id": "ed26279e-ddba-11eb-ba14-0a9473e82189",
@@ -9524,7 +9611,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_statement_type",
                     "nodegroup_id": "ed2627a1-ddba-11eb-ba14-0a9473e82189",
@@ -9591,7 +9678,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_name_language",
                     "nodegroup_id": "ed2627a4-ddba-11eb-ba14-0a9473e82189",
@@ -9614,7 +9701,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_statement_language",
                     "nodegroup_id": "ed2627a1-ddba-11eb-ba14-0a9473e82189",
@@ -9637,7 +9724,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_end_of_the_begin",
                     "nodegroup_id": "ed26279e-ddba-11eb-ba14-0a9473e82189",
@@ -9714,7 +9801,9 @@
                 },
                 {
                     "alias": "activity_part_timespan_duration_name_content",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "string",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: LAF.22_LAF.100_LAF.6_name_content\n* Category_id: CAT.10_Substance",
                     "exportable": false,
@@ -9723,7 +9812,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": true,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_duration_name_content",
                     "nodegroup_id": "ed262795-ddba-11eb-ba14-0a9473e82189",
@@ -9735,7 +9824,9 @@
                 },
                 {
                     "alias": "activity_part_timespan_duration_highest_possible_value",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "number",
                     "description": "* Collection_id: LAP.8_Dimension\n* Field_id: LAF.22_LAF.98_dimension_highest_possible_value\n* Category_id: CAT.10_Substance\n",
                     "exportable": false,
@@ -9744,7 +9835,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_duration_highest_possible_value",
                     "nodegroup_id": "ed26279b-ddba-11eb-ba14-0a9473e82189",
@@ -9767,7 +9858,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_duration_unit",
                     "nodegroup_id": "ed26279b-ddba-11eb-ba14-0a9473e82189",
@@ -9779,7 +9870,9 @@
                 },
                 {
                     "alias": "activity_part_timespan_duration_value",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "number",
                     "description": "* Collection_id: LAP.8_Dimension\n* Field_id: LAF.22_LAF.101_dimension_value\n* Category_id: CAT.10_Substance",
                     "exportable": false,
@@ -9788,7 +9881,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_duration_value",
                     "nodegroup_id": "ed26279b-ddba-11eb-ba14-0a9473e82189",
@@ -9811,7 +9904,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_begin_of_the_end",
                     "nodegroup_id": "ed26279e-ddba-11eb-ba14-0a9473e82189",
@@ -9844,7 +9937,9 @@
                 },
                 {
                     "alias": "activity_part_timespan_statement_content",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "string",
                     "description": "* Collection_id: LAP.4_Statement\n* Field_id: LAF.47_LAF.15_statement_content\n* Category_id: CAT.10_Substance",
                     "exportable": false,
@@ -9853,7 +9948,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": true,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_statement_content",
                     "nodegroup_id": "ed2627a1-ddba-11eb-ba14-0a9473e82189",
@@ -9899,7 +9994,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_type",
                     "nodegroup_id": "ed26279e-ddba-11eb-ba14-0a9473e82189",
@@ -9922,7 +10017,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_end_of_the_end",
                     "nodegroup_id": "ed26279e-ddba-11eb-ba14-0a9473e82189",
@@ -9934,7 +10029,9 @@
                 },
                 {
                     "alias": "activity_part_timespan_duration_lowest_possible_value",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "number",
                     "description": "* Collection_id: LAP.8_Dimension\n* Field_id: LAF.22_LAF.98_dimension_highest_possible_value\n* Category_id: CAT.10_Substance",
                     "exportable": false,
@@ -9943,7 +10040,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "activity_part_timespan_duration_lowest_possible_value",
                     "nodegroup_id": "ed26279b-ddba-11eb-ba14-0a9473e82189",
@@ -10039,7 +10136,9 @@
                 },
                 {
                     "alias": "statement_content_n1",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "string",
                     "description": "* Collection_id: LAP.4_Statement\n* Field_id: PIRM.54_LAF.15_statement_content\n* Category_id: CAT.4_Description",
                     "exportable": false,
@@ -10048,7 +10147,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": true,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "statement_content",
                     "nodegroup_id": "f7ad0e3e-ddba-11eb-ba14-0a9473e82189",
@@ -10159,7 +10258,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "statement_language",
                     "nodegroup_id": "f7ad0e3e-ddba-11eb-ba14-0a9473e82189",
@@ -10182,7 +10281,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "statement_type",
                     "nodegroup_id": "f7ad0e3e-ddba-11eb-ba14-0a9473e82189",
@@ -10221,11 +10320,19 @@
                         "graphs": [
                             {
                                 "graphid": "9ffb6fcc-b4b4-11ea-84f7-3af9d3b32b71",
-                                "name": "Person"
+                                "inverseRelationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "name": "Person",
+                                "relationshipCollection": "00000000-0000-0000-0000-000000000005",
+                                "relationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "useOntologyRelationship": false
                             },
                             {
                                 "graphid": "d6774bfc-b4b4-11ea-84f7-3af9d3b32b71",
-                                "name": "Group"
+                                "inverseRelationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "name": "Group",
+                                "relationshipCollection": "00000000-0000-0000-0000-000000000005",
+                                "relationshipConcept": "ac41d9be-79db-4256-b368-2f4559cfbe55",
+                                "useOntologyRelationship": false
                             }
                         ],
                         "searchDsl": "",
@@ -10233,7 +10340,7 @@
                     },
                     "datatype": "resource-instance-list",
                     "description": "* Collection_id: \n* Field_id: PIRM.44_LAF.21_activity_actor\n* Category_id: CAT.19_Parameters&Outcomes\n",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -10246,7 +10353,7 @@
                     "nodeid": "f8faf5e4-bfad-11ea-a62b-3af9d3b32b71",
                     "ontologyclass": "http://www.cidoc-crm.org/cidoc-crm/E39_Actor",
                     "parentproperty": "http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by",
-                    "sortorder": 0,
+                    "sortorder": 7,
                     "sourcebranchpublication_id": null
                 },
                 {
@@ -10277,7 +10384,7 @@
                     },
                     "datatype": "concept-list",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: PIRM.44_LAF.5_name_type\n* Category_id: CAT.1_Names_and_Classifications",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -10327,7 +10434,7 @@
                     "hascustomalias": false,
                     "is_collector": false,
                     "isrequired": false,
-                    "issearchable": true,
+                    "issearchable": false,
                     "istopnode": false,
                     "name": "name_language",
                     "nodegroup_id": "fe411e67-ddb6-11eb-ba14-0a9473e82189",
@@ -10339,10 +10446,12 @@
                 },
                 {
                     "alias": "name_content_n1",
-                    "config": {},
+                    "config": {
+                        "en": ""
+                    },
                     "datatype": "string",
                     "description": "* Collection_id: LAP.1_Name\n* Field_id: PIRM.44_LAF.6_name_content\n* Category_id: CAT.1_Names_and_Classifications",
-                    "exportable": false,
+                    "exportable": true,
                     "fieldname": null,
                     "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                     "hascustomalias": false,
@@ -10363,8 +10472,8 @@
             "publication": {
                 "graph_id": "734d1558-bfad-11ea-a62b-3af9d3b32b71",
                 "notes": null,
-                "publicationid": "7e1fae04-2ca6-11ef-aaa2-8ffad27a7d8d",
-                "published_time": "2024-06-17T07:38:26.397"
+                "publicationid": "0ca86938-ff22-11ef-84ff-e947b09d074a",
+                "published_time": "2025-03-12T10:11:57.811"
             },
             "relatable_resource_model_ids": [],
             "resource_2_resource_constraints": [],
@@ -10392,14 +10501,14 @@
             "subtitle": {
                 "en": "The auction, exhibition, research (or similar) activity at a time and location"
             },
-            "template_id": "50000000-0000-0000-0000-000000000001",
+            "template_id": "b0908227-ecc2-48dd-931b-314a9031caa0",
             "version": ""
         }
     ],
     "metadata": {
-        "db": "PostgreSQL 12.12 on x86_64-pc-linux-musl, compiled by gcc (Alpine 11.2.1_git20220219) 11.2.1 20220219, 64-bit",
+        "db": "PostgreSQL 14.17 (Ubuntu 14.17-0ubuntu0.22.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0, 64-bit",
         "git hash": "fatal: not a git repository (or any of the parent directories): .git",
         "os": "Linux",
-        "os version": "6.8.0-1017-aws"
+        "os version": "6.8.0-1024-aws"
     }
 }

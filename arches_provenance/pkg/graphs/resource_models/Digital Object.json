@@ -3916,7 +3916,7 @@
                     "parentnodegroup_id": null
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "5d151d86-2a5e-11ec-b194-0a9473e82189",
                     "parentnodegroup_id": null
@@ -3946,7 +3946,7 @@
                     "parentnodegroup_id": "d3043cdc-bbdf-11ea-b6b2-3af9d3b32b71"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "d3042b98-bbdf-11ea-b6b2-3af9d3b32b71",
                     "parentnodegroup_id": "d304371e-bbdf-11ea-b6b2-3af9d3b32b71"
@@ -3958,7 +3958,7 @@
                     "parentnodegroup_id": "d3043cdc-bbdf-11ea-b6b2-3af9d3b32b71"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "d3043160-bbdf-11ea-b6b2-3af9d3b32b71",
                     "parentnodegroup_id": "d3042e86-bbdf-11ea-b6b2-3af9d3b32b71"
@@ -3976,7 +3976,7 @@
                     "parentnodegroup_id": "d30428b4-bbdf-11ea-b6b2-3af9d3b32b71"
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "d30439f8-bbdf-11ea-b6b2-3af9d3b32b71",
                     "parentnodegroup_id": "d304259e-bbdf-11ea-b6b2-3af9d3b32b71"
@@ -3994,7 +3994,7 @@
                     "parentnodegroup_id": null
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "e6f81d1c-bbdf-11ea-b6b2-3af9d3b32b71",
                     "parentnodegroup_id": "e6f82410-bbdf-11ea-b6b2-3af9d3b32b71"
@@ -4012,7 +4012,7 @@
                     "parentnodegroup_id": null
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "e6f82686-bbdf-11ea-b6b2-3af9d3b32b71",
                     "parentnodegroup_id": "e6f8215e-bbdf-11ea-b6b2-3af9d3b32b71"
@@ -4030,7 +4030,7 @@
                     "parentnodegroup_id": null
                 },
                 {
-                    "cardinality": "1",
+                    "cardinality": "n",
                     "legacygroupid": null,
                     "nodegroupid": "ef8a3140-bbdf-11ea-b6b2-3af9d3b32b71",
                     "parentnodegroup_id": "ef8a3780-bbdf-11ea-b6b2-3af9d3b32b71"
@@ -6418,8 +6418,8 @@
             "publication": {
                 "graph_id": "0044f7da-b4b6-11ea-84f7-3af9d3b32b71",
                 "notes": null,
-                "publicationid": "d72cc248-bcf9-11ed-bbe1-0a9473e82189",
-                "published_time": "2023-03-07T09:07:56.126"
+                "publicationid": "12db4db2-0499-11f0-8369-17794a096f8a",
+                "published_time": "2025-03-19T09:06:34.135"
             },
             "relatable_resource_model_ids": [],
             "resource_2_resource_constraints": [],
@@ -6452,9 +6452,9 @@
         }
     ],
     "metadata": {
-        "db": "PostgreSQL 12.12 on x86_64-pc-linux-musl, compiled by gcc (Alpine 11.2.1_git20220219) 11.2.1 20220219, 64-bit",
+        "db": "PostgreSQL 14.17 (Ubuntu 14.17-0ubuntu0.22.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0, 64-bit",
         "git hash": "fatal: not a git repository (or any of the parent directories): .git",
         "os": "Linux",
-        "os version": "6.8.0-1017-aws"
+        "os version": "6.8.0-1024-aws"
     }
 }

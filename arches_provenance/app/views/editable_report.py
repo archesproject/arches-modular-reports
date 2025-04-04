@@ -9,11 +9,12 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.views.generic import View
 
-from arches.app.views.api import APIBase
+from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.permission_backend import get_nodegroups_by_perm
 from arches.app.utils.response import JSONErrorResponse, JSONResponse
+from arches.app.views.api import APIBase
 from arches.app.views.base import MapBaseManagerView
 from arches.app.views.resource import ResourceReportView
 
@@ -163,6 +164,8 @@ class RelatedResourceView(APIBase):
                 target = relation.resourceinstanceidfrom_id
             return reverse("resource_report", args=[target])
 
+        value_finder = BaseConceptDataType()  # fetches serially, but caches.
+
         response_data = {
             "results": [
                 {
@@ -189,6 +192,7 @@ class RelatedResourceView(APIBase):
                                 ),
                                 node_display_value=getattr(relation, node.alias),
                                 request_language=request_language,
+                                value_finder=value_finder,
                             ),
                         }
                         for node in nodes
@@ -312,6 +316,7 @@ class NodeTileDataView(APIBase):
         nodes_with_display_data = annotate_node_values(
             node_aliases, resourceid, permitted_nodegroups, user_lang, tile_limit
         )
+        value_finder = BaseConceptDataType()
 
         return JSONResponse(
             {
@@ -325,6 +330,7 @@ class NodeTileDataView(APIBase):
                             [display_object["tile_value"]],
                             display_object["display_value"],
                             user_lang,
+                            value_finder,
                         ),
                     }
                     for display_object in node.display_data
