@@ -67,9 +67,17 @@ export interface NodeValueDisplayDataLookup {
     [key: string]: NodeValueDisplayData[];
 }
 
-export interface LabelBasedTile {
-    "@children": LabelBasedTile[];
-    [key: string]: LabelBasedTile[] | LabelBasedNode | null;
+// eslint-disable-next-line
+interface AliasedData {}
+
+export interface TileData<T extends AliasedData = AliasedData> {
+    aliased_data: T;
+    nodegroup: string;
+    parenttile: string | null;
+    provisionaledits: object | null;
+    resourceinstance: string;
+    sortorder: number;
+    tileid: string;
 }
 
 // NodegroupTileDataView produces this, not label-based graph.
@@ -77,21 +85,4 @@ export interface LabelBasedCard {
     "@has_children": boolean;
     "@tile_id": string;
     [key: string]: boolean | string | null;
-}
-
-// Child Tile report (label-based graph) produces this.
-export interface LabelBasedNode {
-    "@display_value": string;
-    "@node_id": string;
-    "@tile_id": string;
-    instance_details?: ResourceDetails[];
-    concept_details?: ConceptDetails[];
-    url?: string;
-    url_label?: string;
-    [key: string]:
-        | string
-        | ResourceDetails[]
-        | ConceptDetails[]
-        | null
-        | undefined;
 }

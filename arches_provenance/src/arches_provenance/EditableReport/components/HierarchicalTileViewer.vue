@@ -7,7 +7,7 @@ import Message from "primevue/message";
 import { fetchProvenanceTile } from "@/arches_provenance/EditableReport/api.ts";
 import ChildTile from "@/arches_provenance/EditableReport/components/ChildTile.vue";
 
-import type { LabelBasedTile } from "@/arches_provenance/EditableReport/types";
+import type { TileData } from "@/arches_provenance/EditableReport/types";
 
 const props = defineProps<{
     nodegroupAlias: string;
@@ -19,7 +19,7 @@ const { $gettext } = useGettext();
 
 const isLoading = ref(true);
 const hasLoadingError = ref(false);
-const tileData = ref<LabelBasedTile>();
+const tileData = ref<TileData>();
 
 const resourceInstanceId = inject("resourceInstanceId") as string;
 
