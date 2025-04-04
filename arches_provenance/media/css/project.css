@@ -219,3 +219,20 @@ td {
 .time-content {
     display: none;
 }
+
+.report-toggle>.h4 {
+    display: inline-block;
+}
+
+.report-content {
+    display: none;
+}
+
+.models-toggle>.h4 {
+    display: inline-block;
+}
+
+.models-content {
+    display: none;
+}
+

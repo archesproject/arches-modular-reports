@@ -141,13 +141,14 @@ define([
                             setupToggle(el, '.advanced-content-toggle', "[data-toggle='advance-search']", '.advanced-content');
                         });
                         $(el).find('.related-content-toggle').click(function() {
+                            setupToggle(el, '.related-content-toggle', "[data-toggle='interpreting-related-toggle']", '.interpreting-related-content');
                             setupToggle(el, '.related-content-toggle', "[data-toggle='related-search']", '.related-content');
-                            setupToggle(el, '.related-content-toggle', "[data-toggle='related-search']", '.interpreting-related-content');
                         });
                         $(el).find('.interpreting-related-toggle').click(function() {
                             setupToggle(el, '.interpreting-related-toggle', "[data-toggle='interpreting-related-search']", '.interpreting-related-content');
                         });
                         $(el).find('.related-toggle').click(function() {
+                            setupToggle(el, '.related-toggle', "[data-toggle='interpreting-related-toggle']", '.interpreting-related-content');
                             setupToggle(el, '.related-toggle', "[data-toggle='related-search-new']", '.related-content');
                         });
                         $(el).find('.save-toggle').click(function() {
@@ -155,6 +156,12 @@ define([
                         });
                         $(el).find('.time-toggle').click(function() {
                             setupToggle(el, '.time-toggle', "[data-toggle='time-search_new']", '.time-content');
+                        });
+                        $(el).find('.report-toggle').click(function() {
+                            setupToggle(el, '.report-toggle', "[data-toggle='report-search']", '.report-content');
+                        });
+                        $(el).find('.models-toggle').click(function() {
+                            setupToggle(el, 'models-toggle', "[data-toggle='models-search']", '.models-content');
                         });
                         $(el).find('.reloadable-img').click(function(){
                             $(this).attr('src', $(this).attr('src'));
