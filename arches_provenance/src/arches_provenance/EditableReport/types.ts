@@ -25,6 +25,7 @@ export interface NodePresentation {
     name: string;
     card_name: string;
     widget_label: string;
+    visible: boolean;
     nodegroup: {
         nodegroup_id: string;
         cardinality: string;

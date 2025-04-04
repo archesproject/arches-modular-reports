@@ -241,6 +241,11 @@ class NodePresentationView(APIBase):
                         if node.cardxnodexwidget_set.all()
                         else node.name.replace("_", " ").title()
                     ),
+                    "visible": (
+                        node.cardxnodexwidget_set.all()[0].visible
+                        if node.cardxnodexwidget_set.all()
+                        else True
+                    ),
                     "nodegroup": {
                         "nodegroup_id": node.nodegroup.pk,
                         "cardinality": node.nodegroup.cardinality,

@@ -36,7 +36,10 @@ const cardIndentation = `${2.5 + depth * marginUnit}rem`;
 const nodeAliasValuePairs = computed(() => {
     return (
         Object.entries(data.aliased_data).filter(
-            ([, nodeValue]) => nodeValue && !isTileorTiles(nodeValue),
+            ([nodeAlias, nodeValue]) =>
+                nodeValue &&
+                !isTileorTiles(nodeValue) &&
+                nodePresentationLookup.value![nodeAlias].visible,
         ) || [[]]
     );
 });
