@@ -1,6 +1,19 @@
 import arches from "arches";
 
-import type { LabelBasedTile } from "@/arches_provenance/EditableReport/types";
+export const fetchProvenanceTile = async (
+    nodegroupAlias: string,
+    tileId: string,
+    resourceId: string,
+) => {
+    // We can do dev in arches-querysets to support a more straightforward route.
+    const url =
+        arches.urls.api_provenance_tile(nodegroupAlias, tileId) +
+        `?resource_ids=${resourceId}`;
+    const response = await fetch(url);
+    const parsed = await response.json();
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};
 
 export const fetchNodePresentation = async (resourceId: string) => {
     const url = arches.urls.api_node_presentation(resourceId);
@@ -73,16 +86,6 @@ export const fetchNodegroupTileData = async (
     const response = await fetch(url + "?" + params.toString());
     const parsed = await response.json();
 
-    if (!response.ok) throw new Error(parsed.message || response.statusText);
-    return parsed;
-};
-
-export const fetchChildTileData = async (
-    tileId: string,
-): Promise<LabelBasedTile> => {
-    const url = arches.urls.api_child_tile_data(tileId);
-    const response = await fetch(url);
-    const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);
     return parsed;
 };

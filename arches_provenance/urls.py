@@ -17,10 +17,8 @@ from arches.app.utils.data_management.resources.formats.rdffile import JsonLdWri
 from arches_provenance.app.views.card_editor import (
     ProvenanceResourceDetailView,
     ProvenanceTileDetailView,
-    ProvenanceTileListCreateView,
 )
 from arches_provenance.app.views.editable_report import (
-    ChildTileDataView,
     EditableReportAwareResourceReportView,
     NodegroupTileDataView,
     NodePresentationView,
@@ -250,22 +248,12 @@ urlpatterns = [
         name="api_node_tile_data",
     ),
     path(
-        "api/child_tile_data/<uuid:tileid>",
-        ChildTileDataView.as_view(),
-        name="api_child_tile_data",
-    ),
-    path(
-        "api/provenance_resource/<slug:graph>/<uuid:pk>",
+        "api/provenance_resource/<uuid:pk>",
         ProvenanceResourceDetailView.as_view(),
         name="api_provenance_resource",
     ),
     path(
-        "api/provenance_resource/<slug:graph>/<slug:nodegroup_alias>",
-        ProvenanceTileListCreateView.as_view(),
-        name="api_provenance_tiles",
-    ),
-    path(
-        "api/provenance_resource/<slug:graph>/<slug:nodegroup_alias>/<uuid:pk>",
+        "api/provenance_tile/<slug:nodegroup_alias>/<uuid:pk>",
         ProvenanceTileDetailView.as_view(),
         name="api_provenance_tile",
     ),

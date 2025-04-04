@@ -26,10 +26,6 @@ from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
 from arches.app.models.tile import Tile
 
-from arches_provenance.app.utils.label_based_graph_with_branch_export import (
-    LabelBasedGraphWithBranchExport,
-)
-
 
 class ArchesGetNodeDisplayValueV2(Func):
     function = "__arches_get_node_display_value_v2"
@@ -393,50 +389,6 @@ def get_sorted_filtered_relations(
         relations = relations.order_by(F(sort_field).desc(nulls_last=True))
 
     return relations
-
-
-def serialize_tiles_with_children(
-    tile,
-    serialized_graph,
-    permitted_nodegroups,
-    card_visibility_reference,
-    node_visibility_reference,
-):
-    node_ids = list(tile.data.keys())
-
-    if str(tile.nodegroup_id) not in node_ids:
-        node_ids.append(str(tile.nodegroup_id))
-
-    node_ids_to_tiles_reference = {}
-    for node_id in node_ids:
-        tile_list = node_ids_to_tiles_reference.get(node_id, [])
-        tile_list.append(tile)
-        node_ids_to_tiles_reference[node_id] = tile_list
-
-    tile._children = [
-        serialize_tiles_with_children(
-            child,
-            serialized_graph,
-            permitted_nodegroups,
-            card_visibility_reference,
-            node_visibility_reference,
-        )
-        # TODO: arches v8: tile.children.filter(...
-        for child in tile.tilemodel_set.filter(
-            nodegroup_id__in=permitted_nodegroups
-        ).order_by("sortorder")
-    ]
-
-    preliminary_result = {
-        "@children": tile._children,
-        **LabelBasedGraphWithBranchExport.from_tile(
-            tile, node_ids_to_tiles_reference, {}, serialized_graph=serialized_graph
-        ),
-    }
-
-    return filter_hidden_nodes(
-        preliminary_result, card_visibility_reference, node_visibility_reference
-    )
 
 
 def filter_hidden_nodes(
