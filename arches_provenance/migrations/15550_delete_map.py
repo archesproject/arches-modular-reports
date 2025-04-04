@@ -4,7 +4,7 @@ from arches.app.models.models import SearchComponent
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("arches_provenance", "11500_change_default_standard_search"),
+        ("arches_provenance", "212_remove_old_group_report"),
     ]
     def forwards_func(apps, schema_editor):
         try:
