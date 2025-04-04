@@ -14,6 +14,11 @@ from arches.app.models.system_settings import settings
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.data_management.resources.formats.rdffile import JsonLdWriter
 
+from arches_provenance.app.views.card_editor import (
+    ProvenanceResourceDetailView,
+    ProvenanceTileDetailView,
+    ProvenanceTileListCreateView,
+)
 from arches_provenance.app.views.editable_report import (
     ChildTileDataView,
     EditableReportAwareResourceReportView,
@@ -248,6 +253,21 @@ urlpatterns = [
         "api/child_tile_data/<uuid:tileid>",
         ChildTileDataView.as_view(),
         name="api_child_tile_data",
+    ),
+    path(
+        "api/provenance_resource/<slug:graph>/<uuid:pk>",
+        ProvenanceResourceDetailView.as_view(),
+        name="api_provenance_resource",
+    ),
+    path(
+        "api/provenance_resource/<slug:graph>/<slug:nodegroup_alias>",
+        ProvenanceTileListCreateView.as_view(),
+        name="api_provenance_tiles",
+    ),
+    path(
+        "api/provenance_resource/<slug:graph>/<slug:nodegroup_alias>/<uuid:pk>",
+        ProvenanceTileDetailView.as_view(),
+        name="api_provenance_tile",
     ),
 ]
 
