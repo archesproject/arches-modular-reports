@@ -13,5 +13,6 @@
     api_nodegroup_tile_data = '(resourceinstanceid, nodegroupalias) => { return "{% url "api_nodegroup_tile_data" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" "alias" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resourceinstanceid).replace("alias", nodegroupalias)}'
     api_instance_permissions = "{% url 'api_instance_permissions' %}"
     api_provenance_tile = '(nodegroupalias, tileid) => { return "{% url "api_provenance_tile" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", nodegroupalias).replace("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", tileid)}'
+    api_related_resources = '(resourceinstanceid, relatedgraphslug) => { return "{% url "api_related_resources" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" "slug" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resourceinstanceid).replace("slug", relatedgraphslug)}'
 ></div>
 {% endblock arches_urls %}
