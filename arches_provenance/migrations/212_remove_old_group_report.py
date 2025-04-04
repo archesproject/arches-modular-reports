@@ -4,7 +4,6 @@ from arches.app.models.models import ReportTemplate
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("models", "11499_add_editlog_resourceinstance_idx"),
         ("arches_provenance", "11500_change_default_standard_search"),
     ]
 
