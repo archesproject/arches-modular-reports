@@ -37,7 +37,7 @@ const nodeAliasValuePairs = computed(() => {
     return (
         Object.entries(data.aliased_data).filter(
             ([nodeAlias, nodeValue]) =>
-                nodeValue &&
+                nodeValue !== null &&
                 !isTileorTiles(nodeValue) &&
                 nodePresentationLookup.value![nodeAlias].visible,
         ) || [[]]
@@ -47,7 +47,7 @@ const nodeAliasValuePairs = computed(() => {
 const visibleChildren = computed(() => {
     const childTiles: TileData[] = [];
     Object.values(data.aliased_data)
-        .filter((nodeValue) => nodeValue && isTileorTiles(nodeValue))
+        .filter((nodeValue) => nodeValue !== null && isTileorTiles(nodeValue))
         .forEach((nodeValue) => {
             if (Array.isArray(nodeValue)) {
                 childTiles.push(...nodeValue);
