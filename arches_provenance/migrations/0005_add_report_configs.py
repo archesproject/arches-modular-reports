@@ -11,7 +11,7 @@ from arches.app.models.system_settings import settings
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("arches_provenance", "212_remove_old_group_report"),
+        ("arches_provenance", "15550_delete_map"),
     ]
 
     def update_report_configs(apps, schema_editor):
