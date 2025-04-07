@@ -4,7 +4,7 @@ from arches.app.models.models import ReportTemplate
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("arches_provenance", "0006_exclude_branches_from_choices"),
+        ("arches_provenance", "11500_change_default_standard_search"),
     ]
 
     def forwards_func(apps, schema_editor):

@@ -3,6 +3,9 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
+import arches_provenance.utils
+from arches.app.models.system_settings import settings
+
 
 class Migration(migrations.Migration):
 
@@ -17,13 +20,22 @@ class Migration(migrations.Migration):
             name="ReportConfig",
             fields=[
                 ("id", models.AutoField(primary_key=True, serialize=False)),
-                ("config", models.JSONField(blank=True, default=dict)),
+                (
+                    "config",
+                    models.JSONField(
+                        blank=True,
+                        default=dict,
+                        encoder=arches_provenance.utils.PrettyJSONEncoder,
+                    ),
+                ),
                 (
                     "graph",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="report",
                         to="models.graphmodel",
+                        limit_choices_to=models.Q(isresource=True)
+                        & ~models.Q(pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID),
                     ),
                 ),
             ],
