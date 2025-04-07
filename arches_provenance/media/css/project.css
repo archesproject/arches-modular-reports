@@ -172,3 +172,64 @@ td {
     color: steelblue;
     padding-left: 10px;
 }
+
+.save-content {
+    display: none;
+}
+
+.save-toggle>.h4 {
+    display: inline-block;
+}
+
+.interpreting-related-toggle>.h4 {
+    display: inline-block;
+}
+
+.related-content-toggle>.h4 {
+    display: inline-block;
+}
+
+.related-toggle>.h4 {
+    display: inline-block;
+}
+
+.advanced-content-toggle>.h4 {
+    display: inline-block;
+}
+
+.advanced-content {
+    display: none;
+}
+
+.related-content {
+    display: none;
+}
+
+.interpreting-related-content {
+    display: none;
+}
+
+.time-toggle>.h4 {
+    display: inline-block;
+}
+
+.time-content {
+    display: none;
+}
+
+.report-toggle>.h4 {
+    display: inline-block;
+}
+
+.report-content {
+    display: none;
+}
+
+.models-toggle>.h4 {
+    display: inline-block;
+}
+
+.models-content {
+    display: none;
+}
+
