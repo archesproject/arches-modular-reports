@@ -123,6 +123,16 @@ function bestWidgetLabel(nodeAlias: string) {
                         </Button>
                     </dd>
                 </div>
+                <dd v-else-if="nodeValue.concept_id">
+                    <Button
+                        as="a"
+                        variant="link"
+                        target="_blank"
+                        :href="arches.urls.rdm + nodeValue.concept_id"
+                    >
+                        {{ nodeValue["@display_value"] }}
+                    </Button>
+                </dd>
                 <div
                     v-else-if="nodeValue.concept_details?.length"
                     style="flex-direction: column"
