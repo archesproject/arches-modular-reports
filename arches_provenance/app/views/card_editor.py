@@ -1,4 +1,3 @@
-from rest_framework import renderers
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 from arches_querysets.rest_framework.permissions import Guest
