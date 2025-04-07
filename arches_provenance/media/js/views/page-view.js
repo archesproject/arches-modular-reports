@@ -148,7 +148,6 @@ define([
                             setupToggle(el, '.interpreting-related-toggle', "[data-toggle='interpreting-related-search']", '.interpreting-related-content');
                         });
                         $(el).find('.related-toggle').click(function() {
-                            setupToggle(el, '.related-toggle', "[data-toggle='interpreting-related-toggle']", '.interpreting-related-content');
                             setupToggle(el, '.related-toggle', "[data-toggle='related-search-new']", '.related-content');
                         });
                         $(el).find('.save-toggle').click(function() {
