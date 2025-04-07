@@ -230,6 +230,13 @@ class NodePresentationView(APIBase):
             )
         )
 
+        def get_node_visibility(node):
+            if node.pk == node.nodegroup.pk and node.nodegroup.cardmodel_set.all():
+                return node.nodegroup.cardmodel_set.all()[0].visible
+            if node.cardxnodexwidget_set.all():
+                return node.cardxnodexwidget_set.all()[0].visible
+            return True
+
         return JSONResponse(
             {
                 node.alias: {
@@ -245,11 +252,7 @@ class NodePresentationView(APIBase):
                         if node.cardxnodexwidget_set.all()
                         else node.name.replace("_", " ").title()
                     ),
-                    "visible": (
-                        node.cardxnodexwidget_set.all()[0].visible
-                        if node.cardxnodexwidget_set.all()
-                        else True
-                    ),
+                    "visible": get_node_visibility(node),
                     "nodegroup": {
                         "nodegroup_id": node.nodegroup.pk,
                         "cardinality": node.nodegroup.cardinality,
