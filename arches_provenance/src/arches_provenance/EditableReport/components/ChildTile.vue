@@ -47,21 +47,19 @@ const nodeAliasValuePairs = computed(() => {
 });
 
 const visibleChildren = computed(() => {
-    const childTiles: TileData[] = [];
-    Object.values(data.aliased_data)
-        .filter(
-            (nodeValue) =>
-                (showEmptyNodes || nodeValue !== null) &&
-                isTileorTiles(nodeValue),
-        )
-        .forEach((nodeValue) => {
+    return Object.values(data.aliased_data).reduce((acc, nodeValue) => {
+        if (
+            (showEmptyNodes || nodeValue !== null) &&
+            isTileorTiles(nodeValue)
+        ) {
             if (Array.isArray(nodeValue)) {
-                childTiles.push(...nodeValue);
+                acc.push(...nodeValue);
             } else {
-                childTiles.push(nodeValue);
+                acc.push(nodeValue);
             }
-        });
-    return childTiles;
+        }
+        return acc;
+    }, []);
 });
 
 function isTileorTiles(input: unknown) {
