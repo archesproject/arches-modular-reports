@@ -18,11 +18,13 @@ const {
     depth,
     divider = false,
     customLabels,
+    showEmptyNodes = true,
 } = defineProps<{
     data: TileData;
     depth: number;
     divider?: boolean;
     customLabels?: Record<string, string>;
+    showEmptyNodes?: boolean;
 }>();
 
 const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
@@ -37,7 +39,7 @@ const nodeAliasValuePairs = computed(() => {
     return (
         Object.entries(data.aliased_data).filter(
             ([nodeAlias, nodeValue]) =>
-                nodeValue !== null &&
+                (showEmptyNodes || nodeValue !== null) &&
                 !isTileorTiles(nodeValue) &&
                 nodePresentationLookup.value![nodeAlias].visible,
         ) || [[]]
@@ -47,7 +49,11 @@ const nodeAliasValuePairs = computed(() => {
 const visibleChildren = computed(() => {
     const childTiles: TileData[] = [];
     Object.values(data.aliased_data)
-        .filter((nodeValue) => nodeValue !== null && isTileorTiles(nodeValue))
+        .filter(
+            (nodeValue) =>
+                (showEmptyNodes || nodeValue !== null) &&
+                isTileorTiles(nodeValue),
+        )
         .forEach((nodeValue) => {
             if (Array.isArray(nodeValue)) {
                 childTiles.push(...nodeValue);
@@ -95,59 +101,58 @@ function bestWidgetLabel(nodeAlias: string) {
                 <dt class="p-datatable-column-title">
                     {{ bestWidgetLabel(nodeAlias) }}
                 </dt>
-                <template
-                    v-if="Array.isArray(nodeValue) && nodeValue[0]?.resourceId"
+                <dd v-if="nodeValue === null">{{ $gettext("None") }}</dd>
+                <div
+                    v-else-if="
+                        Array.isArray(nodeValue) && nodeValue[0]?.resourceId
+                    "
+                    style="flex-direction: column"
                 >
-                    <div style="flex-direction: column">
-                        <dd
-                            v-for="instanceDetail in nodeValue as ResourceDetails[]"
-                            :key="instanceDetail.resourceId"
-                        >
-                            <Button
-                                as="a"
-                                variant="link"
-                                target="_blank"
-                                :href="
-                                    arches.urls.resource_report +
-                                    instanceDetail.resourceId
-                                "
-                            >
-                                {{ instanceDetail.display_value }}
-                            </Button>
-                        </dd>
-                    </div>
-                </template>
-                <template v-else-if="nodeValue.concept_details?.length">
-                    <div style="flex-direction: column">
-                        <dd
-                            v-for="conceptDetail in nodeValue.concept_details as ConceptDetails[]"
-                            :key="conceptDetail.concept_id"
-                        >
-                            <Button
-                                as="a"
-                                variant="link"
-                                target="_blank"
-                                :href="
-                                    arches.urls.rdm + conceptDetail.concept_id
-                                "
-                            >
-                                {{ conceptDetail.value }}
-                            </Button>
-                        </dd>
-                    </div>
-                </template>
-                <template v-else-if="nodeValue.url">
-                    <dd>
+                    <dd
+                        v-for="instanceDetail in nodeValue as ResourceDetails[]"
+                        :key="instanceDetail.resourceId"
+                    >
                         <Button
                             as="a"
                             variant="link"
                             target="_blank"
-                            :href="nodeValue.url"
+                            :href="
+                                arches.urls.resource_report +
+                                instanceDetail.resourceId
+                            "
                         >
-                            {{ nodeValue.url_label || nodeValue.url }}
+                            {{ instanceDetail.display_value }}
                         </Button>
                     </dd>
-                </template>
+                </div>
+                <div
+                    v-else-if="nodeValue.concept_details?.length"
+                    style="flex-direction: column"
+                >
+                    <dd
+                        v-for="conceptDetail in nodeValue.concept_details as ConceptDetails[]"
+                        :key="conceptDetail.concept_id"
+                    >
+                        <Button
+                            as="a"
+                            variant="link"
+                            target="_blank"
+                            :href="arches.urls.rdm + conceptDetail.concept_id"
+                        >
+                            {{ conceptDetail.value }}
+                        </Button>
+                    </dd>
+                </div>
+                <dd v-else-if="nodeValue.url">
+                    <Button
+                        as="a"
+                        variant="link"
+                        target="_blank"
+                        :href="nodeValue.url"
+                    >
+                        {{ nodeValue.url_label || nodeValue.url }}
+                    </Button>
+                </dd>
                 <dd v-else>{{ nodeValue }}</dd>
             </div>
             <ChildTile

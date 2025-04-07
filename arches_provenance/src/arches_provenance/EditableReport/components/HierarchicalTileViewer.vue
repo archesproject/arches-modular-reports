@@ -9,10 +9,16 @@ import ChildTile from "@/arches_provenance/EditableReport/components/ChildTile.v
 
 import type { TileData } from "@/arches_provenance/EditableReport/types";
 
-const props = defineProps<{
+const {
+    nodegroupAlias,
+    tileId,
+    customLabels,
+    showEmptyNodes = true,
+} = defineProps<{
     nodegroupAlias: string;
     tileId: string;
     customLabels?: Record<string, string>;
+    showEmptyNodes: boolean;
 }>();
 
 const { $gettext } = useGettext();
@@ -26,8 +32,8 @@ const resourceInstanceId = inject("resourceInstanceId") as string;
 async function fetchData() {
     try {
         tileData.value = await fetchProvenanceTile(
-            props.nodegroupAlias,
-            props.tileId,
+            nodegroupAlias,
+            tileId,
             resourceInstanceId,
         );
         hasLoadingError.value = false;
@@ -46,6 +52,7 @@ onMounted(fetchData);
         :data="tileData"
         :depth="1"
         :custom-labels
+        :show-empty-nodes
     />
     <Message
         v-if="hasLoadingError"
