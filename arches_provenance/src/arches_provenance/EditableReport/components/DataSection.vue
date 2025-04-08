@@ -359,8 +359,10 @@ function rowClass(data: LabelBasedCard) {
         </Column>
         <template #expansion="slotProps">
             <HierarchicalTileViewer
+                :nodegroup-alias="props.component.config.nodegroup_alias"
                 :tile-id="slotProps.data['@tile_id']"
                 :custom-labels="props.component.config.custom_labels"
+                :show-empty-nodes="true"
             />
         </template>
     </DataTable>
