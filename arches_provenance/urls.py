@@ -23,6 +23,7 @@ from arches_provenance.app.views.editable_report import (
     ProvenanceEditableReportConfigView,
     RelatedResourceView,
 )
+from arches_provenance.app.views.related_resource import ProvenanceRelatedResourcesView
 
 uuid_regex = settings.UUID_REGEX
 logger = logging.getLogger(__name__)
@@ -223,6 +224,11 @@ urlpatterns = [
         r"^report/(?P<resourceid>%s)$" % uuid_regex,
         EditableReportAwareResourceReportView.as_view(),
         name="resource_report",
+    ),
+    re_path(
+        r"^resource/related/(?P<resourceid>%s|())$" % uuid_regex,
+        ProvenanceRelatedResourcesView.as_view(),
+        name="related_resources",
     ),
     path(
         "api/related_resources/<uuid:resourceid>/<slug:related_graph_slug>",
