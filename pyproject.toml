@@ -27,7 +27,7 @@ dependencies = [
     # When updating to arches 8, update the override of ResourceReportView
     # and grep for "TODO: arches v8:" to find hints for breaking change updates
     "arches>=7.6.8,<8.0.0",
-    "arches-querysets @ git+https://github.com/archesproject/arches-querysets.git@main",
+    "arches-querysets==0.1.0",
 ]
 version = "1.0.0"
 
