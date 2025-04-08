@@ -35,6 +35,8 @@ INSTANCES_TO_EXCLUDE_FROM_RR_COUNT = [
     "c4d4d35a-b61b-305b-9da9-aa368a1bebed",  # STAR German Contents Database
 ]
 
+RR_LIMIT = 10  # the limit for the number of related resources to be counted
+
 
 class ProvenanceRelatedResourcesView(RelatedResourcesView):
 
@@ -254,41 +256,45 @@ def get_related_resources(
                 resource["_id"]
                 for resource in related_resources["docs"]
                 if resource["found"]
-                and resource["_id"] not in INSTANCES_TO_EXCLUDE_FROM_RR_COUNT
+                # and resource["_id"] not in INSTANCES_TO_EXCLUDE_FROM_RR_COUNT
             ]
+            print(len(related_resource_ids))
 
-            to_counts = (
-                models.ResourceXResource.objects.filter(
-                    resourceinstanceidto__in=related_resource_ids
+            if include_rr_count and len(related_resource_ids) <= RR_LIMIT:
+                print("include_rr_count")
+                to_counts = (
+                    models.ResourceXResource.objects.filter(
+                        resourceinstanceidto__in=related_resource_ids
+                    )
+                    .values("resourceinstanceidto")
+                    .annotate(to_count=Count("resourceinstanceidto"))
+                    # ORDER BY NULLS LAST is necessary for "pipelined" GROUP BY, see
+                    # https://use-the-index-luke.com/sql/sorting-grouping/indexed-group-by
+                    .order_by(F("resourceinstanceidto").asc(nulls_last=True))
                 )
-                .values("resourceinstanceidto")
-                .annotate(to_count=Count("resourceinstanceidto"))
-                # ORDER BY NULLS LAST is necessary for "pipelined" GROUP BY, see
-                # https://use-the-index-luke.com/sql/sorting-grouping/indexed-group-by
-                .order_by(F("resourceinstanceidto").asc(nulls_last=True))
-            )
-            from_counts = (
-                models.ResourceXResource.objects.filter(
-                    resourceinstanceidfrom__in=related_resource_ids
+                from_counts = (
+                    models.ResourceXResource.objects.filter(
+                        resourceinstanceidfrom__in=related_resource_ids
+                    )
+                    .values("resourceinstanceidfrom")
+                    .annotate(from_count=Count("resourceinstanceidfrom"))
+                    .order_by(F("resourceinstanceidfrom").asc(nulls_last=True))
                 )
-                .values("resourceinstanceidfrom")
-                .annotate(from_count=Count("resourceinstanceidfrom"))
-                .order_by(F("resourceinstanceidfrom").asc(nulls_last=True))
-            )
 
-            total_relations_by_resource_id: dict[UUID:int] = defaultdict(int)
-            for related_resource_count in to_counts:
-                total_relations_by_resource_id[
-                    related_resource_count["resourceinstanceidto"]
-                ] += related_resource_count["to_count"]
-            for related_resource_count in from_counts:
-                total_relations_by_resource_id[
-                    related_resource_count["resourceinstanceidfrom"]
-                ] += related_resource_count["from_count"]
+                total_relations_by_resource_id: dict[UUID:int] = defaultdict(int)
+                for related_resource_count in to_counts:
+                    total_relations_by_resource_id[
+                        related_resource_count["resourceinstanceidto"]
+                    ] += related_resource_count["to_count"]
+                for related_resource_count in from_counts:
+                    total_relations_by_resource_id[
+                        related_resource_count["resourceinstanceidfrom"]
+                    ] += related_resource_count["from_count"]
 
             for resource in related_resources["docs"]:
                 if resource["found"]:
-                    if include_rr_count:
+                    resource["_source"]["total_relations"] = {"value": ""}
+                    if include_rr_count and len(related_resource_ids) <= RR_LIMIT:
                         resource["_source"]["total_relations"] = {
                             "value": total_relations_by_resource_id[
                                 UUID(resource["_id"])
