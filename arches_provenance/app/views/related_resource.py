@@ -23,13 +23,16 @@ logger = logging.getLogger(__name__)
 
 
 INSTANCES_TO_EXCLUDE_FROM_RR_COUNT = [
-    "d0e7dd29-144c-38c1-b45c-e5ea4e1855e8",
-    "29246664-db2b-3f62-8ba6-5e82ad675c77",
-    "c13b88b3-282c-301e-a227-0d8aba2f9fdd",
-    "6b4235e8-20f9-3121-a3b2-17ca4c9fa6b0",
-    "a60c4ace-f10c-3881-accb-fce51d4d3a53",
-    "24dd6011-9c7d-35dd-a617-af50a37b11d1",
-    "564a22cb-caee-3acc-8433-df1caa2b9a55",
+    "d0e7dd29-144c-38c1-b45c-e5ea4e1855e8",  # Getty Provenance Index
+    "29246664-db2b-3f62-8ba6-5e82ad675c77",  # M. Knoedler & Co.
+    "c13b88b3-282c-301e-a227-0d8aba2f9fdd",  # London
+    "6b4235e8-20f9-3121-a3b2-17ca4c9fa6b0",  # Vienna
+    "a60c4ace-f10c-3881-accb-fce51d4d3a53",  # Berlin
+    "24dd6011-9c7d-35dd-a617-af50a37b11d1",  # Munich
+    "564a22cb-caee-3acc-8433-df1caa2b9a55",  # Frankfurt Am Main
+    "c5feae26-2eb0-353d-a089-133f6f5b6b7a",  # STAR Knoedler Database
+    "84aa5478-322b-3ee6-9fd5-a52be6fd7f24",  # STAR British Contents Database
+    "c4d4d35a-b61b-305b-9da9-aa368a1bebed",  # STAR German Contents Database
 ]
 
 
