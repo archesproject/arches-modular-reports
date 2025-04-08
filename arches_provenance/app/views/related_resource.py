@@ -6,6 +6,8 @@ from arches.app.utils.response import JSONResponse
 from arches.app.utils.string_utils import str_to_bool
 from arches.app.views.resource import RelatedResourcesView
 
+from arches_provenance.app.utils.resource_utils import get_related_resources
+
 logger = logging.getLogger(__name__)
 
 
