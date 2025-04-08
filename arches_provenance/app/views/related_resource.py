@@ -22,27 +22,12 @@ from arches.app.utils.permission_backend import get_filtered_instances
 logger = logging.getLogger(__name__)
 
 
-INSTANCES_TO_EXCLUDE_FROM_RR_COUNT = [
-    "d0e7dd29-144c-38c1-b45c-e5ea4e1855e8",  # Getty Provenance Index
-    "29246664-db2b-3f62-8ba6-5e82ad675c77",  # M. Knoedler & Co.
-    "c13b88b3-282c-301e-a227-0d8aba2f9fdd",  # London
-    "6b4235e8-20f9-3121-a3b2-17ca4c9fa6b0",  # Vienna
-    "a60c4ace-f10c-3881-accb-fce51d4d3a53",  # Berlin
-    "24dd6011-9c7d-35dd-a617-af50a37b11d1",  # Munich
-    "564a22cb-caee-3acc-8433-df1caa2b9a55",  # Frankfurt Am Main
-    "c5feae26-2eb0-353d-a089-133f6f5b6b7a",  # STAR Knoedler Database
-    "84aa5478-322b-3ee6-9fd5-a52be6fd7f24",  # STAR British Contents Database
-    "c4d4d35a-b61b-305b-9da9-aa368a1bebed",  # STAR German Contents Database
-]
-
 RR_LIMIT = 10  # the limit for the number of related resources to be counted
 
 
 class ProvenanceRelatedResourcesView(RelatedResourcesView):
 
     def get(self, request, resourceid=None, include_rr_count=True):
-        print("RelatedResourcesView.get")
-
         ret = {}
 
         paginate = str_to_bool(request.GET.get("paginate", "true"))  # default to true
@@ -63,7 +48,7 @@ class ProvenanceRelatedResourcesView(RelatedResourcesView):
                 user=request.user,
                 resourceinstance_graphid=resourceinstance_graphid,
                 graphs=self.graphs,
-                include_rr_count=include_rr_count,
+                include_rr_count=False,
             )
 
         return JSONResponse(ret)
@@ -84,8 +69,6 @@ def get_related_resources(
     Returns an object that lists the related resources, the relationship types, and a reference to the current resource
 
     """
-
-    print("in get_related_resources")
 
     # TODO This function is very similar to code in search results and the resource view. Needs to be centralized.
     def get_localized_descriptor(document, descriptor_type):
@@ -256,12 +239,9 @@ def get_related_resources(
                 resource["_id"]
                 for resource in related_resources["docs"]
                 if resource["found"]
-                # and resource["_id"] not in INSTANCES_TO_EXCLUDE_FROM_RR_COUNT
             ]
-            print(len(related_resource_ids))
 
-            if include_rr_count and len(related_resource_ids) <= RR_LIMIT:
-                print("include_rr_count")
+            if include_rr_count:
                 to_counts = (
                     models.ResourceXResource.objects.filter(
                         resourceinstanceidto__in=related_resource_ids
@@ -294,7 +274,7 @@ def get_related_resources(
             for resource in related_resources["docs"]:
                 if resource["found"]:
                     resource["_source"]["total_relations"] = {"value": ""}
-                    if include_rr_count and len(related_resource_ids) <= RR_LIMIT:
+                    if include_rr_count:
                         resource["_source"]["total_relations"] = {
                             "value": total_relations_by_resource_id[
                                 UUID(resource["_id"])
