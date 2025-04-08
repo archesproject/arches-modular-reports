@@ -22,9 +22,6 @@ from arches.app.utils.permission_backend import get_filtered_instances
 logger = logging.getLogger(__name__)
 
 
-RR_LIMIT = 10  # the limit for the number of related resources to be counted
-
-
 class ProvenanceRelatedResourcesView(RelatedResourcesView):
 
     def get(self, request, resourceid=None, include_rr_count=True):
