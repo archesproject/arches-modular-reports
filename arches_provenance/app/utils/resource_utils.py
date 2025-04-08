@@ -234,7 +234,7 @@ def get_related_resources(
 
             for resource in related_resources["docs"]:
                 if resource["found"]:
-                    resource["_source"]["total_relations"] = {"value": ""}
+                    resource["_source"]["total_relations"] = {"value": "?"}
                     if include_rr_count:
                         resource["_source"]["total_relations"] = {
                             "value": total_relations_by_resource_id[
