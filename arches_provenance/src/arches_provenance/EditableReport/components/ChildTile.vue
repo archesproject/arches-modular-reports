@@ -41,7 +41,7 @@ const nodeAliasValuePairs = computed(() => {
             ([nodeAlias, nodeValue]) =>
                 (showEmptyNodes || nodeValue !== null) &&
                 !isTileorTiles(nodeValue) &&
-                nodePresentationLookup.value![nodeAlias].visible,
+                nodePresentationLookup.value![nodeAlias]?.visible,
         ) || [[]]
     );
 });
@@ -52,7 +52,7 @@ const visibleChildren = computed(() => {
             if (
                 (showEmptyNodes || nodeValue !== null) &&
                 isTileorTiles(nodeValue) &&
-                nodePresentationLookup.value![nodeAlias].visible
+                nodePresentationLookup.value![nodeAlias]?.visible
             ) {
                 if (Array.isArray(nodeValue)) {
                     acc.push(...nodeValue);
