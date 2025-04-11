@@ -516,6 +516,7 @@ REST_FRAMEWORK = {  # if you are using the Django REST Framework integration
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": API_MAX_PAGE_SIZE,
 }
+HOSTED_APPS = ()
 
 try:
     from .package_settings import *
@@ -532,3 +533,5 @@ except ImportError as e:
         from settings_local import *
     except ImportError as e:
         pass
+
+INSTALLED_APPS += HOSTED_APPS
