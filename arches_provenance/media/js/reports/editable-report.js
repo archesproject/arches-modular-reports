@@ -51,6 +51,12 @@ const EditableReportPreset = definePreset(Aura, {
                 }
             }
         },
+        // TODO: arches v8: provided by default.ts, remove
+        splitter: {
+            handle: {
+                background: "{surface.500}",
+            },
+        },
         toast: {
             summary: { fontSize: '1.5rem' },
             detail: { fontSize: '1.25rem' },

@@ -61,6 +61,12 @@ const userCanEditResourceInstance = inject(
 const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
     NodePresentationLookup | undefined
 >;
+const { setSelectedNodeAlias } = inject("selectedNodeAlias") as {
+    setSelectedNodeAlias: (nodeAlias: string | null) => void;
+};
+const { setSelectedTileId } = inject("selectedTileId") as {
+    setSelectedTileId: (tileId: string | null) => void;
+};
 
 const first = computed(() => {
     if (resettingToFirstPage.value) {
@@ -199,6 +205,11 @@ function onUpdateSortOrder(event: number | undefined) {
 function rowClass(data: LabelBasedCard) {
     return [{ "no-children": data["@has_children"] === false }];
 }
+
+function initiateEdit(tileId: string | null) {
+    setSelectedNodeAlias(props.component.config.nodegroup_alias);
+    setSelectedTileId(tileId);
+}
 </script>
 
 <template>
@@ -222,6 +233,7 @@ function rowClass(data: LabelBasedCard) {
                 :label="$gettext('Add %{cardName}', { cardName })"
                 icon="pi pi-plus"
                 variant="outlined"
+                @click="initiateEdit(null)"
             />
         </div>
         <div class="no-data-found">
@@ -260,6 +272,7 @@ function rowClass(data: LabelBasedCard) {
                     :label="$gettext('Add %{cardName}', { cardName })"
                     icon="pi pi-plus"
                     variant="outlined"
+                    @click="initiateEdit(null)"
                 />
 
                 <div class="section-table-header-functions">
@@ -325,7 +338,7 @@ function rowClass(data: LabelBasedCard) {
                 props.component.config.has_write_permission
             "
         >
-            <template #body>
+            <template #body="{ data }">
                 <div
                     style="
                         width: 100%;
@@ -345,6 +358,7 @@ function rowClass(data: LabelBasedCard) {
                             class="p-button-outlined"
                             :aria-label="$gettext('Edit')"
                             rounded
+                            @click="initiateEdit(data['@tile_id'])"
                         />
                         <Button
                             icon="pi pi-trash"
