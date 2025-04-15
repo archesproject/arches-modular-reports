@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load i18n %}
+
 <!-- this html is included in help-panel-base.htm -->
 <div class="ep-help-content">
     <div>
@@ -138,6 +139,175 @@
                         <img id="advanced-search-example-help-gif" class="reloadable-img" src="{{ STATIC_URL }}img/help/video_merge.gif" aria-hidden="true"></img>
                     </div>
                 </p>
+            </div>
+        </div>
+    </div>
+    <div>
+        <a href="javascript:void(0)" class="models-toggle" data-toggle="models-search"><span class="h4">{% trans "The Remodeled Getty Provenance Index in Arches " %}</span></a>
+        <div class="models-content" id="Resource-models">
+            <div>
+                <p>{% blocktrans %} Information Organization in the Remodeled Getty Provenance Index {% endblocktrans %}</p>
+                <p>{% blocktrans %}<strong>Conceptual Introduction</strong> {% endblocktrans %}</p>
+                <p>{% blocktrans %}The <a href="https://www.getty.edu/research/provenance" target="_blank" rel="noopener noreferrer">Getty Provenance Index</a> provides open access to millions of resources from dealer stock books, sales catalogs, and archival inventories through a Getty-supported, open-source database platform. These datasets provide essential information on the ownership and market histories of artworks.<br><br>
+                    In Arches, Getty Provenance Index data is generated through events. Often, but not always, these events are related to historic transfers of ownership. These events create data that populates one of nine Resource Models used in the Provenance Index: Activity, Group, Person, Physical Object, Place, Provenance Activity, Set, Textual Work, and Visual Work. These models are based on the
+                    <a href="https://linked.art/" target="_blank" rel="noopener noreferrer">Linked.Art</a> metadata application profile of the <a href="https://cidoc-crm.org/" target="_blank" rel="noopener noreferrer">CIDOC-CRM</a> reference model. <br><br>
+                    For more information about how Arches defines Resource Models, Branches, and Nodes, see <a href="https://www.archesproject.org/arm-wg-documentation/" target="_blank" rel="noopener noreferrer">Arches Modeling Documentation</a>.{% endblocktrans %}</p>                
+                <p>{% blocktrans %}<strong>Resource Models</strong> {% endblocktrans %}</p>
+                <p>{% blocktrans %}<a href="https://observablehq.com/d/5c732aafeeb3134e" target="_blank" rel="noopener noreferrer">Activity</a>: Events and sub-events that can lead to transfers of ownership, such as auctions, exhibition sales, and lotteries. Activities also include the parts of those broader events that relate to the individual object sets, such as the offer of an individual lot at auction. <br><br>
+                                   <a href="https://observablehq.com/d/8286fcbb5deb9cd8" target="_blank" rel="noopener noreferrer">Group</a>: A corporate body, such as an institution or business, or a group of individuals defined by a shared characteristic. <br><br>
+                                   <a href="https://observablehq.com/d/fe5c47f71adbaba2" target="_blank" rel="noopener noreferrer">Person</a>: An individual actor associated with an object, such as a creator, collector, or appraiser. <br><br>
+                                   <a href="https://observablehq.com/d/80d06417888c5592" target="_blank" rel="noopener noreferrer">Physical Object</a>: Works of art, material culture, or documents. These are human-produced objects that exist or existed in the physical world. <br><br>
+                                   <a href="https://observablehq.com/d/3c097f8b40462141" target="_blank" rel="noopener noreferrer">Place</a>: Geographic location associated with a person, group, or activity. <br><br>
+                                   <a href="https://observablehq.com/d/97aee5b95de95cab" target="_blank" rel="noopener noreferrer">Provenance Activity</a>: Activities related to ownership, including transfer of ownership, transfer of custody, and inventorying of physical objects. <br><br>
+                                   <a href="https://observablehq.com/d/6601590604aaec7b" target="_blank" rel="noopener noreferrer">Set</a>: A grouping of one or more physical objects recorded as a single lot or entry in a sale catalog or inventory. <br><br>
+                                   <a href="https://observablehq.com/d/1b67d48c89f98f54" target="_blank" rel="noopener noreferrer">Textual Work</a>: Text carried by physical documents, digital resources, or parts thereof. Examples include text from sales catalogs, inventories, and stock books. A textual work can represent the text of a whole document or the text of an individual page or entry in a document. <br><br>
+                                   <a href="https://observablehq.com/d/a7b3ec8defdb90dd" target="_blank" rel="noopener noreferrer">Visual Work</a>: The conceptual, visual content of an artwork that can be carried by one or more physical objects or digital resources. The content of an artwork remains even if the last carrier is destroyed.
+                    {% endblocktrans %}</p>
+            </div>
+        </div>
+    </div>
+    <div>
+        <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="intro-to-search-content" role="button"><span class="h4">{% trans "Searching the Getty Provenance Index" %}</span></a>
+        <div class="ep-help-topic-content" id="intro-to-search-content">
+            <div>
+                <p>{% blocktrans %} Introduction to Search{% endblocktrans %}</p>
+                <span class="ep-help-img-link"><a href="{{ STATIC_URL }}img/help/searching.png" aria-hidden="true" target="_blank" tabindex="-1">{% trans "expand image in new tab" %}&nbsp;&nbsp;<i class="fa fa-external-link-square"></i></a></span>
+                <p><img class="reloadable-img" src="{{ STATIC_URL }}img/help/searching.png" aria-hidden="true"></img></p>
+                <p>{% blocktrans %}<strong>Elements of Search</strong> {% endblocktrans %}</p>
+                <p>{% blocktrans %}The “Search” function of the Getty Provenance Index in Arches allows users to query Provenance Index resources to locate data of interest. Upon creating a search using the Search Bar or Search Tools, links to resources, called “cards”, populate Search Results. Search Tools can be used to further refine, visualize, or export results, often in the Search Panel.{% endblocktrans %}</p>
+                <p>{% blocktrans %}<strong>Search Barstrong</strong> {% endblocktrans %}</p>
+                <p>{% blocktrans %}The Search Bar allows users to construct Simple Searches and acts as an aggregator of all enabled filters, including those in Advanced Searches. Logographs, diacritics, and unicode special characters are also supported in search.{% endblocktrans %}</p>
+                <p>{% blocktrans %}<strong>Search Tools</strong> {% endblocktrans %}</p>
+                <p>{% blocktrans %}The Search Tools area provides access to the
+                     <a href="#Advance-section" class="advanced-content-toggle" data-toggle="advance-search">Advanced Search</a>, 
+                     <a href="#related-section" class="related-content-toggle" data-toggle="related-search" >Related Resources</a>,
+                     <a href="#related-details" class="related-content-toggle" data-toggle="related-search" >Resource Details</a>,
+                     <a href="#save-searching" class="save-toggle" data-toggle="save-search" >Saved Search</a>,
+                     <a href="#time-filter" class="time-toggle" data-toggle="time-search">Time Filter</a>, and
+                     <a href="#save-searching" class="save-toggle" data-toggle="save-search">Export Search Results</a> tools mentioned throughout the User Guide.{% endblocktrans %}</p>
+                <p>{% blocktrans %}<strong>Search Results </strong> {% endblocktrans %}</p>
+                <p>{% blocktrans %}For any search, a filtered list of updated resources appears in Search Results. Results are displayed as cards, which list the name of the resource and a relevant subfield. Clicking on the name of the resource in a card opens that resource in a new tab. Below the resource name, two buttons open Search Tools resource previews: “Resource Details” and “Related Resources”. For more information on resource previews, see <a href="#preview-search" class="interpreting-related-toggle" data-toggle="interpreting-related-search">Previewing Resources in Search Results</a>.{% endblocktrans %}</p>
+                <p>{% blocktrans %}<strong>Search Panel </strong> {% endblocktrans %}</p>
+                <p>{% blocktrans %}The content of this panel changes depending on the Search Tool selected. By default, the Search Panel directs users’ attention to the Advanced Search tool.{% endblocktrans %}</p>
+
+            </div>
+            <div>
+                <a href="javascript:void(0)" class="advanced-content-toggle" data-toggle="advance-search" aria-expanded="false" ><span class="h5">{% trans "Kinds of Searches" %}</span></a>
+                <div class="advanced-content" id="Advance-section">
+                    <p>{% blocktrans %}<strong>Simple Search </strong> {% endblocktrans %}</p>
+                    <p>{% blocktrans %}Simple Search allows for term queries of the database using one or many keyword(s). Other filtering options allow for additional selections based on resource type. The search bar acts as an aggregator of all enabled filters. For more information, see <a href="#Constructing-simple-section"> Constructing a Simple Search</a>. {% endblocktrans %}</p>
+                    <div id="Advance-section"> 
+                        <p>{% blocktrans %}<strong>Search Tools</strong> {% endblocktrans %}</p>
+                        <p>{% blocktrans %}Advanced Search allows for more complex and precise queries beyond simple keyword searches. Advanced Search queries are built using data attributes known as facets, refining or expanding searches based on the structured location of information in the data model, data types, and other query conditions. For more information, see <a href="#Constructing-advanced-section"> Constructing an Advanced Search</a>.{% endblocktrans %}</p>
+                    </div>
+                    <p>{% blocktrans %}<strong>Mixing Simple & Advanced Searches</strong> {% endblocktrans %}</p>
+                    <p>{% blocktrans %}Simple and advanced searches can be combined, allowing for general keyword search within all exposed areas of an advanced search.{% endblocktrans %}</p>
+                </div>
+            </div>
+            <div id="Constructing-simple-section">
+                <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="intro-to-search-content" role="button"><span class="h5">{% trans "Constructing a Simple Search" %}</span></a>
+                <div class="ep-help-topic-content">
+                    <p>{% blocktrans %}<strong>Keywords</strong> {% endblocktrans %}</p>
+                    <p>{% blocktrans %}Simple Search can be used to match strings of text in any branch describing resource instances. Multiple keywords can be entered in the search bar to run an “AND/OR” query. Simple Search can also activate a “NOT” search by clicking on an entered keyword. Doing so will add a minus sign (-) before the keyword(s) and filter for all resources that do not contain the selected terms. Click the ‘x’ next to a keyword or filter to clear it. All search query elements can be cleared by clicking “Clear Filters”. {% endblocktrans %}</p>
+                    <p>{% blocktrans %}<strong>Resource Type Facet</strong> {% endblocktrans %}</p>
+                    <p>{% blocktrans %}Below the Search Bar, the “Resource Type” drop-down menu allows users to facet by Resource Model. Resource type facets can be added with keyword(s) to query for search terms within a given resource model.{% endblocktrans %}</p>
+                </div>
+            </div>
+            <div id="Constructing-advanced-section">
+                <a href="javascript:void(0)" class="time-toggle" data-toggle="time-search"><span class="h5">{% trans "Constructing an Advanced Search" %}</span></a>
+                <div class="time-content">
+                    <p>{% blocktrans %}<strong>Facets</strong> {% endblocktrans %}</p>
+                    <p>{% blocktrans %}The Advanced Search tool features facet search for multidimensional filtering, enabling users to select multiple criteria simultaneously to execute complex queries. Advanced Search facets are generated from the Getty Provenance Index  <a href="#Resource-models" class="models-toggle" data-toggle="models-search"> Resource Models</a> to allow for filtering at the model, branch, sub-branch, and field level. <br><br>
+                        The Advanced Search interface has two sections: Search Facets on the right, which lists branches and sub-branches available for query, and the Search Panel in the center, where search criteria are added to selected facets. Adding and removing search criteria to facets in the Search Panel automatically refines resources appearing in Search Results. <br><br>
+                        To begin an Advanced Search, users must select a facet, either by navigating to the desired branch or sub-branch facet using the accordion buttons or via search at the top of the Search Facets area. Once a facet is selected, the Search Panel will show the selected branch and fields for adding search criteria. <br><br>
+                        Multiple facets can be selected in an Advanced Search from the Search Facets panel. As additional facets are added to the Search Panel, a Boolean search operator will appear between selected facets, allowing users to define AND/OR facet relationships in their queries. Individual Advanced Search facets can either be removed by clicking the “Remove” button in the relevant facet in the Search Panel and all Advanced Search facets can be removed by clicking the “x” next to “Advanced Search” in the Search Bar or by clicking “Clear Filters” below the Search Bar.{% endblocktrans %}</p>
+                    <div id="time-filter">
+                        <p>{% blocktrans %}<strong>Time Filter</strong> {% endblocktrans %}</p>
+                        <p>{% blocktrans %}The Time Filter, indicated by a calendar icon in the Search Tools bar, allows users to refine queries by faceting on custom or predefined date ranges for resources with branches that have timespan data types. Additionally, a Time Wheel interactive allows users to see and select available timespan ranges to facet search queries on.{% endblocktrans %}</p>
+                
+                    </div>
+                </div>
+            </div> 
+            <div>
+                <a href="javascript:void(0)" class="save-toggle" data-toggle="save-search_new" ><span class="h5">{% trans "Saved Searches and Exporting Search Results" %}</span></a>
+                <div class="save-content" id="save-searching" >
+                    <p>{% blocktrans %}<strong>Saved Search</strong> {% endblocktrans %}</p>
+                    <p>{% blocktrans %}Located under the bookmark icon in the Search Tools bar, Saved Search allows users to  generate preconfigured Simple and Advanced Searches. These pre-filled queries apply a variety of Simple and Advanced Search criteria that can be narrowed or expanded by users. <br><br>
+                        Additionally, every query, including Saved Searches, produces a stable and unique URL that can be externally saved by users.{% endblocktrans %}</p>
+                    <p>{% blocktrans %}<strong>Exporting Search Results</strong> {% endblocktrans %}</p>
+                    <p>{% blocktrans %}Search Results can be exported in a variety of formats and configurations by using the Export Search Results tool. Once users have applied search criteria to create a desired set of Search Results for export, clicking the Export Search Results button in the rightmost corner of the Search Tools bar will open a dialog for defining export format and settings. Once export settings have been set, clicking “Download” will start the export and save the files to the local machine.{% endblocktrans %}</p>
+                </div>
+            </div> 
+        </div>
+    </div>
+    <div>
+        <a href="javascript:void(0)" class="interpreting-related-toggle" data-toggle="interpreting-related-search"><span class="h4">{% trans "Interpreting Search Results" %}</span></a>
+        <div class="interpreting-related-content" id ='preview-search'>
+            <div>
+                <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="intro-to-search-content" role="button"><span class="h5">{% trans "Viewing Search Results" %}</span></a>
+                <div class="ep-help-topic-content">
+                    <p>{% blocktrans %}<strong>Cards & Resources</strong> {% endblocktrans %}</p>
+                    <p>{% blocktrans %}Search options are dynamic and responsive, meaning that the Search Results update synchronously as a query is built in the Search Bar. With each added search criterion, the number of relevant resources will appear above the list of cards in the Search Results area. Sort results using the drop-down menu below the Resource Type menu in three ways: Unsorted (random order), Ascending (alphabetically A-to-Z), or Descending (alphabetically, Z-to-A).  <br><br>
+                        Search results appear as cards. A card provides a resource preview, including the resource name and a short description field (Note: cards will show “Undefined” when their resource description field is blank). Clicking the resource name in a card opens the corresponding resource in a new tab that contains all data instances related to the selected resource. For more about resources and the information they contain, see <a href="#Resource-reports" class="report-toggle" data-toggle="report-search"> Resource Reports</a> {% endblocktrans %}</p>
+                </div>
+            </div>
+            <div >
+                <a href="javascript:void(0)" class="related-toggle" data-toggle="related-search-new"><span class="h5">{% trans "Previewing Resources in Search Results" %}</span></a>
+                <div class="related-content" id ='preview-search'>
+                    <p>{% blocktrans %}<strong>Full NetWork</strong> {% endblocktrans %}</p>
+                    <span class="ep-help-img-link"><a href="{{ STATIC_URL }}img/help/related-resources.png" aria-hidden="true" target="_blank" tabindex="-1">{% trans "expand image in new tab" %}&nbsp;&nbsp;<i class="fa fa-external-link-square"></i></a></span>
+                    <p><img class="reloadable-img" src="{{ STATIC_URL }}img/help/related-resources.png" aria-hidden="true"></img></p>
+                    <div id="related-details">
+                        <p>{% blocktrans %}<strong>Resource Details</strong> {% endblocktrans %}</p>
+                        <p>{% blocktrans %}Resource Details, accessible by clicking “Details” on a Search Results card, allows users to preview a selected resource in the Search Panel.  {% endblocktrans %}</p>
+                    </div>    
+                    <div id="related-section">
+                        <p>{% blocktrans %}<strong>Related Resources </strong> {% endblocktrans %}</p>
+                        <p>{% blocktrans %}View relationships between resources by clicking “Related Resources” on a Search Results card. Doing so activates the Related Search Tool in the Search Panel and displays an interactive network graph showcasing resource connections as defined by the semantic structure of the Getty Provenance Index data model.  <br><br>
+                            In the network graph, five buttons control graph display and manipulation:{% endblocktrans %}</p>
+                        <p style="text-indent: 10px;">{% blocktrans %} •Click a Node/Edge for Info: While selected, clicking any node or edge opens the “Info” panel, which displays additional information about the resource and its relationships.{% endblocktrans %}</p>  
+                        <p style="text-indent: 10px;">{% blocktrans %} •Click a Node to Show More Relationships: Expands the graph to reveal all related nodes/edges for the selected node{% endblocktrans %}</p>  
+                        <p style="text-indent: 10px;">{% blocktrans %} •Click a Node Refocus: Recenters the graph to show only relationships connected to the newly selected node, removing any indirect relationships previously displayed{% endblocktrans %}</p>  
+                        <p style="text-indent: 10px;">{% blocktrans %} •Click a Node/Edge to Remove: Deletes the selected node or edge from the network graph{% endblocktrans %}</p>  
+                        <p style="text-indent: 10px;">{% blocktrans %} •Refresh: Recenters and resets the graph to its default state{% endblocktrans %}</p>
+                        <p>{% blocktrans %} Next to the network graph:{% endblocktrans %}</p>
+                        <p style="text-indent: 10px;">{% blocktrans %} •“Info”: Displays details for the selected node/edge{% endblocktrans %}</p>
+                        <p style="text-indent: 10px;">{% blocktrans %} •“Search”:  Allows string searches for any currently exposed node{% endblocktrans %}</p>
+                        <p style="text-indent: 10px;">{% blocktrans %} •“Legend”: Provides a visual explanation of node color coding used in Related Resources{% endblocktrans %}</p>
+                    </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <a href="javascript:void(0)" class="report-toggle" data-toggle="report-search"><span class="h4">{% trans "Viewing Resources" %}</span></a>
+        <div class="report-content" id="Resource-reports">
+            <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="intro-to-search-content" role="button"><span class="h5">{% trans "Resource Reports" %}</span></a>
+            <div class="ep-help-topic-content" id="Resource-reports">
+                <div>
+                    <p>{% blocktrans %}<strong>Conceptual Introduction</strong> {% endblocktrans %}</p>
+                    <p>{% blocktrans %}Instances of a Resource Model (known as Resources) capture information about Getty Provenance Index data and its relationships to other resources. Resources consist of discrete branches that function as smaller graph models grouping together thematically related data like names, dimensions, or timespans. Branches consist of nodes and relationships based on semantic triples
+                        (see: The <a href="https://www.archesproject.org/arm-wg-documentation/" target="_blank" rel="noopener noreferrer">Arches Modeling Documentation</a> for more info). Resource Reports capture instances of Resource Model branches and relationships between resources in a series of tables.{% endblocktrans %}</p>                
+                    <p>{% blocktrans %}<strong>Accessing Resource Reports</strong>{% endblocktrans %}</p>
+                    <p>{% blocktrans %}Access Resource Reports from Search by clicking on a card resource name in the Search Results. Doing so opens a corresponding Resource Report in a new tab.{% endblocktrans %}</p>
+                    <p>{% blocktrans %}<strong>Parts of a Resource Report </strong>{% endblocktrans %}</p>
+                    <p>{% blocktrans %}Access Resource Reports from Search by clicking on a card resource name in the Search Results. Doing so opens a corresponding Resource Report in a new tab.{% endblocktrans %}</p>
+                    <p style="text-indent: 10px;">{% blocktrans %} 1. <strong>Resource Header:</strong> At the top of a Resource Report, the Resource Header summarizes important resource information and displays tools for exporting resource data.{% endblocktrans %}</p>  
+                    <p style="text-indent: 10px;">{% blocktrans %} 2. <strong>View Selector:</strong> wo options are available: “Data” and “Related Resources”. The default view, “Data”, shows all modeled information for a resource. “Related Resources” displays other resources that are semantically linked to the current resource.{% endblocktrans %}</p>  
+                    <p style="text-indent: 10px;">{% blocktrans %} 3. <strong>Section Navigation:</strong> A series of buttons specific to each Resource Model allow users to navigate to related groups of branches (sections).{% endblocktrans %}</p>  
+                    <p style="text-indent: 10px;">{% blocktrans %} 4. <strong>Resource Information:</strong> Organized into branches, sub-branches, and nodes that describe a resource through its relations (edges) with other nodes (e.g., strings, concepts, timespans, resource-instances).{% endblocktrans %}</p>  
+                    <p>{% blocktrans %} Branches or sub-branches are represented as tables in Resource Reports, with columns representing branch nodes and rows as individual instances of node data. For example, an artwork with two titles would create two rows of node data in the Name branch table of a Physical Object Resource Report. <br><br>
+                        Some branch tables contain sub-branch information, which can be explored in the branch table drawer by clicking on the down caret “v” on the left side of any given row. <br><br>
+                        Within branch tables, data types include: {% endblocktrans %}</p>
+                    <p style="text-indent: 10px;">{% blocktrans %} •Strings, numbers, dates: Encoded information from source documents{% endblocktrans %}</p>
+                    <p style="text-indent: 10px;">{% blocktrans %} •Concepts: Controlled vocabulary terms managed by the Arches thesauri and are collected in the Getty Provenance Index data model <a href="https://observablehq.com/d/6c4d0f0ff448a165" target="_blank" rel="noopener noreferrer">documentation</a>{% endblocktrans %}</p>
+                    <p style="text-indent: 10px;">{% blocktrans %} •“Legend”: Provides a visual explanation of node color coding used in Related Resources{% endblocktrans %}</p>
+                    <p>{% blocktrans %}<strong>Resource Actions </strong> {% endblocktrans %}</p>
+                    <p>{% blocktrans %} Within a Resource Report, users can: {% endblocktrans %}</p>
+                    <p style="text-indent: 10px;">{% blocktrans %} •Search within branch and sub-branch tables using the search bar in the top right of each table {% endblocktrans %}</p>
+                    <p style="text-indent: 10px;">{% blocktrans %} •Sort note data alphabetically by clicking the dual arrows next to the name of each column of node data {% endblocktrans %}</p>
+                    <p>{% blocktrans %} All resources in the Getty Provenance Index have unique resource identifiers (URIs) built into their URLs, making any externally saved links stable for future reference. Additionally, users can export resources as CSV, JSON, or JSON-LD via the “Export as” options in the top right of the Resource Header. Users who find incorrect
+                        or incomplete information in the Getty Provenance Index are encouraged to submit corrections by emailing the resource URL and supporting documentation to <a href="mailto:provenanceindex@getty.edu">provenanceindex@getty.edu</a>.{% endblocktrans %}</p>
+                </div>
             </div>
         </div>
     </div>

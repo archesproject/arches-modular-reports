@@ -62,7 +62,11 @@ ROOT_HOSTCONF = "arches_provenance.hosts"
 DEFAULT_HOST = "arches_provenance"
 
 # Modify this line as needed for your project to connect to elasticsearch with a password that you generate
-ELASTICSEARCH_CONNECTION_OPTIONS = {"request_timeout": 30, "verify_certs": False, "basic_auth": ("elastic", "E1asticSearchforArche5")}
+ELASTICSEARCH_CONNECTION_OPTIONS = {
+    "request_timeout": 30,
+    "verify_certs": False,
+    "basic_auth": ("elastic", "E1asticSearchforArche5"),
+}
 
 # If you need to connect to Elasticsearch via an API key instead of username/password, use the syntax below:
 # ELASTICSEARCH_CONNECTION_OPTIONS = {"request_timeout": 30, "verify_certs": False, "api_key": "<ENCODED_API_KEY>"}
@@ -110,14 +114,9 @@ DATABASES = {
         "PASSWORD": "postgis",
         "PORT": "5432",
         "POSTGIS_TEMPLATE": "template_postgis",
-        "TEST": {
-            "CHARSET": None,
-            "COLLATION": None,
-            "MIRROR": None,
-            "NAME": None
-        },
+        "TEST": {"CHARSET": None, "COLLATION": None, "MIRROR": None, "NAME": None},
         "TIME_ZONE": None,
-        "USER": "postgres"
+        "USER": "postgres",
     }
 }
 
@@ -142,8 +141,10 @@ INSTALLED_APPS = (
     "corsheaders",
     "oauth2_provider",
     "django_celery_results",
+    "rest_framework",
     # "silk",
     "arches_provenance",  # Ensure the project is listed before any other arches applications
+    "arches_querysets",
 )
 
 # Placing this last ensures any templates provided by Arches Applications
@@ -154,7 +155,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    #"arches.app.utils.middleware.TokenMiddleware",
+    # "arches.app.utils.middleware.TokenMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -168,8 +169,7 @@ MIDDLEWARE = [
 ]
 
 MIDDLEWARE.insert(  # this must resolve to first MIDDLEWARE entry
-    0,
-    "django_hosts.middleware.HostsRequestMiddleware"
+    0, "django_hosts.middleware.HostsRequestMiddleware"
 )
 
 MIDDLEWARE.append(  # this must resolve last MIDDLEWARE entry
@@ -185,7 +185,9 @@ TEMPLATES = build_templates_config(
 
 ALLOWED_HOSTS = []
 
-SYSTEM_SETTINGS_LOCAL_PATH = os.path.join(APP_ROOT, "system_settings", "System_Settings.json")
+SYSTEM_SETTINGS_LOCAL_PATH = os.path.join(
+    APP_ROOT, "system_settings", "System_Settings.json"
+)
 WSGI_APPLICATION = "arches_provenance.wsgi.application"
 
 # URL that handles the media served from MEDIA_ROOT, used for managing stored files.
@@ -193,7 +195,7 @@ WSGI_APPLICATION = "arches_provenance.wsgi.application"
 MEDIA_URL = "/files/"
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
-MEDIA_ROOT =  os.path.join(APP_ROOT)
+MEDIA_ROOT = os.path.join(APP_ROOT)
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -224,21 +226,21 @@ LOGGING = {
             "level": "WARNING",  # DEBUG, INFO, WARNING, ERROR
             "class": "logging.FileHandler",
             "filename": os.path.join(APP_ROOT, "arches.log"),
-            "formatter": "console"
+            "formatter": "console",
         },
         "console": {
             "level": "WARNING",
             "class": "logging.StreamHandler",
-            "formatter": "console"
-        }
+            "formatter": "console",
+        },
     },
     "loggers": {
         "arches": {
             "handlers": ["file", "console"],
             "level": "WARNING",
-            "propagate": True
+            "propagate": True,
         }
-    }
+    },
 }
 
 # Rate limit for authentication views
@@ -272,23 +274,22 @@ HIDE_EMPTY_NODES_IN_REPORT = False
 BYPASS_UNIQUE_CONSTRAINT_TILE_VALIDATION = False
 BYPASS_REQUIRED_VALUE_TILE_VALIDATION = False
 
-DATE_IMPORT_EXPORT_FORMAT = "%Y-%m-%d" # Custom date format for dates imported from and exported to csv
+DATE_IMPORT_EXPORT_FORMAT = (
+    "%Y-%m-%d"  # Custom date format for dates imported from and exported to csv
+)
 
 # This is used to indicate whether the data in the CSV and SHP exports should be
 # ordered as seen in the resource cards or not.
 EXPORT_DATA_FIELDS_IN_CARD_ORDER = False
 
-#Identify the usernames and duration (seconds) for which you want to cache the time wheel
-CACHE_BY_USER = {
-    "default": 3600 * 24, #24hrs
-    "anonymous": 3600 * 24 #24hrs
-    }
+# Identify the usernames and duration (seconds) for which you want to cache the time wheel
+CACHE_BY_USER = {"default": 3600 * 24, "anonymous": 3600 * 24}  # 24hrs  # 24hrs
 
-TILE_CACHE_TIMEOUT = 600 #seconds
-CLUSTER_DISTANCE_MAX = 5000 #meters
+TILE_CACHE_TIMEOUT = 600  # seconds
+CLUSTER_DISTANCE_MAX = 5000  # meters
 GRAPH_MODEL_CACHE_TIMEOUT = None
 
-OAUTH_CLIENT_ID = ""  #"9JCibwrWQ4hwuGn5fu2u1oRZSs9V6gK8Vu8hpRC4"
+OAUTH_CLIENT_ID = ""  # "9JCibwrWQ4hwuGn5fu2u1oRZSs9V6gK8Vu8hpRC4"
 
 APP_TITLE = "Arches | Provenance"
 COPYRIGHT_TEXT = "All Rights Reserved."
@@ -310,9 +311,11 @@ EMAIL_HOST_USER = "xxxx@xxx.com"
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-CELERY_BROKER_URL = "" # RabbitMQ --> "amqp://guest:guest@localhost",  Redis --> "redis://localhost:6379/0"
+CELERY_BROKER_URL = ""  # RabbitMQ --> "amqp://guest:guest@localhost",  Redis --> "redis://localhost:6379/0"
 CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_RESULT_BACKEND = "django-db" # Use "django-cache" if you want to use your cache as your backend
+CELERY_RESULT_BACKEND = (
+    "django-db"  # Use "django-cache" if you want to use your cache as your backend
+)
 CELERY_TASK_SERIALIZER = "json"
 
 
@@ -321,7 +324,7 @@ CELERY_SEARCH_EXPORT_CHECK = 3600  # seconds
 
 CELERY_BEAT_SCHEDULE = {
     "delete-expired-search-export": {
-        "task": "arches.app.tasks.delete_file", 
+        "task": "arches.app.tasks.delete_file",
         "schedule": CELERY_SEARCH_EXPORT_CHECK,
     },
     "notification": {
@@ -415,10 +418,10 @@ LANGUAGE_CODE = "en"
 # {langcode}-{regioncode} eg: en, en-gb ....
 # a list of language codes can be found here http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGES = [
-#   ("de", _("German")),
+    #   ("de", _("German")),
     ("en", _("English")),
-#   ("en-gb", _("British English")),
-#   ("es", _("Spanish")),
+    #   ("en-gb", _("British English")),
+    #   ("es", _("Spanish")),
 ]
 
 # override this to permenantly display/hide the language switcher
@@ -428,7 +431,9 @@ SHOW_LANGUAGE_SWITCH = len(LANGUAGES) > 1
 # See tests.views.search_tests.TestEsMappingModifier class for example
 # ES_MAPPING_MODIFIER_CLASSES = ["arches_provenance.search.es_mapping_modifier.EsMappingModifier"]
 
-RESOURCE_FORMATTERS["json-ld"] = "arches_provenance.formatters.json_ld.JsonLdWriterWithGraphCaching"
+RESOURCE_FORMATTERS["json-ld"] = (
+    "arches_provenance.formatters.json_ld.JsonLdWriterWithGraphCaching"
+)
 
 JSON_LD_SORT = True
 JSON_LD_SORT_CLASSIFIED = {
@@ -481,22 +486,37 @@ def valuesort(x):
     else:
         return str(value)
 
+
 TIMEWHEEL_DATE_TIERS = {
-   "name": "Millennium",
+    "name": "Millennium",
     "interval": 2000,
     "root": True,
     "child": {
         "name": "Century",
         "interval": 100,
         "child": {"name": "Decade", "interval": 10},
-    }
-  }
+    },
+}
 
 JSON_LD_SORT_FUNCTIONS = [valuesort, langsort, typesort]
 
 PREFERRED_CONCEPT_SCHEMES = [
-    "http://vocab.getty.edu/aat/", "http://www.cidoc-crm.org/cidoc-crm/", "https://data.getty.edu/local/"]
+    "http://vocab.getty.edu/aat/",
+    "http://www.cidoc-crm.org/cidoc-crm/",
+    "https://data.getty.edu/local/",
+]
 
+REST_FRAMEWORK = {  # if you are using the Django REST Framework integration
+    # TODO: choose most appropriate default.
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": API_MAX_PAGE_SIZE,
+}
+HOSTED_APPS = ()
 
 try:
     from .package_settings import *
@@ -514,3 +534,4 @@ except ImportError as e:
     except ImportError as e:
         pass
 
+INSTALLED_APPS += HOSTED_APPS

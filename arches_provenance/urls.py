@@ -14,8 +14,8 @@ from arches.app.models.system_settings import settings
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.data_management.resources.formats.rdffile import JsonLdWriter
 
+from arches_provenance.app.views.card_editor import ProvenanceTileDetailView
 from arches_provenance.app.views.editable_report import (
-    ChildTileDataView,
     EditableReportAwareResourceReportView,
     NodegroupTileDataView,
     NodePresentationView,
@@ -23,6 +23,7 @@ from arches_provenance.app.views.editable_report import (
     ProvenanceEditableReportConfigView,
     RelatedResourceView,
 )
+from arches_provenance.app.views.related_resource import ProvenanceRelatedResourcesView
 
 uuid_regex = settings.UUID_REGEX
 logger = logging.getLogger(__name__)
@@ -224,6 +225,11 @@ urlpatterns = [
         EditableReportAwareResourceReportView.as_view(),
         name="resource_report",
     ),
+    re_path(
+        r"^resource/related/(?P<resourceid>%s|())$" % uuid_regex,
+        ProvenanceRelatedResourcesView.as_view(),
+        name="related_resources",
+    ),
     path(
         "api/related_resources/<uuid:resourceid>/<slug:related_graph_slug>",
         RelatedResourceView.as_view(),
@@ -245,9 +251,9 @@ urlpatterns = [
         name="api_node_tile_data",
     ),
     path(
-        "api/child_tile_data/<uuid:tileid>",
-        ChildTileDataView.as_view(),
-        name="api_child_tile_data",
+        "api/provenance_tile/<slug:nodegroup_alias>/<uuid:pk>",
+        ProvenanceTileDetailView.as_view(),
+        name="api_provenance_tile",
     ),
 ]
 

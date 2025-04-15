@@ -12,10 +12,7 @@ from django.views.generic import View
 from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
 from arches.app.utils.decorators import can_read_resource_instance
-from arches.app.utils.permission_backend import (
-    get_nodegroups_by_perm,
-    user_can_read_resource,
-)
+from arches.app.utils.permission_backend import get_nodegroups_by_perm
 from arches.app.utils.response import JSONErrorResponse, JSONResponse
 from arches.app.views.api import APIBase
 from arches.app.views.base import MapBaseManagerView
@@ -36,7 +33,6 @@ from arches_provenance.app.utils.nodegroup_tile_data_utils import (
     get_sorted_filtered_relations,
     get_sorted_filtered_tiles,
     prepare_links,
-    serialize_tiles_with_children,
 )
 
 
@@ -234,6 +230,13 @@ class NodePresentationView(APIBase):
             )
         )
 
+        def get_node_visibility(node):
+            if node.pk == node.nodegroup.pk and node.nodegroup.cardmodel_set.all():
+                return node.nodegroup.cardmodel_set.all()[0].visible
+            if node.cardxnodexwidget_set.all():
+                return node.cardxnodexwidget_set.all()[0].visible
+            return True
+
         return JSONResponse(
             {
                 node.alias: {
@@ -249,6 +252,7 @@ class NodePresentationView(APIBase):
                         if node.cardxnodexwidget_set.all()
                         else node.name.replace("_", " ").title()
                     ),
+                    "visible": get_node_visibility(node),
                     "nodegroup": {
                         "nodegroup_id": node.nodegroup.pk,
                         "cardinality": node.nodegroup.cardinality,
@@ -337,47 +341,3 @@ class NodeTileDataView(APIBase):
                 for node in nodes_with_display_data
             }
         )
-
-
-class ChildTileDataView(APIBase):
-    def get(self, request, tileid):
-        tile = (
-            models.TileModel.objects.filter(tileid=tileid)
-            .select_related("resourceinstance__graph__publication")
-            .get()
-        )
-
-        permitted_nodegroups = get_nodegroups_by_perm(
-            request.user, "models.read_nodegroup"
-        )
-        if (
-            not user_can_read_resource(request.user, str(tile.resourceinstance_id))
-            or tile.nodegroup_id not in permitted_nodegroups
-        ):
-            return JSONErrorResponse(status=HTTPStatus.FORBIDDEN)
-
-        published_graph = models.PublishedGraph.objects.get(
-            publication=tile.resourceinstance.graph.publication,
-            language=translation.get_language(),
-        )
-
-        configs = models.CardXNodeXWidget.objects.filter(
-            node__graph=published_graph.serialized_graph["graphid"]
-        ).select_related("card")
-        card_visibility_reference = {
-            str(config.node_id): config.card.visible if config.card else True
-            for config in configs
-        }
-        node_visibility_reference = {
-            str(config.node_id): config.visible for config in configs
-        }
-
-        serialized = serialize_tiles_with_children(
-            tile=tile,
-            serialized_graph=published_graph.serialized_graph,
-            permitted_nodegroups=permitted_nodegroups,
-            card_visibility_reference=card_visibility_reference,
-            node_visibility_reference=node_visibility_reference,
-        )
-
-        return JSONResponse(serialized)

@@ -3,7 +3,7 @@ import EditableReport from '@/arches_provenance/EditableReport/EditableReport.vu
 import createVueApplication from 'utils/create-vue-application';
 import EditableReportTemplate from 'templates/views/report-templates/editable-report.htm';
 
-import { $dt, definePreset } from '@primevue/themes';
+import { definePreset } from '@primevue/themes';
 import Aura from '@primevue/themes/aura';
 
 
@@ -57,7 +57,7 @@ const EditableReportPreset = definePreset(Aura, {
         },
         tabs: {
             colorScheme: {  
-                light: { 
+                light: {
                     tabpanel: {
                         background: '{surface-100}',
                     }
@@ -71,7 +71,7 @@ const EditableReportPreset = definePreset(Aura, {
         },
         card: {
             colorScheme: {  
-                light: { 
+                light: {
                     background: '{surface-100}'
                 },
                 dark: {
