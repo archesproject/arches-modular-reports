@@ -71,6 +71,24 @@ export interface NodeValueDisplayDataLookup {
 // eslint-disable-next-line
 interface AliasedData {}
 
+export interface ResourceData<T extends AliasedData = AliasedData> {
+    resourceinstanceid?: string;
+    name?: string;
+    descriptors?: {
+        [key: string]: {
+            name: string;
+            map_popup: string;
+            description: string;
+        };
+    };
+    legacyid?: string | null;
+    createdtime?: string;
+    graph?: string;
+    graph_publication: string;
+    principaluser: number;
+    aliased_data: T;
+}
+
 export interface TileData<T extends AliasedData = AliasedData> {
     aliased_data: T;
     nodegroup: string;

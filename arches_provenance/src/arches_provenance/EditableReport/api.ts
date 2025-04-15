@@ -1,5 +1,14 @@
 import arches from "arches";
 
+export const fetchProvenanceResource = async (resourceId: string) => {
+    const response = await fetch(
+        arches.urls.api_provenance_resource(resourceId),
+    );
+    const parsed = await response.json();
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};
+
 export const fetchProvenanceTile = async (
     nodegroupAlias: string,
     tileId: string,
