@@ -139,6 +139,9 @@ class RelatedResourceView(APIBase):
         permitted_nodegroups = get_nodegroups_by_perm(
             request.user, "models.read_nodegroup"
         )
+        user_permissions = {
+            "user_is_rdm_admin": group_required(request.user, "RDM Administrator"),
+        }
         nodes = annotate_related_graph_nodes_with_widget_labels(
             additional_nodes, related_graph, request_language
         )
@@ -193,6 +196,7 @@ class RelatedResourceView(APIBase):
                                 node_display_value=getattr(relation, node.alias),
                                 request_language=request_language,
                                 value_finder=value_finder,
+                                user_permissions=user_permissions,
                             ),
                         }
                         for node in nodes
@@ -320,6 +324,10 @@ class NodeTileDataView(APIBase):
         user_lang = translation.get_language()
         tile_limit = int(request.GET.get("tile_limit", 0))
 
+        user_permissions = {
+            "user_is_rdm_admin": group_required(request.user, "RDM Administrator"),
+        }
+
         nodes_with_display_data = annotate_node_values(
             node_aliases, resourceid, permitted_nodegroups, user_lang, tile_limit
         )
@@ -338,6 +346,7 @@ class NodeTileDataView(APIBase):
                             display_object["display_value"],
                             user_lang,
                             value_finder,
+                            user_permissions,
                         ),
                     }
                     for display_object in node.display_data

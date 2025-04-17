@@ -518,23 +518,26 @@ def prepare_links(
                         }
                     )
             case "concept":
-                if concept_id_results := get_concept_ids([tile_val]):
+                if user_permissions.get("user_is_rdm_admin") and (
+                    concept_id_results := get_concept_ids([tile_val])
+                ):
                     links.append(
                         {
                             "label": node_display_value,
-                            # "link": get_link(node.datatype, concept_id_results[0]),
+                            "link": get_link(node.datatype, concept_id_results[0]),
                         }
                     )
             case "concept-list":
-                concept_ids = get_concept_ids(tile_val)
-                labels = get_concept_labels(tile_val)
-                for concept_id, label in zip(concept_ids, labels, strict=True):
-                    links.append(
-                        {
-                            "label": label,
-                            # "link": get_link(node.datatype, concept_id),
-                        }
-                    )
+                if user_permissions.get("user_is_rdm_admin"):
+                    concept_ids = get_concept_ids(tile_val)
+                    labels = get_concept_labels(tile_val)
+                    for concept_id, label in zip(concept_ids, labels, strict=True):
+                        links.append(
+                            {
+                                "label": label,
+                                "link": get_link(node.datatype, concept_id),
+                            }
+                        )
             case "url":
                 links.append(
                     {
