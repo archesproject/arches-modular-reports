@@ -12,7 +12,7 @@ from django.views.generic import View
 from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
 from arches.app.utils.decorators import can_read_resource_instance
-from arches.app.utils.permission_backend import get_nodegroups_by_perm
+from arches.app.utils.permission_backend import get_nodegroups_by_perm, group_required
 from arches.app.utils.response import JSONErrorResponse, JSONResponse
 from arches.app.views.api import APIBase
 from arches.app.views.base import MapBaseManagerView
@@ -276,6 +276,10 @@ class NodegroupTileDataView(APIBase):
 
         user_language = translation.get_language()
 
+        user_permissions = {
+            "user_is_rdm_admin": group_required(request.user, "RDM Administrator"),
+        }
+
         tiles = get_sorted_filtered_tiles(
             resourceinstanceid=resourceid,
             nodegroup_alias=nodegroup_alias,
@@ -292,7 +296,7 @@ class NodegroupTileDataView(APIBase):
             "results": [
                 {
                     **{
-                        key: build_valueid_annotation(value)
+                        key: build_valueid_annotation(value, user_permissions)
                         for key, value in tile.alias_annotations.items()
                     },
                     # TODO: arches v8: tile.children.exists(),

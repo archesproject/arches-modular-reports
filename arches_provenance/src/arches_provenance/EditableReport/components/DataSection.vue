@@ -301,7 +301,7 @@ function rowClass(data: LabelBasedCard) {
         >
             <template #body="{ data, field }">
                 <div style="max-height: 12rem; overflow: auto">
-                    <template v-if="Array.isArray(data[field]?.display_value)">
+                    <template v-if="data[field]?.has_links">
                         <Button
                             v-for="item in data[field].display_value"
                             :key="item.link"
