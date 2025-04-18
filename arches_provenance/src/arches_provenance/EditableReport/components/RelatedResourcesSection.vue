@@ -158,6 +158,19 @@ async function fetchData(requested_page: number = 1) {
     }
 }
 
+function formatDisplayValue(display_value: string) {
+    try {
+        const val = JSON.parse(display_value);
+        if (Array.isArray(val)) {
+            return val.join(", ");
+        } else {
+            return val;
+        }
+    } catch {
+        return display_value;
+    }
+}
+
 onMounted(fetchData);
 </script>
 
@@ -253,7 +266,7 @@ onMounted(fetchData);
                     {{ link.label }}
                 </Button>
                 <template v-if="data[field].links.length === 0">
-                    {{ data[field].display_value }}
+                    {{ formatDisplayValue(data[field].display_value) }}
                 </template>
             </template>
         </Column>
