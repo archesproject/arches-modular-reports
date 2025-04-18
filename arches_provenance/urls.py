@@ -22,6 +22,7 @@ from arches_provenance.app.views.editable_report import (
     NodeTileDataView,
     ProvenanceEditableReportConfigView,
     RelatedResourceView,
+    UserPermissionsView,
 )
 from arches_provenance.app.views.related_resource import ProvenanceRelatedResourcesView
 
@@ -254,6 +255,11 @@ urlpatterns = [
         "api/provenance_tile/<slug:nodegroup_alias>/<uuid:pk>",
         ProvenanceTileDetailView.as_view(),
         name="api_provenance_tile",
+    ),
+    path(
+        "api/user_permissions",
+        UserPermissionsView.as_view(),
+        name="api_user_permissions",
     ),
 ]
 
