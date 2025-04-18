@@ -4,7 +4,10 @@ import { useGettext } from "vue3-gettext";
 
 import Message from "primevue/message";
 
-import { fetchProvenanceTile } from "@/arches_provenance/EditableReport/api.ts";
+import {
+    fetchProvenanceTile,
+    fetchUserPermissions,
+} from "@/arches_provenance/EditableReport/api.ts";
 import ChildTile from "@/arches_provenance/EditableReport/components/ChildTile.vue";
 
 import type { TileData } from "@/arches_provenance/EditableReport/types";
@@ -26,16 +29,22 @@ const { $gettext } = useGettext();
 const isLoading = ref(true);
 const hasLoadingError = ref(false);
 const tileData = ref<TileData>();
+const userIsRdmAdmin = ref(false);
 
 const resourceInstanceId = inject("resourceInstanceId") as string;
 
 async function fetchData() {
     try {
-        tileData.value = await fetchProvenanceTile(
-            nodegroupAlias,
-            tileId,
-            resourceInstanceId,
-        );
+        await Promise.all([
+            fetchProvenanceTile(
+                nodegroupAlias,
+                tileId,
+                resourceInstanceId,
+            ).then((data) => (tileData.value = data)),
+            fetchUserPermissions().then((data) => {
+                userIsRdmAdmin.value = data.user_is_rdm_admin;
+            }),
+        ]);
         hasLoadingError.value = false;
     } catch {
         hasLoadingError.value = true;
@@ -53,6 +62,7 @@ onMounted(fetchData);
         :depth="1"
         :custom-labels
         :show-empty-nodes
+        :user-is-rdm-admin="userIsRdmAdmin"
     />
     <Message
         v-if="hasLoadingError"

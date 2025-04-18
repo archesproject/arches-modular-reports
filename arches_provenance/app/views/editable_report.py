@@ -354,3 +354,11 @@ class NodeTileDataView(APIBase):
                 for node in nodes_with_display_data
             }
         )
+
+
+class UserPermissionsView(APIBase):
+    def get(self, request):
+        user_permissions = {
+            "user_is_rdm_admin": group_required(request.user, "RDM Administrator"),
+        }
+        return JSONResponse(user_permissions)
