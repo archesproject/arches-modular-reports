@@ -4,151 +4,11 @@
 <!-- this html is included in help-panel-base.htm -->
 <div class="ep-help-content">
     <div>
-        <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="intro-to-search-content" role="button"><span class="h4">{% trans "Introduction to Search" %}</span></a>
-        <div class="ep-help-topic-content" id="intro-to-search-content">
-            <span class="ep-help-img-link"><a href="{{ STATIC_URL }}img/help/search-page-labeled.jpg" aria-hidden="true" target="_blank" tabindex="-1">{% trans "expand image in new tab" %}&nbsp;&nbsp;<i class="fa fa-external-link-square"></i></a></span>
-            <p><img class="reloadable-img" src="{{ STATIC_URL }}img/help/search-page-labeled.jpg" aria-hidden="true"></img></p>
-            <div>
-                <p>{% blocktrans %}<strong>Search Bar</strong> The quickest way to search the database is to begin typing in the search bar. You'll be presented with database terminology which you can use to create one or more simple filters. The search bar also acts as an aggregator of <em>all</em> currently enabled filters.{% endblocktrans %}</p>
-                <p>{% blocktrans %}<strong>Search Tools</strong> There are a number tools you can use to explore the database, which are described in detail below.{% endblocktrans %}</p>
-                <p>{% blocktrans %}<strong>Search Results</strong> Whenever you change any search filters, the updated search results will be listed here. You can link to a resource's report, zoom to it on the map, or view its related resources.{% endblocktrans %}</p>
-                <p>{% blocktrans %}<strong>Search Panel</strong> The contents of this panel will change depending on what search tool you are using. Typically, the map will be activated by default.{% endblocktrans %}</p>
-            </div>
-        </div>
-    </div>
-    <div>
-        <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="search-tools-content" role="button"><div class="h4">{% trans "Search Tools" %}</div></a>
-        <div class="ep-help-topic-content" id="search-tools-content">
-            <div>
-                <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="map-help-content" role="button"><div class="h5">{% trans "Map" %}</div></a>
-                <div class="ep-help-topic-content" id="map-help-content">
-                    <p>{% blocktrans %}Search results can be represented on the map in two ways: <strong>markers</strong> show the first set of resources in the search results, and <strong>cells</strong> are used to give a general spatial representation of <em>all</em> resources in the search results.{% endblocktrans %}</p>
-                    <p>{% blocktrans %}In addition to displaying search results, the map can show resource layers (showing all resources), or custom overlays, if any have been added. You control the visibility of all layers and basemaps with the tool panel on the right.{% endblocktrans %}</p>
-                    <p>{% blocktrans %}Finally, you can add a spatial filter to your query by using the map drawing tools to draw a shape and apply a buffer distance if desired.{% endblocktrans %}</p>
-                    <p>
-                        <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="map-switch-basemap-help-gif" role="button">{% trans "How to change basemap" %}</a>
-                        <span class="ep-help-img-link">
-                            <a href="{{ STATIC_URL }}img/help/map-switch-basemap.gif" target="_blank" tabindex="-1" aria-hidden="true">{% trans "expand image in new tab" %}&nbsp;&nbsp;<i class="fa fa-external-link-square"></i>
-                            </a>
-                        </span>
-                        <div class="ep-help-topic-content">
-                            <img id="map-switch-basemap-help-gif" class="reloadable-img" src="{{ STATIC_URL }}img/help/map-switch-basemap.gif" aria-hidden="true"></img>
-                            <p>{% blocktrans %}To change the basemap, open the <strong>Basemaps</strong> tab, then click on the basemap you would like to use.{% endblocktrans %}</p>
-                        </div>
-                    </p>
-                    <div>
-                    <p>
-                        <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="search-results-layer-help-gif" role="button">{% trans "How to toggle search results layer" %}</a>
-                        <span class="ep-help-img-link">
-                            <a href="{{ STATIC_URL }}img/help/map-toggle-search-results-layer.gif" target="_blank" tabindex= aria-hidden="true""-1">{% trans "expand image in new tab" %}&nbsp;&nbsp;<i class="fa fa-external-link-square"></i>
-                            </a>
-                        </span>
-                        <div class="ep-help-topic-content">
-                            <img id="search-results-layer-help-gif" class="reloadable-img" src="{{ STATIC_URL }}img/help/map-toggle-search-results-layer.gif" aria-hidden="true"></img>
-                            <p>{% blocktrans %}To activate or deactivate overlays, open the <strong>Overlays</strong> tab, then use the switch to show or hide the layer on the map.{% endblocktrans %}</p>
-                        </div>
-                    </p>
-                    </div>
-                    <div>
-                    <p>
-                        <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="map-buffer-search-help-gif" role="button">{% trans "How to search with spatial query" %}</a>
-                        <span class="ep-help-img-link">
-                            <a href="{{ STATIC_URL }}img/help/map-buffer-search.gif" target="_blank" tabindex="-1" aria-hidden="true">{% trans "expand image in new tab" %}&nbsp;&nbsp;<i class="fa fa-external-link-square"></i>
-                            </a>
-                        </span>
-                        <div class="ep-help-topic-content">
-                            <img id="map-buffer-search-help-gif" class="reloadable-img" src="{{ STATIC_URL }}img/help/map-buffer-search.gif" aria-hidden="true"></img>
-                            <p>{% blocktrans %}To search with a spatial query, open the <strong>Filter</strong> tab, then use the <strong>Select A Filter</strong> section to draw a new geometry on the map. Additionally, you can search within a distance of your spatial filter by adjusting the <strong>Buffer</strong> distance.{% endblocktrans %}</p>
-                        </div>
-                    </p>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="time-help-content" role="button"><div class="h5">{% trans "Time" %}</div></a>
-                <div class="ep-help-topic-content" id="time-help-content">
-                    <p>{% blocktrans %}You can apply a temporal criterion to your query by using the Time Filter. You have the option of creating the filter by hand, or you can use the time wheel. The time wheel is a graphic representation of all the resources in the database, organized chronologically.{% endblocktrans %}<p>
-                    <div>
-                    <p>
-                        <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="time-wheel-example-help-gif" role="button">{% trans "How to apply time filter with time wheel" %}</a>
-                        <span class="ep-help-img-link">
-                            <a href="{{ STATIC_URL }}img/help/time-wheel-example.gif" target="_blank" tabindex="-1" aria-hidden="true">{% trans "expand image in new tab" %}&nbsp;&nbsp;<i class="fa fa-external-link-square"></i>
-                            </a>
-                        </span>
-                        <div class="ep-help-topic-content">
-                            <img id="time-wheel-example-help-gif" class="reloadable-img" src="{{ STATIC_URL }}img/help/time-wheel-example.gif" aria-hidden="true"></img>
-                            <p>{% blocktrans %}To filter resources using the Time Wheel, open the <strong>Date Filter</strong> tab, then click on the segment that corresponds with the desired filter on the time wheel.{% endblocktrans %}</p>
-                        </div>
-                    </p>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="saved-help-content" role="button"><div class="h5">{% trans "Saved" %}</div></a>
-                <div class="ep-help-topic-content" id="saved-help-content">
-                    <p>{% blocktrans %}Saved searches allow you to view pre-made queries. Saved searches are created by database administrators, so the number of saved searches shown here will vary from one database to the next.{% endblocktrans %}</p>
-                </div>
-            </div>
-            <div>
-                <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="advanced-help-content" role="button"><div class="h5">{% trans "Advanced" %}</div></a>
-                <div class="ep-help-topic-content" id="advanced-help-content">
-                    <p>{% blocktrans %}You can use the advanced search to make more complex queries based on data attributes, or "facets". While the basic search filter allows you to combine multiple filters, advanced search is the only way to combine filters with an <strong>or</strong> operator, and also gives you access to more comparison operators.{% endblocktrans %}</p>
-                    <p>{% blocktrans %}In the example below, a search is made within a single resource type for any name <strong>like</strong> "church" <strong>or</strong> any name <strong>like</strong> "gate".{% endblocktrans %}</p>
-                    <div>
-                    <p>
-                        <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="advanced-search-example-help-gif" role="button">{% trans "How to search for multiple words in names" %}</a>
-                        <span class="ep-help-img-link">
-                            <a href="{{ STATIC_URL }}img/help/advanced-search-example.gif" target="_blank" tabindex="-1" aria-hidden="true">{% trans "expand image in new tab" %}&nbsp;&nbsp;<i class="fa fa-external-link-square"></i>
-                            </a>
-                        </span>
-                        <div class="ep-help-topic-content">
-                            <img id="advanced-search-example-help-gif" class="reloadable-img" src="{{ STATIC_URL }}img/help/advanced-search-example.gif" aria-hidden="true"></img>
-                            <p>{% blocktrans %}To use the Advanced Search, open the <strong>Advanced</strong> tab, then under the <strong>Search Facets</strong> panel, select the properties of Resource Types that you'd like to filter by by clicking on them. This will add them to the Advanced Search Panel. You can then structure your advanced search by adjusting the search facets in the Advanced Search Panel.{% endblocktrans %}</p>
-                        </div>
-                    </p>
-                    </div>
-                </div>
-            </div>
-                <div>
-                <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="related-help-content" role="button"><div class="h5">{% trans "Related" %}</div></a>
-                <div class="ep-help-topic-content" id="related-help-content">
-                    <p>{% blocktrans %}For each resource listed in the search results you can view its related resources with the "Related Resources" link under the description. By viewing Related Resources, you get a new view of the database: not how resources are related geographically nor chronologically, but qualitatively.{% endblocktrans %}</p>
-                    <p>{% blocktrans %}There two methods for viewing Related Resources: in a table where each related resource is a row, or in a graph where resources are shown as nodes in a graph, with relationships connecting them.{% endblocktrans %}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div>
-        <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="intro-to-search-content" role="button"><span class="h4">{% trans "Bulk Merge Script Documentation" %}</span></a>
-        <div class="ep-help-topic-content" id="intro-to-search-content">
-            <p>{% blocktrans %} The bulk merge script can be used in order to allow you to merge two or more resources of the same model into one base resource. After selecting the ID’s of the resources that you would like to merge and execute the merging process, only the base resource will remain on the database. The resource that you selected for merging will be automatically deleted from the database.{% endblocktrans %}</p>
-            <p><img class="reloadable-img" src="{{ STATIC_URL }}img/help/merge_resource.png" aria-hidden="true"></img></p>
-            <div>
-                <p>{% blocktrans %} For using the bulk merge script, you need to follow four basic steps:{% endblocktrans %}</p>
-                <p>{% blocktrans %}<strong>Base Resource:</strong> Fill this field with ID resource that you wan to be the primary resource that will gather the final information and remain in the database.{% endblocktrans %}</p>
-                <p>{% blocktrans %}<strong>Merge Resource:</strong> Fill this field with as many ID’s resources you want to be merged with the base resource. {% endblocktrans %}</p>
-                <p>{% blocktrans %}<strong>Preview:</strong>  Check all the fields that will be influenced in the base resource. All the fields displayed are going to be transferred from the merge resource(s) to the base resource.{% endblocktrans %}</p>
-                <p>{% blocktrans %}<strong>Start:</strong> Start: Starting the process will redirect you to the loading page where you will be able to check the process of merging. When the status changes to be completed, the merging has been deployed and you are able to check the outcome by reloading the base resource. {% endblocktrans %}</p>
-                <p>
-                    <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="advanced-search-example-help-gif" role="button">{% trans "How to merge resource" %}</a>
-                    <span class="ep-help-img-link">
-                        <a href="{{ STATIC_URL }}img/help/video_merge.gif" target="_blank" tabindex="-1" aria-hidden="true">{% trans "expand image in new tab" %}&nbsp;&nbsp;<i class="fa fa-external-link-square"></i>
-                        </a>
-                    </span>
-                    <div class="ep-help-topic-content">
-                        <img id="advanced-search-example-help-gif" class="reloadable-img" src="{{ STATIC_URL }}img/help/video_merge.gif" aria-hidden="true"></img>
-                    </div>
-                </p>
-            </div>
-        </div>
-    </div>
-    <div>
         <a href="javascript:void(0)" class="models-toggle" data-toggle="models-search"><span class="h4">{% trans "The Remodeled Getty Provenance Index in Arches " %}</span></a>
         <div class="models-content" id="Resource-models">
             <div>
-                <p>{% blocktrans %} Information Organization in the Remodeled Getty Provenance Index {% endblocktrans %}</p>
                 <p>{% blocktrans %}<strong>Conceptual Introduction</strong> {% endblocktrans %}</p>
-                <p>{% blocktrans %}The <a href="https://www.getty.edu/research/provenance" target="_blank" rel="noopener noreferrer">Getty Provenance Index</a> provides open access to millions of resources from dealer stock books, sales catalogs, and archival inventories through a Getty-supported, open-source database platform. These datasets provide essential information on the ownership and market histories of artworks.<br><br>
+                <p>{% blocktrans %}The <a href="https://www.getty.edu/research/provenance" target="_blank" rel="noopener noreferrer">Getty Provenance Index</a> provides open access to millions of resources from dealer stock books and sales catalogs through a Getty-supported, open-source database platform. These datasets provide essential information on the ownership and market histories of artworks.<br><br>
                     In Arches, Getty Provenance Index data is generated through events. Often, but not always, these events are related to historic transfers of ownership. These events create data that populates one of nine Resource Models used in the Provenance Index: Activity, Group, Person, Physical Object, Place, Provenance Activity, Set, Textual Work, and Visual Work. These models are based on the
                     <a href="https://linked.art/" target="_blank" rel="noopener noreferrer">Linked.Art</a> metadata application profile of the <a href="https://cidoc-crm.org/" target="_blank" rel="noopener noreferrer">CIDOC-CRM</a> reference model. <br><br>
                     For more information about how Arches defines Resource Models, Branches, and Nodes, see <a href="https://www.archesproject.org/arm-wg-documentation/" target="_blank" rel="noopener noreferrer">Arches Modeling Documentation</a>.{% endblocktrans %}</p>                
@@ -170,23 +30,17 @@
         <a href="javascript:void(0)" class="ep-help-topic-toggle" aria-expanded="false" aria-controls="intro-to-search-content" role="button"><span class="h4">{% trans "Searching the Getty Provenance Index" %}</span></a>
         <div class="ep-help-topic-content" id="intro-to-search-content">
             <div>
-                <p>{% blocktrans %} Introduction to Search{% endblocktrans %}</p>
                 <span class="ep-help-img-link"><a href="{{ STATIC_URL }}img/help/searching.png" aria-hidden="true" target="_blank" tabindex="-1">{% trans "expand image in new tab" %}&nbsp;&nbsp;<i class="fa fa-external-link-square"></i></a></span>
                 <p><img class="reloadable-img" src="{{ STATIC_URL }}img/help/searching.png" aria-hidden="true"></img></p>
                 <p>{% blocktrans %}<strong>Elements of Search</strong> {% endblocktrans %}</p>
                 <p>{% blocktrans %}The “Search” function of the Getty Provenance Index in Arches allows users to query Provenance Index resources to locate data of interest. Upon creating a search using the Search Bar or Search Tools, links to resources, called “cards”, populate Search Results. Search Tools can be used to further refine, visualize, or export results, often in the Search Panel.{% endblocktrans %}</p>
-                <p>{% blocktrans %}<strong>Search Barstrong</strong> {% endblocktrans %}</p>
+                <p>{% blocktrans %}<strong>Search Bar</strong> {% endblocktrans %}</p>
                 <p>{% blocktrans %}The Search Bar allows users to construct Simple Searches and acts as an aggregator of all enabled filters, including those in Advanced Searches. Logographs, diacritics, and unicode special characters are also supported in search.{% endblocktrans %}</p>
                 <p>{% blocktrans %}<strong>Search Tools</strong> {% endblocktrans %}</p>
                 <p>{% blocktrans %}The Search Tools area provides access to the
-                     <a href="#Advance-section" class="advanced-content-toggle" data-toggle="advance-search">Advanced Search</a>, 
-                     <a href="#related-section" class="related-content-toggle" data-toggle="related-search" >Related Resources</a>,
-                     <a href="#related-details" class="related-content-toggle" data-toggle="related-search" >Resource Details</a>,
-                     <a href="#save-searching" class="save-toggle" data-toggle="save-search" >Saved Search</a>,
-                     <a href="#time-filter" class="time-toggle" data-toggle="time-search">Time Filter</a>, and
-                     <a href="#save-searching" class="save-toggle" data-toggle="save-search">Export Search Results</a> tools mentioned throughout the User Guide.{% endblocktrans %}</p>
+                     <strong>Advanced Search</strong>, <strong>Related Resources</strong>, <strong>Resource Details</strong>, <strong>Saved Search</strong>, <strong>Time Filter</strong>, and <strong>Export Search Results</strong> tools mentioned throughout the User Guide.{% endblocktrans %}</p>
                 <p>{% blocktrans %}<strong>Search Results </strong> {% endblocktrans %}</p>
-                <p>{% blocktrans %}For any search, a filtered list of updated resources appears in Search Results. Results are displayed as cards, which list the name of the resource and a relevant subfield. Clicking on the name of the resource in a card opens that resource in a new tab. Below the resource name, two buttons open Search Tools resource previews: “Resource Details” and “Related Resources”. For more information on resource previews, see <a href="#preview-search" class="interpreting-related-toggle" data-toggle="interpreting-related-search">Previewing Resources in Search Results</a>.{% endblocktrans %}</p>
+                <p>{% blocktrans %}For any search, a filtered list of updated resources appears in Search Results. Results are displayed as cards, which list the name of the resource and a relevant subfield. Clicking on the name of the resource in a card opens that resource in a new tab. Below the resource name, two buttons open Search Tools resource previews: “Resource Details” and “Related Resources”.{% endblocktrans %}</p>
                 <p>{% blocktrans %}<strong>Search Panel </strong> {% endblocktrans %}</p>
                 <p>{% blocktrans %}The content of this panel changes depending on the Search Tool selected. By default, the Search Panel directs users’ attention to the Advanced Search tool.{% endblocktrans %}</p>
 
@@ -195,10 +49,10 @@
                 <a href="javascript:void(0)" class="advanced-content-toggle" data-toggle="advance-search" aria-expanded="false" ><span class="h5">{% trans "Kinds of Searches" %}</span></a>
                 <div class="advanced-content" id="Advance-section">
                     <p>{% blocktrans %}<strong>Simple Search </strong> {% endblocktrans %}</p>
-                    <p>{% blocktrans %}Simple Search allows for term queries of the database using one or many keyword(s). Other filtering options allow for additional selections based on resource type. The search bar acts as an aggregator of all enabled filters. For more information, see <a href="#Constructing-simple-section"> Constructing a Simple Search</a>. {% endblocktrans %}</p>
+                    <p>{% blocktrans %}Simple Search allows for term queries of the database using one or many keyword(s). Other filtering options allow for additional selections based on resource type. The search bar acts as an aggregator of all enabled filters.{% endblocktrans %}</p>
                     <div id="Advance-section"> 
                         <p>{% blocktrans %}<strong>Search Tools</strong> {% endblocktrans %}</p>
-                        <p>{% blocktrans %}Advanced Search allows for more complex and precise queries beyond simple keyword searches. Advanced Search queries are built using data attributes known as facets, refining or expanding searches based on the structured location of information in the data model, data types, and other query conditions. For more information, see <a href="#Constructing-advanced-section"> Constructing an Advanced Search</a>.{% endblocktrans %}</p>
+                        <p>{% blocktrans %}Advanced Search allows for more complex and precise queries beyond simple keyword searches. Advanced Search queries are built using data attributes known as facets, refining or expanding searches based on the structured location of information in the data model, data types, and other query conditions.{% endblocktrans %}</p>
                     </div>
                     <p>{% blocktrans %}<strong>Mixing Simple & Advanced Searches</strong> {% endblocktrans %}</p>
                     <p>{% blocktrans %}Simple and advanced searches can be combined, allowing for general keyword search within all exposed areas of an advanced search.{% endblocktrans %}</p>
@@ -217,7 +71,7 @@
                 <a href="javascript:void(0)" class="time-toggle" data-toggle="time-search"><span class="h5">{% trans "Constructing an Advanced Search" %}</span></a>
                 <div class="time-content">
                     <p>{% blocktrans %}<strong>Facets</strong> {% endblocktrans %}</p>
-                    <p>{% blocktrans %}The Advanced Search tool features facet search for multidimensional filtering, enabling users to select multiple criteria simultaneously to execute complex queries. Advanced Search facets are generated from the Getty Provenance Index  <a href="#Resource-models" class="models-toggle" data-toggle="models-search"> Resource Models</a> to allow for filtering at the model, branch, sub-branch, and field level. <br><br>
+                    <p>{% blocktrans %}The Advanced Search tool features facet search for multidimensional filtering, enabling users to select multiple criteria simultaneously to execute complex queries. Advanced Search facets are generated from the Getty Provenance Index  <strong>Resource Models</strong> to allow for filtering at the model, branch, sub-branch, and field level. <br><br>
                         The Advanced Search interface has two sections: Search Facets on the right, which lists branches and sub-branches available for query, and the Search Panel in the center, where search criteria are added to selected facets. Adding and removing search criteria to facets in the Search Panel automatically refines resources appearing in Search Results. <br><br>
                         To begin an Advanced Search, users must select a facet, either by navigating to the desired branch or sub-branch facet using the accordion buttons or via search at the top of the Search Facets area. Once a facet is selected, the Search Panel will show the selected branch and fields for adding search criteria. <br><br>
                         Multiple facets can be selected in an Advanced Search from the Search Facets panel. As additional facets are added to the Search Panel, a Boolean search operator will appear between selected facets, allowing users to define AND/OR facet relationships in their queries. Individual Advanced Search facets can either be removed by clicking the “Remove” button in the relevant facet in the Search Panel and all Advanced Search facets can be removed by clicking the “x” next to “Advanced Search” in the Search Bar or by clicking “Clear Filters” below the Search Bar.{% endblocktrans %}</p>
@@ -248,13 +102,12 @@
                 <div class="ep-help-topic-content">
                     <p>{% blocktrans %}<strong>Cards & Resources</strong> {% endblocktrans %}</p>
                     <p>{% blocktrans %}Search options are dynamic and responsive, meaning that the Search Results update synchronously as a query is built in the Search Bar. With each added search criterion, the number of relevant resources will appear above the list of cards in the Search Results area. Sort results using the drop-down menu below the Resource Type menu in three ways: Unsorted (random order), Ascending (alphabetically A-to-Z), or Descending (alphabetically, Z-to-A).  <br><br>
-                        Search results appear as cards. A card provides a resource preview, including the resource name and a short description field (Note: cards will show “Undefined” when their resource description field is blank). Clicking the resource name in a card opens the corresponding resource in a new tab that contains all data instances related to the selected resource. For more about resources and the information they contain, see <a href="#Resource-reports" class="report-toggle" data-toggle="report-search"> Resource Reports</a> {% endblocktrans %}</p>
+                        Search results appear as cards. A card provides a resource preview, including the resource name and a short description field (Note: cards will show “Undefined” when their resource description field is blank). Clicking the resource name in a card opens the corresponding resource in a new tab that contains all data instances related to the selected resource. {% endblocktrans %}</p>
                 </div>
             </div>
             <div >
                 <a href="javascript:void(0)" class="related-toggle" data-toggle="related-search-new"><span class="h5">{% trans "Previewing Resources in Search Results" %}</span></a>
                 <div class="related-content" id ='preview-search'>
-                    <p>{% blocktrans %}<strong>Full NetWork</strong> {% endblocktrans %}</p>
                     <span class="ep-help-img-link"><a href="{{ STATIC_URL }}img/help/related-resources.png" aria-hidden="true" target="_blank" tabindex="-1">{% trans "expand image in new tab" %}&nbsp;&nbsp;<i class="fa fa-external-link-square"></i></a></span>
                     <p><img class="reloadable-img" src="{{ STATIC_URL }}img/help/related-resources.png" aria-hidden="true"></img></p>
                     <div id="related-details">
