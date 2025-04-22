@@ -7,7 +7,6 @@ from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
 from django.utils.decorators import method_decorator
 
-from arches_provenance.app.views import search
 from arches.app.views.base import BaseManagerView
 from arches.app.models.graph import Graph
 from arches.app.models.resource import Resource
@@ -241,7 +240,6 @@ urlpatterns = [
         NodePresentationView.as_view(),
         name="api_node_presentation",
     ),
-    re_path(r"^search$", search.SearchView.as_view(), name="search_home"),
     path(
         "api/nodegroup_tile_data/<uuid:resourceid>/<slug:nodegroup_alias>",
         NodegroupTileDataView.as_view(),
