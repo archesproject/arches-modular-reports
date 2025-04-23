@@ -88,9 +88,11 @@
                             <!-- <a href="arches_password_reminder.html" class="col-xs-5 btn btn-link mar-rgt" style="color:#515152;">{% trans "Forgot password ?" %}</a> -->
                             <a href="{% url 'password_reset' %}" class="btn btn-link account-link">{% trans "Forgot password?" %}</a>
                         {% endif %}
-
+                        
+                        <div>{% trans "Login only for Getty staff" %}</div>
+                        
                         {% if user_signup_enabled %}
-                            <div>{% trans "Login only for Getty staff" %}</div>
+                            <a href="{% url 'signup' %}" class="btn btn-link account-link" target="_blank">{% trans "Create a new account" %}</a>
                         {% endif %}
                     </div>
                 </main>

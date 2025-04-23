@@ -210,6 +210,8 @@ STATIC_ROOT = os.path.join(APP_ROOT, "staticfiles")
 # when hosting Arches under a sub path set this value to the sub path eg : "/{sub_path}/"
 FORCE_SCRIPT_NAME = None
 
+ENABLE_USER_SIGNUP = False
+
 RESOURCE_IMPORT_LOG = os.path.join(APP_ROOT, "logs", "resource_import.log")
 DEFAULT_RESOURCE_IMPORT_USER = {"username": "admin", "userid": 1}
 
