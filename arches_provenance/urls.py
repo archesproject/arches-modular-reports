@@ -257,9 +257,9 @@ urlpatterns = [
         name="api_provenance_tile",
     ),
     path(
-        "api/user_permissions",
+        "api/has_permissions",
         UserPermissionsView.as_view(),
-        name="api_user_permissions",
+        name="api_has_permissions",
     ),
 ]
 

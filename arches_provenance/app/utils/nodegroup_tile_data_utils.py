@@ -53,14 +53,14 @@ def get_link(datatype, value_id):
     return ""
 
 
-def build_valueid_annotation(data, user_permissions):
+def build_valueid_annotation(data, is_user_rdm_admin):
     datatype = data.get("datatype", "")
     display_value = data.get("display_value")
 
     if datatype in ["concept", "resource-instance"]:
         value_ids = data.get("value_ids")
         if value_ids and (
-            (datatype == "concept" and user_permissions.get("user_is_rdm_admin"))
+            (datatype == "concept" and is_user_rdm_admin)
             or datatype == "resource-instance"
         ):
             return {
@@ -79,7 +79,7 @@ def build_valueid_annotation(data, user_permissions):
         display_values = json.loads(data.get("display_value", "[]"))
 
         annotations = []
-        if datatype == "concept-list" and not user_permissions.get("user_is_rdm_admin"):
+        if datatype == "concept-list" and not is_user_rdm_admin:
             return {"display_value": ", ".join(display_values), "has_links": False}
         else:
             for val_id, disp_val in zip(value_ids, display_values):
@@ -449,7 +449,7 @@ def prepare_links(
     node_display_value,
     request_language,
     value_finder,
-    user_permissions,
+    is_user_rdm_admin,
 ):
     links = []
 
@@ -518,7 +518,7 @@ def prepare_links(
                         }
                     )
             case "concept":
-                if user_permissions.get("user_is_rdm_admin") and (
+                if is_user_rdm_admin and (
                     concept_id_results := get_concept_ids([tile_val])
                 ):
                     links.append(
@@ -528,7 +528,7 @@ def prepare_links(
                         }
                     )
             case "concept-list":
-                if user_permissions.get("user_is_rdm_admin"):
+                if is_user_rdm_admin:
                     concept_ids = get_concept_ids(tile_val)
                     labels = get_concept_labels(tile_val)
                     for concept_id, label in zip(concept_ids, labels, strict=True):

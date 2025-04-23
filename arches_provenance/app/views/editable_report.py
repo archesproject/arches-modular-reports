@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
@@ -139,9 +140,8 @@ class RelatedResourceView(APIBase):
         permitted_nodegroups = get_nodegroups_by_perm(
             request.user, "models.read_nodegroup"
         )
-        user_permissions = {
-            "user_is_rdm_admin": group_required(request.user, "RDM Administrator"),
-        }
+        is_user_rdm_admin = group_required(request.user, "RDM Administrator")
+
         nodes = annotate_related_graph_nodes_with_widget_labels(
             additional_nodes, related_graph, request_language
         )
@@ -196,7 +196,7 @@ class RelatedResourceView(APIBase):
                                 node_display_value=getattr(relation, node.alias),
                                 request_language=request_language,
                                 value_finder=value_finder,
-                                user_permissions=user_permissions,
+                                is_user_rdm_admin=is_user_rdm_admin,
                             ),
                         }
                         for node in nodes
@@ -280,9 +280,7 @@ class NodegroupTileDataView(APIBase):
 
         user_language = translation.get_language()
 
-        user_permissions = {
-            "user_is_rdm_admin": group_required(request.user, "RDM Administrator"),
-        }
+        is_user_rdm_admin = group_required(request.user, "RDM Administrator")
 
         tiles = get_sorted_filtered_tiles(
             resourceinstanceid=resourceid,
@@ -300,7 +298,7 @@ class NodegroupTileDataView(APIBase):
             "results": [
                 {
                     **{
-                        key: build_valueid_annotation(value, user_permissions)
+                        key: build_valueid_annotation(value, is_user_rdm_admin)
                         for key, value in tile.alias_annotations.items()
                     },
                     # TODO: arches v8: tile.children.exists(),
@@ -324,9 +322,7 @@ class NodeTileDataView(APIBase):
         user_lang = translation.get_language()
         tile_limit = int(request.GET.get("tile_limit", 0))
 
-        user_permissions = {
-            "user_is_rdm_admin": group_required(request.user, "RDM Administrator"),
-        }
+        is_user_rdm_admin = group_required(request.user, "RDM Administrator")
 
         nodes_with_display_data = annotate_node_values(
             node_aliases, resourceid, permitted_nodegroups, user_lang, tile_limit
@@ -346,7 +342,7 @@ class NodeTileDataView(APIBase):
                             display_object["display_value"],
                             user_lang,
                             value_finder,
-                            user_permissions,
+                            is_user_rdm_admin,
                         ),
                     }
                     for display_object in node.display_data
@@ -358,7 +354,9 @@ class NodeTileDataView(APIBase):
 
 class UserPermissionsView(APIBase):
     def get(self, request):
-        user_permissions = {
-            "user_is_rdm_admin": group_required(request.user, "RDM Administrator"),
-        }
+        reqested_permissions = json.loads(request.GET.get("permissions", "[]"))
+        user_permissions = {}
+        for permission in reqested_permissions:
+            if permission == "RDM Administrator":
+                user_permissions[permission] = group_required(request.user, permission)
         return JSONResponse(user_permissions)

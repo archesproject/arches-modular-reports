@@ -41,8 +41,8 @@ async function fetchData() {
                 tileId,
                 resourceInstanceId,
             ).then((data) => (tileData.value = data)),
-            fetchUserPermissions().then((data) => {
-                userIsRdmAdmin.value = data.user_is_rdm_admin;
+            fetchUserPermissions(["RDM Administrator"]).then((data) => {
+                userIsRdmAdmin.value = data["RDM Administrator"];
             }),
         ]);
         hasLoadingError.value = false;
