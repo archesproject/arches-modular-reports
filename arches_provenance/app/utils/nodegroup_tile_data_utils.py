@@ -53,37 +53,44 @@ def get_link(datatype, value_id):
     return ""
 
 
-def build_valueid_annotation(data):
+def build_valueid_annotation(data, is_user_rdm_admin):
     datatype = data.get("datatype", "")
     display_value = data.get("display_value")
 
     if datatype in ["concept", "resource-instance"]:
         value_ids = data.get("value_ids")
-        if value_ids:
+        if value_ids and (
+            (datatype == "concept" and is_user_rdm_admin)
+            or datatype == "resource-instance"
+        ):
             return {
                 "display_value": [
                     {
                         "label": display_value,
                         "link": get_link(datatype, value_ids),
                     }
-                ]
+                ],
+                "has_links": True,
             }
-        return {"display_value": display_value}
+        return {"display_value": display_value, "has_links": False}
 
     elif datatype in ["concept-list", "resource-instance-list"]:
         value_ids = json.loads(data.get("value_ids", "[]"))
         display_values = json.loads(data.get("display_value", "[]"))
 
         annotations = []
-        for val_id, disp_val in zip(value_ids, display_values):
-            if val_id:
-                annotations.append(
-                    {
-                        "label": disp_val,
-                        "link": get_link(datatype, val_id),
-                    }
-                )
-        return {"display_value": annotations}
+        if datatype == "concept-list" and not is_user_rdm_admin:
+            return {"display_value": ", ".join(display_values), "has_links": False}
+        else:
+            for val_id, disp_val in zip(value_ids, display_values):
+                if val_id:
+                    annotations.append(
+                        {
+                            "label": disp_val,
+                            "link": get_link(datatype, val_id),
+                        }
+                    )
+            return {"display_value": annotations, "has_links": True}
 
     elif datatype in ["url"]:
         value_ids = data.get("value_ids")
@@ -98,11 +105,12 @@ def build_valueid_annotation(data):
                         ),
                         "link": get_link(datatype, value_ids),
                     }
-                ]
+                ],
+                "has_links": True,
             }
-        return {"display_value": display_value}
+        return {"display_value": display_value, "has_links": False}
 
-    return {"display_value": display_value}
+    return {"display_value": display_value, "has_links": False}
 
 
 def annotate_related_graph_nodes_with_widget_labels(
@@ -436,7 +444,12 @@ def filter_hidden_nodes(
 
 
 def prepare_links(
-    node, tile_values, node_display_value, request_language, value_finder
+    node,
+    tile_values,
+    node_display_value,
+    request_language,
+    value_finder,
+    is_user_rdm_admin,
 ):
     links = []
 
@@ -505,7 +518,9 @@ def prepare_links(
                         }
                     )
             case "concept":
-                if concept_id_results := get_concept_ids([tile_val]):
+                if is_user_rdm_admin and (
+                    concept_id_results := get_concept_ids([tile_val])
+                ):
                     links.append(
                         {
                             "label": node_display_value,
@@ -513,15 +528,16 @@ def prepare_links(
                         }
                     )
             case "concept-list":
-                concept_ids = get_concept_ids(tile_val)
-                labels = get_concept_labels(tile_val)
-                for concept_id, label in zip(concept_ids, labels, strict=True):
-                    links.append(
-                        {
-                            "label": label,
-                            "link": get_link(node.datatype, concept_id),
-                        }
-                    )
+                if is_user_rdm_admin:
+                    concept_ids = get_concept_ids(tile_val)
+                    labels = get_concept_labels(tile_val)
+                    for concept_id, label in zip(concept_ids, labels, strict=True):
+                        links.append(
+                            {
+                                "label": label,
+                                "link": get_link(node.datatype, concept_id),
+                            }
+                        )
             case "url":
                 links.append(
                     {

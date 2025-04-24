@@ -19,12 +19,14 @@ const {
     divider = false,
     customLabels,
     showEmptyNodes = true,
+    userIsRdmAdmin = false,
 } = defineProps<{
     data: TileData;
     depth: number;
     divider?: boolean;
     customLabels?: Record<string, string>;
     showEmptyNodes?: boolean;
+    userIsRdmAdmin?: boolean;
 }>();
 
 const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
@@ -127,33 +129,45 @@ function bestWidgetLabel(nodeAlias: string) {
                         </Button>
                     </dd>
                 </div>
-                <dd v-else-if="nodeValue.concept_id">
-                    <Button
-                        as="a"
-                        variant="link"
-                        target="_blank"
-                        :href="arches.urls.rdm + nodeValue.concept_id"
-                    >
-                        {{ nodeValue["@display_value"] }}
-                    </Button>
-                </dd>
-                <div
-                    v-else-if="nodeValue.concept_details?.length"
-                    style="flex-direction: column"
-                >
-                    <dd
-                        v-for="conceptDetail in nodeValue.concept_details as ConceptDetails[]"
-                        :key="conceptDetail.concept_id"
-                    >
+                <div v-else-if="nodeValue.concept_id">
+                    <dd v-if="userIsRdmAdmin">
                         <Button
                             as="a"
                             variant="link"
                             target="_blank"
-                            :href="arches.urls.rdm + conceptDetail.concept_id"
+                            :href="arches.urls.rdm + nodeValue.concept_id"
                         >
-                            {{ conceptDetail.value }}
+                            {{ nodeValue["@display_value"] }}
                         </Button>
                     </dd>
+                    <dd v-else>
+                        {{ nodeValue["@display_value"] }}
+                    </dd>
+                </div>
+                <div
+                    v-else-if="nodeValue.concept_details?.length"
+                    style="flex-direction: column"
+                >
+                    <div v-if="userIsRdmAdmin">
+                        <dd
+                            v-for="conceptDetail in nodeValue.concept_details as ConceptDetails[]"
+                            :key="conceptDetail.concept_id"
+                        >
+                            <Button
+                                as="a"
+                                variant="link"
+                                target="_blank"
+                                :href="
+                                    arches.urls.rdm + conceptDetail.concept_id
+                                "
+                            >
+                                {{ conceptDetail.value }}
+                            </Button>
+                        </dd>
+                    </div>
+                    <div v-else>
+                        <dd>{{ nodeValue["@display_value"] }}</dd>
+                    </div>
                 </div>
                 <dd v-else-if="nodeValue.url">
                     <Button
@@ -174,6 +188,8 @@ function bestWidgetLabel(nodeAlias: string) {
                 :data="child"
                 :depth="depth + 1"
                 :custom-labels
+                :show-empty-nodes="showEmptyNodes"
+                :user-is-rdm-admin="userIsRdmAdmin"
             />
         </dl>
     </details>

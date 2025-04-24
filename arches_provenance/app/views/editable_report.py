@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
@@ -12,7 +13,7 @@ from django.views.generic import View
 from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
 from arches.app.utils.decorators import can_read_resource_instance
-from arches.app.utils.permission_backend import get_nodegroups_by_perm
+from arches.app.utils.permission_backend import get_nodegroups_by_perm, group_required
 from arches.app.utils.response import JSONErrorResponse, JSONResponse
 from arches.app.views.api import APIBase
 from arches.app.views.base import MapBaseManagerView
@@ -139,6 +140,8 @@ class RelatedResourceView(APIBase):
         permitted_nodegroups = get_nodegroups_by_perm(
             request.user, "models.read_nodegroup"
         )
+        is_user_rdm_admin = group_required(request.user, "RDM Administrator")
+
         nodes = annotate_related_graph_nodes_with_widget_labels(
             additional_nodes, related_graph, request_language
         )
@@ -193,6 +196,7 @@ class RelatedResourceView(APIBase):
                                 node_display_value=getattr(relation, node.alias),
                                 request_language=request_language,
                                 value_finder=value_finder,
+                                is_user_rdm_admin=is_user_rdm_admin,
                             ),
                         }
                         for node in nodes
@@ -276,6 +280,8 @@ class NodegroupTileDataView(APIBase):
 
         user_language = translation.get_language()
 
+        is_user_rdm_admin = group_required(request.user, "RDM Administrator")
+
         tiles = get_sorted_filtered_tiles(
             resourceinstanceid=resourceid,
             nodegroup_alias=nodegroup_alias,
@@ -292,7 +298,7 @@ class NodegroupTileDataView(APIBase):
             "results": [
                 {
                     **{
-                        key: build_valueid_annotation(value)
+                        key: build_valueid_annotation(value, is_user_rdm_admin)
                         for key, value in tile.alias_annotations.items()
                     },
                     # TODO: arches v8: tile.children.exists(),
@@ -316,6 +322,8 @@ class NodeTileDataView(APIBase):
         user_lang = translation.get_language()
         tile_limit = int(request.GET.get("tile_limit", 0))
 
+        is_user_rdm_admin = group_required(request.user, "RDM Administrator")
+
         nodes_with_display_data = annotate_node_values(
             node_aliases, resourceid, permitted_nodegroups, user_lang, tile_limit
         )
@@ -334,6 +342,7 @@ class NodeTileDataView(APIBase):
                             display_object["display_value"],
                             user_lang,
                             value_finder,
+                            is_user_rdm_admin,
                         ),
                     }
                     for display_object in node.display_data
@@ -341,3 +350,13 @@ class NodeTileDataView(APIBase):
                 for node in nodes_with_display_data
             }
         )
+
+
+class UserPermissionsView(APIBase):
+    def get(self, request):
+        reqested_permissions = json.loads(request.GET.get("permissions", "[]"))
+        user_permissions = {}
+        for permission in reqested_permissions:
+            if permission == "RDM Administrator":
+                user_permissions[permission] = group_required(request.user, permission)
+        return JSONResponse(user_permissions)

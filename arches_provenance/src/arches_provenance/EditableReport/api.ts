@@ -140,3 +140,14 @@ export const fetchUserResourcePermissions = async (
     if (!response.ok) throw new Error(parsed.message || response.statusText);
     return parsed;
 };
+
+export const fetchUserPermissions = async (permissions: [string]) => {
+    const url = arches.urls.api_has_permissions;
+    const params = new URLSearchParams({
+        permissions: JSON.stringify(permissions),
+    });
+    const response = await fetch(url + "?" + params.toString());
+    const parsed = await response.json();
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};
