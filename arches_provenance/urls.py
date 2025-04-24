@@ -6,6 +6,7 @@ from django.urls import include, re_path, path
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
 from django.utils.decorators import method_decorator
+from django.views.generic import RedirectView
 
 from arches.app.views.base import BaseManagerView
 from arches.app.models.graph import Graph
@@ -208,6 +209,11 @@ class GraphResourceReportView(BaseManagerView):
 
 urlpatterns = [
     # re_path(r'^', include('arches.urls')),
+    path(
+        "index.htm",
+        RedirectView.as_view(url="https://www.getty.edu/research/provenance/"),
+        name="home",
+    ),
     re_path(
         r"^graph_report/(?P<resourceid>%s|())$" % uuid_regex,
         GraphResourceReportView.as_view(),
