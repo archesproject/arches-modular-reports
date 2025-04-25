@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { inject, onMounted, provide, ref } from "vue";
+import { computed, inject, onMounted, provide, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
+import Panel from "primevue/panel";
+import Splitter from "primevue/splitter";
+import SplitterPanel from "primevue/splitterpanel";
 import Toast from "primevue/toast";
 import { useToast } from "primevue/usetoast";
 
@@ -11,10 +14,8 @@ import {
     fetchUserResourcePermissions,
 } from "@/arches_provenance/EditableReport/api.ts";
 import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_provenance/constants.ts";
-import {
-    importComponents,
-    uniqueId,
-} from "@/arches_provenance/EditableReport/utils.ts";
+import { importComponents } from "@/arches_provenance/EditableReport/utils.ts";
+import ResourceEditor from "@/arches_provenance/EditableReport/components/ResourceEditor/ResourceEditor.vue";
 
 import type { Ref } from "vue";
 import type {
@@ -35,9 +36,27 @@ provide("nodePresentationLookup", nodePresentationLookup);
 const userCanEditResourceInstance = ref(false);
 provide("userCanEditResourceInstance", userCanEditResourceInstance);
 
+const editorKey = ref(0);
+
+const selectedNodeAlias = ref<string | null>(null);
+function setSelectedNodeAlias(nodeAlias: string | null) {
+    selectedNodeAlias.value = nodeAlias;
+}
+provide("selectedNodeAlias", { selectedNodeAlias, setSelectedNodeAlias });
+
+const selectedTileId = ref<string | null>(null);
+function setSelectedTileId(tileId: string | null) {
+    selectedTileId.value = tileId;
+}
+provide("selectedTileId", { selectedTileId, setSelectedTileId });
+
 const config: Ref<NamedSection> = ref({
     name: $gettext("Loading data"),
-    components: [{ component: "", config: {} }],
+    components: [],
+});
+
+const gutterVisibility = computed(() => {
+    return selectedNodeAlias.value ? "visible" : "hidden";
 });
 
 onMounted(async () => {
@@ -67,18 +86,66 @@ onMounted(async () => {
         return;
     }
 });
+
+function closeEditor() {
+    selectedNodeAlias.value = null;
+    selectedTileId.value = null;
+}
 </script>
 
 <template>
-    <div style="position: absolute; width: 100%">
-        <component
-            :is="componentLookup[component.component]"
-            v-for="component in config.components"
-            :key="uniqueId(component)"
-            :component
-            :resource-instance-id
-        />
-    </div>
+    <Splitter>
+        <SplitterPanel style="overflow: auto">
+            <component
+                :is="componentLookup[component.component].component"
+                v-for="component in config.components"
+                :key="componentLookup[component.component].key"
+                :component
+                :resource-instance-id
+            />
+        </SplitterPanel>
+        <SplitterPanel
+            v-show="selectedTileId"
+            style="overflow: auto"
+        >
+            <Panel
+                :key="editorKey"
+                toggleable
+                :toggle-button-props="{
+                    ariaLabel: $gettext('Close editor'),
+                    severity: 'secondary',
+                }"
+                :style="{
+                    overflow: 'auto',
+                    height: '100%',
+                    border: 'none',
+                }"
+                :header="$gettext('Editor')"
+                @toggle="closeEditor"
+            >
+                <template #toggleicon>
+                    <i
+                        class="pi pi-times"
+                        aria-hidden="true"
+                    />
+                </template>
+                <ResourceEditor />
+            </Panel>
+        </SplitterPanel>
+    </Splitter>
 
     <Toast />
 </template>
+
+<style scoped>
+.p-splitter {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    display: flex;
+}
+
+:deep(.p-splitter-gutter) {
+    visibility: v-bind(gutterVisibility);
+}
+</style>

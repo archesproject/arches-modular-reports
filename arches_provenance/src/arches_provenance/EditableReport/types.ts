@@ -36,8 +36,13 @@ export interface NodePresentationLookup {
     [key: string]: NodePresentation;
 }
 
+export interface KeyedComponent {
+    component: Component;
+    key: number;
+}
+
 export interface ComponentLookup {
-    [key: string]: Component;
+    [key: string]: KeyedComponent;
 }
 
 export interface ResourceDetails {
