@@ -6,6 +6,7 @@ from uuid import UUID
 from django.contrib.postgres.expressions import ArraySubquery
 from django.db.models import (
     Case,
+    Exists,
     F,
     Func,
     IntegerField,
@@ -240,8 +241,11 @@ def get_sorted_filtered_tiles(
             search_text=Concat(*display_values_with_spaces, output_field=TextField())
         )
         .filter(search_text__icontains=query)
-        # TODO: arches v8: .prefetch_related("children")
-        .prefetch_related("tilemodel_set")
+        .annotate(
+            has_children=Exists(
+                models.TileModel.objects.filter(parenttile=OuterRef("pk"))
+            )
+        )
     )
 
     if sort_node_id:
