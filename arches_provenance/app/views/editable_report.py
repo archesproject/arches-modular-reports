@@ -301,8 +301,7 @@ class NodegroupTileDataView(APIBase):
                         key: build_valueid_annotation(value, is_user_rdm_admin)
                         for key, value in tile.alias_annotations.items()
                     },
-                    # TODO: arches v8: tile.children.exists(),
-                    "@has_children": tile.tilemodel_set.exists(),
+                    "@has_children": tile.has_children,
                     "@tile_id": tile.tileid,
                 }
                 for tile in page.object_list
