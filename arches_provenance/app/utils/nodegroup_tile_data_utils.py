@@ -370,7 +370,6 @@ def get_sorted_filtered_relations(
                 nodeid__nodegroup_id__in=permitted_nodegroups,
             )
         )
-        .distinct()
         .annotate(
             relation_name_json=(
                 models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid")).values(
