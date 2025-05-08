@@ -96,7 +96,7 @@ The data-spy and data-target are part of the built-in Bootstrap scrollspy functi
                         {% if user.username == 'anonymous' %}
                         <li class="">
                             <a class="application-login" id="auth-link"
-                                href="{% url 'auth' %}?next={% url 'home' %}{% if user.username != 'anonymous' %}&logout=true{% endif %}">{% trans "Sign in" %}</a>
+                                href="{% url 'auth' %}{% if user.username != 'anonymous' %}&logout=true{% endif %}">{% trans "Sign in" %}</a>
                         </li>
                         {% else %}
                         <li>
@@ -106,7 +106,7 @@ The data-spy and data-target are part of the built-in Bootstrap scrollspy functi
                         </li>
                         <li>
                             <a class="application-login"
-                                href="{% url 'auth' %}?next={% url 'home' %}{% if user.username != 'anonymous' %}&logout=true{% endif %}">{% trans 'Log off' %}</a>
+                                href="{% url 'auth' %}{% if user.username != 'anonymous' %}&logout=true{% endif %}">{% trans 'Log off' %}</a>
                         </li>
                         {% endif %}
                         {% if show_language_swtich %}

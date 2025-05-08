@@ -293,6 +293,8 @@ GRAPH_MODEL_CACHE_TIMEOUT = None
 
 OAUTH_CLIENT_ID = ""  # "9JCibwrWQ4hwuGn5fu2u1oRZSs9V6gK8Vu8hpRC4"
 
+LOGIN_REDIRECT_URL = "search_home"
+
 APP_TITLE = "Arches | Provenance"
 COPYRIGHT_TEXT = "All Rights Reserved."
 COPYRIGHT_YEAR = "2019"
