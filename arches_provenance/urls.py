@@ -26,6 +26,7 @@ from arches_provenance.app.views.editable_report import (
     UserPermissionsView,
 )
 from arches_provenance.app.views.related_resource import ProvenanceRelatedResourcesView
+from arches_provenance.app.views.auth import ProvenanceLoginView
 
 uuid_regex = settings.UUID_REGEX
 logger = logging.getLogger(__name__)
@@ -267,6 +268,9 @@ urlpatterns = [
         UserPermissionsView.as_view(),
         name="api_has_permissions",
     ),
+    re_path(
+        r"^auth/", ProvenanceLoginView.as_view(), name="auth"
+    ),  # This line can be removed once #12034 from arches is merged
 ]
 
 try:
