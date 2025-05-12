@@ -23,6 +23,7 @@ export interface SectionContent {
 export interface NodePresentation {
     nodeid: string;
     name: string;
+    datatype: string;
     card_name: string;
     widget_label: string;
     visible: boolean;

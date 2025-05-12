@@ -242,6 +242,9 @@ class NodePresentationView(APIBase):
                 node.alias: {
                     "nodeid": node.nodeid,
                     "name": node.name,
+                    # TODO(jtw): consider removing datatype once all display
+                    # values calculated by resource serializer
+                    "datatype": node.datatype,
                     "card_name": (
                         node.nodegroup.cardmodel_set.all()[0].name
                         if node.nodegroup.cardmodel_set.all()

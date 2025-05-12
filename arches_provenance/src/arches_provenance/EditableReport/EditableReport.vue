@@ -88,8 +88,9 @@ onMounted(async () => {
 });
 
 function closeEditor() {
-    selectedNodeAlias.value = null;
-    selectedTileId.value = null;
+    setSelectedNodeAlias(null);
+    setSelectedTileId(null);
+    editorKey.value++;
 }
 </script>
 
@@ -129,7 +130,7 @@ function closeEditor() {
                         aria-hidden="true"
                     />
                 </template>
-                <ResourceEditor />
+                <ResourceEditor v-if="selectedNodeAlias" />
             </Panel>
         </SplitterPanel>
     </Splitter>
