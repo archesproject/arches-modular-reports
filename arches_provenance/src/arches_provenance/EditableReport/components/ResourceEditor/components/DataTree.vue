@@ -37,17 +37,22 @@ const nodePresentationLookup = inject<Ref<NodePresentationLookup>>(
 
 const tree = computed(() => {
     // todo(jtw): consider moving helpers out of this file
-    return Object.entries(props.resourceData.aliased_data).reduce<TreeNode[]>(
-        (acc, [alias, data]) => {
-            acc.push(processNodegroup(alias, data, "root"));
-            return acc;
-        },
-        [],
-    );
+    const topCards = Object.entries(props.resourceData.aliased_data).reduce<
+        TreeNode[]
+    >((acc, [alias, data]) => {
+        acc.push(processNodegroup(alias, data, "root"));
+        return acc;
+    }, []);
+    return topCards.sort((a, b) => {
+        return (
+            nodePresentationLookup.value[a.data.alias].card_order -
+            nodePresentationLookup.value[b.data.alias].card_order
+        );
+    });
 });
 
 function processTileData(tile: TileData): TreeNode[] {
-    return Object.entries(tile.aliased_data).reduce<TreeNode[]>(
+    const tileValues = Object.entries(tile.aliased_data).reduce<TreeNode[]>(
         (acc, [alias, data]) => {
             if (isTileOrTiles(data)) {
                 acc.push(processNodegroup(alias, data, tile.tileid));
@@ -58,6 +63,12 @@ function processTileData(tile: TileData): TreeNode[] {
         },
         [],
     );
+    return tileValues.sort((a, b) => {
+        return (
+            nodePresentationLookup.value[a.data.alias].widget_order -
+            nodePresentationLookup.value[b.data.alias].widget_order
+        );
+    });
 }
 
 function processNode(alias: string, data: NodeValue, tileId: string): TreeNode {
@@ -106,16 +117,18 @@ function createCardinalityNWrapper(
         key: `${nodegroupAlias}-child-of-${parentTileId}`,
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
         data: { tileid: parentTileId, alias: nodegroupAlias },
-        children: tiles.map((tile, idx) => {
-            const result = {
-                key: tile.tileid,
-                label: idx.toString(),
-                data: { ...tile, alias: nodegroupAlias },
-                children: processTileData(tile),
-            };
-            result.label = result.children[0].label as string;
-            return result;
-        }),
+        children: tiles
+            .map((tile, idx) => {
+                const result = {
+                    key: tile.tileid,
+                    label: idx.toString(),
+                    data: { ...tile, alias: nodegroupAlias },
+                    children: processTileData(tile),
+                };
+                result.label = result.children[0].label as string;
+                return result;
+            })
+            .sort((a, b) => a.data.sortorder! - b.data.sortorder!),
     };
 }
 

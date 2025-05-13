@@ -238,6 +238,7 @@ class NodePresentationView(APIBase):
             return True
 
         return JSONResponse(
+            # Coerce nulls to simplify front-end handling.
             {
                 node.alias: {
                     "nodeid": node.nodeid,
@@ -246,14 +247,24 @@ class NodePresentationView(APIBase):
                     # values calculated by resource serializer
                     "datatype": node.datatype,
                     "card_name": (
-                        node.nodegroup.cardmodel_set.all()[0].name
+                        node.nodegroup.cardmodel_set.all()[0].name or ""
                         if node.nodegroup.cardmodel_set.all()
-                        else None
+                        else ""
+                    ),
+                    "card_order": (
+                        node.nodegroup.cardmodel_set.all()[0].sortorder or 0
+                        if node.nodegroup.cardmodel_set.all()
+                        else 0
                     ),
                     "widget_label": (
                         node.cardxnodexwidget_set.all()[0].label
                         if node.cardxnodexwidget_set.all()
                         else node.name.replace("_", " ").title()
+                    ),
+                    "widget_order": (
+                        node.cardxnodexwidget_set.all()[0].sortorder or 0
+                        if node.cardxnodexwidget_set.all()
+                        else 0
                     ),
                     "visible": get_node_visibility(node),
                     "nodegroup": {
