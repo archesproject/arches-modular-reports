@@ -5,6 +5,8 @@ import { useGettext } from "vue3-gettext";
 import Panel from "primevue/panel";
 import Tree from "primevue/tree";
 
+import { uniqueId } from "@/arches_provenance/EditableReport/utils.ts";
+
 import type { Ref } from "vue";
 import type { TreeExpandedKeys, TreeSelectionKeys } from "primevue/tree";
 import type { TreeNode } from "primevue/treenode";
@@ -28,7 +30,7 @@ const { setSelectedNodeAlias } = inject<{
     setSelectedNodeAlias: (nodeAlias: string | null) => void;
 }>("selectedNodeAlias")!;
 const { setSelectedTileId } = inject<{
-    setSelectedTileId: (tileId: string | null) => void;
+    setSelectedTileId: (tileId: string | null | undefined) => void;
 }>("selectedTileId")!;
 /// todo(jtw): look into un-reffing this.
 const nodePresentationLookup = inject<Ref<NodePresentationLookup>>(
@@ -90,7 +92,7 @@ function processNode(alias: string, data: NodeValue, tileId: string): TreeNode {
 function processNodegroup(
     nodegroupAlias: string,
     tileOrTiles: TileData | TileData[],
-    parentTileId: string,
+    parentTileId: string | null,
 ): TreeNode {
     if (Array.isArray(tileOrTiles)) {
         return createCardinalityNWrapper(
@@ -100,7 +102,7 @@ function processNodegroup(
         );
     } else {
         return {
-            key: `${nodegroupAlias}-child-of-${parentTileId}`,
+            key: `${nodegroupAlias}-child-of-${parentTileId ?? uniqueId(0)}`,
             label: nodePresentationLookup.value[nodegroupAlias].card_name,
             data: { ...tileOrTiles, alias: nodegroupAlias },
             children: processTileData(tileOrTiles),
@@ -111,16 +113,16 @@ function processNodegroup(
 function createCardinalityNWrapper(
     nodegroupAlias: string,
     tiles: TileData[],
-    parentTileId: string,
+    parentTileId: string | null,
 ): TreeNode {
     return {
-        key: `${nodegroupAlias}-child-of-${parentTileId}`,
+        key: `${nodegroupAlias}-child-of-${parentTileId ?? uniqueId(0)}`,
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
         data: { tileid: parentTileId, alias: nodegroupAlias },
         children: tiles
             .map((tile, idx) => {
                 const result = {
-                    key: tile.tileid,
+                    key: tile.tileid ?? uniqueId(0),
                     label: idx.toString(),
                     data: { ...tile, alias: nodegroupAlias },
                     children: processTileData(tile),

@@ -44,8 +44,11 @@ function setSelectedNodeAlias(nodeAlias: string | null) {
 }
 provide("selectedNodeAlias", { selectedNodeAlias, setSelectedNodeAlias });
 
-const selectedTileId = ref<string | null>(null);
-function setSelectedTileId(tileId: string | null) {
+// string: persisted tile
+// null: dummy (blank) tile
+// undefined: nothing selected; hide editor
+const selectedTileId = ref<string | null | undefined>(undefined);
+function setSelectedTileId(tileId?: string | null) {
     selectedTileId.value = tileId;
 }
 provide("selectedTileId", { selectedTileId, setSelectedTileId });
@@ -89,7 +92,7 @@ onMounted(async () => {
 
 function closeEditor() {
     setSelectedNodeAlias(null);
-    setSelectedTileId(null);
+    setSelectedTileId(undefined);
     editorKey.value++;
 }
 </script>
@@ -106,7 +109,7 @@ function closeEditor() {
             />
         </SplitterPanel>
         <SplitterPanel
-            v-show="selectedTileId"
+            v-show="selectedTileId !== undefined"
             style="overflow: auto"
         >
             <Panel

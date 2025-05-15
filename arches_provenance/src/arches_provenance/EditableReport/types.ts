@@ -104,7 +104,7 @@ export interface TileData<T extends AliasedData = AliasedData> {
     provisionaledits: object | null;
     resourceinstance: string;
     sortorder: number;
-    tileid: string;
+    tileid: string | null;
 }
 
 // NodegroupTileDataView produces this, not label-based graph.
