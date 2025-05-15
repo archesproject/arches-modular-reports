@@ -375,7 +375,7 @@
                         {% endif %}
 
                         <!-- Notifications -->
-                        {% if nav.notifs %}
+                        {% if nav.notifs and user.username != 'anonymous'%}
                         <li>
                             <button id="ep-notifs-button" class="ep-tools ep-notifs-toggle ep-tools-right" data-toggle="collapse" data-target="#ep-notifs-panel"
                                 aria-label="{% trans 'Show recent notifications' %}" aria-controls="ep-notifs-panel"
