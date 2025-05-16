@@ -73,14 +73,18 @@ function processTileData(tile: TileData): TreeNode[] {
     });
 }
 
-function processNode(alias: string, data: NodeValue, tileId: string): TreeNode {
+function processNode(
+    alias: string,
+    data: NodeValue,
+    tileId: string | null,
+): TreeNode {
     const localizedLabel = $gettext("%{label}: %{labelData}", {
         label: nodePresentationLookup.value[alias].widget_label,
-        labelData:
-            getDisplayValue(
-                data,
-                nodePresentationLookup.value[alias].datatype,
-            ) ?? $gettext("None"),
+        labelData: getDisplayValue(
+            data,
+            nodePresentationLookup.value[alias].datatype,
+            tileId,
+        ),
     });
     return {
         key: `${alias}-node-value-for-${tileId}`,
@@ -138,15 +142,21 @@ function createCardinalityNWrapper(
 TODO: we can remove this function by having the serializer calc
 all node display values. That's 🤌, but it's follow-up work.
 */
-function getDisplayValue(value: NodeValue, datatype: string): string | null {
+function getDisplayValue(
+    value: NodeValue,
+    datatype: string,
+    tileId: string | null,
+): string {
+    if (!tileId) {
+        return $gettext("(empty)");
+    }
     // TODO: more specific types for `value` arg
     if (value === null || value === undefined) {
-        return "";
+        return $gettext("None");
     }
     switch (datatype) {
-        case null:
         case "semantic":
-            return null;
+            return "";
         case "concept":
         case "concept-list":
             return value["@display_value"]!;
