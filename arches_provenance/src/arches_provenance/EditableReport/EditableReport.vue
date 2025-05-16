@@ -38,11 +38,14 @@ provide("userCanEditResourceInstance", userCanEditResourceInstance);
 
 const editorKey = ref(0);
 
-const selectedNodeAlias = ref<string | null>(null);
-function setSelectedNodeAlias(nodeAlias: string | null) {
-    selectedNodeAlias.value = nodeAlias;
+const selectedNodegroupAlias = ref<string | null>(null);
+function setSelectedNodegroupAlias(nodegroupAlias: string | null) {
+    selectedNodegroupAlias.value = nodegroupAlias;
 }
-provide("selectedNodeAlias", { selectedNodeAlias, setSelectedNodeAlias });
+provide("selectedNodegroupAlias", {
+    selectedNodegroupAlias,
+    setSelectedNodegroupAlias,
+});
 
 // string: persisted tile
 // null: dummy (blank) tile
@@ -59,7 +62,7 @@ const config: Ref<NamedSection> = ref({
 });
 
 const gutterVisibility = computed(() => {
-    return selectedNodeAlias.value ? "visible" : "hidden";
+    return selectedNodegroupAlias.value ? "visible" : "hidden";
 });
 
 onMounted(async () => {
@@ -91,7 +94,7 @@ onMounted(async () => {
 });
 
 function closeEditor() {
-    setSelectedNodeAlias(null);
+    setSelectedNodegroupAlias(null);
     setSelectedTileId(undefined);
     editorKey.value++;
 }
@@ -133,7 +136,7 @@ function closeEditor() {
                         aria-hidden="true"
                     />
                 </template>
-                <ResourceEditor v-if="selectedNodeAlias" />
+                <ResourceEditor v-if="selectedNodegroupAlias" />
             </Panel>
         </SplitterPanel>
     </Splitter>

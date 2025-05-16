@@ -26,9 +26,9 @@ const props = defineProps<{ resourceData: ResourceData }>();
 
 const selectedKeys: Ref<TreeSelectionKeys> = ref({});
 const expandedKeys: Ref<TreeExpandedKeys> = ref({});
-const { setSelectedNodeAlias } = inject<{
-    setSelectedNodeAlias: (nodeAlias: string | null) => void;
-}>("selectedNodeAlias")!;
+const { setSelectedNodegroupAlias } = inject<{
+    setSelectedNodegroupAlias: (nodegroupAlias: string | null) => void;
+}>("selectedNodegroupAlias")!;
 const { setSelectedTileId } = inject<{
     setSelectedTileId: (tileId: string | null | undefined) => void;
 }>("selectedTileId")!;
@@ -53,13 +53,13 @@ const tree = computed(() => {
     });
 });
 
-function processTileData(tile: TileData): TreeNode[] {
+function processTileData(tile: TileData, nodegroupAlias: string): TreeNode[] {
     const tileValues = Object.entries(tile.aliased_data).reduce<TreeNode[]>(
         (acc, [alias, data]) => {
             if (isTileOrTiles(data)) {
                 acc.push(processNodegroup(alias, data, tile.tileid));
             } else {
-                acc.push(processNode(alias, data, tile.tileid));
+                acc.push(processNode(alias, data, tile.tileid, nodegroupAlias));
             }
             return acc;
         },
@@ -77,6 +77,7 @@ function processNode(
     alias: string,
     data: NodeValue,
     tileId: string | null,
+    nodegroupAlias: string,
 ): TreeNode {
     const localizedLabel = $gettext("%{label}: %{labelData}", {
         label: nodePresentationLookup.value[alias].widget_label,
@@ -89,7 +90,7 @@ function processNode(
     return {
         key: `${alias}-node-value-for-${tileId}`,
         label: localizedLabel,
-        data: { alias: alias, tileid: tileId },
+        data: { alias: alias, tileid: tileId, nodegroupAlias },
     };
 }
 
@@ -109,7 +110,7 @@ function processNodegroup(
             key: `${nodegroupAlias}-child-of-${parentTileId ?? uniqueId(0)}`,
             label: nodePresentationLookup.value[nodegroupAlias].card_name,
             data: { ...tileOrTiles, alias: nodegroupAlias },
-            children: processTileData(tileOrTiles),
+            children: processTileData(tileOrTiles, nodegroupAlias),
         };
     }
 }
@@ -129,7 +130,7 @@ function createCardinalityNWrapper(
                     key: tile.tileid ?? uniqueId(0),
                     label: idx.toString(),
                     data: { ...tile, alias: nodegroupAlias },
-                    children: processTileData(tile),
+                    children: processTileData(tile, nodegroupAlias),
                 };
                 result.label = result.children[0].label as string;
                 return result;
@@ -186,7 +187,7 @@ function isTileOrTiles(nodeValue: NodeValue | TileData[]) {
 }
 
 function onNodeSelect(node: TreeNode) {
-    setSelectedNodeAlias(node.data.alias);
+    setSelectedNodegroupAlias(node.data.nodegroupAlias ?? node.data.alias);
     setSelectedTileId(node.data.tileid);
 }
 </script>
