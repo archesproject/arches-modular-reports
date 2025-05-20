@@ -1,0 +1,179 @@
+{% load i18n %}
+{% block task_details %}
+
+<div class="etl-module-component-container">
+    <div class="etl-module-body">
+        <h2>
+            <span style="font-weight: 400; font-size: 1.7rem; color: #565656;" data-bind="text: 'Merge Resources'"></span>
+        </h2>
+        <p class="pad-btm" style="margin-top: 10px;">
+            {% blocktrans %}Merge two or more resources into one resource. Data in the Merge Resource(s) will be integrated into the Base Resource. Merge Resource(s) will be deleted upon merge.{% endblocktrans %}
+        </p>
+        <!-- base resource -->
+        <p class="pad-btm" style="margin-top: 10px;">
+            {% blocktrans %}Add UUID for Base Resource that will contain merged data{% endblocktrans %}
+        </p>
+        <div>
+            <input data-bind="value: resourceBase, valueUpdate: 'afterkeydown'" placeholder="Base Resource UUID…" style="border-radius: 4px;"/>
+            <button style="background-color: #8cc74f; color: #fff; border: none; font-weight: normal; border-radius: 4px;"
+             type="submit" data-bind="enable: resourceBase() && isValidUuid(resourceBase()), click: BaseResource">Add Base Resource</button>
+            <div data-bind=" visible: InfoBase">
+                <p class="pad-btm" style="margin-top: 10px;">
+                    {% blocktrans %}UUID of Base Resource:{% endblocktrans %}
+                </p>
+                <li style="display: flex; justify-content: space-between; align-items: center; background: #f5f5f5; margin-top: 8px; width: 50%; padding: 8px 12px; border-radius: 4px;">
+                    <span data-bind="text:resourceBase"></span>
+                </li>
+            </div>
+             
+        </div>
+        <!-- list merge -->
+        <div data-bind=" visible: InfoBase">
+            <p class="pad-btm" style="margin-top: 10px;">
+                {% blocktrans %}Add UUID for Merge Resource that will merge with Base Resource. Merge Resource will be deleted upon merge.{% endblocktrans %}
+            </p>
+        
+            <input data-bind="value: itemToAdd, valueUpdate: 'afterkeydown'" placeholder="Merge Resource UUID…" style="border-radius: 4px;"/>
+            <button style="background-color: #8cc74f; color: #fff; border: none; border-radius: 4px; font-weight: normal;" type="submit" data-bind="enable: itemToAdd() && isValidUuid(itemToAdd()), click: addResource">Add Merge Resource</button>
+            <div data-bind="visible: showPreview">
+                <p class="pad-btm" style="margin-top: 10px;">
+                    {% blocktrans %}Add UUID for Merge Resource that will merge with Base Resource. Merge Resource will be deleted upon merge.{% endblocktrans %}
+                </p>
+                <ul style="list-style-type: none; padding: 0;" data-bind="foreach: mergeResources">
+                    <li style="display: flex; justify-content: space-between; align-items: center; background: #f5f5f5; margin-top: 8px; width: 50%; padding: 8px 12px; border-radius: 4px;">
+                        <span data-bind="text: $data"></span>
+                        <button  style="background-color: #DC3545; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"
+                        data-bind="click: $parent.deleteResource">Remove</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- preview -->
+        <div data-bind="visible: showPreview" style=" margin: 15px;">
+            <button  data-bind="click: displayInformation" class="btn btn-success" style="border-radius: 4px;">Preview</button>
+        </div>
+        <div data-bind="text: message, visible: flagMessage"></div>
+        
+        <div data-bind="visible: showresult">
+            <p class="pad-btm" style="margin-top: 10px;">
+                {% blocktrans %}The following node(s) will be merged from the Merge Resource(s) to the Base Resource{% endblocktrans %}
+            </p>
+            <!-- ko if: dropdownnodes().length <= 7 -->
+            <ul style="list-style-type: none; padding: 0;" data-bind=" foreach: dropdownnodes">
+                <li style="display: flex; justify-content: space-between; align-items: center; background: #f5f5f5; margin-top: 8px; width: 50%; padding: 8px 12px; border-radius: 4px;"
+                 data-bind="text: $data"></li>
+            </ul>
+            <!-- /ko -->
+            <!-- ko if: dropdownnodes().length > 7 -->
+            <div data-bind="style: { display: dropdownnodes().length > 2 ? 'flex' : 'block', flexWrap: dropdownnodes().length > 2 ? 'wrap' : 'nowrap' }">
+                <ul style="list-style-type: none; padding: 0; display: flex; flex-wrap: wrap;" data-bind="foreach: dropdownnodes">
+                    <li style="flex: 1 1 calc(50% - 16px); display: flex; justify-content: space-between; align-items: center; background: #f5f5f5; margin: 8px; padding: 8px 12px; border-radius: 4px;"
+                     data-bind="text: $data"></li>
+                </ul>
+            </div>
+            <!-- /ko -->
+        </div>
+        
+    </div>
+    
+    <div class="tabbed-workflow-footer, etl-module-footer"  data-bind="visible: showPreviewTalbewrite">
+        <button style="margin-right: 8px;" data-bind="click: write, visible:  showPreviewwrite" class="btn btn-success">
+            <span data-bind="text: $root.translations.start"></span>
+        </button>
+    </div>
+</div>
+{% endblock task_details %}
+
+{% block etl_status %}
+<div class="bulk-load-status" >
+    <h4 class="summary-title">
+        <span data-bind="text: $root.translations.bulkDataEditSummary"></span>
+    </h4>
+    
+    <div class="summary-header">
+        <span data-bind="text: $root.translations.editDetails"></span>
+    </div>
+    <div style="padding-top: 10px;" >
+        <span class="etl-loading-metadata-key" data-bind="text: 'Integrate Resource ' + ':'"></span>
+        <span class="etl-loading-metadata-value" data-bind="text: load_details.baseResource"></span>
+    </div>
+    <div data-bind="if: load_details.mergeResources">
+        <span class="etl-loading-metadata-key" data-bind="text: 'Merge Resources' + ':'"></span>
+        <span class="etl-loading-metadata-value" data-bind="text: load_details.mergeResources"></span>
+    </div>
+   
+    <div data-bind="if: editHistoryUrl">
+        <span class="etl-loading-metadata-key" data-bind="text: $root.translations.listOfDeletedData + ':'"></span>                
+        <span class="etl-loading-metadata-value">
+            <a class="etl-status-link" target="_blank" data-bind="text: $root.translations.viewInEditLog, attr: { href: editHistoryUrl }"></a>
+        </span>
+    </div>
+    
+</div>
+{% endblock etl_status %}
+
+{% block loading_status %}
+<div class="bulk-load-status">
+    <h4 class="summary-header">
+        <span data-bind="text: $root.translations.bulkEditProgressDetails"></span>
+    </h4>
+    <div style="display:flex;" data-bind="click: function() { showStatusDetails(!showStatusDetails())}">
+        <a class="etl-status-link etl-loading-metadata-key" data-bind="text: $root.translations.bulkEditStatus + ':'"></a>
+        <div style="padding: 1px 4px;">
+            <div>
+                <!-- ko ifnot: showStatusDetails -->
+                <i class="fa fa-caret-right fa-lg"></i>
+                <!-- /ko -->
+                <!-- ko if: showStatusDetails -->
+                <i class="fa fa-caret-down fa-lg"></i>
+                <!-- /ko -->
+            </div>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+            <div class="etl-loading-metadata-value" data-bind="
+                text: selectedLoadEvent() ? 
+                selectedLoadEvent().status == 'indexed' ? $root.translations.completed
+                : selectedLoadEvent().status == 'completed' ? $root.translations.indexing
+                : selectedLoadEvent().status == 'validated' ? $root.translations.running
+                : selectedLoadEvent().status == 'running' ? $root.translations.running
+                : selectedLoadEvent().status == 'reversing' ? $root.translations.unloading
+                : selectedLoadEvent().status == 'unloaded' ? $root.translations.unloaded
+                : selectedLoadEvent().status == 'cancelled' ? $root.translations.cancelled
+                : $root.translations.failed
+            : $root.translations.failed
+            "></div>
+            <!-- ko if: showStatusDetails -->
+            <div data-bind="foreach: statusDetails">
+                <div data-bind="text: $data"></div>
+            </div>
+            <div data-bind="ifnot: ['indexed','failed'].includes(selectedLoadEvent().status)">
+                <i class="fa fa-spin fa-spinner fa-lg"></i>
+            </div>
+            <!-- /ko -->
+        </div>  
+    </div>
+    <div style="padding-top: 10px;">
+        <span class="etl-loading-metadata-key" data-bind="text: $root.translations.bulkEditStarted + ':'"></span>
+        <span class="etl-loading-metadata-value" data-bind="text: selectedLoadEvent() ? formatTime(selectedLoadEvent().load_start_time) : ''"></span>    
+    </div>
+    <div data-bind="if: selectedLoadEvent() && selectedLoadEvent().load_end_time">
+        <span class="etl-loading-metadata-key" data-bind="text: $root.translations.bulkEditEnded + ':'"></span>
+        <span class="etl-loading-metadata-value" data-bind="text: selectedLoadEvent() ? formatTime(selectedLoadEvent().load_end_time) : ''"></span>    
+    </div>
+    <div data-bind="if: selectedLoadEvent() && selectedLoadEvent().load_end_time">
+        <span class="etl-loading-metadata-key" data-bind="text: $root.translations.bulkEditDuration + ':'"></span>
+        <span class="etl-loading-metadata-value" data-bind="text: selectedLoadEvent() ? timeDifference(selectedLoadEvent().load_end_time, selectedLoadEvent().load_start_time) : ''"></span>    
+    </div>
+    <div style="padding-top: 10px;" data-bind="if: selectedLoadEvent() && selectedLoadEvent().indexed_time">
+        <span class="etl-loading-metadata-key" data-bind="text: $root.translations.indexingEnded + ':'"></span>
+        <span class="etl-loading-metadata-value" data-bind="text: selectedLoadEvent() ? formatTime(selectedLoadEvent().indexed_time) : ''"></span>    
+    </div>
+    <div data-bind="if: selectedLoadEvent() && selectedLoadEvent().indexed_time">
+        <span class="etl-loading-metadata-key" data-bind="text: $root.translations.indexingDuration + ':'"></span>
+        <span class="etl-loading-metadata-value" data-bind="text: selectedLoadEvent() ? timeDifference(selectedLoadEvent().indexed_time, selectedLoadEvent().load_end_time) : ''"></span>    
+    </div>
+</div>
+{% endblock loading_status %}
+
+{% block etl_error_report %}
+{% endblock etl_error_report %}
