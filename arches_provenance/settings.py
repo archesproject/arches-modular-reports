@@ -145,6 +145,7 @@ INSTALLED_APPS = (
     # "silk",
     "arches_provenance",  # Ensure the project is listed before any other arches applications
     "arches_querysets",
+    "arches_component_lab",
 )
 
 # Placing this last ensures any templates provided by Arches Applications

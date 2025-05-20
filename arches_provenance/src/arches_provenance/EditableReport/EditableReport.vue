@@ -38,11 +38,14 @@ provide("userCanEditResourceInstance", userCanEditResourceInstance);
 
 const editorKey = ref(0);
 
-const selectedNodeAlias = ref<string | null>(null);
-function setSelectedNodeAlias(nodeAlias: string | null) {
-    selectedNodeAlias.value = nodeAlias;
+const selectedNodegroupGroupingNodeAlias = ref<string | null>(null);
+function setSelectedNodegroupGroupingNodeAlias(nodeAlias: string | null) {
+    selectedNodegroupGroupingNodeAlias.value = nodeAlias;
 }
-provide("selectedNodeAlias", { selectedNodeAlias, setSelectedNodeAlias });
+provide("selectedNodegroupGroupingNodeAlias", {
+    selectedNodegroupGroupingNodeAlias,
+    setSelectedNodegroupGroupingNodeAlias,
+});
 
 const selectedTileId = ref<string | null>(null);
 function setSelectedTileId(tileId: string | null) {
@@ -52,11 +55,17 @@ provide("selectedTileId", { selectedTileId, setSelectedTileId });
 
 const config: Ref<NamedSection> = ref({
     name: $gettext("Loading data"),
+    graph_slug: undefined,
     components: [],
 });
 
+const graphSlug = computed(() => {
+    return config.value.graph_slug;
+});
+provide("graphSlug", graphSlug);
+
 const gutterVisibility = computed(() => {
-    return selectedNodeAlias.value ? "visible" : "hidden";
+    return selectedNodegroupGroupingNodeAlias.value ? "visible" : "hidden";
 });
 
 onMounted(async () => {
@@ -88,7 +97,7 @@ onMounted(async () => {
 });
 
 function closeEditor() {
-    selectedNodeAlias.value = null;
+    selectedNodegroupGroupingNodeAlias.value = null;
     selectedTileId.value = null;
 }
 </script>

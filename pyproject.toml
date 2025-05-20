@@ -28,6 +28,7 @@ dependencies = [
     # and grep for "TODO: arches v8:" to find hints for breaking change updates
     "arches>=7.6.8,<8.0.0",
     "arches-querysets @ git+https://github.com/archesproject/arches-querysets.git@main",
+    "arches_component_lab @ git+https://github.com/archesproject/arches-component-lab.git@main",
 ]
 version = "1.0.0"
 

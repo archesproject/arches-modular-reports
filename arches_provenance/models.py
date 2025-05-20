@@ -19,7 +19,8 @@ class ReportConfig(models.Model):
         on_delete=models.CASCADE,
         related_name="report",
         # TODO: arches v8: models.Q(isresource=True, source_identifier=None),
-        limit_choices_to=models.Q(isresource=True) & ~models.Q(pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID),
+        limit_choices_to=models.Q(isresource=True)
+        & ~models.Q(pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID),
     )
 
     class Meta:
@@ -45,6 +46,7 @@ class ReportConfig(models.Model):
     def generate_config(self):
         return {
             "name": "Untitled Report",
+            "graph_slug": self.graph.slug,
             "components": [
                 {
                     "component": "ReportHeader",
@@ -175,6 +177,9 @@ class ReportConfig(models.Model):
                 if key == "name":
                     if not isinstance(val, str):
                         raise ValidationError(f"Name is not a string: {val}")
+                elif key == "graph_slug":
+                    if not isinstance(val, str):
+                        raise ValidationError(f"Graph slug is not a string: {val}")
                 elif key == "components":
                     if not isinstance(val, list):
                         raise ValidationError(f"Components is not a list: {val}")

@@ -61,8 +61,10 @@ const userCanEditResourceInstance = inject(
 const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
     NodePresentationLookup | undefined
 >;
-const { setSelectedNodeAlias } = inject("selectedNodeAlias") as {
-    setSelectedNodeAlias: (nodeAlias: string | null) => void;
+const { setSelectedNodegroupGroupingNodeAlias } = inject(
+    "selectedNodegroupGroupingNodeAlias",
+) as {
+    setSelectedNodegroupGroupingNodeAlias: (nodeAlias: string | null) => void;
 };
 const { setSelectedTileId } = inject("selectedTileId") as {
     setSelectedTileId: (tileId: string | null) => void;
@@ -207,7 +209,9 @@ function rowClass(data: LabelBasedCard) {
 }
 
 function initiateEdit(tileId: string | null) {
-    setSelectedNodeAlias(props.component.config.nodegroup_alias);
+    setSelectedNodegroupGroupingNodeAlias(
+        props.component.config.nodegroup_alias,
+    );
     setSelectedTileId(tileId);
 }
 </script>

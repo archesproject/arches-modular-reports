@@ -14,7 +14,6 @@ const { $gettext } = useGettext();
 const tree: TreeNode[] = []; // todo
 const selectedKeys: Ref<TreeSelectionKeys> = ref({});
 const expandedKeys: Ref<TreeExpandedKeys> = ref({});
-// const { selectedNodeAlias } = inject("selectedNodeAlias");
 const { setSelectedTileId } = inject("selectedTileId") as {
     setSelectedTileId: (tileId: string | null) => void;
 };

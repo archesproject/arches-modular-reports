@@ -269,6 +269,7 @@ urlpatterns = [
         ArchesTileListCreateView.as_view(),
         name="api_provenance_tiles",
     ),
+    path("", include("arches_component_lab.urls")),
 ]
 
 try:

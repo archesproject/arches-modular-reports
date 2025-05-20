@@ -1,16 +1,25 @@
 <script setup lang="ts">
 import { inject } from "vue";
 
-const { selectedNodeAlias } = inject("selectedNodeAlias") as {
-    selectedNodeAlias: string | null;
+import DefaultCard from "@/arches_component_lab/cards/DefaultCard.vue";
+
+const { selectedNodegroupGroupingNodeAlias } = inject(
+    "selectedNodegroupGroupingNodeAlias",
+) as {
+    selectedNodegroupGroupingNodeAlias: string | null;
 };
-const { selectedTileId } = inject("selectedTileId") as {
-    selectedTileId: string | null;
-};
+const graphSlug = inject("graphSlug") as string;
+
+// const { selectedTileId } = inject("selectedTileId") as {
+//     selectedTileId: string | null;
+// };
 // const resourceInstanceId = inject("resourceInstanceId") as string;
 </script>
 
 <template>
-    <p>Selected Node: {{ selectedNodeAlias }}</p>
-    <p>Selected Tile: {{ selectedTileId }}</p>
+    <DefaultCard
+        v-if="selectedNodegroupGroupingNodeAlias && graphSlug"
+        :node-alias="selectedNodegroupGroupingNodeAlias"
+        :graph-slug="graphSlug"
+    />
 </template>

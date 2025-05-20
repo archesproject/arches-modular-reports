@@ -7,6 +7,7 @@ export interface Settings {
 
 export interface NamedSection {
     name: string;
+    graph_slug?: string;
     components: SectionContent[];
 }
 
