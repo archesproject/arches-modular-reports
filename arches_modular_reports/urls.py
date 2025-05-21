@@ -1,11 +1,68 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
-from django.urls import include, path
+from django.urls import include, path, re_path
+
+from arches.app.models.system_settings import settings
+
+from arches_modular_reports.app.views.card_editor import ProvenanceTileDetailView
+from arches_modular_reports.app.views.editable_report import (
+    EditableReportAwareResourceReportView,
+    NodegroupTileDataView,
+    NodePresentationView,
+    NodeTileDataView,
+    ModularReportConfigView,
+    RelatedResourceView,
+    UserPermissionsView,
+)
+
+uuid_regex = settings.UUID_REGEX
 
 urlpatterns = [
-    # project-level urls
+    path(
+        "provenance_editable_report_config",
+        ModularReportConfigView.as_view(),
+        name="provenance_editable_report_config",
+    ),
+    # Override core arches resource report view to allow rendering
+    # distinct template for editable reports.
+    re_path(
+        r"^report/(?P<resourceid>%s)$" % uuid_regex,
+        EditableReportAwareResourceReportView.as_view(),
+        name="resource_report",
+    ),
+    path(
+        "api/related_resources/<uuid:resourceid>/<slug:related_graph_slug>",
+        RelatedResourceView.as_view(),
+        name="api_related_resources",
+    ),
+    path(
+        "api/node_presentation/<uuid:resourceid>",
+        NodePresentationView.as_view(),
+        name="api_node_presentation",
+    ),
+    path(
+        "api/nodegroup_tile_data/<uuid:resourceid>/<slug:nodegroup_alias>",
+        NodegroupTileDataView.as_view(),
+        name="api_nodegroup_tile_data",
+    ),
+    path(
+        "api/node_tile_data/<uuid:resourceid>",
+        NodeTileDataView.as_view(),
+        name="api_node_tile_data",
+    ),
+    path(
+        "api/provenance_tile/<slug:nodegroup_alias>/<uuid:pk>",
+        ProvenanceTileDetailView.as_view(),
+        name="api_provenance_tile",
+    ),
+    path(
+        "api/has_permissions",
+        UserPermissionsView.as_view(),
+        name="api_has_permissions",
+    ), This line can be removed once #12034 from arches is merged
 ]
+
 
 handler400 = "arches.app.views.main.custom_400"
 handler403 = "arches.app.views.main.custom_403"
