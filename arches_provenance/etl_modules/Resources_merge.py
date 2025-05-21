@@ -215,7 +215,7 @@ class Resourcesmerge(BaseBulkEditor):
             return False
         
     
-    def Merge_inforamtion(self, request):
+    def Merge_information(self, request):
         with connection.cursor() as cursor:
             baseResource = request.POST.get('resourceBase', None)
             mergeResources = request.POST.get('mergeResources', None).split(",")
