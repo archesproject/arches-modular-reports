@@ -19,7 +19,8 @@ const graphSlug = inject("graphSlug") as string;
 <template>
     <DefaultCard
         v-if="selectedNodegroupGroupingNodeAlias && graphSlug"
-        :node-alias="selectedNodegroupGroupingNodeAlias"
+        mode="edit"
+        :nodegroup-grouping-node-alias="selectedNodegroupGroupingNodeAlias"
         :graph-slug="graphSlug"
     />
 </template>
