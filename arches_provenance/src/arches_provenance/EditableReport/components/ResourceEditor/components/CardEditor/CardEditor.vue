@@ -10,9 +10,10 @@ const { selectedNodegroupGroupingNodeAlias } = inject(
 };
 const graphSlug = inject("graphSlug") as string;
 
-// const { selectedTileId } = inject("selectedTileId") as {
-//     selectedTileId: string | null;
-// };
+const { selectedTileId } = inject("selectedTileId") as {
+    selectedTileId: string | undefined;
+};
+
 // const resourceInstanceId = inject("resourceInstanceId") as string;
 </script>
 
@@ -22,5 +23,6 @@ const graphSlug = inject("graphSlug") as string;
         mode="edit"
         :nodegroup-grouping-node-alias="selectedNodegroupGroupingNodeAlias"
         :graph-slug="graphSlug"
+        :tile-id="selectedTileId"
     />
 </template>
