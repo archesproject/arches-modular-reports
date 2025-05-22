@@ -145,6 +145,7 @@ INSTALLED_APPS = (
     "django_celery_results",
     # "silk",
     "arches_modular_reports",  # Ensure the project is listed before any other arches applications
+    "arches_querysets",
 )
 
 # Placing this last ensures any templates provided by Arches Applications
@@ -251,6 +252,17 @@ LOGGING = {
             "propagate": True,
         },
     },
+}
+
+REST_FRAMEWORK = {  # if you are using the Django REST Framework integration
+    # TODO: choose most appropriate default.
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": API_MAX_PAGE_SIZE,
 }
 
 # Rate limit for authentication views

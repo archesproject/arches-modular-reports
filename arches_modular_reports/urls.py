@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
 from django.urls import include, path, re_path
@@ -20,9 +19,9 @@ uuid_regex = settings.UUID_REGEX
 
 urlpatterns = [
     path(
-        "provenance_editable_report_config",
+        "modular_report_config",
         ModularReportConfigView.as_view(),
-        name="provenance_editable_report_config",
+        name="modular_report_config",
     ),
     # Override core arches resource report view to allow rendering
     # distinct template for editable reports.
@@ -60,7 +59,7 @@ urlpatterns = [
         "api/has_permissions",
         UserPermissionsView.as_view(),
         name="api_has_permissions",
-    ), This line can be removed once #12034 from arches is merged
+    ),
 ]
 
 

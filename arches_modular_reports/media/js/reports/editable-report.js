@@ -3,8 +3,8 @@ import EditableReport from '@/arches_modular_reports/EditableReport/EditableRepo
 import createVueApplication from 'utils/create-vue-application';
 import EditableReportTemplate from 'templates/views/report-templates/editable-report.htm';
 
-import { definePreset } from '@primevue/themes';
-import Aura from '@primevue/themes/aura';
+import { definePreset } from '@primeuix/themes';
+import Aura from '@primeuix/themes/aura';
 
 
 const EditableReportPreset = definePreset(Aura, {
