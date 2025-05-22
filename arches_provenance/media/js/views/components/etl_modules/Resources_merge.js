@@ -4,7 +4,8 @@ define([
     'uuid',
     'arches',
     'templates/views/components/etl_modules/Resources_merge.htm',
-], function(ko, $, uuid, arches, baseStringEditorTemplate) {
+    'viewmodels/alert-json',
+], function(ko, $, uuid, arches, baseStringEditorTemplate, JsonErrorAlertViewModel) {
     const ViewModel = function(params) {
         const self = this;
 
@@ -23,6 +24,8 @@ define([
         this.dropdownnodes = ko.observableArray();
         this.InfoBase = ko.observable(false);
         this.flagMessage = ko.observable(false);
+        this.flagInfo = ko.observable(false);
+        this.showSamePreview = ko.observable(false);
         this.showPreview = ko.observable(false);
         this.showresult = ko.observable(false);
         this.showPreviewwrite = ko.observable(false);
@@ -54,10 +57,15 @@ define([
                 if (!this.mergeResources().includes(this.itemToAdd()) && !this.resourceBase().includes(this.itemToAdd())) {
                     this.mergeResources.push(this.itemToAdd()); 
                     this.itemToAdd('');
+                    self.flagMessage(false);
+                    self.flagInfo(true)
+                    self.showresult(false);
+                    self.showPreview(true);
+                    self.showSamePreview(false);
+                }else{
+                    self.showSamePreview(true);
                 }
-                self.flagMessage(false);
-                self.showresult(false);
-                self.showPreview(true);
+                
             }
         };
         

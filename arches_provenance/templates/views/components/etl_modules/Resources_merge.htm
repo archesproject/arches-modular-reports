@@ -35,7 +35,8 @@
         
             <input data-bind="value: itemToAdd, valueUpdate: 'afterkeydown'" placeholder="Merge Resource UUID…" style="border-radius: 4px;"/>
             <button style="background-color: #8cc74f; color: #fff; border: none; border-radius: 4px; font-weight: normal;" type="submit" data-bind="enable: itemToAdd() && isValidUuid(itemToAdd()), click: addResource">Add Merge Resource</button>
-            <div data-bind="visible: showPreview">
+            
+            <div data-bind="visible: flagInfo">
                 <p class="pad-btm" style="margin-top: 10px;">
                     {% blocktrans %}Add UUID for Merge Resource that will merge with Base Resource. Merge Resource will be deleted upon merge.{% endblocktrans %}
                 </p>
@@ -47,6 +48,11 @@
                     </li>
                 </ul>
             </div>
+        </div>
+        <div data-bind="visible: showSamePreview">
+            <p class="pad-btm" style="margin-top: 10px;">
+                {% blocktrans %}This UUID has been used.{% endblocktrans %}
+            </p>
         </div>
         <!-- preview -->
         <div data-bind="visible: showPreview" style=" margin: 15px;">
