@@ -14,6 +14,7 @@ define([
         this.load_details = params.load_details ?? {};
         this.itemToAdd = ko.observable();
         this.resourceBase = ko.observable();
+        this.alert = params.alert || ko.observable();
         this.loadId = params.loadId || uuid.generate();
         this.showStatusDetails = ko.observable(false);
         this.text = ko.observable();  // Corrected
