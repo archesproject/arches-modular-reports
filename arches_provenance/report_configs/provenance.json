@@ -59,7 +59,8 @@
                                                     "config": {
                                                         "node_aliases": [
                                                             "statement_content",
-                                                            "statement_type"
+                                                            "statement_type",
+                                                            "statement_type_metatype"
                                                         ],
                                                         "custom_labels": {},
                                                         "nodegroup_alias": "statement",
