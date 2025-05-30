@@ -279,17 +279,20 @@ class Resourcesmerge(BaseBulkEditor):
                                     AllnodegroupId.append(mergeTile[2])
             nodegroupidList = []
             for nodegroupid in AllnodegroupId:
-                
-                nameNone = """SELECT c.name FROM nodes n
-                inner join cards_x_nodes_x_widgets c_n on n.nodeid=c_n.nodeid
-                inner join cards c on c.cardid=c_n.cardid
-                where n.nodegroupid=%s """ 
+                query_cardinality = """SELECT cardinality FROM node_groups WHERE nodegroupid=%s"""
+                cursor.execute(query_cardinality, [str(nodegroupid)])
+                cardinality = cursor.fetchone()
+                if cardinality[0] != '1':
+                    nameNone = """SELECT c.name FROM nodes n
+                    inner join cards_x_nodes_x_widgets c_n on n.nodeid=c_n.nodeid
+                    inner join cards c on c.cardid=c_n.cardid
+                    where n.nodegroupid=%s """ 
 
-                cursor.execute(nameNone,[str(nodegroupid)])
-                infoResources = cursor.fetchall()
-                
-                if infoResources !=[]:
-                    nodegroupidList.append(json.loads(infoResources[0][0])['en'])
+                    cursor.execute(nameNone,[str(nodegroupid)])
+                    infoResources = cursor.fetchall()
+                    
+                    if infoResources !=[]:
+                        nodegroupidList.append(json.loads(infoResources[0][0])['en'])
 
             return{
                 "success": True,
@@ -468,53 +471,57 @@ class Resourcesmerge(BaseBulkEditor):
 
                     result = self.sql_code(cursor, tiledataInfo, mergeResource)
                     for row in result:
-                        parents=row[3]
-                        if parents is None:
-                            matching_nodegroup = [same for same in exist if same[2] == row[2]]
-                            
-                            information= json.loads(row[1])
-                            keys = list(information.keys())
-                            self.check_information(cursor, matching_nodegroup, row, keys, baseResource, False)
-                        else:
-                            
-                            findTileParent="""select tileid, tiledata, nodegroupid, sortorder from tiles where tileid=%s"""
-                            parentInforamion = self.sql_code(cursor, findTileParent, parents)
-                            matching_nodegroup_child = [same for same in exist if same[2] == row[2]]
-                            information= json.loads(row[1])
-                            childKeys = list(information.keys())
-                                                
-                            for Info in parentInforamion:
-                                matching_row = [same for same in exist if same[2] == Info[2]]
-                                information= json.loads(Info[1])
-                                keys = list(information.keys())
-                                self.check_information(cursor, matching_row, Info, keys, baseResource, True, childtileid=row[0], matching_child=matching_nodegroup_child, childKeys=childKeys)
-                        
-                        selectXResource = "select tileid from resource_x_resource where resourceinstanceidto=%s"
-                        tileIds = self.sql_code(cursor, selectXResource, mergeResource)
-                        for tileid in tileIds:
-                            tiledata="select tiledata from tiles where tileid=%s"
-                            infoTile = self.sql_code(cursor, tiledata, tileid[0])
-                            
-                            infoTiledata = json.loads(infoTile[0][0])
-                            
-                            keys = list(infoTiledata.keys())
-                            for key in keys:
+                        query_cardinality = """SELECT cardinality FROM node_groups WHERE nodegroupid=%s"""
+                        cursor.execute(query_cardinality, [row[2]])
+                        cardinality = cursor.fetchone()
+                        if cardinality[0] != '1':
+                            parents=row[3]
+                            if parents is None:
+                                matching_nodegroup = [same for same in exist if same[2] == row[2]]
                                 
-                                if isinstance(infoTiledata[key], list):
-                                    for resources in infoTiledata[key]:
-                                        if 'resourceId' in resources:
-                                            if resources['resourceId']==mergeResource:
-                                                resources['resourceId'] = baseResource
-                                elif isinstance(infoTiledata[key], dict):
-                                    if 'resourceId' in infoTiledata:
-                                        if infoTiledata[key]['resourceId']==mergeResource:
-                                            infoTiledata['resourceId']=baseResource
-                            updatevalue = """UPDATE tiles set tiledata=%s where tileid=%s; """
-                            print("second ",infoTiledata)
-                            cursor.execute(updatevalue, (json.dumps(infoTiledata), tileid[0]))
+                                information= json.loads(row[1])
+                                keys = list(information.keys())
+                                self.check_information(cursor, matching_nodegroup, row, keys, baseResource, False)
+                            else:
+                                
+                                findTileParent="""select tileid, tiledata, nodegroupid, sortorder from tiles where tileid=%s"""
+                                parentInforamion = self.sql_code(cursor, findTileParent, parents)
+                                matching_nodegroup_child = [same for same in exist if same[2] == row[2]]
+                                information= json.loads(row[1])
+                                childKeys = list(information.keys())
+                                                    
+                                for Info in parentInforamion:
+                                    matching_row = [same for same in exist if same[2] == Info[2]]
+                                    information= json.loads(Info[1])
+                                    keys = list(information.keys())
+                                    self.check_information(cursor, matching_row, Info, keys, baseResource, True, childtileid=row[0], matching_child=matching_nodegroup_child, childKeys=childKeys)
+                            
+                            selectXResource = "select tileid from resource_x_resource where resourceinstanceidto=%s"
+                            tileIds = self.sql_code(cursor, selectXResource, mergeResource)
+                            for tileid in tileIds:
+                                tiledata="select tiledata from tiles where tileid=%s"
+                                infoTile = self.sql_code(cursor, tiledata, tileid[0])
+                                
+                                infoTiledata = json.loads(infoTile[0][0])
+                                
+                                keys = list(infoTiledata.keys())
+                                for key in keys:
+                                    
+                                    if isinstance(infoTiledata[key], list):
+                                        for resources in infoTiledata[key]:
+                                            if 'resourceId' in resources:
+                                                if resources['resourceId']==mergeResource:
+                                                    resources['resourceId'] = baseResource
+                                    elif isinstance(infoTiledata[key], dict):
+                                        if 'resourceId' in infoTiledata:
+                                            if infoTiledata[key]['resourceId']==mergeResource:
+                                                infoTiledata['resourceId']=baseResource
+                                updatevalue = """UPDATE tiles set tiledata=%s where tileid=%s; """
+                                print("second ",infoTiledata)
+                                cursor.execute(updatevalue, (json.dumps(infoTiledata), tileid[0]))
 
-                        updatevalue = """UPDATE resource_x_resource set resourceinstanceidto=%s where resourceinstanceidto=%s; """
-                        cursor.execute(updatevalue, (baseResource, mergeResource))
+                            updatevalue = """UPDATE resource_x_resource set resourceinstanceidto=%s where resourceinstanceidto=%s; """
+                            cursor.execute(updatevalue, (baseResource, mergeResource))
                 log_event_details(cursor, loadid, "Done|Delete resource...")
                 resource = Resource()
                 for mergeResource in mergeResources:
