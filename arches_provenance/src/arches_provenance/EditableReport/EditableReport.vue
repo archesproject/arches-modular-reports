@@ -112,7 +112,7 @@ function closeEditor() {
             />
         </SplitterPanel>
         <SplitterPanel
-            v-show="selectedTileId !== undefined"
+            v-show="selectedNodegroupAlias"
             style="overflow: auto"
         >
             <Panel
