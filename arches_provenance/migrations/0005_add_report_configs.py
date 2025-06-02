@@ -1,11 +1,13 @@
-import uuid
 import glob
+import logging
 import os
 import json
 
 from django.db import migrations
 
 from arches.app.models.system_settings import settings
+
+logger = logging.getLogger("arches_provenance")
 
 
 class Migration(migrations.Migration):
@@ -38,7 +40,7 @@ class Migration(migrations.Migration):
                     )
                     # print(f"Loading: {graph.name}")
                 except Graph.DoesNotExist:
-                    print(
+                    logger.warning(
                         f"\n     Graph with slug \"{config_file.split('/')[-1].split('.')[0]}\" not found based on the report config file with the same name."
                     )
 
