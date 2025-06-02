@@ -124,18 +124,16 @@ function createCardinalityNWrapper(
         key: `${nodegroupAlias}-child-of-${parentTileId ?? uniqueId(0)}`,
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
         data: { tileid: parentTileId, alias: nodegroupAlias },
-        children: tiles
-            .map((tile, idx) => {
-                const result = {
-                    key: tile.tileid ?? uniqueId(0),
-                    label: idx.toString(),
-                    data: { ...tile, alias: nodegroupAlias },
-                    children: processTileData(tile, nodegroupAlias),
-                };
-                result.label = result.children[0].label as string;
-                return result;
-            })
-            .sort((a, b) => a.data.sortorder! - b.data.sortorder!),
+        children: tiles.map((tile, idx) => {
+            const result = {
+                key: tile.tileid ?? uniqueId(0),
+                label: idx.toString(),
+                data: { ...tile, alias: nodegroupAlias },
+                children: processTileData(tile, nodegroupAlias),
+            };
+            result.label = result.children[0].label as string;
+            return result;
+        }),
     };
 }
 
