@@ -38,8 +38,8 @@ provide("userCanEditResourceInstance", userCanEditResourceInstance);
 
 const editorKey = ref(0);
 
-const selectedNodegroupAlias = ref<string | null>(null);
-function setSelectedNodegroupAlias(nodegroupAlias: string | null) {
+const selectedNodegroupAlias = ref<string>();
+function setSelectedNodegroupAlias(nodegroupAlias: string | undefined) {
     selectedNodegroupAlias.value = nodegroupAlias;
 }
 provide("selectedNodegroupAlias", {
@@ -94,7 +94,7 @@ onMounted(async () => {
 });
 
 function closeEditor() {
-    setSelectedNodegroupAlias(null);
+    setSelectedNodegroupAlias(undefined);
     setSelectedTileId(undefined);
     editorKey.value++;
 }
