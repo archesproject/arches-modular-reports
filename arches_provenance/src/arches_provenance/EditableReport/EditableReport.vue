@@ -136,7 +136,7 @@ function closeEditor() {
                         aria-hidden="true"
                     />
                 </template>
-                <ResourceEditor v-if="selectedNodegroupAlias" />
+                <ResourceEditor v-if="userCanEditResourceInstance" />
             </Panel>
         </SplitterPanel>
     </Splitter>
