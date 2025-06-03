@@ -204,6 +204,18 @@
                                                 },{
                                                     "config": {
                                                         "node_aliases": [
+                                                            "valuation_object_used",
+                                                            "valuation_actor",
+                                                            "valuation_type"
+                                                        ],
+                                                        "custom_labels": {},
+                                                        "nodegroup_alias": "valuation",
+                                                        "custom_card_name": null
+                                                    },
+                                                    "component": "DataSection"
+                                                },{
+                                                    "config": {
+                                                        "node_aliases": [
                                                             "encounter_object_encountered",
                                                             "encounter_actor",
                                                             "encounter_type"
