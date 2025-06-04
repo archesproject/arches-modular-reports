@@ -204,7 +204,7 @@
                                                 },{
                                                     "config": {
                                                         "node_aliases": [
-                                                            "valuation_object_used",
+                                                            "valuation_object_valuated",
                                                             "valuation_actor",
                                                             "valuation_type"
                                                         ],
