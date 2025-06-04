@@ -38,14 +38,20 @@ provide("userCanEditResourceInstance", userCanEditResourceInstance);
 
 const editorKey = ref(0);
 
-const selectedNodeAlias = ref<string | null>(null);
-function setSelectedNodeAlias(nodeAlias: string | null) {
-    selectedNodeAlias.value = nodeAlias;
+const selectedNodegroupAlias = ref<string>();
+function setSelectedNodegroupAlias(nodegroupAlias: string | undefined) {
+    selectedNodegroupAlias.value = nodegroupAlias;
 }
-provide("selectedNodeAlias", { selectedNodeAlias, setSelectedNodeAlias });
+provide("selectedNodegroupAlias", {
+    selectedNodegroupAlias,
+    setSelectedNodegroupAlias,
+});
 
-const selectedTileId = ref<string | null>(null);
-function setSelectedTileId(tileId: string | null) {
+// string: persisted tile
+// null: dummy (blank) tile
+// undefined: nothing selected; hide editor
+const selectedTileId = ref<string | null | undefined>(undefined);
+function setSelectedTileId(tileId?: string | null) {
     selectedTileId.value = tileId;
 }
 provide("selectedTileId", { selectedTileId, setSelectedTileId });
@@ -56,7 +62,7 @@ const config: Ref<NamedSection> = ref({
 });
 
 const gutterVisibility = computed(() => {
-    return selectedNodeAlias.value ? "visible" : "hidden";
+    return selectedNodegroupAlias.value ? "visible" : "hidden";
 });
 
 onMounted(async () => {
@@ -88,8 +94,9 @@ onMounted(async () => {
 });
 
 function closeEditor() {
-    selectedNodeAlias.value = null;
-    selectedTileId.value = null;
+    setSelectedNodegroupAlias(undefined);
+    setSelectedTileId(undefined);
+    editorKey.value++;
 }
 </script>
 
@@ -105,7 +112,7 @@ function closeEditor() {
             />
         </SplitterPanel>
         <SplitterPanel
-            v-show="selectedTileId"
+            v-show="selectedNodegroupAlias"
             style="overflow: auto"
         >
             <Panel
@@ -129,7 +136,7 @@ function closeEditor() {
                         aria-hidden="true"
                     />
                 </template>
-                <ResourceEditor />
+                <ResourceEditor v-if="userCanEditResourceInstance" />
             </Panel>
         </SplitterPanel>
     </Splitter>

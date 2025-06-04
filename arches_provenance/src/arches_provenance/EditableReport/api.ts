@@ -1,8 +1,16 @@
 import arches from "arches";
 
-export const fetchProvenanceResource = async (resourceId: string) => {
+export const fetchProvenanceResource = async ({
+    resourceId,
+    fillBlanks = false,
+}: {
+    resourceId: string;
+    fillBlanks: boolean;
+}) => {
+    const params = new URLSearchParams();
+    params.append("fill_blanks", fillBlanks.toString());
     const response = await fetch(
-        arches.urls.api_provenance_resource(resourceId),
+        `${arches.urls.api_provenance_resource(resourceId)}?${params}`,
     );
     const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);
