@@ -19,14 +19,14 @@ from arches.app.views.api import APIBase
 from arches.app.views.base import MapBaseManagerView
 from arches.app.views.resource import ResourceReportView
 
-from arches_provenance.app.utils.decorators import can_read_nodegroup
-from arches_provenance.models import ReportConfig
+from arches_modular_reports.app.utils.decorators import can_read_nodegroup
+from arches_modular_reports.models import ReportConfig
 
-from arches_provenance.app.utils.update_report_configuration_for_nodegroup_permissions import (
+from arches_modular_reports.app.utils.update_report_configuration_for_nodegroup_permissions import (
     update_report_configuration_for_nodegroup_permissions,
 )
 
-from arches_provenance.app.utils.nodegroup_tile_data_utils import (
+from arches_modular_reports.app.utils.nodegroup_tile_data_utils import (
     annotate_node_values,
     annotate_related_graph_nodes_with_widget_labels,
     array_from_string,
@@ -38,7 +38,7 @@ from arches_provenance.app.utils.nodegroup_tile_data_utils import (
 
 
 @method_decorator(can_read_resource_instance, name="dispatch")
-class ProvenanceEditableReportConfigView(View):
+class ModularReportConfigView(View):
     def get(self, request):
         """Just get first. But if there are multiple in the future,
         the vue component will need to know which one to request."""

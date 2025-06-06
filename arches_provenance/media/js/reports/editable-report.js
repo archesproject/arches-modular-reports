@@ -1,10 +1,10 @@
 import ko from 'knockout';
-import EditableReport from '@/arches_provenance/EditableReport/EditableReport.vue';
+import EditableReport from '@/arches_modular_reports/EditableReport/EditableReport.vue';
 import createVueApplication from 'utils/create-vue-application';
 import EditableReportTemplate from 'templates/views/report-templates/editable-report.htm';
 
-import { definePreset } from '@primevue/themes';
-import Aura from '@primevue/themes/aura';
+import { definePreset } from '@primeuix/themes';
+import Aura from '@primeuix/themes/aura';
 
 
 const EditableReportPreset = definePreset(Aura, {

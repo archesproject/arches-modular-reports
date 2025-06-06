@@ -1,230 +1,27 @@
-import uuid
-import json
-import logging
-from django.shortcuts import render
-from django.urls import include, re_path, path
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
-from django.utils.decorators import method_decorator
-from django.views.generic import RedirectView
+from django.urls import include, path, re_path
 
-from arches.app.views.base import BaseManagerView
-from arches.app.models.graph import Graph
-from arches.app.models.resource import Resource
 from arches.app.models.system_settings import settings
-from arches.app.utils.decorators import can_read_resource_instance
-from arches.app.utils.data_management.resources.formats.rdffile import JsonLdWriter
 
-from arches_provenance.app.views.card_editor import ProvenanceTileDetailView
-from arches_provenance.app.views.editable_report import (
+from arches_modular_reports.app.views.card_editor import ModularReportTileDetailView
+from arches_modular_reports.app.views.editable_report import (
     EditableReportAwareResourceReportView,
     NodegroupTileDataView,
     NodePresentationView,
     NodeTileDataView,
-    ProvenanceEditableReportConfigView,
+    ModularReportConfigView,
     RelatedResourceView,
     UserPermissionsView,
 )
-from arches_provenance.app.views.related_resource import ProvenanceRelatedResourcesView
-from arches_provenance.app.views.auth import ProvenanceLoginView
 
 uuid_regex = settings.UUID_REGEX
-logger = logging.getLogger(__name__)
-
-
-@method_decorator(can_read_resource_instance, name="dispatch")
-class GraphResourceReportView(BaseManagerView):
-
-    def __init__(self, *args, **kwargs):
-        super(GraphResourceReportView, self).__init__(*args, **kwargs)
-        self.class_styles = {
-            "HumanMadeObject": "object",
-            "Place": "place",
-            "Actor": "actor",
-            "Person": "actor",
-            "Group": "actor",
-            "Type": "type",
-            "MeasurementUnit": "type",
-            "Currency": "type",
-            "Material": "type",
-            "Language": "type",
-            "Name": "name",
-            "Identifier": "name",
-            "Dimension": "dims",
-            "MonetaryAmount": "dims",
-            "LinguisticObject": "infoobj",
-            "VisualItem": "infoobj",
-            "InformationObject": "infoobj",
-            "Set": "infoobj",
-            "PropositionalObject": "infoobj",
-            "Right": "infoobj",
-            "PropertyInterest": "infoobj",
-            "TimeSpan": "timespan",
-            "Activity": "event",
-            "Event": "event",
-            "Birth": "event",
-            "Death": "event",
-            "Production": "event",
-            "Destruction": "event",
-            "Creation": "event",
-            "Formation": "event",
-            "Dissolution": "event",
-            "Acquisition": "event",
-            "TransferOfCustody": "event",
-            "Move": "event",
-            "Payment": "event",
-            "AttributeAssignment": "event",
-            "Phase": "event",
-            "Relationship": "dims",
-            "RightAcquisition": "event",
-            "PartRemoval": "event",
-            "PartAddition": "event",
-            "Encounter": "event",
-        }
-
-    def uri_to_label_link(self, uri, curr_int=0):
-        link = ""
-        if uri.startswith("http://vocab.getty.edu/"):
-            link = uri
-            uri = uri.replace("http://vocab.getty.edu/", "")
-            uri = uri.replace("/", ":")
-        elif uri.startswith("http://localhost:8000/resources/"):
-            uri = uri.replace("http://localhost:8000/resources/", "")
-            link = f"http://localhost:8000/graph_report/{uri}"
-        elif uri.startswith("http://localhost:8000/tile/"):
-            uri = f"_:b{curr_int}"
-        elif uri.startswith("http://qudt.org/1.1/vocab/unit/"):
-            uri = uri.replace("http://qudt.org/1.1/vocab/unit/", "qudt:")
-        else:
-            # print("Unhandled URI: %s" % uri)
-            pass
-        return uri, link
-
-    def walk(self, js, curr_int, id_map, mermaid):
-        if isinstance(js, dict):
-            # Resource
-            curr = js.get("id", str(uuid.uuid4()))
-            if curr in id_map:
-                currid = id_map[curr]
-            else:
-                currid = "O%s" % curr_int
-                curr_int += 1
-                id_map[curr] = currid
-            lbl, link = self.uri_to_label_link(curr, curr_int)
-            line = "%s(%s)" % (currid, lbl)
-            if not line in mermaid:
-                mermaid.append(line)
-            if link:
-                line = f'click {currid} "{link}" "Link"'
-                if not line in mermaid:
-                    mermaid.append(line)
-            t = js.get("type", "")
-            if t:
-                style = self.class_styles.get(t, "")
-                if style:
-                    line = "class %s %s;" % (currid, style)
-                    if not line in mermaid:
-                        mermaid.append("class %s %s;" % (currid, style))
-                else:
-                    print("No style for class %s" % t)
-                line = "%s-- type -->%s_0[%s]" % (currid, currid, t)
-                if not line in mermaid:
-                    mermaid.append(line)
-                    mermaid.append("class %s_0 classstyle;" % currid)
-
-            n = 0
-            for k, v in js.items():
-                n += 1
-                if k in ["@context", "id", "type"]:
-                    continue
-                elif isinstance(v, list):
-                    for vi in v:
-                        if isinstance(vi, dict):
-                            (rng, curr_int, id_map) = self.walk(
-                                vi, curr_int, id_map, mermaid
-                            )
-                            mermaid.append("%s-- %s -->%s" % (currid, k, rng))
-                        else:
-                            print("Iterating a list and found %r" % vi)
-                elif isinstance(v, dict):
-                    (rng, curr_int, id_map) = self.walk(v, curr_int, id_map, mermaid)
-                    line = "%s-- %s -->%s" % (currid, k, rng)
-                    if not line in mermaid:
-                        mermaid.append(line)
-                else:
-                    if type(v) in [str, bytes]:
-                        # :|
-                        v = v.replace('"', "#quot;")
-                        if len(v) > 80:
-                            v = v[:80] + "..."
-                        v = "\"''%s''\"" % v
-                    line = "%s-- %s -->%s_%s(%s)" % (currid, k, currid, n, v)
-                    if not line in mermaid:
-                        mermaid.append(line)
-                        mermaid.append("class %s_%s literal;" % (currid, n))
-            return (currid, curr_int, id_map)
-
-    def build_mermaid(self, js):
-        curr_int = 1
-        mermaid = []
-        id_map = {}
-        mermaid.append("graph TD")
-        mermaid.append("classDef object stroke:black,fill:#E1BA9C,rx:20px,ry:20px;")
-        mermaid.append("classDef actor stroke:black,fill:#FFBDCA,rx:20px,ry:20px;")
-        mermaid.append("classDef type stroke:red,fill:#FAB565,rx:20px,ry:20px;")
-        mermaid.append("classDef name stroke:orange,fill:#FEF3BA,rx:20px,ry:20px;")
-        mermaid.append("classDef dims stroke:black,fill:#c6c6c6,rx:20px,ry:20px;")
-        mermaid.append("classDef infoobj stroke:#907010,fill:#fffa40,rx:20px,ry:20px")
-        mermaid.append("classDef timespan stroke:blue,fill:#ddfffe,rx:20px,ry:20px")
-        mermaid.append("classDef place stroke:#3a7a3a,fill:#aff090,rx:20px,ry:20px")
-        mermaid.append("classDef event stroke:blue,fill:#96e0f6,rx:20px,ry:20px")
-        mermaid.append("classDef literal stroke:black,fill:#f0f0e0;")
-        mermaid.append("classDef classstyle stroke:black,fill:white;")
-        self.walk(js, curr_int, id_map, mermaid)
-        return "\n".join(mermaid)
-
-    def get(self, request, resourceid=None):
-
-        resource = Resource.objects.get(pk=resourceid)
-        graph = Graph.objects.get(graphid=resource.graph_id)
-        writer = JsonLdWriter()
-        js = writer.build_json(resourceinstanceids=[resourceid])
-
-        # Now apply mermaid algorithm to the json-ld
-        mmd = self.build_mermaid(js)
-
-        displayname = resource.displayname
-
-        context = self.get_context_data(
-            main_script="views/resource",
-            displayname=displayname,
-            data=mmd,
-            mmid=resourceid,
-            jsonld=json.dumps(js, indent=2),
-        )
-        context["nav"]["title"] = displayname
-        if graph.iconclass:
-            context["nav"]["icon"] = graph.iconclass
-
-        return render(request, "views/resource/graph_report.htm", context)
-
 
 urlpatterns = [
-    # re_path(r'^', include('arches.urls')),
     path(
-        "index.htm",
-        RedirectView.as_view(url="https://www.getty.edu/research/provenance/"),
-        name="home",
-    ),
-    re_path(
-        r"^graph_report/(?P<resourceid>%s|())$" % uuid_regex,
-        GraphResourceReportView.as_view(),
-        name="resource_graph_report",
-    ),
-    path(
-        "provenance_editable_report_config",
-        ProvenanceEditableReportConfigView.as_view(),
-        name="provenance_editable_report_config",
+        "modular_report_config",
+        ModularReportConfigView.as_view(),
+        name="modular_report_config",
     ),
     # Override core arches resource report view to allow rendering
     # distinct template for editable reports.
@@ -232,11 +29,6 @@ urlpatterns = [
         r"^report/(?P<resourceid>%s)$" % uuid_regex,
         EditableReportAwareResourceReportView.as_view(),
         name="resource_report",
-    ),
-    re_path(
-        r"^resource/related/(?P<resourceid>%s|())$" % uuid_regex,
-        ProvenanceRelatedResourcesView.as_view(),
-        name="related_resources",
     ),
     path(
         "api/related_resources/<uuid:resourceid>/<slug:related_graph_slug>",
@@ -259,29 +51,22 @@ urlpatterns = [
         name="api_node_tile_data",
     ),
     path(
-        "api/provenance_tile/<slug:nodegroup_alias>/<uuid:pk>",
-        ProvenanceTileDetailView.as_view(),
-        name="api_provenance_tile",
+        "api/modular_reports_tile/<slug:nodegroup_alias>/<uuid:pk>",
+        ModularReportTileDetailView.as_view(),
+        name="api_modular_reports_tile",
     ),
     path(
         "api/has_permissions",
         UserPermissionsView.as_view(),
         name="api_has_permissions",
     ),
-    re_path(
-        r"^auth/", ProvenanceLoginView.as_view(), name="auth"
-    ),  # This line can be removed once #12034 from arches is merged
 ]
 
-try:
-    import arches_health
 
-    urlpatterns = urlpatterns + [re_path(r"^ht/", include("health_check.urls"))]
-    urlpatterns = urlpatterns + [re_path(r"^ht-pub/", include("arches_health.urls"))]
-    logger.info("loaded optional health check urls")
-except Exception as e:
-    logger.error(e)
-    pass
+# handler400 = "arches.app.views.main.custom_400"
+# handler403 = "arches.app.views.main.custom_403"
+# handler404 = "arches.app.views.main.custom_404"
+# handler500 = "arches.app.views.main.custom_500"
 
 # Ensure Arches core urls are superseded by project-level urls
 urlpatterns.append(path("", include("arches.urls")))

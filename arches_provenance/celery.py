@@ -7,7 +7,7 @@ import platform
 if platform.system().lower() == "windows":
     os.environ.setdefault("FORKED_BY_MULTIPROCESSING", "1")
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arches_provenance.settings')
-app = Celery('arches_provenance')
-app.config_from_object('django.conf:settings', namespace='CELERY')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "arches_modular_reports.settings")
+app = Celery("arches_modular_reports")
+app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()

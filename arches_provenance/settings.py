@@ -1,5 +1,5 @@
 """
-Django settings for arches_provenance project.
+Django settings for arches_modular_reports project.
 """
 
 import os
@@ -13,7 +13,7 @@ try:
 except ImportError:
     pass
 
-APP_NAME = "arches_provenance"
+APP_NAME = "arches_modular_reports"
 APP_VERSION = semantic_version.Version(major=0, minor=0, patch=0)
 APP_ROOT = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
@@ -23,10 +23,10 @@ WEBPACK_LOADER = {
     },
 }
 
-DATATYPE_LOCATIONS.append("arches_provenance.datatypes")
-FUNCTION_LOCATIONS.append("arches_provenance.functions")
-ETL_MODULE_LOCATIONS.append("arches_provenance.etl_modules")
-SEARCH_COMPONENT_LOCATIONS.append("arches_provenance.search_components")
+DATATYPE_LOCATIONS.append("arches_modular_reports.datatypes")
+FUNCTION_LOCATIONS.append("arches_modular_reports.functions")
+ETL_MODULE_LOCATIONS.append("arches_modular_reports.etl_modules")
+SEARCH_COMPONENT_LOCATIONS.append("arches_modular_reports.search_components")
 
 LOCALE_PATHS.insert(0, os.path.join(APP_ROOT, "locale"))
 
@@ -51,15 +51,15 @@ FILENAME_GENERATOR = "arches.app.utils.storage_filename_generator.generate_filen
 UPLOADED_FILES_DIR = "uploadedfiles"
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-0y6+euwsh*-6-otblyvr(f-z(oo88+(_7vz_r8y)u6kz)=t_c^"
+SECRET_KEY = "django-insecure-bw-qkksf4f&^a9o5ykl511-3ym$_d*2e9&s!jv6e%%j9g24)7f"
 
-# SECURITY WARNING: don"t run with debug turned on in production!
-DEBUG = False
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
 
-ROOT_URLCONF = "arches_provenance.urls"
-ROOT_HOSTCONF = "arches_provenance.hosts"
+ROOT_URLCONF = "arches_modular_reports.urls"
+ROOT_HOSTCONF = "arches_modular_reports.hosts"
 
-DEFAULT_HOST = "arches_provenance"
+DEFAULT_HOST = "arches_modular_reports"
 
 # Modify this line as needed for your project to connect to elasticsearch with a password that you generate
 ELASTICSEARCH_CONNECTION_OPTIONS = {
@@ -81,13 +81,13 @@ ELASTICSEARCH_CONNECTION_OPTIONS = {
 # Or Kibana: https://www.elastic.co/guide/en/kibana/current/api-keys.html
 
 # a prefix to append to all elasticsearch indexes, note: must be lower case
-ELASTICSEARCH_PREFIX = "arches_provenance"
+ELASTICSEARCH_PREFIX = "arches_modular_reports"
 
 ELASTICSEARCH_CUSTOM_INDEXES = []
 # [{
-#     "module": "arches_provenance.search_indexes.sample_index.SampleIndex",
-#     "name": "my_new_custom_index", <-- follow ES index naming rules
-#     "should_update_asynchronously": False  <-- denotes if asynchronously updating the index would affect custom functionality within the project.
+#     'module': 'arches_modular_reports.search_indexes.sample_index.SampleIndex',
+#     'name': 'my_new_custom_index', <-- follow ES index naming rules
+#     'should_update_asynchronously': False  <-- denotes if asynchronously updating the index would affect custom functionality within the project.
 # }]
 
 KIBANA_URL = "http://localhost:5601/"
@@ -109,8 +109,10 @@ DATABASES = {
         "CONN_MAX_AGE": 0,
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "HOST": "localhost",
-        "NAME": "arches_provenance",
-        "OPTIONS": {},
+        "NAME": "arches_modular_reports",
+        "OPTIONS": {
+            "options": "-c cursor_tuple_fraction=1",
+        },
         "PASSWORD": "postgis",
         "PORT": "5432",
         "POSTGIS_TEMPLATE": "template_postgis",
@@ -136,14 +138,13 @@ INSTALLED_APPS = (
     "arches.app.models",
     "arches.management",
     "guardian",
-    "captcha",
+    "django_recaptcha",
     "revproxy",
     "corsheaders",
     "oauth2_provider",
     "django_celery_results",
-    "rest_framework",
     # "silk",
-    "arches_provenance",  # Ensure the project is listed before any other arches applications
+    "arches_modular_reports",  # Ensure the project is listed before any other arches applications
     "arches_querysets",
 )
 
@@ -155,7 +156,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    # "arches.app.utils.middleware.TokenMiddleware",
+    #'arches.app.utils.middleware.TokenMiddleware',
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -188,7 +189,7 @@ ALLOWED_HOSTS = []
 SYSTEM_SETTINGS_LOCAL_PATH = os.path.join(
     APP_ROOT, "system_settings", "System_Settings.json"
 )
-WSGI_APPLICATION = "arches_provenance.wsgi.application"
+WSGI_APPLICATION = "arches_modular_reports.wsgi.application"
 
 # URL that handles the media served from MEDIA_ROOT, used for managing stored files.
 # It must end in a slash if set to a non-empty value.
@@ -202,15 +203,13 @@ MEDIA_ROOT = os.path.join(APP_ROOT)
 STATIC_URL = "/static/"
 
 # Absolute path to the directory static files should be collected to.
-# Don"t put anything in this directory yourself; store your static files
-# in apps" "static/" subdirectories and in STATICFILES_DIRS.
+# Don't put anything in this directory yourself; store your static files
+# in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
 STATIC_ROOT = os.path.join(APP_ROOT, "staticfiles")
 
 # when hosting Arches under a sub path set this value to the sub path eg : "/{sub_path}/"
 FORCE_SCRIPT_NAME = None
-
-ENABLE_USER_SIGNUP = False
 
 RESOURCE_IMPORT_LOG = os.path.join(APP_ROOT, "logs", "resource_import.log")
 DEFAULT_RESOURCE_IMPORT_USER = {"username": "admin", "userid": 1}
@@ -241,8 +240,29 @@ LOGGING = {
             "handlers": ["file", "console"],
             "level": "WARNING",
             "propagate": True,
-        }
+        },
+        "arches_modular_reports": {
+            "handlers": ["file", "console"],
+            "level": "WARNING",
+            "propagate": True,
+        },
+        "django.request": {
+            "handlers": ["file", "console"],
+            "level": "WARNING",
+            "propagate": True,
+        },
     },
+}
+
+REST_FRAMEWORK = {  # if you are using the Django REST Framework integration
+    # TODO: choose most appropriate default.
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": API_MAX_PAGE_SIZE,
 }
 
 # Rate limit for authentication views
@@ -254,15 +274,12 @@ RATE_LIMIT = "5/m"
 DATA_UPLOAD_MAX_MEMORY_SIZE = 15728640
 
 # Unique session cookie ensures that logins are treated separately for each app
-SESSION_COOKIE_NAME = "arches_provenance"
+SESSION_COOKIE_NAME = "arches_modular_reports"
 
 # For more info on configuring your cache: https://docs.djangoproject.com/en/2.2/topics/cache/
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.dummy.DummyCache",
-    },
-    "rdffile": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     },
     "user_permission": {
         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
@@ -291,26 +308,24 @@ TILE_CACHE_TIMEOUT = 600  # seconds
 CLUSTER_DISTANCE_MAX = 5000  # meters
 GRAPH_MODEL_CACHE_TIMEOUT = None
 
-OAUTH_CLIENT_ID = ""  # "9JCibwrWQ4hwuGn5fu2u1oRZSs9V6gK8Vu8hpRC4"
+OAUTH_CLIENT_ID = ""  #'9JCibwrWQ4hwuGn5fu2u1oRZSs9V6gK8Vu8hpRC4'
 
-LOGIN_REDIRECT_URL = "search_home"
-
-APP_TITLE = "Arches | Provenance"
+APP_TITLE = "Arches | Heritage Data Management"
 COPYRIGHT_TEXT = "All Rights Reserved."
 COPYRIGHT_YEAR = "2019"
 
 ENABLE_CAPTCHA = False
-# RECAPTCHA_PUBLIC_KEY = ""
-# RECAPTCHA_PRIVATE_KEY = ""
+# RECAPTCHA_PUBLIC_KEY = ''
+# RECAPTCHA_PRIVATE_KEY = ''
 # RECAPTCHA_USE_SSL = False
 NOCAPTCHA = True
-# RECAPTCHA_PROXY = "http://127.0.0.1:8000"
+# RECAPTCHA_PROXY = 'http://127.0.0.1:8000'
 
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  #<-- Only need to uncomment this for arches_provenance without an actual email server
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  #<-- Only need to uncomment this for testing without an actual email server
 # EMAIL_USE_TLS = True
-# EMAIL_HOST = "smtp.gmail.com"
+# EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = "xxxx@xxx.com"
-# EMAIL_HOST_PASSWORD = "xxxxxxx"
+# EMAIL_HOST_PASSWORD = 'xxxxxxx'
 # EMAIL_PORT = 587
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
@@ -318,7 +333,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 CELERY_BROKER_URL = ""  # RabbitMQ --> "amqp://guest:guest@localhost",  Redis --> "redis://localhost:6379/0"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_RESULT_BACKEND = (
-    "django-db"  # Use "django-cache" if you want to use your cache as your backend
+    "django-db"  # Use 'django-cache' if you want to use your cache as your backend
 )
 CELERY_TASK_SERIALIZER = "json"
 
@@ -382,10 +397,6 @@ RESTRICT_MEDIA_ACCESS = False
 # value and is not signed in with a user account then the request will not be allowed.
 RESTRICT_CELERY_EXPORT_FOR_ANONYMOUS_USER = False
 
-TEMPLATES[0]["OPTIONS"]["context_processors"].append(
-    "arches_provenance.app.utils.context_processors.project_settings"
-)
-
 # Dictionary containing any additional context items for customising email templates
 EXTRA_EMAIL_CONTEXT = {
     "salutation": _("Hi"),
@@ -395,7 +406,7 @@ EXTRA_EMAIL_CONTEXT = {
 }
 
 # see https://docs.djangoproject.com/en/1.9/topics/i18n/translation/#how-django-discovers-language-preference
-# to see how LocaleMiddleware tries to determine the user"s language preference
+# to see how LocaleMiddleware tries to determine the user's language preference
 # (make sure to check your accept headers as they will override the LANGUAGE_CODE setting!)
 # also see get_language_from_request in django.utils.translation.trans_real.py
 # to see how the language code is derived in the actual code
@@ -417,15 +428,15 @@ EXTRA_EMAIL_CONTEXT = {
 LANGUAGE_CODE = "en"
 
 # list of languages to display in the language switcher,
-# if left empty or with a single entry then the switch won"t be displayed
+# if left empty or with a single entry then the switch won't be displayed
 # language codes need to be all lower case with the form:
 # {langcode}-{regioncode} eg: en, en-gb ....
 # a list of language codes can be found here http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGES = [
-    #   ("de", _("German")),
+    #   ('de', _('German')),
     ("en", _("English")),
-    #   ("en-gb", _("British English")),
-    #   ("es", _("Spanish")),
+    #   ('en-gb', _('British English')),
+    #   ('es', _('Spanish')),
 ]
 
 # override this to permenantly display/hide the language switcher
@@ -433,94 +444,7 @@ SHOW_LANGUAGE_SWITCH = len(LANGUAGES) > 1
 
 # Implement this class to associate custom documents to the ES resource index
 # See tests.views.search_tests.TestEsMappingModifier class for example
-# ES_MAPPING_MODIFIER_CLASSES = ["arches_provenance.search.es_mapping_modifier.EsMappingModifier"]
-
-RESOURCE_FORMATTERS["json-ld"] = (
-    "arches_provenance.formatters.json_ld.JsonLdWriterWithGraphCaching"
-)
-
-JSON_LD_SORT = True
-JSON_LD_SORT_CLASSIFIED = {
-    None: 10000,
-    "urn:uuid:4c6a4b5b-0691-45db-8caa-34362a5bb7d4": 0,  # preferred term
-    "urn:uuid:4883b439-38b6-4706-941f-416af284f3b5": 1,  # alternate term
-}
-JSON_LD_SORT_LANGUAGE = {
-    None: 10000,
-    "urn:uuid:a3630dc4-f796-4eb0-834b-959ecaa82c93": 0,  # English
-    "urn:uuid:99259693-ea0f-470a-824e-6ae57a8f4ede": 1,  # Spanish
-    "urn:uuid:a57e285a-5fc3-4dcd-88e2-491c58bbec78": 2,  # French
-    "urn:uuid:441699a5-7b44-420e-89ea-f73ed3babbdc": 3,  # German
-    "urn:uuid:512c7808-e8b2-4cdb-b440-0fbefefecbbb": 4,  # Dutch
-}
-
-JSON_LD_SORT_CLASSIFIED_PROP = "http://www.cidoc-crm.org/cidoc-crm/P2_has_type"
-JSON_LD_SORT_LANGUAGE_PROP = "http://www.cidoc-crm.org/cidoc-crm/P72_has_language"
-JSON_LD_SORT_VALUE_PROPS = [
-    "http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content",
-    "http://www.cidoc-crm.org/cidoc-crm/P90_has_value",
-]
-
-
-def typesort(x):
-    typs = x._json_ld.get(JSON_LD_SORT_CLASSIFIED_PROP, [{"@id": None}])
-    if not typs or not "@id" in typs[0]:
-        typs = [{"@id": None}]
-    scores = [JSON_LD_SORT_CLASSIFIED.get(x["@id"], 10000) for x in typs]
-    return min(scores)
-
-
-def langsort(x):
-    langs = x._json_ld.get(JSON_LD_SORT_LANGUAGE_PROP, [{"@id": None}])
-    if not langs or not "@id" in langs[0]:
-        langs = [{"@id": None}]
-    scores = [JSON_LD_SORT_LANGUAGE.get(x["@id"], 10000) for x in langs]
-    return min(scores)
-
-
-def valuesort(x):
-    value = None
-    for p in JSON_LD_SORT_VALUE_PROPS:
-        value = x._json_ld.get(p, None)
-        if value is not None:
-            value = value[0]["@value"]
-            break
-    if value is None:
-        return "~"
-    else:
-        return str(value)
-
-
-TIMEWHEEL_DATE_TIERS = {
-    "name": "Millennium",
-    "interval": 2000,
-    "root": True,
-    "child": {
-        "name": "Century",
-        "interval": 100,
-        "child": {"name": "Decade", "interval": 10},
-    },
-}
-
-JSON_LD_SORT_FUNCTIONS = [valuesort, langsort, typesort]
-
-PREFERRED_CONCEPT_SCHEMES = [
-    "http://vocab.getty.edu/aat/",
-    "http://www.cidoc-crm.org/cidoc-crm/",
-    "https://data.getty.edu/local/",
-]
-
-REST_FRAMEWORK = {  # if you are using the Django REST Framework integration
-    # TODO: choose most appropriate default.
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
-    ],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "PAGE_SIZE": API_MAX_PAGE_SIZE,
-}
-HOSTED_APPS = ()
+# ES_MAPPING_MODIFIER_CLASSES = ["arches_modular_reports.search.es_mapping_modifier.EsMappingModifier"]
 
 try:
     from .package_settings import *
@@ -537,5 +461,3 @@ except ImportError as e:
         from settings_local import *
     except ImportError as e:
         pass
-
-INSTALLED_APPS += HOSTED_APPS

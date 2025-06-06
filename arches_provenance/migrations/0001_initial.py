@@ -3,7 +3,7 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
-import arches_provenance.utils
+import arches_modular_reports.utils
 from arches.app.models.system_settings import settings
 
 
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                     models.JSONField(
                         blank=True,
                         default=dict,
-                        encoder=arches_provenance.utils.PrettyJSONEncoder,
+                        encoder=arches_modular_reports.utils.PrettyJSONEncoder,
                     ),
                 ),
                 (
@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
-                "db_table": "arches_provenance_report_config",
+                "db_table": "arches_modular_report_config",
                 "managed": True,
             },
         ),

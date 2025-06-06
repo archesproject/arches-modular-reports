@@ -5,7 +5,7 @@ from django.db import models
 
 from arches.app.models.models import GraphModel, Node, NodeGroup
 from arches.app.models.system_settings import settings
-from arches_provenance.utils import PrettyJSONEncoder
+from arches_modular_reports.utils import PrettyJSONEncoder
 
 
 class ReportConfig(models.Model):
@@ -19,12 +19,13 @@ class ReportConfig(models.Model):
         on_delete=models.CASCADE,
         related_name="report",
         # TODO: arches v8: models.Q(isresource=True, source_identifier=None),
-        limit_choices_to=models.Q(isresource=True) & ~models.Q(pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID),
+        limit_choices_to=models.Q(isresource=True)
+        & ~models.Q(pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID),
     )
 
     class Meta:
         managed = True
-        db_table = "arches_provenance_report_config"
+        db_table = "arches_modular_report_config"
 
     def __str__(self):
         if self.config and self.graph:

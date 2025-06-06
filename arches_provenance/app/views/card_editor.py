@@ -12,16 +12,16 @@ from arches_querysets.rest_framework.serializers import (
 from arches_querysets.rest_framework.view_mixins import ArchesModelAPIMixin
 
 
-# class ProvenanceResourceDetailView(ArchesModelAPIMixin, RetrieveUpdateDestroyAPIView):
+# class ModularReportResourceDetailView(ArchesModelAPIMixin, RetrieveUpdateDestroyAPIView):
 #     permission_classes = [Guest]
 #     serializer_class = ArchesResourceSerializer
 
 
-# class ProvenanceTileListCreateView(ArchesModelAPIMixin, ListCreateAPIView):
+# class ModularReportTileListCreateView(ArchesModelAPIMixin, ListCreateAPIView):
 #     permission_classes = [Guest]
 #     serializer_class = ArchesTileSerializer
 
 
-class ProvenanceTileDetailView(ArchesModelAPIMixin, RetrieveAPIView):
+class ModularReportTileDetailView(ArchesModelAPIMixin, RetrieveAPIView):
     permission_classes = [Guest]
     serializer_class = ArchesTileSerializer

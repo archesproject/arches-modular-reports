@@ -8,7 +8,7 @@ template_pk = uuid.UUID("b0908227-ecc2-48dd-931b-314a9031caa0")
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("arches_provenance", "0001_initial"),
+        ("arches_modular_reports", "0001_initial"),
     ]
 
     def create_template(apps, schema_editor):
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         ReportTemplate(
             pk=template_pk,
             name="Editable Report Template",
-            description="An editable report for Provenance Groups.",
+            description="A modular report template.",
             component="reports/editable-report",
             componentname="editable-report",
             defaultconfig={},

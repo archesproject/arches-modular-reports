@@ -1,6 +1,6 @@
 [run]
 source =
-    arches_provenance/
+    arches_modular_reports/
 
 omit =
     */python?.?/*

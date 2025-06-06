@@ -4,7 +4,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("arches_provenance", "0002_add_editable_report"),
+        ("arches_modular_reports", "0002_add_editable_report"),
     ]
 
     forward_sql_string = """

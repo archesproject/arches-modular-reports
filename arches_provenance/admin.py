@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db import models
 from django.forms import Textarea
 
-from arches_provenance.models import ReportConfig
+from arches_modular_reports.models import ReportConfig
 
 
 class ReportConfigAdmin(admin.ModelAdmin):
