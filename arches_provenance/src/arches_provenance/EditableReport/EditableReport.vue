@@ -38,8 +38,10 @@ provide("userCanEditResourceInstance", userCanEditResourceInstance);
 
 const editorKey = ref(0);
 
-const selectedNodegroupGroupingNodeAlias = ref<string | null>(null);
-function setSelectedNodegroupGroupingNodeAlias(nodeAlias: string | null) {
+const selectedNodegroupGroupingNodeAlias = ref<string | null | undefined>(null);
+function setSelectedNodegroupGroupingNodeAlias(
+    nodeAlias: string | null | undefined,
+) {
     selectedNodegroupGroupingNodeAlias.value = nodeAlias;
 }
 provide("selectedNodegroupGroupingNodeAlias", {
@@ -47,8 +49,11 @@ provide("selectedNodegroupGroupingNodeAlias", {
     setSelectedNodegroupGroupingNodeAlias,
 });
 
-const selectedTileId = ref<string | null>(null);
-function setSelectedTileId(tileId: string | null) {
+// string: persisted tile
+// null: dummy (blank) tile
+// undefined: nothing selected; hide editor
+const selectedTileId = ref<string | null | undefined>(undefined);
+function setSelectedTileId(tileId?: string | null) {
     selectedTileId.value = tileId;
 }
 provide("selectedTileId", { selectedTileId, setSelectedTileId });
@@ -97,8 +102,8 @@ onMounted(async () => {
 });
 
 function closeEditor() {
-    selectedNodegroupGroupingNodeAlias.value = null;
-    selectedTileId.value = null;
+    setSelectedNodegroupGroupingNodeAlias(undefined);
+    setSelectedTileId(undefined);
 }
 </script>
 
@@ -114,7 +119,7 @@ function closeEditor() {
             />
         </SplitterPanel>
         <SplitterPanel
-            v-show="selectedTileId"
+            v-show="selectedNodegroupGroupingNodeAlias"
             style="overflow: auto"
         >
             <Panel
@@ -138,7 +143,7 @@ function closeEditor() {
                         aria-hidden="true"
                     />
                 </template>
-                <ResourceEditor />
+                <ResourceEditor v-if="userCanEditResourceInstance" />
             </Panel>
         </SplitterPanel>
     </Splitter>

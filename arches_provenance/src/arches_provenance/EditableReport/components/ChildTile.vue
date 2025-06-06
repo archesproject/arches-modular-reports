@@ -169,7 +169,7 @@ function bestWidgetLabel(nodeAlias: string) {
             </div>
             <ChildTile
                 v-for="child in visibleChildren"
-                :key="child.tileid"
+                :key="child.tileid!"
                 :divider="true"
                 :data="child"
                 :depth="depth + 1"

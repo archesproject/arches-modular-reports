@@ -24,8 +24,11 @@ export interface SectionContent {
 export interface NodePresentation {
     nodeid: string;
     name: string;
+    datatype: string;
     card_name: string;
+    card_order: number;
     widget_label: string;
+    widget_order: number;
     visible: boolean;
     nodegroup: {
         nodegroup_id: string;
@@ -102,7 +105,7 @@ export interface TileData<T extends AliasedData = AliasedData> {
     provisionaledits: object | null;
     resourceinstance: string;
     sortorder: number;
-    tileid: string;
+    tileid: string | null;
 }
 
 // NodegroupTileDataView produces this, not label-based graph.
