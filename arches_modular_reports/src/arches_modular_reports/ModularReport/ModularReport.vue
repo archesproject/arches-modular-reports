@@ -9,19 +9,19 @@ import {
     fetchNodePresentation,
     fetchReportConfig,
     fetchUserResourcePermissions,
-} from "@/arches_modular_reports/EditableReport/api.ts";
+} from "@/arches_modular_reports/ModularReport/api.ts";
 import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_modular_reports/constants.ts";
 import {
     importComponents,
     uniqueId,
-} from "@/arches_modular_reports/EditableReport/utils.ts";
+} from "@/arches_modular_reports/ModularReport/utils.ts";
 
 import type { Ref } from "vue";
 import type {
     ComponentLookup,
     NamedSection,
     NodePresentationLookup,
-} from "@/arches_modular_reports/EditableReport/types";
+} from "@/arches_modular_reports/ModularReport/types";
 
 const toast = useToast();
 const { $gettext } = useGettext();

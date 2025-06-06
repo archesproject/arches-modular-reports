@@ -15,7 +15,7 @@ import {
     DESC,
     ROWS_PER_PAGE_OPTIONS,
 } from "@/arches_modular_reports/constants.ts";
-import { fetchRelatedResourceData } from "@/arches_modular_reports/EditableReport/api.ts";
+import { fetchRelatedResourceData } from "@/arches_modular_reports/ModularReport/api.ts";
 
 import type { DataTablePageEvent } from "primevue/datatable";
 

@@ -7,13 +7,13 @@ import Button from "primevue/button";
 import {
     importComponents,
     uniqueId,
-} from "@/arches_modular_reports/EditableReport/utils.ts";
+} from "@/arches_modular_reports/ModularReport/utils.ts";
 
 import type {
     ComponentLookup,
     CollapsibleSection,
     SectionContent,
-} from "@/arches_modular_reports/EditableReport/types";
+} from "@/arches_modular_reports/ModularReport/types";
 
 const componentLookup: ComponentLookup = {};
 const { component, resourceInstanceId } = defineProps<{

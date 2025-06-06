@@ -7,10 +7,10 @@ import Message from "primevue/message";
 import {
     fetchModularReportTile,
     fetchUserPermissions,
-} from "@/arches_modular_reports/EditableReport/api.ts";
-import ChildTile from "@/arches_modular_reports/EditableReport/components/ChildTile.vue";
+} from "@/arches_modular_reports/ModularReport/api.ts";
+import ChildTile from "@/arches_modular_reports/ModularReport/components/ChildTile.vue";
 
-import type { TileData } from "@/arches_modular_reports/EditableReport/types";
+import type { TileData } from "@/arches_modular_reports/ModularReport/types";
 
 const {
     nodegroupAlias,

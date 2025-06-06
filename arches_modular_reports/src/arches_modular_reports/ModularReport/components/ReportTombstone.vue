@@ -6,16 +6,16 @@ import { useGettext } from "vue3-gettext";
 import Message from "primevue/message";
 import Panel from "primevue/panel";
 
-import { fetchNodeTileData } from "@/arches_modular_reports/EditableReport/api.ts";
+import { fetchNodeTileData } from "@/arches_modular_reports/ModularReport/api.ts";
 import { RESOURCE_LIMIT_FOR_HEADER } from "@/arches_modular_reports/constants.ts";
-import LabeledNodeValues from "@/arches_modular_reports/EditableReport/components/LabeledNodeValues.vue";
+import LabeledNodeValues from "@/arches_modular_reports/ModularReport/components/LabeledNodeValues.vue";
 
 import type { Ref } from "vue";
 import type {
     NodePresentationLookup,
     NodeValueDisplayDataLookup,
     SectionContent,
-} from "@/arches_modular_reports/EditableReport/types";
+} from "@/arches_modular_reports/ModularReport/types";
 
 const resourceInstanceId = inject("resourceInstanceId") as string;
 

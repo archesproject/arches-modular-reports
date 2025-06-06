@@ -4,9 +4,9 @@ import { computed } from "vue";
 import Button from "primevue/button";
 
 import { RESOURCE_LIMIT_FOR_HEADER } from "@/arches_modular_reports/constants.ts";
-import { truncateDisplayData } from "@/arches_modular_reports/EditableReport/utils.ts";
+import { truncateDisplayData } from "@/arches_modular_reports/ModularReport/utils.ts";
 
-import type { NodeValueDisplayData } from "@/arches_modular_reports/EditableReport/types";
+import type { NodeValueDisplayData } from "@/arches_modular_reports/ModularReport/types";
 
 const props = defineProps<{
     widgetLabel: string;

@@ -15,15 +15,15 @@ import {
     DESC,
     ROWS_PER_PAGE_OPTIONS,
 } from "@/arches_modular_reports/constants.ts";
-import { fetchNodegroupTileData } from "@/arches_modular_reports/EditableReport/api.ts";
-import HierarchicalTileViewer from "@/arches_modular_reports/EditableReport/components/HierarchicalTileViewer.vue";
+import { fetchNodegroupTileData } from "@/arches_modular_reports/ModularReport/api.ts";
+import HierarchicalTileViewer from "@/arches_modular_reports/ModularReport/components/HierarchicalTileViewer.vue";
 
 import type { Ref } from "vue";
 import type { DataTablePageEvent } from "primevue/datatable";
 import type {
     LabelBasedCard,
     NodePresentationLookup,
-} from "@/arches_modular_reports/EditableReport/types";
+} from "@/arches_modular_reports/ModularReport/types";
 
 const props = defineProps<{
     component: {

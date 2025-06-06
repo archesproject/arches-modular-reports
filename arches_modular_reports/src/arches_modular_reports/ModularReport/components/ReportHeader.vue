@@ -5,14 +5,14 @@ import { useGettext } from "vue3-gettext";
 import Message from "primevue/message";
 import Card from "primevue/card";
 
-import { fetchNodeTileData } from "@/arches_modular_reports/EditableReport/api.ts";
-import { truncateDisplayData } from "@/arches_modular_reports/EditableReport/utils.ts";
+import { fetchNodeTileData } from "@/arches_modular_reports/ModularReport/api.ts";
+import { truncateDisplayData } from "@/arches_modular_reports/ModularReport/utils.ts";
 
 import type { Ref } from "vue";
 import type {
     NodeValueDisplayDataLookup,
     SectionContent,
-} from "@/arches_modular_reports/EditableReport/types";
+} from "@/arches_modular_reports/ModularReport/types";
 
 const resourceInstanceId = inject("resourceInstanceId") as string;
 

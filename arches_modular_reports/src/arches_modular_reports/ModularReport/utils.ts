@@ -5,7 +5,7 @@ import type {
     NamedSection,
     NodeValueDisplayData,
     SectionContent,
-} from "@/arches_modular_reports/EditableReport/types";
+} from "@/arches_modular_reports/ModularReport/types";
 
 export function uniqueId(_unused: unknown) {
     /* Not cryptographically secure, but good enough for Vue component keys. */
@@ -20,11 +20,11 @@ export async function importComponents(
         section.components.forEach((component: SectionContent) => {
             componentLookup[component.component] = defineAsyncComponent(() =>
                 import(
-                    `@/arches_modular_reports/EditableReport/components/${component.component}.vue`
+                    `@/arches_modular_reports/ModularReport/components/${component.component}.vue`
                 ).catch(
                     () =>
                         import(
-                            `@/arches_modular_reports/EditableReport/components/${component.component}/${component.component}.vue`
+                            `@/arches_modular_reports/ModularReport/components/${component.component}/${component.component}.vue`
                         ),
                 ),
             );

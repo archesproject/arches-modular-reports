@@ -11,7 +11,7 @@ import type {
     NodePresentationLookup,
     ResourceDetails,
     TileData,
-} from "@/arches_modular_reports/EditableReport/types";
+} from "@/arches_modular_reports/ModularReport/types";
 
 const {
     data,

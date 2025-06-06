@@ -1,5 +1,5 @@
 import ko from 'knockout';
-import EditableReport from '@/arches_modular_reports/EditableReport/EditableReport.vue';
+import ModularReport from '@/arches_modular_reports/ModularReport/ModularReport.vue';
 import createVueApplication from 'utils/create-vue-application';
 import EditableReportTemplate from 'templates/views/report-templates/editable-report.htm';
 
@@ -132,7 +132,7 @@ const EditableReportTheme = {
 
 ko.components.register('editable-report', {
     viewModel: function(params) {
-        createVueApplication(EditableReport, EditableReportTheme).then(vueApp => {
+        createVueApplication(ModularReport, EditableReportTheme).then(vueApp => {
             // handles the Graph Designer case of multiple mounting points on the same page
             const mountingPoints = document.querySelectorAll('.editable-report-mounting-point');
             const mountingPoint = mountingPoints[mountingPoints.length - 1];

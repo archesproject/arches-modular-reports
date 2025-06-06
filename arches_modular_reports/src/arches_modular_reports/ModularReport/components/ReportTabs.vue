@@ -10,13 +10,13 @@ import TabPanels from "primevue/tabpanels";
 import {
     importComponents,
     uniqueId,
-} from "@/arches_modular_reports/EditableReport/utils.ts";
+} from "@/arches_modular_reports/ModularReport/utils.ts";
 
 import type {
     ComponentLookup,
     NamedSection,
     SectionContent,
-} from "@/arches_modular_reports/EditableReport/types";
+} from "@/arches_modular_reports/ModularReport/types";
 
 const componentLookup: ComponentLookup = {};
 
