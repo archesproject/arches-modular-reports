@@ -64,7 +64,7 @@ class ModularReportConfigView(View):
 
 
 @method_decorator(can_read_resource_instance, name="dispatch")
-class EditableReportAwareResourceReportView(ResourceReportView):
+class ModularReportAwareResourceReportView(ResourceReportView):
     def get(self, request, resourceid=None):
         graph = (
             models.GraphModel.objects.filter(resourceinstance=resourceid)

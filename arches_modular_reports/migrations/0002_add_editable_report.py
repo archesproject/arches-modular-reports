@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         ReportTemplate = apps.get_model("models", "ReportTemplate")
         ReportTemplate(
             pk=template_pk,
-            name="Editable Report Template",
+            name="Modular Report Template",
             description="A modular report template.",
             component="reports/editable-report",
             componentname="editable-report",

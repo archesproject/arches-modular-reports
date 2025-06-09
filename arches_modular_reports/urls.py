@@ -6,7 +6,7 @@ from arches.app.models.system_settings import settings
 
 from arches_modular_reports.app.views.card_editor import ModularReportTileDetailView
 from arches_modular_reports.app.views.editable_report import (
-    EditableReportAwareResourceReportView,
+    ModularReportAwareResourceReportView,
     NodegroupTileDataView,
     NodePresentationView,
     NodeTileDataView,
@@ -27,7 +27,7 @@ urlpatterns = [
     # distinct template for editable reports.
     re_path(
         r"^report/(?P<resourceid>%s)$" % uuid_regex,
-        EditableReportAwareResourceReportView.as_view(),
+        ModularReportAwareResourceReportView.as_view(),
         name="resource_report",
     ),
     path(
