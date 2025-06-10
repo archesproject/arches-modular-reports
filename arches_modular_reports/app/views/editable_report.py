@@ -76,8 +76,8 @@ class ModularReportAwareResourceReportView(ResourceReportView):
                 _("No active report template is available for this resource.")
             )
 
-        if graph.template.componentname == "editable-report":
-            template = "views/resource/editable_report.htm"
+        if graph.template.componentname == "modular-report":
+            template = "views/resource/modular_report.htm"
             # Skip a few queries by jumping over the MapBaseManagerView
             # and calling its parent. This report doesn't use a map.
             context = super(MapBaseManagerView, self).get_context_data(

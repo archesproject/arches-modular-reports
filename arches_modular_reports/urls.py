@@ -5,7 +5,7 @@ from django.urls import include, path, re_path
 from arches.app.models.system_settings import settings
 
 from arches_modular_reports.app.views.card_editor import ModularReportTileDetailView
-from arches_modular_reports.app.views.editable_report import (
+from arches_modular_reports.app.views.modular_report import (
     ModularReportAwareResourceReportView,
     NodegroupTileDataView,
     NodePresentationView,
@@ -24,7 +24,7 @@ urlpatterns = [
         name="modular_report_config",
     ),
     # Override core arches resource report view to allow rendering
-    # distinct template for editable reports.
+    # distinct template for modular reports.
     re_path(
         r"^report/(?P<resourceid>%s)$" % uuid_regex,
         ModularReportAwareResourceReportView.as_view(),

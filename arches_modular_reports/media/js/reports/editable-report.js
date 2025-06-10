@@ -1,7 +1,7 @@
 import ko from 'knockout';
 import ModularReport from '@/arches_modular_reports/ModularReport/ModularReport.vue';
 import createVueApplication from 'utils/create-vue-application';
-import ModularReportTemplate from 'templates/views/report-templates/editable-report.htm';
+import ModularReportTemplate from 'templates/views/report-templates/modular-report.htm';
 
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
@@ -130,11 +130,11 @@ const ModularReportTheme = {
     },
 };
 
-ko.components.register('editable-report', {
+ko.components.register('modular-report', {
     viewModel: function(params) {
         createVueApplication(ModularReport, ModularReportTheme).then(vueApp => {
             // handles the Graph Designer case of multiple mounting points on the same page
-            const mountingPoints = document.querySelectorAll('.editable-report-mounting-point');
+            const mountingPoints = document.querySelectorAll('.modular-report-mounting-point');
             const mountingPoint = mountingPoints[mountingPoints.length - 1];
 
             // handles the Resource Editor case of navigating from report doesn't unmount the previous app

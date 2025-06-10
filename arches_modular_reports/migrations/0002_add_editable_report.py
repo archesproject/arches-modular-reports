@@ -17,8 +17,8 @@ class Migration(migrations.Migration):
             pk=template_pk,
             name="Modular Report Template",
             description="A modular report template.",
-            component="reports/editable-report",
-            componentname="editable-report",
+            component="reports/modular-report",
+            componentname="modular-report",
             defaultconfig={},
             preload_resource_data=False,
         ).save()
