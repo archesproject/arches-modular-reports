@@ -29,12 +29,7 @@
     "nodeModulesPaths": {
     },
     "overrides": {
-        "moment-timezone": "^0.5.45",
-        "nomnom": "npm:@gerhobbelt/nomnom",
-        "rimraf": "^5.0.7", 
-        "underscore": "^1.13.6",
         "primevue": "4.2.5",
-        "vue-tsc": "2.0.29",
-        "typescript": "5.6.2"
+        "@primeuix/themes": "1.0.1"
     }
 }
