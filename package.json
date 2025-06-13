@@ -20,11 +20,11 @@
         "vitest": "vitest --run --coverage"
     },
     "dependencies": {
-        "arches": "archesproject/arches#dev/8.0.x",
+        "arches": "7.6.11",
         "@primeuix/themes": "1.0.1"
     },
     "devDependencies": {
-        "arches-dev-dependencies": "archesproject/arches-dev-dependencies#dev/8.0.x"
+        "arches-dev-dependencies": "7.6.11"
     },
     "nodeModulesPaths": {
     },
