@@ -1,7 +1,0 @@
-#: app/templates/javascript.htm:506
-msgid "Click a node to show more relationships"
-msgstr "Click a node to show more relationships. Large nodes may load slowly."
-
-#: app/views/search.py:125
-msgid "Searching the Database"
-msgstr "User Guide"
