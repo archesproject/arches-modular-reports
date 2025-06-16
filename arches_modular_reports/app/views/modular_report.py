@@ -2,6 +2,7 @@ import json
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
@@ -10,6 +11,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.views.generic import View
 
+from arches import VERSION as arches_version
 from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
 from arches.app.utils.decorators import can_read_resource_instance
@@ -124,7 +126,9 @@ class RelatedResourceView(APIBase):
     def get(self, request, resourceid, related_graph_slug):
         try:
             resource = models.ResourceInstance.objects.get(pk=resourceid)
-            # TODO: arches v8: add source_identifier=None
+            filters = Q(slug=related_graph_slug)
+            if arches_version >= (8, 0):
+                filters &= Q(source_identifier=None)
             related_graph = models.GraphModel.objects.get(slug=related_graph_slug)
         except (models.ResourceInstance.DoesNotExist, models.GraphModel.DoesNotExist):
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
