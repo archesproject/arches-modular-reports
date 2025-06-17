@@ -61,7 +61,7 @@ class ReportConfigTests(TestCase):
     def test_header(self):
         header = ReportConfig(graph=self.graph)
         # Default config passes validation.
-        header.clean()
+        header.full_clean()
 
         header.config = {
             "name": "Untitled Report",
@@ -80,11 +80,11 @@ class ReportConfigTests(TestCase):
                 },
             ],
         }
-        header.clean()
+        header.full_clean()
 
         invalid_config = json.loads(
             json.dumps(header.config).replace("limit", "garbage")
         )
         header.config = invalid_config
         with self.assertRaisesMessage(ValidationError, "Invalid option"):
-            header.clean()
+            header.full_clean()
