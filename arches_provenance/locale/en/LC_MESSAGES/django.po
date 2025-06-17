@@ -1,3 +1,0 @@
-#: app/templates/javascript.htm:506
-msgid "Click a node to show more relationships"
-msgstr "Click a node to show more relationships. Large nodes may load slowly."
