@@ -103,8 +103,9 @@ class ReportConfig(models.Model):
 
     def generate_card_sections(self):
         ordered_allowed_nodes = (
-            Node.objects.filter(cardxnodexwidget__visible=True)
+            Node.objects.filter(graph=self.graph)
             .exclude(datatype__in=self.excluded_datatypes)
+            .exclude(cardxnodexwidget__visible=False)
             .order_by("cardxnodexwidget__sortorder")
         )
         ordered_top_cards = (
