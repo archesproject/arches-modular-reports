@@ -2,25 +2,21 @@ import fs from 'fs';
 import path from 'path';
 import vue from "@vitejs/plugin-vue";
 
-import { fileURLToPath } from 'url';
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite';
 
-import type { UserConfig } from 'vitest/config';
+import type { UserConfigExport } from 'vite';
 
-function generateConfig(): Promise<UserConfig> {
+
+function generateConfig(): Promise<UserConfigExport> {
     return new Promise((resolve, reject) => {
-        const filePath = path.dirname(fileURLToPath(import.meta.url));
-
         const exclude = [
-            '**/*.d.ts',
             '**/node_modules/**',
             '**/dist/**',
             '**/install/**',
             '**/cypress/**',
+            '**/themes/**',
             '**/.{idea,git,cache,output,temp}/**',
             '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
-            '**/build/**',
-            '**/staticfiles/**',
         ];
 
         const rawData = fs.readFileSync(path.join(__dirname, '.frontend-configuration-settings.json'), 'utf-8');
@@ -41,17 +37,17 @@ function generateConfig(): Promise<UserConfig> {
         }
 
         resolve({
-            plugins: [vue() as any],
+            plugins: [vue()],
             test: {
                 alias: alias,
                 coverage: {
-                    include: [path.join(parsedData['APP_RELATIVE_PATH'], 'src', path.sep)],
+                    include: [path.join(path.basename(__dirname), 'app', 'src', path.sep)],
                     exclude: exclude,
                     reporter: [
                         ['clover', { 'file': 'coverage.xml' }],
                         'text',
                     ],
-                    reportsDirectory: path.join(filePath, 'coverage', 'frontend'),
+                    reportsDirectory: path.join(__dirname, 'coverage', 'frontend'),
                 },
                 environment: "jsdom",
                 globals: true,
