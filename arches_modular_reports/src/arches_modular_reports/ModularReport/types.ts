@@ -56,6 +56,11 @@ export interface ConceptDetails {
     valuetype_id: string;
 }
 
+export interface URLDetails {
+    url: string;
+    url_label: string;
+}
+
 export interface NodeValueDisplayData {
     display_values: string[];
     links: {
@@ -68,11 +73,19 @@ export interface NodeValueDisplayDataLookup {
     [key: string]: NodeValueDisplayData[];
 }
 
-// eslint-disable-next-line
-interface AliasedData {}
+export interface NodeData {
+    display_value: string;
+    interchange_value: unknown;
+}
 
-export interface TileData<T extends AliasedData = AliasedData> {
-    aliased_data: T;
+export type NodegroupData = TileData | TileData[] | null;
+
+export interface AliasedData {
+    [key: string]: NodeData | NodegroupData;
+}
+
+export interface TileData {
+    aliased_data: AliasedData;
     nodegroup: string;
     parenttile: string | null;
     provisionaledits: object | null;

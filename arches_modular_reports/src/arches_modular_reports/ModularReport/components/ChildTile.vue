@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import arches from "arches";
-
 import { computed, inject } from "vue";
 
-import Button from "primevue/button";
+import ChildTileNodeValue from "@/arches_modular_reports/ModularReport/components/ChildTileNodeValue.vue";
 
 import type { Ref } from "vue";
 import type {
-    ConceptDetails,
+    NodeData,
+    NodegroupData,
     NodePresentationLookup,
-    ResourceDetails,
     TileData,
 } from "@/arches_modular_reports/ModularReport/types";
 
@@ -38,28 +36,26 @@ const marginUnitRem = `${marginUnit}rem`;
 const cardIndentation = `${2.5 + depth * marginUnit}rem`;
 
 const nodeAliasValuePairs = computed(() => {
-    return (
-        Object.entries(data.aliased_data).filter(
-            ([nodeAlias, nodeValue]) =>
-                (showEmptyNodes || nodeValue !== null) &&
-                !isTileorTiles(nodeValue) &&
-                nodePresentationLookup.value![nodeAlias]?.visible,
-        ) || [[]]
-    );
+    return (Object.entries(data.aliased_data).filter(
+        ([nodeAlias, nodeValue]) =>
+            (showEmptyNodes || nodeValueIsEmpty(nodeValue)) &&
+            !isTileorTiles(nodeValue) &&
+            nodePresentationLookup.value![nodeAlias]?.visible,
+    ) || [[]]) as [string, NodeData][];
 });
 
 const visibleChildren = computed(() => {
     return Object.entries(data.aliased_data).reduce(
         (acc, [nodeAlias, nodeValue]) => {
             if (
-                (showEmptyNodes || nodeValue !== null) &&
+                (showEmptyNodes || nodeValueIsEmpty(nodeValue)) &&
                 isTileorTiles(nodeValue) &&
                 nodePresentationLookup.value![nodeAlias]?.visible
             ) {
                 if (Array.isArray(nodeValue)) {
                     acc.push(...nodeValue);
                 } else {
-                    acc.push(nodeValue);
+                    acc.push(nodeValue as TileData);
                 }
             }
             return acc;
@@ -72,6 +68,12 @@ function isTileorTiles(input: unknown) {
     return (
         (input as TileData)?.tileid ||
         (Array.isArray(input) && input.every((item) => item.tileid))
+    );
+}
+
+function nodeValueIsEmpty(nodeValue: NodeData | NodegroupData) {
+    return (
+        nodeValue === null || (nodeValue as NodeData).interchange_value === null
     );
 }
 
@@ -105,81 +107,10 @@ function bestWidgetLabel(nodeAlias: string) {
                 <dt class="p-datatable-column-title">
                     {{ bestWidgetLabel(nodeAlias) }}
                 </dt>
-                <dd v-if="nodeValue === null">{{ $gettext("None") }}</dd>
-                <div
-                    v-else-if="
-                        Array.isArray(nodeValue) && nodeValue[0]?.resourceId
-                    "
-                    style="flex-direction: column"
-                >
-                    <dd
-                        v-for="instanceDetail in nodeValue as ResourceDetails[]"
-                        :key="instanceDetail.resourceId"
-                    >
-                        <Button
-                            as="a"
-                            variant="link"
-                            target="_blank"
-                            :href="
-                                arches.urls.resource_report +
-                                instanceDetail.resourceId
-                            "
-                        >
-                            {{ instanceDetail.display_value }}
-                        </Button>
-                    </dd>
-                </div>
-                <div v-else-if="nodeValue.concept_id">
-                    <dd v-if="userIsRdmAdmin">
-                        <Button
-                            as="a"
-                            variant="link"
-                            target="_blank"
-                            :href="arches.urls.rdm + nodeValue.concept_id"
-                        >
-                            {{ nodeValue["@display_value"] }}
-                        </Button>
-                    </dd>
-                    <dd v-else>
-                        {{ nodeValue["@display_value"] }}
-                    </dd>
-                </div>
-                <div
-                    v-else-if="nodeValue.concept_details?.length"
-                    style="flex-direction: column"
-                >
-                    <div v-if="userIsRdmAdmin">
-                        <dd
-                            v-for="conceptDetail in nodeValue.concept_details as ConceptDetails[]"
-                            :key="conceptDetail.concept_id"
-                        >
-                            <Button
-                                as="a"
-                                variant="link"
-                                target="_blank"
-                                :href="
-                                    arches.urls.rdm + conceptDetail.concept_id
-                                "
-                            >
-                                {{ conceptDetail.value }}
-                            </Button>
-                        </dd>
-                    </div>
-                    <div v-else>
-                        <dd>{{ nodeValue["@display_value"] }}</dd>
-                    </div>
-                </div>
-                <dd v-else-if="nodeValue.url">
-                    <Button
-                        as="a"
-                        variant="link"
-                        target="_blank"
-                        :href="nodeValue.url"
-                    >
-                        {{ nodeValue.url_label || nodeValue.url }}
-                    </Button>
-                </dd>
-                <dd v-else>{{ nodeValue }}</dd>
+                <ChildTileNodeValue
+                    :node-value="nodeValue"
+                    :user-is-rdm-admin="userIsRdmAdmin"
+                />
             </div>
             <ChildTile
                 v-for="child in visibleChildren"
@@ -233,14 +164,5 @@ dl {
     width: 40%;
     text-align: end;
     padding-inline-end: 2rem;
-}
-
-.node-pair > dd {
-    text-align: start;
-}
-
-.p-button {
-    font-size: inherit;
-    padding: 0;
 }
 </style>
