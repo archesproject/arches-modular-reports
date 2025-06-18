@@ -10,7 +10,7 @@ from arches_modular_reports.utils import PrettyJSONEncoder
 
 
 def get_graph_choices():
-    choices = models.Q(is_resource=True)
+    choices = models.Q(isresource=True)
     choices &= ~models.Q(pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID)
     if arches_version >= (8, 0):
         choices &= models.Q(source_identifier=None)

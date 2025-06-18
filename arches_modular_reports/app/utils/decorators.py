@@ -1,9 +1,7 @@
 import functools
 
 from django.core.exceptions import PermissionDenied
-from django.db.models import Q
 
-from arches import VERSION as arches_version
 from arches.app.models import models
 from arches.app.utils.permission_backend import PermissionBackend
 
@@ -18,13 +16,10 @@ def can_read_nodegroup(view_func):
     def _wrapped_view(request, *args, **kwargs):
         nodegroup_alias = kwargs.get("nodegroup_alias")
         resource_id = kwargs.get("resourceid")
-        filters = Q(
+        nodegroup = models.NodeGroup.objects.get(
             node__graph__resourceinstance=resource_id,
             node__alias=nodegroup_alias,
         )
-        if arches_version >= (8, 0):
-            filters &= Q(source_identifier=None)
-        nodegroup = models.NodeGroup.objects.get(filters)
 
         permission_backend = PermissionBackend()
 
