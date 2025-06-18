@@ -7,6 +7,19 @@ import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 
 
+// TODO: when dropping support for 7.6, just import from arches 8.
+const DEFAULT_THEME = {
+    theme: {
+        // preset: ArchesPreset,
+        options: {
+            prefix: "p",
+            darkModeSelector: ".arches-dark",
+            cssLayer: false,
+        },
+    },
+};
+
+// TODO: when dropping support for 7.6, extend ArchesPreset.
 const ModularReportPreset = definePreset(Aura, {
     semantic: {
         primary: {
@@ -126,6 +139,7 @@ const ModularReportPreset = definePreset(Aura, {
 
 const ModularReportTheme = {
     theme: {
+        ...DEFAULT_THEME.theme,
         preset: ModularReportPreset,
     },
 };
