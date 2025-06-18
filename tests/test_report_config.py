@@ -6,7 +6,7 @@ from django.test import TestCase
 from arches.app.models.graph import Graph
 from arches.app.models.models import Node
 
-from arches_provenance.models import ReportConfig
+from arches_modular_reports.models import ReportConfig
 
 
 class ReportConfigTests(TestCase):
