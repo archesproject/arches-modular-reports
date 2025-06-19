@@ -3,25 +3,55 @@ import json
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
+from arches import VERSION as arches_version
 from arches.app.models.graph import Graph
-from arches.app.models.models import Node
+from arches.app.models.models import Node, NodeGroup
 
-from arches_provenance.models import ReportConfig
+from arches_modular_reports.models import ReportConfig
 
 
 class ReportConfigTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.graph = Graph.new(is_resource=True)
-        cls.graph.slug = "test_graph"
-        cls.graph.save()
+        if arches_version < (8, 0):
+            cls.graph = Graph.new(is_resource=True)
+            cls.graph.slug = "test_graph"
+            cls.graph.save()
+        else:
+            cls.graph = Graph.objects.create_graph(is_resource=True, slug="test_graph")
+
+        nodegroup = NodeGroup.objects.create()
+        grouping_node = Node.objects.create(
+            pk=nodegroup.pk,
+            name="Production",
+            alias="production",
+            graph=cls.graph,
+            nodegroup=nodegroup,
+            datatype="semantic",
+            istopnode=False,
+        )
+        nodegroup.grouping_node = grouping_node
+        nodegroup.save()
+
         Node.objects.create(
-            alias="name_content", graph=cls.graph, istopnode=False, datatype="string"
+            nodegroup=nodegroup,
+            name="Name content",
+            alias="name_content",
+            graph=cls.graph,
+            istopnode=False,
+            datatype="string",
         )
         Node.objects.create(
-            alias="type", graph=cls.graph, istopnode=False, datatype="concept"
+            nodegroup=nodegroup,
+            name="Type",
+            alias="type",
+            graph=cls.graph,
+            istopnode=False,
+            datatype="concept",
         )
         Node.objects.create(
+            nodegroup=nodegroup,
+            name="Production Part Actor",
             alias="production_part_actor",
             graph=cls.graph,
             istopnode=False,
@@ -31,7 +61,7 @@ class ReportConfigTests(TestCase):
     def test_header(self):
         header = ReportConfig(graph=self.graph)
         # Default config passes validation.
-        header.clean()
+        header.full_clean()
 
         header.config = {
             "name": "Untitled Report",
@@ -50,11 +80,11 @@ class ReportConfigTests(TestCase):
                 },
             ],
         }
-        header.clean()
+        header.full_clean()
 
         invalid_config = json.loads(
             json.dumps(header.config).replace("limit", "garbage")
         )
         header.config = invalid_config
         with self.assertRaisesMessage(ValidationError, "Invalid option"):
-            header.clean()
+            header.full_clean()

@@ -3,9 +3,18 @@ import re
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from arches import VERSION as arches_version
 from arches.app.models.models import GraphModel, Node, NodeGroup
 from arches.app.models.system_settings import settings
 from arches_modular_reports.utils import PrettyJSONEncoder
+
+
+def get_graph_choices():
+    choices = models.Q(isresource=True)
+    choices &= ~models.Q(pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID)
+    if arches_version >= (8, 0):
+        choices &= models.Q(source_identifier=None)
+    return choices
 
 
 class ReportConfig(models.Model):
@@ -18,9 +27,7 @@ class ReportConfig(models.Model):
         blank=False,
         on_delete=models.CASCADE,
         related_name="report",
-        # TODO: arches v8: models.Q(isresource=True, source_identifier=None),
-        limit_choices_to=models.Q(isresource=True)
-        & ~models.Q(pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID),
+        limit_choices_to=get_graph_choices,
     )
 
     class Meta:
@@ -103,8 +110,9 @@ class ReportConfig(models.Model):
 
     def generate_card_sections(self):
         ordered_allowed_nodes = (
-            Node.objects.filter(cardxnodexwidget__visible=True)
+            Node.objects.filter(graph=self.graph)
             .exclude(datatype__in=self.excluded_datatypes)
+            .exclude(cardxnodexwidget__visible=False)
             .order_by("cardxnodexwidget__sortorder")
         )
         ordered_top_cards = (
@@ -152,7 +160,9 @@ class ReportConfig(models.Model):
         ).filter(
             slug__isnull=False,
             isresource=True,
-        )  # TODO: arches v8: add source_identifier=None
+        )
+        if arches_version >= (8, 0):
+            other_graphs = other_graphs.filter(source_identifier=None)
         return [
             {
                 "name": str(other_graph.name),
@@ -264,9 +274,11 @@ class ReportConfig(models.Model):
 
     def validate_relatedresourcessection(self, rr_config):
         slug = self.get_or_raise(rr_config, "graph_slug", "Related Resources")
+        filters = models.Q(slug=slug)
+        if arches_version >= (8, 0):
+            filters &= models.Q(source_identifier=None)
         try:
-            # TODO: arches v8: add source_identifier=None
-            graph = GraphModel.objects.get(slug=slug)
+            graph = GraphModel.objects.get(filters)
         except (GraphModel.DoesNotExist, GraphModel.MultipleObjectsReturned):
             msg = "Related Resources section contains invalid graph slug"
             raise ValidationError(msg)

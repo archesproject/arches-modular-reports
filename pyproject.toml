@@ -5,30 +5,41 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "arches-modular-reports"
 readme = "README.md"
-authors = []
+authors = [
+    {name = "Arches Project"}
+]
 license = "AGPL-3.0-or-later"
+description = "Fast, configurable reports for Arches models in Vue.js"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Framework :: Django",
+    "Framework :: Django :: 4.2",
     "Framework :: Django :: 5.2",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Information Technology",
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
     # When updating to arches 8, update the override of ResourceReportView
     # and grep for "TODO: arches v8:" to find hints for breaking change updates
     "arches>=7.6.0,<8.1.0",
-    "arches-querysets @ git+https://github.com/archesproject/arches-querysets.git@main",
+    "arches_querysets @ git+https://github.com/archesproject/arches-querysets@main",
 ]
 version = "0.0.1"
+
+[project.urls]
+Homepage = "https://archesproject.org/"
+Documentation = "https://arches.readthedocs.io"
+Repository = "https://github.com/archesproject/arches-modular-reports.git"
+Issues = "https://github.com/archesproject/arches-modular-reports/issues"
 
 [dependency-groups]
 dev = [
@@ -36,7 +47,7 @@ dev = [
     "coverage",
     "django-silk==5.1.0",
     "livereload",
-    "pre-commit==3.8.0",
+    "pre-commit==4.1.0",
     "sst",
 ]
 

@@ -16,9 +16,9 @@ def can_read_nodegroup(view_func):
     def _wrapped_view(request, *args, **kwargs):
         nodegroup_alias = kwargs.get("nodegroup_alias")
         resource_id = kwargs.get("resourceid")
-        # TODO: arches v8: add graph__source_identifier=None
         nodegroup = models.NodeGroup.objects.get(
-            node__graph__resourceinstance=resource_id, node__alias=nodegroup_alias
+            node__graph__resourceinstance=resource_id,
+            node__alias=nodegroup_alias,
         )
 
         permission_backend = PermissionBackend()

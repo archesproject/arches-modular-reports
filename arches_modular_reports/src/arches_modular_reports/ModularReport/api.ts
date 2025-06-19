@@ -41,9 +41,7 @@ export const fetchNodePresentation = async (resourceId: string) => {
 };
 
 export const fetchReportConfig = async (resourceId: string) => {
-    const url =
-        arches.urls.modular_report_config +
-        `?resourceId=${resourceId}`;
+    const url = arches.urls.modular_report_config + `?resourceId=${resourceId}`;
     const response = await fetch(url);
     const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);
@@ -150,7 +148,7 @@ export const fetchUserResourcePermissions = async (
 ) => {
     const url =
         arches.urls.api_instance_permissions +
-        "?resourceId=" +
+        "?resourceinstanceid=" +
         resourceInstanceId;
     const response = await fetch(url);
     const parsed = await response.json();

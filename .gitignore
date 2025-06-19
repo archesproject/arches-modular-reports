@@ -2,18 +2,27 @@
 *.log
 node_modules
 coverage/
-arches_provenance/logs
-arches_provenance/export_deliverables
-arches_provenance/cantaloupe/*
-arches_provenance/staticfiles
-arches_provenance/media/packages
-arches_provenance/media/build/
-arches_provenance/uploadedfiles/*
-arches_provenance/settings_local.py
+arches_modular_reports/logs
+arches_modular_reports/export_deliverables
+arches_modular_reports/cantaloupe/*
+arches_modular_reports/staticfiles
+arches_modular_reports/media/packages
+arches_modular_reports/media/build/
+arches_modular_reports/uploadedfiles/*
+arches_modular_reports/settings_local.py
 webpack-stats.json
 .vscode/
 *.egg-info
 .DS_STORE
 CACHE
+
+# 7.6
 .tsconfig-paths.json
 .frontend-configuration-settings.json
+
+# 8.0
+frontend_configuration
+
+# Packaging
+build/
+dist/

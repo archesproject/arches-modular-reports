@@ -23,6 +23,7 @@ from django.db.models.functions import Cast, Concat, JSONObject
 from django.urls import get_script_prefix, reverse
 from django.utils.translation import gettext as _
 
+from arches import VERSION as arches_version
 from arches.app.models import models
 
 
@@ -284,10 +285,24 @@ def get_sorted_filtered_relations(
     query,
     request_language,
 ):
+    if arches_version < (8, 0):
+        resource_from_field = "resourceinstanceidfrom"
+        resource_from_graph_field = "from_resource_graph"
+        resource_to_field = "resourceinstanceidto"
+        resource_to_graph_field = "to_resource_graph"
+        node_field = "nodeid"
+    else:
+        resource_from_field = "from_resource"
+        resource_from_graph_field = "from_resource_graph"
+        resource_to_field = "to_resource"
+        resource_to_graph_field = "to_resource_graph"
+        node_field = "node"
+
     def make_tile_annotations(node, direction):
+        resource_field = resource_to_field if direction == "to" else resource_from_field
         tile_query = ArraySubquery(
             models.TileModel.objects.filter(
-                resourceinstance=OuterRef(f"resourceinstanceid{direction}"),
+                resourceinstance=OuterRef(resource_field),
                 nodegroup_id=node.nodegroup_id,
             )
             .exclude(**{f"data__{node.pk}__isnull": True})
@@ -307,9 +322,10 @@ def get_sorted_filtered_relations(
         )
 
     def make_tile_instance_details_annotations(node, direction):
+        resource_field = resource_to_field if direction == "to" else resource_from_field
         return ArraySubquery(
             models.TileModel.objects.filter(
-                resourceinstance=OuterRef(f"resourceinstanceid{direction}"),
+                resourceinstance=OuterRef(resource_field),
                 nodegroup_id=node.nodegroup_id,
             )
             .exclude(**{f"data__{node.pk}__isnull": True})
@@ -322,11 +338,11 @@ def get_sorted_filtered_relations(
     data_annotations = {
         node.alias: Case(
             When(
-                Q(resourceinstanceidfrom=resource),
+                Q(**{resource_from_field: resource}),
                 then=make_tile_annotations(node, "to"),
             ),
             When(
-                Q(resourceinstanceidto=resource),
+                Q(**{resource_to_field: resource}),
                 then=make_tile_annotations(node, "from"),
             ),
         )
@@ -337,11 +353,11 @@ def get_sorted_filtered_relations(
         node.alias
         + "_instance_details": Case(
             When(
-                Q(resourceinstanceidfrom=resource),
+                Q(**{resource_from_field: resource}),
                 then=make_tile_instance_details_annotations(node, "to"),
             ),
             When(
-                Q(resourceinstanceidto=resource),
+                Q(**{resource_to_field: resource}),
                 then=make_tile_instance_details_annotations(node, "from"),
             ),
         )
@@ -360,22 +376,22 @@ def get_sorted_filtered_relations(
     relations = (
         (
             models.ResourceXResource.objects.filter(
-                resourceinstanceidfrom=resource,
-                resourceinstanceto_graphid=related_graph,
-                nodeid__nodegroup_id__in=permitted_nodegroups,
+                Q(**{resource_from_field: resource}),
+                Q(**{resource_to_graph_field: related_graph}),
+                Q(**{f"{node_field}__nodegroup_id__in": permitted_nodegroups}),
             )
             | models.ResourceXResource.objects.filter(
-                resourceinstanceidto=resource,
-                resourceinstancefrom_graphid=related_graph,
-                nodeid__nodegroup_id__in=permitted_nodegroups,
+                Q(**{resource_to_field: resource}),
+                Q(**{resource_from_graph_field: related_graph}),
+                Q(**{f"{node_field}__nodegroup_id__in": permitted_nodegroups}),
             )
         )
         .distinct()
         .annotate(
             relation_name_json=(
-                models.CardXNodeXWidget.objects.filter(node=OuterRef("nodeid")).values(
-                    "label"
-                )[:1]
+                models.CardXNodeXWidget.objects.filter(
+                    node=OuterRef(node_field)
+                ).values("label")[:1]
             )
         )
         # TODO: add fallback to system language? Below also.
@@ -384,12 +400,12 @@ def get_sorted_filtered_relations(
         .annotate(
             display_name_json=Case(
                 When(
-                    Q(resourceinstanceidfrom=resource),
-                    then=F(f"resourceinstanceidto__name"),
+                    Q(**{resource_from_field: resource}),
+                    then=F(f"{resource_to_field}__name"),
                 ),
                 When(
-                    Q(resourceinstanceidto=resource),
-                    then=F(f"resourceinstanceidfrom__name"),
+                    Q(**{resource_to_field: resource}),
+                    then=F(f"{resource_from_field}__name"),
                 ),
             )
         )
