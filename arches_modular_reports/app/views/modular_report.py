@@ -129,7 +129,7 @@ class RelatedResourceView(APIBase):
             filters = Q(slug=related_graph_slug)
             if arches_version >= (8, 0):
                 filters &= Q(source_identifier=None)
-            related_graph = models.GraphModel.objects.get(slug=related_graph_slug)
+            related_graph = models.GraphModel.objects.get(filters)
         except (models.ResourceInstance.DoesNotExist, models.GraphModel.DoesNotExist):
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
 
