@@ -131,7 +131,7 @@ export const fetchUserResourcePermissions = async (
 ) => {
     const url =
         arches.urls.api_instance_permissions +
-        "?resourceId=" +
+        "?resourceinstanceid=" +
         resourceInstanceId;
     const response = await fetch(url);
     const parsed = await response.json();
