@@ -165,10 +165,16 @@ class RelatedResourceView(APIBase):
         def make_resource_report_link(relation):
             nonlocal resourceid
             # Both sides are UUID python types (from ORM, or from route)
-            if relation.resourceinstanceidfrom_id == resourceid:
-                target = relation.resourceinstanceidto_id
+            if arches_version < (8, 0):
+                if relation.resourceinstanceidfrom_id == resourceid:
+                    target = relation.resourceinstanceidto_id
+                else:
+                    target = relation.resourceinstanceidfrom_id
             else:
-                target = relation.resourceinstanceidfrom_id
+                if relation.from_resource_id == resourceid:
+                    target = relation.to_resource_id
+                else:
+                    target = relation.from_resource_id
             return reverse("resource_report", args=[target])
 
         value_finder = BaseConceptDataType()  # fetches serially, but caches.
