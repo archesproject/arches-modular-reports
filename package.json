@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "arches": "archesproject/arches#stable/7.6.11",
+        "arches-component-lab": "archesproject/arches-component-lab#main",
         "@primeuix/themes": "1.0.1"
     },
     "devDependencies": {
