@@ -30,19 +30,19 @@ const interchangeValue = computed(() => nodeValue?.interchange_value);
     </dd>
     <div
         v-else-if="
-            Array.isArray(interchangeValue) && interchangeValue[0]?.resourceId
+            Array.isArray(interchangeValue) && interchangeValue[0]?.resource_id
         "
         style="flex-direction: column"
     >
         <dd
             v-for="instanceDetail in interchangeValue as ResourceDetails[]"
-            :key="instanceDetail.resourceId"
+            :key="instanceDetail.resource_id"
         >
             <Button
                 as="a"
                 variant="link"
                 target="_blank"
-                :href="arches.urls.resource_report + instanceDetail.resourceId"
+                :href="arches.urls.resource_report + instanceDetail.resource_id"
             >
                 {{ instanceDetail.display_value }}
             </Button>

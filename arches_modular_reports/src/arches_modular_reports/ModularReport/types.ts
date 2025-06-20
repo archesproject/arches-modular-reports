@@ -42,10 +42,7 @@ export interface ComponentLookup {
 
 export interface ResourceDetails {
     display_value: string;
-    inverseOntologyProperty: string;
-    ontologyProperty: string;
-    resourceId: string;
-    resourceXresourceId: string;
+    resource_id: string;
 }
 
 export interface ConceptDetails {
