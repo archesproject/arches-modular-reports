@@ -25,8 +25,9 @@ const interchangeValue = computed(() => nodeValue?.interchange_value);
 </script>
 
 <template>
-    <dd v-if="nodeValue === null">{{ $gettext("(None)") }}</dd>
-    <dd v-else-if="interchangeValue === null">{{ displayValue }}</dd>
+    <dd v-if="nodeValue === null || interchangeValue === null">
+        {{ $gettext("None") }}
+    </dd>
     <div
         v-else-if="
             Array.isArray(interchangeValue) && interchangeValue[0]?.resourceId
