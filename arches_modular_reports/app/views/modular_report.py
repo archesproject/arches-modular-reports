@@ -86,6 +86,7 @@ class ModularReportAwareResourceReportView(ResourceReportView):
                 main_script="views/resource/report",
                 resourceid=resourceid,
                 templateid=graph.template.pk,
+                graph_slug=graph.slug,
                 # To the extent possible, avoid DB queries needed for KO
                 report_templates=[graph.template],
                 card_components=models.CardComponent.objects.none(),
