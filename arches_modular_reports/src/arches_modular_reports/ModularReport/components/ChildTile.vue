@@ -36,12 +36,8 @@ const marginUnitRem = `${marginUnit}rem`;
 const cardIndentation = `${2.5 + depth * marginUnit}rem`;
 
 const nodeAliasValuePairs = computed(() => {
-    return (Object.entries(data.aliased_data).filter(
-        ([nodeAlias, nodeValue]) =>
-            (showEmptyNodes || nodeValueIsEmpty(nodeValue)) &&
-            !isTileorTiles(nodeValue) &&
-            nodePresentationLookup.value![nodeAlias]?.visible,
-    ) || [[]]) as [string, NodeData][];
+    const filtered = Object.entries(data.aliased_data).filter(shouldShowNode);
+    return (filtered || [[]]) as [string, NodeData][];
 });
 
 const visibleChildren = computed(() => {
@@ -74,6 +70,17 @@ function isTileorTiles(input: unknown) {
 function nodeValueIsEmpty(nodeValue: NodeData | NodegroupData) {
     return (
         nodeValue === null || (nodeValue as NodeData).interchange_value === null
+    );
+}
+
+function shouldShowNode(
+    nodeAliasValuePair: [string, NodeData | NodegroupData],
+) {
+    const [nodeAlias, nodeValue] = nodeAliasValuePair;
+    return (
+        (showEmptyNodes || nodeValueIsEmpty(nodeValue)) &&
+        !isTileorTiles(nodeValue) &&
+        nodePresentationLookup.value![nodeAlias]?.visible
     );
 }
 
