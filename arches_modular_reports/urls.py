@@ -74,6 +74,7 @@ urlpatterns = [
         UserPermissionsView.as_view(),
         name="api_has_permissions",
     ),
+    path("", include("arches_component_lab.urls")),
 ]
 
 

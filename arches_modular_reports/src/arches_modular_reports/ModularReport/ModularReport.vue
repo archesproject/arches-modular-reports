@@ -18,7 +18,6 @@ import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_modular_reports/constants.ts"
 import { importComponents } from "@/arches_modular_reports/ModularReport/utils.ts";
 import ResourceEditor from "@/arches_modular_reports/ModularReport/components/ResourceEditor/ResourceEditor.vue";
 
-
 import type { Ref } from "vue";
 import type {
     ComponentLookup,
@@ -38,8 +37,6 @@ provide("nodePresentationLookup", nodePresentationLookup);
 const userCanEditResourceInstance = ref(false);
 provide("userCanEditResourceInstance", userCanEditResourceInstance);
 
-const editorKey = ref(0);
-
 const selectedNodegroupAlias = ref<string>();
 function setSelectedNodegroupAlias(nodegroupAlias: string | undefined) {
     selectedNodegroupAlias.value = nodegroupAlias;
@@ -58,6 +55,8 @@ function setSelectedTileId(tileId?: string | null) {
 }
 provide("selectedTileId", { selectedTileId, setSelectedTileId });
 
+const editorKey = ref(0);
+
 const config: Ref<NamedSection> = ref({
     name: $gettext("Loading data"),
     components: [],
@@ -73,9 +72,9 @@ onMounted(async () => {
     }
     try {
         await Promise.all([
-            fetchNodePresentation(resourceInstanceId).then(
-                (data) => (nodePresentationLookup.value = data),
-            ),
+            fetchNodePresentation(resourceInstanceId).then((data) => {
+                nodePresentationLookup.value = data;
+            }),
             fetchUserResourcePermissions(resourceInstanceId).then((data) => {
                 userCanEditResourceInstance.value = data.edit;
             }),
