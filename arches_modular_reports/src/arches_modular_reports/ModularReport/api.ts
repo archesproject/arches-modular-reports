@@ -1,5 +1,22 @@
 import arches from "arches";
 
+export const fetchModularReportResource = async ({
+    resourceId,
+    fillBlanks = false,
+}: {
+    resourceId: string;
+    fillBlanks: boolean;
+}) => {
+    const params = new URLSearchParams();
+    params.append("fill_blanks", fillBlanks.toString());
+    const response = await fetch(
+        `${arches.urls.api_modular_reports_resource(resourceId)}?${params}`,
+    );
+    const parsed = await response.json();
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};
+
 export const fetchModularReportTile = async (
     nodegroupAlias: string,
     tileId: string,

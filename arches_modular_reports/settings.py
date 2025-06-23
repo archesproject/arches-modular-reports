@@ -147,6 +147,7 @@ INSTALLED_APPS = (
     # "silk",
     "arches_modular_reports",  # Ensure the project is listed before any other arches applications
     "arches_querysets",
+    "arches_component_lab"
 )
 
 if arches_version >= (8, 0):
@@ -251,6 +252,11 @@ LOGGING = {
             "propagate": True,
         },
         "arches_modular_reports": {
+            "handlers": ["file", "console"],
+            "level": "WARNING",
+            "propagate": True,
+        },
+        "arches_querysets": {
             "handlers": ["file", "console"],
             "level": "WARNING",
             "propagate": True,
@@ -454,6 +460,11 @@ SHOW_LANGUAGE_SWITCH = len(LANGUAGES) > 1
 # Implement this class to associate custom documents to the ES resource index
 # See tests.views.search_tests.TestEsMappingModifier class for example
 # ES_MAPPING_MODIFIER_CLASSES = ["arches_modular_reports.search.es_mapping_modifier.EsMappingModifier"]
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": API_MAX_PAGE_SIZE,
+}
 
 try:
     from .package_settings import *

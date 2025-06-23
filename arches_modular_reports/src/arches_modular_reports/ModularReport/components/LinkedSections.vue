@@ -116,9 +116,9 @@ onMounted(async () => {
                     class="panel-content"
                 >
                     <component
-                        :is="componentLookup[child.component]"
+                        :is="componentLookup[child.component]?.component"
                         v-for="child in linked_section.components"
-                        :key="child.config.id"
+                        :key="componentLookup[child.component]?.key"
                         :component="child"
                         :resource-instance-id
                     />

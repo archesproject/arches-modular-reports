@@ -23,8 +23,11 @@ export interface SectionContent {
 export interface NodePresentation {
     nodeid: string;
     name: string;
+    datatype: string;
     card_name: string;
+    card_order: number;
     widget_label: string;
+    widget_order: number;
     visible: boolean;
     nodegroup: {
         nodegroup_id: string;
@@ -36,8 +39,13 @@ export interface NodePresentationLookup {
     [key: string]: NodePresentation;
 }
 
+export interface KeyedComponent {
+    component: Component;
+    key: number;
+}
+
 export interface ComponentLookup {
-    [key: string]: Component;
+    [key: string]: KeyedComponent;
 }
 
 export interface ResourceDetails {
@@ -71,6 +79,24 @@ export interface NodeValueDisplayDataLookup {
 // eslint-disable-next-line
 interface AliasedData {}
 
+export interface ResourceData<T extends AliasedData = AliasedData> {
+    resourceinstanceid?: string;
+    name?: string;
+    descriptors?: {
+        [key: string]: {
+            name: string;
+            map_popup: string;
+            description: string;
+        };
+    };
+    legacyid?: string | null;
+    createdtime?: string;
+    graph?: string;
+    graph_publication: string;
+    principaluser: number;
+    aliased_data: T;
+}
+
 export interface TileData<T extends AliasedData = AliasedData> {
     aliased_data: T;
     nodegroup: string;
@@ -78,7 +104,7 @@ export interface TileData<T extends AliasedData = AliasedData> {
     provisionaledits: object | null;
     resourceinstance: string;
     sortorder: number;
-    tileid: string;
+    tileid: string | null;
 }
 
 // NodegroupTileDataView produces this, not label-based graph.

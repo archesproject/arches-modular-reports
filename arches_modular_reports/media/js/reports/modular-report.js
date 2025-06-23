@@ -64,6 +64,12 @@ const ModularReportPreset = definePreset(Aura, {
                 }
             }
         },
+        // TODO: arches v8: provided by default.ts, remove
+        splitter: {
+            handle: {
+                background: "{surface.500}",
+            },
+        },
         toast: {
             summary: { fontSize: '1.5rem' },
             detail: { fontSize: '1.25rem' },
@@ -157,6 +163,9 @@ ko.components.register('modular-report', {
             }
             window.archesModularReportVueApp = vueApp;
 
+            const graphSlug = params.report.graph?.slug || params.report.report_json.graph_slug;
+
+            vueApp.provide("graphSlug", graphSlug);
             vueApp.provide('resourceInstanceId', params.report.report_json.resourceinstanceid);
             vueApp.mount(mountingPoint);
         });
