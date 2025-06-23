@@ -262,9 +262,6 @@ class NodePresentationView(APIBase):
                 node.alias: {
                     "nodeid": node.nodeid,
                     "name": node.name,
-                    # TODO(jtw): consider removing datatype once all display
-                    # values calculated by resource serializer
-                    "datatype": node.datatype,
                     "card_name": getattr_from_queryset(
                         node.nodegroup.cardmodel_set.all(),
                         "name",

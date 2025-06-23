@@ -8,7 +8,7 @@ import { fetchModularReportResource } from "@/arches_modular_reports/ModularRepo
 import CardEditor from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/CardEditor/CardEditor.vue";
 import DataTree from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree.vue";
 
-import type { ResourceData } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/types.ts";
+import type { ResourceData } from "@/arches_modular_reports/ModularReport/types.ts";
 
 const resourceId = inject("resourceInstanceId") as string;
 const resourceData = ref<ResourceData | undefined>();

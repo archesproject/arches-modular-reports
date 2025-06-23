@@ -10,15 +10,14 @@ import { uniqueId } from "@/arches_modular_reports/ModularReport/utils.ts";
 import type { Ref } from "vue";
 import type { TreeExpandedKeys, TreeSelectionKeys } from "primevue/tree";
 import type { TreeNode } from "primevue/treenode";
-import type {
-    NodePresentationLookup,
-    ResourceDetails,
-} from "@/arches_modular_reports/ModularReport/types";
+import type { NodePresentationLookup } from "@/arches_modular_reports/ModularReport/types";
 import type {
     ResourceData,
-    NodeValue,
+    NodeData,
+    NodegroupData,
     TileData,
-} from "@/arches_modular_reports/ModularReport/components/ResourceEditor/types.ts";
+    URLDetails,
+} from "@/arches_modular_reports/ModularReport/types.ts";
 
 const { $gettext } = useGettext();
 
@@ -32,17 +31,17 @@ const { setSelectedNodegroupAlias } = inject<{
 const { setSelectedTileId } = inject<{
     setSelectedTileId: (tileId: string | null | undefined) => void;
 }>("selectedTileId")!;
-/// todo(jtw): look into un-reffing this.
 const nodePresentationLookup = inject<Ref<NodePresentationLookup>>(
     "nodePresentationLookup",
 )!;
 
 const tree = computed(() => {
-    // todo(jtw): consider moving helpers out of this file
     const topCards = Object.entries(props.resourceData.aliased_data).reduce<
         TreeNode[]
     >((acc, [alias, data]) => {
-        acc.push(processNodegroup(alias, data, "root"));
+        acc.push(
+            processNodegroup(alias, data as TileData | TileData[], "root"),
+        );
         return acc;
     }, []);
     return topCards.sort((a, b) => {
@@ -57,9 +56,22 @@ function processTileData(tile: TileData, nodegroupAlias: string): TreeNode[] {
     const tileValues = Object.entries(tile.aliased_data).reduce<TreeNode[]>(
         (acc, [alias, data]) => {
             if (isTileOrTiles(data)) {
-                acc.push(processNodegroup(alias, data, tile.tileid));
+                acc.push(
+                    processNodegroup(
+                        alias,
+                        data as TileData | TileData[],
+                        tile.tileid,
+                    ),
+                );
             } else {
-                acc.push(processNode(alias, data, tile.tileid, nodegroupAlias));
+                acc.push(
+                    processNode(
+                        alias,
+                        data as NodeData | null,
+                        tile.tileid,
+                        nodegroupAlias,
+                    ),
+                );
             }
             return acc;
         },
@@ -75,17 +87,13 @@ function processTileData(tile: TileData, nodegroupAlias: string): TreeNode[] {
 
 function processNode(
     alias: string,
-    data: NodeValue,
+    data: NodeData | null,
     tileId: string | null,
     nodegroupAlias: string,
 ): TreeNode {
     const localizedLabel = $gettext("%{label}: %{labelData}", {
         label: nodePresentationLookup.value[alias].widget_label,
-        labelData: getDisplayValue(
-            data,
-            nodePresentationLookup.value[alias].datatype,
-            tileId,
-        ),
+        labelData: extractAndOverrideDisplayValue(data),
     });
     return {
         key: `${alias}-node-value-for-${tileId}`,
@@ -126,7 +134,7 @@ function createCardinalityNWrapper(
         data: { tileid: parentTileId, alias: nodegroupAlias },
         children: tiles.map((tile, idx) => {
             const result = {
-                key: tile.tileid ?? uniqueId(0),
+                key: tile.tileid ?? uniqueId(0).toString(),
                 label: idx.toString(),
                 data: { ...tile, alias: nodegroupAlias },
                 children: processTileData(tile, nodegroupAlias),
@@ -137,51 +145,21 @@ function createCardinalityNWrapper(
     };
 }
 
-/*
-TODO: we can remove this function by having the serializer calc
-all node display values. That's 🤌, but it's follow-up work.
-*/
-function getDisplayValue(
-    value: NodeValue,
-    datatype: string,
-    tileId: string | null,
-): string {
-    if (!tileId) {
-        return $gettext("(empty)");
+function extractAndOverrideDisplayValue(value: NodeData | null): string {
+    if (value === null) {
+        return $gettext("(Empty)");
     }
-    // TODO: more specific types for `value` arg
-    if (value === null || value === undefined) {
-        return $gettext("None");
+    if (value.display_value.includes("url_label")) {
+        // The URL datatype deserves a better display value in core Arches.
+        const urlPair = value.interchange_value as URLDetails;
+        return urlPair.url_label || urlPair.url;
     }
-    switch (datatype) {
-        case "semantic":
-            return "";
-        case "concept":
-        case "concept-list":
-            return value["@display_value"]!;
-        case "resource-instance":
-            return (value as unknown as ResourceDetails).display_value;
-        case "resource-instance-list":
-            return (value as unknown as ResourceDetails[])
-                .map((resourceDetails) => resourceDetails.display_value)
-                .join(", ");
-        case "number":
-            return value.toLocaleString();
-        case "url": {
-            const urlPair = value as { url: string; url_label: string };
-            return urlPair.url_label || urlPair.url;
-        }
-        case "non-localized-string":
-        case "string": // currently resolves to single string
-        default:
-            // TODO: handle other datatypes, batten down types.
-            return value as unknown as string;
-    }
+    return value.display_value;
 }
 
-function isTileOrTiles(nodeValue: NodeValue | TileData[]) {
-    const tiles = Array.isArray(nodeValue) ? nodeValue : [nodeValue];
-    return tiles.every((tile) => tile?.aliased_data);
+function isTileOrTiles(nodeData: NodeData | NodegroupData | null) {
+    const tiles = Array.isArray(nodeData) ? nodeData : [nodeData];
+    return tiles.every((tile) => (tile as TileData)?.aliased_data);
 }
 
 function onNodeSelect(node: TreeNode) {

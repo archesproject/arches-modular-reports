@@ -23,7 +23,6 @@ export interface SectionContent {
 export interface NodePresentation {
     nodeid: string;
     name: string;
-    datatype: string;
     card_name: string;
     card_order: number;
     widget_label: string;
@@ -83,10 +82,10 @@ export interface NodeData {
     interchange_value: unknown;
 }
 
-export type NodegroupData = TileData | TileData[] | null;
+export type NodegroupData = TileData | TileData[];
 
 export interface AliasedData {
-    [key: string]: NodeData | NodegroupData;
+    [key: string]: NodeData | NodegroupData | null;
 }
 
 export interface TileData {
