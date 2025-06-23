@@ -163,8 +163,8 @@ ko.components.register('modular-report', {
             }
             window.archesModularReportVueApp = vueApp;
 
-            const graphSlug = params.report.graph.slug || params.report.report_json.graph_slug;
-            
+            const graphSlug = params.report.graph?.slug || params.report.report_json.graph_slug;
+
             vueApp.provide("graphSlug", graphSlug);
             vueApp.provide('resourceInstanceId', params.report.report_json.resourceinstanceid);
             vueApp.mount(mountingPoint);
