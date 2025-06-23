@@ -18,16 +18,19 @@ export async function importComponents(
 ): Promise<void> {
     namedSections.forEach((section: NamedSection) => {
         section.components.forEach((component: SectionContent) => {
-            componentLookup[component.component] = defineAsyncComponent(() =>
-                import(
-                    `@/arches_modular_reports/ModularReport/components/${component.component}.vue`
-                ).catch(
-                    () =>
-                        import(
-                            `@/arches_modular_reports/ModularReport/components/${component.component}/${component.component}.vue`
-                        ),
+            componentLookup[component.component] = {
+                component: defineAsyncComponent(() =>
+                    import(
+                        `@/arches_modular_reports/ModularReport/components/${component.component}.vue`
+                    ).catch(
+                        () =>
+                            import(
+                                `@/arches_modular_reports/ModularReport/components/${component.component}/${component.component}.vue`
+                            ),
+                    ),
                 ),
-            );
+                key: uniqueId(component),
+            };
         });
     });
 }

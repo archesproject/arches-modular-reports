@@ -62,9 +62,9 @@ watch(activeTab, (tab) => {
             >
                 <template v-if="visitedTabs.has(tab.name)">
                     <component
-                        :is="componentLookup[tabComponent.component]"
+                        :is="componentLookup[tabComponent.component]?.component"
                         v-for="tabComponent in tab.components"
-                        :key="tabComponent.config.id"
+                        :key="componentLookup[tabComponent.component]?.key"
                         :component="tabComponent"
                         :resource-instance-id="resourceInstanceId"
                     />

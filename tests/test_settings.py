@@ -60,6 +60,7 @@ CACHES = {
 }
 
 LOGGING["loggers"]["arches"]["level"] = "ERROR"
+LOGGING["loggers"]["arches_provenance"]["level"] = "ERROR"
 
 ELASTICSEARCH_PREFIX = "test"
 

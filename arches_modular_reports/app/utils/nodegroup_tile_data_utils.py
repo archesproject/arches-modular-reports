@@ -287,9 +287,9 @@ def get_sorted_filtered_relations(
 ):
     if arches_version < (8, 0):
         resource_from_field = "resourceinstanceidfrom"
-        resource_from_graph_field = "from_resource_graph"
+        resource_from_graph_field = "resourceinstancefrom_graphid"
         resource_to_field = "resourceinstanceidto"
-        resource_to_graph_field = "to_resource_graph"
+        resource_to_graph_field = "resourceinstanceto_graphid"
         node_field = "nodeid"
     else:
         resource_from_field = "from_resource"
