@@ -50,10 +50,7 @@ export interface ComponentLookup {
 
 export interface ResourceDetails {
     display_value: string;
-    inverseOntologyProperty: string;
-    ontologyProperty: string;
-    resourceId: string;
-    resourceXresourceId: string;
+    resource_id: string;
 }
 
 export interface ConceptDetails {
@@ -62,6 +59,11 @@ export interface ConceptDetails {
     value: string;
     valueid: string;
     valuetype_id: string;
+}
+
+export interface URLDetails {
+    url: string;
+    url_label: string;
 }
 
 export interface NodeValueDisplayData {
@@ -76,10 +78,29 @@ export interface NodeValueDisplayDataLookup {
     [key: string]: NodeValueDisplayData[];
 }
 
-// eslint-disable-next-line
-interface AliasedData {}
+export interface NodeData {
+    display_value: string;
+    interchange_value: unknown;
+}
 
-export interface ResourceData<T extends AliasedData = AliasedData> {
+export type NodegroupData = TileData | TileData[] | null;
+
+export interface AliasedData {
+    [key: string]: NodeData | NodegroupData;
+}
+
+export interface TileData {
+    aliased_data: AliasedData;
+    nodegroup: string;
+    parenttile: string | null;
+    provisionaledits: object | null;
+    resourceinstance: string;
+    sortorder: number;
+    tileid: string | null;
+}
+
+export interface ResourceData {
+    aliased_data: AliasedData;
     resourceinstanceid?: string;
     name?: string;
     descriptors?: {
@@ -94,17 +115,6 @@ export interface ResourceData<T extends AliasedData = AliasedData> {
     graph?: string;
     graph_publication: string;
     principaluser: number;
-    aliased_data: T;
-}
-
-export interface TileData<T extends AliasedData = AliasedData> {
-    aliased_data: T;
-    nodegroup: string;
-    parenttile: string | null;
-    provisionaledits: object | null;
-    resourceinstance: string;
-    sortorder: number;
-    tileid: string | null;
 }
 
 // NodegroupTileDataView produces this, not label-based graph.
