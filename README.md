@@ -79,3 +79,22 @@ pip install arches-modular-reports
     npm install
     npm run build_development
     ```
+
+## Setting up a graph to use the Modular Reports Template
+
+Once you've installed the Arches Modular Report Application into your project you'll notice a new report template available called "Modular Report Template".  
+
+1. Select a Graph in the graph designer that you'd like to use with the new modular reports.
+
+2. Navigate to the "Cards" tab, select the root node and select the "Modular Report Template" from the Report Configuration section on the right.
+
+3. Next go to the [admin page](https://arches.readthedocs.io/en/stable/administering/django-admin-ui/) and login.
+
+4. Click on the "+ Add" button next to the item called "Report configs" under the "Arches Modular Reports" section.
+ 
+5. You'll be presented with a large "Config" section that should only comtain empty curly brackets "{}".  Below that is a dropdown with a listing of graphs available in your project.  Select the graph you chose earlier in step 1 and then click the button that says "Save and continue editing".
+
+6. Notice that the "Config" section is populated with a default configuration.  
+
+7. If you view a report of the type of graph set up to use the new template you should notice that it now has a different appearance.
+
