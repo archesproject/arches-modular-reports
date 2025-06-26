@@ -64,12 +64,17 @@ pip install arches-modular-reports
 
     ```
 
-5. Start your project
+5. Run migrations
+    ```
+    python manage.py migrate
+    ```
+
+6. Start your project
     ```
     python manage.py runserver
     ```
 
-6. Next cd into your project's app directory (the one with package.json) install and build front-end dependencies:
+7. Next cd into your project's app directory (the one with package.json) install and build front-end dependencies:
     ```
     npm install
     npm run build_development
