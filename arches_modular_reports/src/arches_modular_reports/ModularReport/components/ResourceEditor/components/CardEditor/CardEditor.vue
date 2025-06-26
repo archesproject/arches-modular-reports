@@ -17,7 +17,7 @@ const { selectedTileId } = inject("selectedTileId") as {
     <DefaultCard
         v-if="selectedNodegroupAlias && graphSlug"
         mode="edit"
-        :nodegroup-grouping-node-alias="selectedNodegroupAlias"
+        :nodegroup-alias="selectedNodegroupAlias"
         :graph-slug="graphSlug"
         :tile-id="selectedTileId"
         @update:is-dirty="console.log('update:isDirty', $event)"
