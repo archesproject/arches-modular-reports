@@ -1,6 +1,6 @@
 # Welcome to Arches Modular Reports!
 
-Arches Modular Reports is an Arches Application that provides an alternate and more modular way to present and configure reports in Arches. 
+Arches Modular Reports is an Arches Application that provides an alternate and more modular way to present and configure reports in Arches.
 
 
 Please see the [project page](http://archesproject.org/) for more information on the Arches project.
@@ -8,10 +8,10 @@ Please see the [project page](http://archesproject.org/) for more information on
 
 ## Installation
 
-If you are installing Arches Modular Reports for the first time, **we strongly recommend** that you install it as an Arches application into a existing (or new) project. Running Arches Modular Reports as a standalone project can provide some convienience if you are a developer contributing to the Arches Modular Reports project but you risk conflicts when upgrading to the next version of Arches Modular Reports.  
+If you are installing Arches Modular Reports for the first time, **we strongly recommend** that you install it as an Arches application into an existing (or new) project. Running Arches Modular Reports as a standalone project can provide some convenience if you are a developer contributing to the Arches Modular Reports project but you risk conflicts when upgrading to the next version of Arches Modular Reports.  
 
 ### If installing for development
-Clone the arches-modular-reports repo and checkout the latest `dev/x.x.x` or any other branch you may be interested in. 
+Clone the arches-modular-reports repo and checkout the latest `dev/x.x.x` or any other branch you may be interested in.
 Navigate to the `arches-modular-reports` directory from your terminal and run:
  ```
 pip install -e .
@@ -92,11 +92,11 @@ Once you've installed the Arches Modular Report Application into your project yo
 
 4. Click on the "+ Add" button next to the item called "Report configs" under the "Arches Modular Reports" section.
  
-5. You'll be presented with a large "Config" section that should only comtain empty curly brackets "{}".  Below that is a dropdown with a listing of graphs available in your project.  Select the graph you chose earlier in step 1 and then click the button that says "Save and continue editing".
+5. You'll be presented with a large "Config" section that should only contain empty curly brackets "{}".  Below that is a dropdown with a listing of graphs available in your project.  Select the graph you chose earlier in step 1 and then click the button that says "Save and continue editing".
 
 6. Notice that the "Config" section is populated with a default configuration.  
 
-7. If you view a report of the type of graph set up to use the new template you should notice that it now using the new report template and has a different appearance.
+7. If you view a report of the type of graph set up to use the new template you should notice that it is now using the new report template and has a different appearance.
 
 ---
 
@@ -124,7 +124,7 @@ Each entry in the `components` array defines a section of the report interface, 
 #### `ReportHeader`
 
 Displays the report title or descriptor.  The descriptor can include references to node values by referencing the node_alias from within `<>` brackets.
-Additionally, if a node in brackets contains more then 1 entry (eg: concept-list or resource-instance-list) then the number of those values can be limited via the `node_alias_options` property and a separator character can be specified.
+Additionally, if a node in brackets contains more than 1 entry (eg: concept-list or resource-instance-list) then the number of those values can be limited via the `node_alias_options` property and a separator character can be specified.
 
 ```json
 {
@@ -206,7 +206,7 @@ Each `section` has a name and an array of components like `DataSection` or `Rela
 #### `DataSection`
 
 Displays a group of nodes from the main resource graph. DataSection objects can be grouped together under a common name within LinkedSection components.
-By default, top-level node groups will appear as individual sections each with it's own DataSection in the "Data" tab.
+By default, top-level node groups will appear as individual sections each with its own DataSection in the "Data" tab.
 
 ```json
 {
@@ -282,5 +282,4 @@ RelatedResourcesSection objects can be grouped together under a common name with
 ```json
 "nodegroup_alias": "physical_characteristics"
 ```
-
 
