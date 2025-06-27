@@ -12,12 +12,14 @@ If you are installing Arches Modular Reports for the first time, **we strongly r
 
 ### If installing for development
 Clone the arches-modular-reports repo and checkout the latest `dev/x.x.x` or any other branch you may be interested in.
-Navigate to the `arches-modular-reports` directory from your terminal and run:
+Navigate to the `arches-modular-reports` directory from your terminal and run the following commands:
  ```
-pip install -e .
+pip install -e . --group dev
+pre-commit install
+
  ```
 
-`Important`: Installing the arches-modular-reports app will install Arches as a dependency. This may replace your current install of Arches with a version from PyPi. If you've installed Arches for development using the `--editable` flag, you'll need to reinstall Arches using the `--editable` flag again after installing arches-modular-reports
+`Important`: Installing the arches-modular-reports app will install Arches as a dependency. This may replace your current install of Arches with a version from PyPi. If you've installed Arches for development using the `--editable` flag, you'll need to reinstall Arches using the `--editable` flag again after installing arches-modular-reports.
 
 ### If installing for deployment, run:
 ```
