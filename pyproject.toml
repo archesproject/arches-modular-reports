@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arches-modular-reports"
+version = "1.0.0b0"
 readme = "README.md"
 authors = [
     {name = "Arches Project"}
@@ -11,7 +12,7 @@ authors = [
 license = "AGPL-3.0-or-later"
 description = "Fast, configurable reports for Arches models in Vue.js"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -34,7 +35,6 @@ dependencies = [
     "arches_querysets @ git+https://github.com/archesproject/arches-querysets@main",
     "arches_component_lab @ git+https://github.com/archesproject/arches-component-lab.git@main",
 ]
-version = "0.0.1"
 
 [project.urls]
 Homepage = "https://archesproject.org/"
