@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { inject } from "vue";
 
-import DefaultCard from "@/arches_component_lab/cards/DefaultCard/DefaultCard.vue";
+// import DefaultCard from "@/arches_component_lab/cards/DefaultCard/DefaultCard.vue";
 
-const graphSlug = inject<string>("graphSlug")!;
+// const graphSlug = inject<string>("graphSlug")!;
 
 const { selectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
     selectedNodegroupAlias: string | null;
@@ -14,7 +14,7 @@ const { selectedTileId } = inject("selectedTileId") as {
 </script>
 
 <template>
-    <DefaultCard
+    <!-- <DefaultCard
         v-if="selectedNodegroupAlias && graphSlug"
         mode="edit"
         :nodegroup-grouping-node-alias="selectedNodegroupAlias"
@@ -22,5 +22,5 @@ const { selectedTileId } = inject("selectedTileId") as {
         :tile-id="selectedTileId"
         @update:is-dirty="console.log('update:isDirty', $event)"
         @update:tile-data="console.log('update:tileData', $event)"
-    />
+    /> -->
 </template>

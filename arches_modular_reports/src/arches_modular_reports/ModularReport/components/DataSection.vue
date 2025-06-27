@@ -207,8 +207,8 @@ function rowClass(data: LabelBasedCard) {
 }
 
 function initiateEdit(tileId: string | null) {
-    setSelectedNodegroupAlias(props.component.config.nodegroup_alias);
-    setSelectedTileId(tileId);
+    // setSelectedNodegroupAlias(props.component.config.nodegroup_alias);
+    // setSelectedTileId(tileId);
 }
 </script>
 

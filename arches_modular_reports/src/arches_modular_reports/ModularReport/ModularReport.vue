@@ -16,7 +16,7 @@ import {
 
 import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_modular_reports/constants.ts";
 import { importComponents } from "@/arches_modular_reports/ModularReport/utils.ts";
-import ResourceEditor from "@/arches_modular_reports/ModularReport/components/ResourceEditor/ResourceEditor.vue";
+// import ResourceEditor from "@/arches_modular_reports/ModularReport/components/ResourceEditor/ResourceEditor.vue";
 
 import type { Ref } from "vue";
 import type {
@@ -137,7 +137,7 @@ function closeEditor() {
                         aria-hidden="true"
                     />
                 </template>
-                <ResourceEditor v-if="userCanEditResourceInstance" />
+                <!-- <ResourceEditor v-if="userCanEditResourceInstance" /> -->
             </Panel>
         </SplitterPanel>
     </Splitter>
