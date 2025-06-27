@@ -98,6 +98,189 @@ Once you've installed the Arches Modular Report Application into your project yo
 
 7. If you view a report of the type of graph set up to use the new template you should notice that it now using the new report template and has a different appearance.
 
-## Editing the default report configuration
+---
 
-1. 
+## Editing the structure of the report configuration
+
+This document explains the structure and purpose of a JSON configuration used to define custom reports in Arches. It breaks down key components and their configuration properties to help you understand how to control the layout and display of resource data.
+
+### Top-Level Structure
+
+At a high level, the configuration defines a report with a name and a list of UI components that will be rendered in the report interface.
+
+```json
+{
+  "name": "Untitled Report",
+  "components": [ ... ]
+}
+````
+
+Each entry in the `components` array defines a section of the report interface, such as the header, toolbar, tombstone (summary), or tabs.
+
+---
+
+### Key Components
+
+#### `ReportHeader`
+
+Displays the report title or descriptor.  The descriptor can include references to node values by referencing the node_alias from within `<>` brackets.
+Additionally, if a node in brackets contains more then 1 entry (eg: concept-list or resource-instance-list) then the number of those values can be limited via the `node_alias_options` property and a separator character can be specified.
+
+```json
+{
+  "component": "ReportHeader",
+  "config": {
+    "descriptor": "<name_node> - born on <date_of_birth>",
+    "node_alias_options": {
+        "name_node": {
+            "limit": 3,
+            "separator": "|"
+        }
+    }
+  }
+}
+```
+
+---
+
+#### `ReportToolbar`
+
+Adds export buttons and list tools to the report.
+
+```json
+{
+  "component": "ReportToolbar",
+  "config": {
+    "lists": true,
+    "export_formats": ["csv", "json-ld", "json"]
+  }
+}
+```
+
+---
+
+#### `ReportTombstone`
+
+Displays a summary or key metadata for the resource.
+
+```json
+{
+  "component": "ReportTombstone",
+  "config": {
+    "node_aliases": [],
+    "custom_labels": {},
+    "image_node_alias": null <-- unused
+  }
+}
+```
+
+---
+
+#### `ReportTabs`
+
+Defines tabs for organizing the main content of the report.
+
+```json
+{
+  "component": "ReportTabs",
+  "config": {
+    "tabs": [ ... ]
+  }
+}
+```
+
+Each tab contains components — typically `LinkedSections` — that organize content into visual sections.
+
+---
+
+### LinkedSections and Subcomponents
+
+#### `LinkedSections`
+
+Used within tabs to group and render multiple content sections.
+
+Each `section` has a name and an array of components like `DataSection` or `RelatedResourcesSection`.
+
+---
+
+#### `DataSection`
+
+Displays a group of nodes from the main resource graph. DataSection objects can be grouped together under a common name within LinkedSection components.
+By default, top-level node groups will appear as individual sections each with it's own DataSection in the "Data" tab.
+
+```json
+{
+  "component": "DataSection",
+  "config": {
+    "node_aliases": ["color"],
+    "custom_labels": {},
+    "nodegroup_alias": "physical_characteristics",
+    "custom_card_name": "Physical Description"
+  }
+}
+```
+
+---
+
+#### `RelatedResourcesSection`
+
+Displays resources related to this resource instance based on the related resource graph slug.  By default the resource instance name and relationship is displayed.  Other nodes from that related resource can be displayed by adding entries in the "node_aliases" array and those node names can be overwritten with the "custom_labels" object.
+RelatedResourcesSection objects can be grouped together under a common name within LinkedSection components.
+
+```json
+{
+  "component": "RelatedResourcesSection",
+  "config": {
+    "graph_slug": "digital",
+    "node_aliases": [],
+    "custom_labels": {}
+  }
+}
+```
+
+---
+
+### Common Configuration Properties
+
+#### `node_aliases`
+
+* **Type:** `array`
+* **Description:** A list of node aliases that specify which nodes to display in a component.
+
+---
+
+#### `custom_labels`
+
+* **Type:** `object`
+* **Description:** A dictionary used to override default labels for fields. Each key is a `node_alias`, and each value is the custom label to display.
+
+```json
+"custom_labels": {
+  "color_primary": "Primary Color",
+  "material_label_1": "Composition"
+}
+```
+
+---
+
+#### `custom_card_name`
+
+* **Type:** `string` or `null`
+* **Description:** Overrides the default title shown on a data card (section). If not set, the system uses the label from the associated card.
+
+```json
+"custom_card_name": "Physical Description"
+```
+
+---
+
+#### `nodegroup_alias`
+
+* **Type:** \`string\*\*
+* **Description:** The alias of a **node group** — the node that groups child nodes beneath it. Each node group is represented in the UI as a **Card**, which has a label used by default as the section title. You can override that label with `custom_card_name`.
+
+```json
+"nodegroup_alias": "physical_characteristics"
+```
+
+
