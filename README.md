@@ -96,5 +96,8 @@ Once you've installed the Arches Modular Report Application into your project yo
 
 6. Notice that the "Config" section is populated with a default configuration.  
 
-7. If you view a report of the type of graph set up to use the new template you should notice that it now has a different appearance.
+7. If you view a report of the type of graph set up to use the new template you should notice that it now using the new report template and has a different appearance.
 
+## Editing the default report configuration
+
+1. 
