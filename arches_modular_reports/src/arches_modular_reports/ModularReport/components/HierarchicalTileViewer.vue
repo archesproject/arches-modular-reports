@@ -31,16 +31,14 @@ const hasLoadingError = ref(false);
 const tileData = ref<TileData>();
 const userIsRdmAdmin = ref(false);
 
-const resourceInstanceId = inject("resourceInstanceId") as string;
+const graphSlug = inject<string>("graphSlug")!;
 
 async function fetchData() {
     try {
         await Promise.all([
-            fetchModularReportTile(
-                nodegroupAlias,
-                tileId,
-                resourceInstanceId,
-            ).then((data) => (tileData.value = data)),
+            fetchModularReportTile(graphSlug, nodegroupAlias, tileId).then(
+                (data) => (tileData.value = data),
+            ),
             fetchUserPermissions(["RDM Administrator"]).then((data) => {
                 userIsRdmAdmin.value = data["RDM Administrator"];
             }),
