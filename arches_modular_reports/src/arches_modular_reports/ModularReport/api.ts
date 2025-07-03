@@ -1,16 +1,18 @@
 import arches from "arches";
 
 export const fetchModularReportResource = async ({
+    graphSlug,
     resourceId,
     fillBlanks = false,
 }: {
+    graphSlug: string;
     resourceId: string;
     fillBlanks: boolean;
 }) => {
     const params = new URLSearchParams();
     params.append("fill_blanks", fillBlanks.toString());
     const response = await fetch(
-        `${arches.urls.api_modular_reports_resource(resourceId)}?${params}`,
+        `${arches.urls.api_modular_reports_resource(graphSlug, resourceId)}?${params}`,
     );
     const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);
@@ -18,14 +20,15 @@ export const fetchModularReportResource = async ({
 };
 
 export const fetchModularReportTile = async (
+    graphSlug: string,
     nodegroupAlias: string,
     tileId: string,
-    resourceId: string,
 ) => {
-    // We can do dev in arches-querysets to support a more straightforward route.
-    const url =
-        arches.urls.api_modular_reports_tile(nodegroupAlias, tileId) +
-        `?resource_ids=${resourceId}`;
+    const url = arches.urls.api_modular_reports_tile(
+        graphSlug,
+        nodegroupAlias,
+        tileId,
+    );
     const response = await fetch(url);
     const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);
