@@ -39,9 +39,7 @@ const tree = computed(() => {
     const topCards = Object.entries(props.resourceData.aliased_data).reduce<
         TreeNode[]
     >((acc, [alias, data]) => {
-        acc.push(
-            processNodegroup(alias, data as TileData | TileData[], "root"),
-        );
+        acc.push(processNodegroup(alias, data as TileData | TileData[], null));
         return acc;
     }, []);
     return topCards.sort((a, b) => {
