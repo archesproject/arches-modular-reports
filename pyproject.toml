@@ -33,7 +33,6 @@ dependencies = [
     # When updating to arches 8, update the override of ResourceReportView
     # and grep for "TODO: arches v8:" to find hints for breaking change updates
     "arches>=7.6.0,<8.1.0",
-    "arches-querysets[drf]==1.0.0b1",
     "arches-component-lab==0.0.1a0"
 ]
 
