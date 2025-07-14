@@ -29,7 +29,7 @@ const toast = useToast();
 const { $gettext } = useGettext();
 const componentLookup: ComponentLookup = {};
 
-let resourceInstanceId = inject("resourceInstanceId") as Ref<string> | string;
+let resourceInstanceId = inject<string | Ref<string>>("resourceInstanceId");
 const nodePresentationLookup: Ref<NodePresentationLookup | undefined> = ref();
 provide("nodePresentationLookup", nodePresentationLookup);
 
