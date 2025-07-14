@@ -3,6 +3,7 @@ from http import HTTPStatus
 
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.db.models.fields.json import KT
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
@@ -42,12 +43,15 @@ from arches_modular_reports.app.utils.nodegroup_tile_data_utils import (
 @method_decorator(can_read_resource_instance, name="dispatch")
 class ModularReportConfigView(View):
     def get(self, request):
-        """Just get first. But if there are multiple in the future,
-        the vue component will need to know which one to request."""
+        filters = Q(graph__resourceinstance=request.GET.get("resourceId"))
+
+        report = request.GET.get("name", None)
+        if report:
+            filters &= Q(report_name=report)
+
         config_instance = (
-            ReportConfig.objects.filter(
-                graph__resourceinstance=request.GET.get("resourceId")
-            )
+            ReportConfig.objects.annotate(report_name=KT("config__name"))
+            .filter(filters)
             .select_related("graph")
             .prefetch_related("graph__node_set", "graph__node_set__nodegroup")
             .first()
