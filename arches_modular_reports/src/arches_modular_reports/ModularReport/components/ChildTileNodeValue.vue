@@ -13,29 +13,28 @@ import type {
     URLDetails,
 } from "@/arches_modular_reports/ModularReport/types";
 
-const { nodeValue, userIsRdmAdmin = false } = defineProps<{
-    nodeValue: NodeData | null;
+const { value, userIsRdmAdmin = false } = defineProps<{
+    value: NodeData | null;
     userIsRdmAdmin?: boolean;
 }>();
 
 const { $gettext } = useGettext();
 
-const displayValue = computed(() => nodeValue?.display_value);
-const interchangeValue = computed(() => nodeValue?.interchange_value);
+const displayValue = computed(() => value?.display_value);
+const nodeValue = computed(() => value?.node_value);
+const details = computed(() => value?.details);
 </script>
 
 <template>
-    <dd v-if="nodeValue === null || interchangeValue === null">
+    <dd v-if="value === null || nodeValue === null">
         {{ $gettext("None") }}
     </dd>
     <div
-        v-else-if="
-            Array.isArray(interchangeValue) && interchangeValue[0]?.resource_id
-        "
+        v-else-if="(details as ResourceDetails[])?.[0]?.resource_id"
         style="flex-direction: column"
     >
         <dd
-            v-for="instanceDetail in interchangeValue as ResourceDetails[]"
+            v-for="instanceDetail in details as ResourceDetails[]"
             :key="instanceDetail.resource_id"
         >
             <Button
@@ -48,41 +47,20 @@ const interchangeValue = computed(() => nodeValue?.interchange_value);
             </Button>
         </dd>
     </div>
-    <div v-else-if="(interchangeValue as ConceptDetails).concept_id">
-        <dd v-if="userIsRdmAdmin">
-            <Button
-                as="a"
-                variant="link"
-                target="_blank"
-                :href="
-                    arches.urls.rdm +
-                    (interchangeValue as ConceptDetails).concept_id
-                "
-            >
-                {{ displayValue }}
-            </Button>
-        </dd>
-        <dd v-else>{{ displayValue }}</dd>
-    </div>
     <div
-        v-else-if="
-            Array.isArray(interchangeValue) && interchangeValue[0]?.concept_id
-        "
+        v-else-if="(details as ConceptDetails[])?.[0]?.concept_id"
         style="flex-direction: column"
     >
         <div v-if="userIsRdmAdmin">
             <dd
-                v-for="conceptDetail in interchangeValue as ConceptDetails[]"
+                v-for="conceptDetail in details as ConceptDetails[]"
                 :key="conceptDetail.concept_id"
             >
                 <Button
                     as="a"
                     variant="link"
                     target="_blank"
-                    :href="
-                        arches.urls.rdm +
-                        (conceptDetail as ConceptDetails).concept_id
-                    "
+                    :href="arches.urls.rdm + conceptDetail.concept_id"
                 >
                     {{ conceptDetail.value }}
                 </Button>
@@ -92,16 +70,16 @@ const interchangeValue = computed(() => nodeValue?.interchange_value);
             <dd>{{ displayValue }}</dd>
         </div>
     </div>
-    <dd v-else-if="(interchangeValue as URLDetails).url">
+    <dd v-else-if="(nodeValue as URLDetails).url">
         <Button
             as="a"
             variant="link"
             target="_blank"
-            :href="(interchangeValue as URLDetails).url"
+            :href="(nodeValue as URLDetails).url"
         >
             {{
-                (interchangeValue as URLDetails).url_label ||
-                (interchangeValue as URLDetails).url
+                (nodeValue as URLDetails).url_label ||
+                (nodeValue as URLDetails).url
             }}
         </Button>
     </dd>
