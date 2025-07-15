@@ -80,7 +80,7 @@ export interface NodeValueDisplayDataLookup {
 export interface NodeData {
     display_value: string;
     node_value: unknown;
-    details?: unknown[];
+    details: unknown[];
 }
 
 export type NodegroupData = TileData | TileData[];

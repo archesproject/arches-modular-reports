@@ -30,7 +30,7 @@ const details = computed(() => value?.details);
         {{ $gettext("None") }}
     </dd>
     <div
-        v-else-if="(details as ResourceDetails[])?.[0]?.resource_id"
+        v-else-if="(details as ResourceDetails[])[0]?.resource_id"
         style="flex-direction: column"
     >
         <dd
@@ -48,7 +48,7 @@ const details = computed(() => value?.details);
         </dd>
     </div>
     <div
-        v-else-if="(details as ConceptDetails[])?.[0]?.concept_id"
+        v-else-if="(details as ConceptDetails[])[0]?.concept_id"
         style="flex-direction: column"
     >
         <div v-if="userIsRdmAdmin">
