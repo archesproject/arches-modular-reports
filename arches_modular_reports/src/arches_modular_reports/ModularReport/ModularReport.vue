@@ -21,8 +21,8 @@ import ResourceEditor from "@/arches_modular_reports/ModularReport/components/Re
 import type { Ref } from "vue";
 import type {
     ComponentLookup,
+    GraphPresentationLookup,
     NamedSection,
-    NodePresentationLookup,
 } from "@/arches_modular_reports/ModularReport/types";
 
 const toast = useToast();
@@ -31,8 +31,8 @@ const componentLookup: ComponentLookup = {};
 
 const resourceInstanceId = inject("resourceInstanceId") as string;
 
-const nodePresentationLookup: Ref<NodePresentationLookup | undefined> = ref();
-provide("nodePresentationLookup", nodePresentationLookup);
+const graphPresentationLookup: Ref<GraphPresentationLookup | undefined> = ref();
+provide("graphPresentationLookup", graphPresentationLookup);
 
 const userCanEditResourceInstance = ref(false);
 provide("userCanEditResourceInstance", userCanEditResourceInstance);
@@ -73,7 +73,7 @@ onMounted(async () => {
     try {
         await Promise.all([
             fetchNodePresentation(resourceInstanceId).then((data) => {
-                nodePresentationLookup.value = data;
+                graphPresentationLookup.value = data;
             }),
             fetchUserResourcePermissions(resourceInstanceId).then((data) => {
                 userCanEditResourceInstance.value = data.edit;
