@@ -21,6 +21,7 @@ import HierarchicalTileViewer from "@/arches_modular_reports/ModularReport/compo
 import type { Ref } from "vue";
 import type { DataTablePageEvent } from "primevue/datatable";
 import type {
+    GraphPresentationLookup,
     LabelBasedCard,
     NodePresentationLookup,
 } from "@/arches_modular_reports/ModularReport/types";
@@ -33,6 +34,8 @@ const props = defineProps<{
             custom_labels: Record<string, string>;
             custom_card_name: string | null;
             has_write_permission: boolean;
+            related_graph_slug?: string;
+            related_node_alias?: string;
         };
     };
     resourceInstanceId: string;
@@ -58,15 +61,23 @@ const pageNumberToNodegroupTileData = ref<Record<number, unknown[]>>({});
 const userCanEditResourceInstance = inject(
     "userCanEditResourceInstance",
 ) as Ref<boolean>;
-const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
-    NodePresentationLookup | undefined
->;
+const graphSlug = inject<string>("graphSlug");
+const graphPresentationLookup = inject<Ref<GraphPresentationLookup>>(
+    "graphPresentationLookup",
+)!;
 const { setSelectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
     setSelectedNodegroupAlias: (nodegroupAlias: string | null) => void;
 };
 const { setSelectedTileId } = inject("selectedTileId") as {
     setSelectedTileId: (tileId: string | null) => void;
 };
+
+const nodePresentationLookup = computed<NodePresentationLookup>(
+    () =>
+        graphPresentationLookup?.value?.[
+            props.component.config.related_graph_slug ?? graphSlug!
+        ],
+);
 
 const first = computed(() => {
     if (resettingToFirstPage.value) {
@@ -121,7 +132,7 @@ const cardName = computed(() => {
     }
     return (
         props.component.config.custom_card_name ??
-        nodePresentationLookup.value[firstNodeAlias].card_name
+        nodePresentationLookup.value[firstNodeAlias]?.card_name
     );
 });
 
@@ -171,6 +182,8 @@ async function fetchData(page: number = 1) {
             sortNodeId.value,
             direction.value,
             query.value,
+            props.component.config.related_graph_slug,
+            props.component.config.related_node_alias,
         );
 
         pageNumberToNodegroupTileData.value[fetchedPage] = results;
