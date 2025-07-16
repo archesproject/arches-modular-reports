@@ -10,7 +10,10 @@ import { uniqueId } from "@/arches_modular_reports/ModularReport/utils.ts";
 import type { Ref } from "vue";
 import type { TreeExpandedKeys, TreeSelectionKeys } from "primevue/tree";
 import type { TreeNode } from "primevue/treenode";
-import type { NodePresentationLookup } from "@/arches_modular_reports/ModularReport/types";
+import type {
+    GraphPresentationLookup,
+    NodePresentationLookup,
+} from "@/arches_modular_reports/ModularReport/types";
 import type {
     ResourceData,
     NodeData,
@@ -31,11 +34,19 @@ const { setSelectedNodegroupAlias } = inject<{
 const { setSelectedTileId } = inject<{
     setSelectedTileId: (tileId: string | null | undefined) => void;
 }>("selectedTileId")!;
-const nodePresentationLookup = inject<Ref<NodePresentationLookup>>(
-    "nodePresentationLookup",
+const graphSlug = inject<string>("graphSlug");
+const graphPresentationLookup = inject<Ref<GraphPresentationLookup>>(
+    "graphPresentationLookup",
 )!;
 
+const nodePresentationLookup = computed<NodePresentationLookup>(
+    () => graphPresentationLookup?.value?.[graphSlug!],
+);
+
 const tree = computed(() => {
+    if (!nodePresentationLookup.value) {
+        return;
+    }
     const topCards = Object.entries(props.resourceData.aliased_data).reduce<
         TreeNode[]
     >((acc, [alias, data]) => {

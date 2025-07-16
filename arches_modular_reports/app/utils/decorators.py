@@ -1,7 +1,7 @@
 import functools
 
-from django.core.exceptions import PermissionDenied
-
+from django.core.exceptions import BadRequest, PermissionDenied
+from django.db.models import Q
 from arches.app.models import models
 from arches.app.utils.permission_backend import PermissionBackend
 
@@ -10,16 +10,25 @@ def can_read_nodegroup(view_func):
     """
     Decorator to ensure that the user has read permissions for a specific NodeGroup.
     The decorated view must accept 'nodegroup_alias' and 'resourceid' as keyword args.
+
+    The nodegroup_alias can be looked up against a related graph slug
+    instead by providing `related_graph_slug` on request.GET.
     """
 
     @functools.wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
         nodegroup_alias = kwargs.get("nodegroup_alias")
         resource_id = kwargs.get("resourceid")
-        nodegroup = models.NodeGroup.objects.get(
-            node__graph__resourceinstance=resource_id,
-            node__alias=nodegroup_alias,
-        )
+        filters = Q(node__alias=nodegroup_alias)
+        if request.method == "GET" and (
+            related_graph_slug := request.GET.get("related_graph_slug", None)
+        ):
+            filters &= Q(node__graph__slug=related_graph_slug)
+        else:
+            filters &= Q(node__graph__resourceinstance=resource_id)
+        nodegroup = models.NodeGroup.objects.get(filters)
+        if not nodegroup:
+            raise BadRequest
 
         permission_backend = PermissionBackend()
 
