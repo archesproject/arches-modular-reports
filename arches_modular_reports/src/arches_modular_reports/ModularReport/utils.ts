@@ -19,10 +19,8 @@ export async function importComponents(
     namedSections.forEach((section: NamedSection) => {
         section.components.forEach((component: SectionContent) => {
             componentLookup[component.component] = {
-                component: defineAsyncComponent(() =>
-                    import(
-                        `@/${component.component}.vue`
-                    )
+                component: defineAsyncComponent(
+                    () => import(`@/${component.component}.vue`),
                 ),
                 key: uniqueId(component),
             };
