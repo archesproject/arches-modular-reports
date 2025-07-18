@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, provide, ref } from "vue";
+import { computed, inject, watchEffect, provide, ref, isRef } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
@@ -29,8 +29,7 @@ const toast = useToast();
 const { $gettext } = useGettext();
 const componentLookup: ComponentLookup = {};
 
-const resourceInstanceId = inject("resourceInstanceId") as string;
-
+let resourceInstanceId = inject<string | Ref<string>>("resourceInstanceId");
 const nodePresentationLookup: Ref<NodePresentationLookup | undefined> = ref();
 provide("nodePresentationLookup", nodePresentationLookup);
 
@@ -66,19 +65,23 @@ const gutterVisibility = computed(() => {
     return selectedNodegroupAlias.value ? "visible" : "hidden";
 });
 
-onMounted(async () => {
-    if (!resourceInstanceId) {
+watchEffect(async () => {
+    if (!isRef(resourceInstanceId)) {
+        // If resourceInstanceId is a ref, we need to access its value
+        resourceInstanceId = ref(resourceInstanceId);
+    }
+    if (!resourceInstanceId.value) {
         return;
     }
     try {
         await Promise.all([
-            fetchNodePresentation(resourceInstanceId).then((data) => {
+            fetchNodePresentation(resourceInstanceId.value).then((data) => {
                 nodePresentationLookup.value = data;
             }),
-            fetchUserResourcePermissions(resourceInstanceId).then((data) => {
+            fetchUserResourcePermissions(resourceInstanceId.value).then((data) => {
                 userCanEditResourceInstance.value = data.edit;
             }),
-            fetchReportConfig(resourceInstanceId).then((data) => {
+            fetchReportConfig(resourceInstanceId.value).then((data) => {
                 importComponents([data], componentLookup);
                 config.value = data;
             }),
