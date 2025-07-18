@@ -1,4 +1,5 @@
 import json
+from collections import defaultdict
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
@@ -21,6 +22,9 @@ from arches.app.views.api import APIBase
 from arches.app.views.base import MapBaseManagerView
 from arches.app.views.resource import ResourceReportView
 
+from arches_modular_reports.app.utils.config import (
+    extract_nodegroup_aliases_and_graph_slugs,
+)
 from arches_modular_reports.app.utils.decorators import can_read_nodegroup
 from arches_modular_reports.models import ReportConfig
 
@@ -234,8 +238,20 @@ class NodePresentationView(APIBase):
         permitted_nodegroups = get_nodegroups_by_perm(
             request.user, "models.read_nodegroup"
         )
+
+        # Return information about all permitted nodes for this graph ...
+        graph_filter = Q(graph=graph)
+        # ... and nodes from any related nodegroups declared in the config(s).
+        pairs = set()
+        for report in graph.report_configs.all():
+            pairs |= extract_nodegroup_aliases_and_graph_slugs(report.config)
+        for nodegroup_alias, related_graph_slug in pairs:
+            graph_filter |= Q(nodegroup__node__alias=nodegroup_alias) & Q(
+                graph__slug=related_graph_slug
+            )
+
         nodes = (
-            models.Node.objects.filter(graph=graph)
+            models.Node.objects.filter(graph_filter)
             .filter(nodegroup__in=permitted_nodegroups)
             .exclude(datatype__in={"annotation", "geojson-feature-collection"})
             .select_related("nodegroup")
@@ -257,40 +273,43 @@ class NodePresentationView(APIBase):
                 return node.cardxnodexwidget_set.all()[0].visible
             return True
 
-        return JSONResponse(
-            {
-                node.alias: {
-                    "nodeid": node.nodeid,
-                    "name": node.name,
-                    "card_name": getattr_from_queryset(
-                        node.nodegroup.cardmodel_set.all(),
-                        "name",
-                        "",
-                    ),
-                    "card_order": getattr_from_queryset(
-                        node.nodegroup.cardmodel_set.all(),
-                        "sortorder",
-                        0,
-                    ),
-                    "widget_label": getattr_from_queryset(
-                        node.cardxnodexwidget_set.all(),
-                        "label",
-                        node.name.replace("_", " ").title(),
-                    ),
-                    "widget_order": getattr_from_queryset(
-                        node.cardxnodexwidget_set.all(),
-                        "sortorder",
-                        0,
-                    ),
-                    "visible": get_node_visibility(node),
-                    "nodegroup": {
-                        "nodegroup_id": node.nodegroup.pk,
-                        "cardinality": node.nodegroup.cardinality,
-                    },
-                }
-                for node in nodes
+        def set_node_information(node):
+            nonlocal return_dict
+            return_dict[node.graph.slug][node.alias] = {
+                "nodeid": node.nodeid,
+                "name": node.name,
+                "card_name": getattr_from_queryset(
+                    node.nodegroup.cardmodel_set.all(),
+                    "name",
+                    "",
+                ),
+                "card_order": getattr_from_queryset(
+                    node.nodegroup.cardmodel_set.all(),
+                    "sortorder",
+                    0,
+                ),
+                "widget_label": getattr_from_queryset(
+                    node.cardxnodexwidget_set.all(),
+                    "label",
+                    node.name.replace("_", " ").title(),
+                ),
+                "widget_order": getattr_from_queryset(
+                    node.cardxnodexwidget_set.all(),
+                    "sortorder",
+                    0,
+                ),
+                "visible": get_node_visibility(node),
+                "nodegroup": {
+                    "nodegroup_id": node.nodegroup.pk,
+                    "cardinality": node.nodegroup.cardinality,
+                },
             }
-        )
+
+        return_dict = defaultdict(defaultdict)
+        for node in nodes:
+            set_node_information(node)
+
+        return JSONResponse(return_dict)
 
 
 @method_decorator(can_read_resource_instance, name="dispatch")
@@ -299,6 +318,8 @@ class NodegroupTileDataView(APIBase):
     def get(self, request, resourceid, nodegroup_alias):
         page_number = request.GET.get("page")
         rows_per_page = request.GET.get("rows_per_page")
+        related_graph_slug = request.GET.get("related_graph_slug")
+        related_node_alias = request.GET.get("related_node_alias")
 
         query = request.GET.get("query")
         sort_node_id = request.GET.get("sort_node_id")
@@ -311,10 +332,13 @@ class NodegroupTileDataView(APIBase):
         tiles = get_sorted_filtered_tiles(
             resourceinstanceid=resourceid,
             nodegroup_alias=nodegroup_alias,
+            related_graph_slug=related_graph_slug,
+            related_node_alias=related_node_alias,
             sort_node_id=sort_node_id,
             direction=direction,
             query=query,
             user_language=user_language,
+            user=request.user,
         )
 
         paginator = Paginator(tiles, rows_per_page)

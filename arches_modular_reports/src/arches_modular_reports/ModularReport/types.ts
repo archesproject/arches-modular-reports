@@ -34,6 +34,10 @@ export interface NodePresentation {
     };
 }
 
+export interface GraphPresentationLookup {
+    [key: string]: NodePresentationLookup;
+}
+
 export interface NodePresentationLookup {
     [key: string]: NodePresentation;
 }
