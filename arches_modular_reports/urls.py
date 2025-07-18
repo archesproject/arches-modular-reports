@@ -4,11 +4,6 @@ from django.urls import include, path, re_path
 
 from arches.app.models.system_settings import settings
 
-from arches_querysets.rest_framework.generic_views import (
-    ArchesResourceDetailView,
-    ArchesTileDetailView,
-    ArchesTileListCreateView,
-)
 from arches_modular_reports.app.views.modular_report import (
     ModularReportAwareResourceReportView,
     NodegroupTileDataView,
@@ -55,25 +50,11 @@ urlpatterns = [
         name="api_node_tile_data",
     ),
     path(
-        "api/provenance_resource/<uuid:pk>",
-        ArchesResourceDetailView.as_view(),
-        name="api_modular_reports_resource",
-    ),
-    path(
-        "api/provenance_tile/<slug:nodegroup_alias>/<uuid:pk>",
-        ArchesTileDetailView.as_view(),
-        name="api_modular_reports_tile",
-    ),
-    path(
-        "api/provenance_tile/<slug:nodegroup_alias>",
-        ArchesTileListCreateView.as_view(),
-        name="api_modular_reports_tiles",
-    ),
-    path(
         "api/has_permissions",
         UserPermissionsView.as_view(),
         name="api_has_permissions",
     ),
+    path("", include("arches_querysets.urls")),
     path("", include("arches_component_lab.urls")),
 ]
 

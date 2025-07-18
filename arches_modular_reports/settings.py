@@ -145,6 +145,7 @@ INSTALLED_APPS = (
     "oauth2_provider",
     "django_celery_results",
     # "silk",
+    "rest_framework",
     "arches_modular_reports",  # Ensure the project is listed before any other arches applications
     "arches_querysets",
     "arches_component_lab",

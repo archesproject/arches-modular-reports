@@ -67,14 +67,14 @@ function isTileorTiles(input: unknown) {
     );
 }
 
-function nodeValueIsEmpty(nodeValue: NodeData | NodegroupData) {
+function nodeValueIsEmpty(nodeValue: NodeData | NodegroupData | null) {
     return (
         nodeValue === null || (nodeValue as NodeData).interchange_value === null
     );
 }
 
 function shouldShowNode(
-    nodeAliasValuePair: [string, NodeData | NodegroupData],
+    nodeAliasValuePair: [string, NodeData | NodegroupData | null],
 ) {
     const [nodeAlias, nodeValue] = nodeAliasValuePair;
     return (

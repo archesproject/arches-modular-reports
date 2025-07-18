@@ -31,14 +31,15 @@ pip install arches-modular-reports
 
 1. If you don't already have an Arches project, you'll need to create one by following the instructions in the Arches [documentation](http://archesproject.org/documentation/).
 
-2. When your project is ready add "arches_modular_reports", "arches_querysets", and "arches_component_lab" to INSTALLED_APPS **below** the name of your project:
+2. When your project is ready add "rest_framework", "arches_modular_reports", "arches_querysets", and "arches_component_lab" to INSTALLED_APPS **below** the name of your project:
     ```
     INSTALLED_APPS = (
         ...
         "my_project_name",
+        "rest_framework",
         "arches_modular_reports",
         "arches_querysets",
-        "arches_component_lab"
+        "arches_component_lab",
     )
     ```
 
