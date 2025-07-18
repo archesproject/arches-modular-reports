@@ -68,9 +68,7 @@ function isTileorTiles(input: unknown) {
 }
 
 function nodeValueIsEmpty(nodeValue: NodeData | NodegroupData | null) {
-    return (
-        nodeValue === null || (nodeValue as NodeData).interchange_value === null
-    );
+    return nodeValue === null || (nodeValue as NodeData).node_value === null;
 }
 
 function shouldShowNode(
@@ -115,7 +113,7 @@ function bestWidgetLabel(nodeAlias: string) {
                     {{ bestWidgetLabel(nodeAlias) }}
                 </dt>
                 <ChildTileNodeValue
-                    :node-value="nodeValue"
+                    :value="nodeValue"
                     :user-is-rdm-admin="userIsRdmAdmin"
                 />
             </div>

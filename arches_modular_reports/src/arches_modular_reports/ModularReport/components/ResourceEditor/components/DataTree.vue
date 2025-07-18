@@ -149,7 +149,7 @@ function extractAndOverrideDisplayValue(value: NodeData | null): string {
     }
     if (value.display_value.includes("url_label")) {
         // The URL datatype deserves a better display value in core Arches.
-        const urlPair = value.interchange_value as URLDetails;
+        const urlPair = value.node_value as URLDetails;
         return urlPair.url_label || urlPair.url;
     }
     return value.display_value;
@@ -171,7 +171,6 @@ function onNodeSelect(node: TreeNode) {
         :header="$gettext('Data Tree')"
         :pt="{ header: { style: { padding: '1rem' } } }"
     >
-        <p>Tree</p>
         <Tree
             v-model:selection-keys="selectedKeys"
             v-model:expanded-keys="expandedKeys"
