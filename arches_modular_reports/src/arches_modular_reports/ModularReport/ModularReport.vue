@@ -30,6 +30,7 @@ const { $gettext } = useGettext();
 const componentLookup: ComponentLookup = {};
 
 let resourceInstanceId = inject<string | Ref<string>>("resourceInstanceId");
+const reportConfigName = inject<string | undefined>("reportConfigName");
 const nodePresentationLookup: Ref<NodePresentationLookup | undefined> = ref();
 provide("nodePresentationLookup", nodePresentationLookup);
 
@@ -81,7 +82,7 @@ watchEffect(async () => {
             fetchUserResourcePermissions(resourceInstanceId.value).then((data) => {
                 userCanEditResourceInstance.value = data.edit;
             }),
-            fetchReportConfig(resourceInstanceId.value).then((data) => {
+            fetchReportConfig(resourceInstanceId.value, reportConfigName).then((data) => {
                 importComponents([data], componentLookup);
                 config.value = data;
             }),

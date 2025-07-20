@@ -43,8 +43,18 @@ export const fetchNodePresentation = async (resourceId: string) => {
     return parsed;
 };
 
-export const fetchReportConfig = async (resourceId: string) => {
-    const url = arches.urls.modular_report_config + `?resourceId=${resourceId}`;
+export const fetchReportConfig = async (
+    resourceId: string,
+    reportConfigName: string | undefined
+) => {
+    let reportConfigNameQuery = "";
+    if (reportConfigName) {
+        reportConfigNameQuery = `reportConfigName=${reportConfigName}`;
+    }
+    const url =
+        arches.urls.modular_report_config +
+        `?resourceId=${resourceId}&${reportConfigNameQuery}`;
+
     const response = await fetch(url);
     const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);

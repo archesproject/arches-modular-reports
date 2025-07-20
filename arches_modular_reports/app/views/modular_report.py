@@ -44,7 +44,7 @@ class ModularReportConfigView(View):
     def get(self, request):
         filters = Q(graph__resourceinstance=request.GET.get("resourceId"))
 
-        report = request.GET.get("name", None)
+        report = request.GET.get("reportConfigName", None)
         if report:
             filters &= Q(config__name__iexact=report)
 
