@@ -29,13 +29,15 @@ const toast = useToast();
 const { $gettext } = useGettext();
 const componentLookup: ComponentLookup = {};
 
-const { graphSlug, resourceInstanceId } = defineProps<{
+const { graphSlug, resourceInstanceId, reportConfigName } = defineProps<{
     graphSlug: string;
     resourceInstanceId: string;
+    reportConfigName?: string;
 }>();
 
 provide("graphSlug", graphSlug);
 provide("resourceInstanceId", resourceInstanceId);
+provide("reportConfigName", reportConfigName);
 
 const nodePresentationLookup: Ref<NodePresentationLookup | undefined> = ref();
 provide("nodePresentationLookup", nodePresentationLookup);
@@ -82,7 +84,7 @@ watchEffect(async () => {
             fetchUserResourcePermissions(resourceInstanceId).then((data) => {
                 userCanEditResourceInstance.value = data.edit;
             }),
-            fetchReportConfig(resourceInstanceId).then((data) => {
+            fetchReportConfig(resourceInstanceId.value, reportConfigName).then((data) => {
                 importComponents([data], componentLookup);
                 config.value = data;
             }),
