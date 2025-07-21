@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { inject, useTemplateRef } from "vue";
-
-import Button from "primevue/button";
+import { inject } from "vue";
 
 import DefaultCard from "@/arches_component_lab/cards/DefaultCard/DefaultCard.vue";
 
@@ -9,8 +7,6 @@ import { EDIT } from "@/arches_component_lab/widgets/constants.ts";
 
 const graphSlug = inject<string>("graphSlug");
 const resourceInstanceId = inject<string>("resourceInstanceId");
-
-const defaultCard = useTemplateRef("defaultCard");
 
 const { selectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
     selectedNodegroupAlias: string | null;
@@ -20,12 +16,6 @@ const { selectedTileId } = inject("selectedTileId") as {
 };
 
 const emit = defineEmits(["save"]);
-
-async function save() {
-    if (defaultCard.value) {
-        await defaultCard.value.save();
-    }
-}
 </script>
 
 <template>
@@ -36,7 +26,6 @@ async function save() {
         :nodegroup-alias="selectedNodegroupAlias"
         :graph-slug="graphSlug"
         :resource-instance-id="resourceInstanceId"
-        :should-show-form-buttons="false"
         :tile-id="selectedTileId"
         @save="
             console.log('save', $event);
@@ -46,11 +35,5 @@ async function save() {
             console.log('update:widgetDirtyStates', $event)
         "
         @update:tile-data="console.log('update:tileData', $event)"
-    />
-
-    <Button
-        class="p-button-secondary"
-        label="Save"
-        @click="save"
     />
 </template>
