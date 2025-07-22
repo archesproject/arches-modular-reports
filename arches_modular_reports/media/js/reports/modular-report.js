@@ -152,7 +152,11 @@ const ModularReportTheme = {
 
 ko.components.register('modular-report', {
     viewModel: function(params) {
-        createVueApplication(ModularReport, ModularReportTheme).then(vueApp => {
+
+        const graphSlug = params.report.graph?.slug || params.report.report_json.graph_slug;
+        const resourceInstanceId = params.report.report_json.resourceinstanceid;
+
+        createVueApplication(ModularReport, ModularReportTheme, { graphSlug, resourceInstanceId }).then(vueApp => {
             // handles the Graph Designer case of multiple mounting points on the same page
             const mountingPoints = document.querySelectorAll('.modular-report-mounting-point');
             const mountingPoint = mountingPoints[mountingPoints.length - 1];
@@ -163,10 +167,6 @@ ko.components.register('modular-report', {
             }
             window.archesModularReportVueApp = vueApp;
 
-            const graphSlug = params.report.graph?.slug || params.report.report_json.graph_slug;
-
-            vueApp.provide("graphSlug", graphSlug);
-            vueApp.provide("resourceInstanceId", params.report?.report_json?.resourceinstanceid);
             vueApp.mount(mountingPoint);
         });
     },
