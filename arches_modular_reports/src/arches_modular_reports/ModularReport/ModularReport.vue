@@ -61,6 +61,7 @@ function setSelectedTileId(tileId?: string | null) {
 }
 provide("selectedTileId", { selectedTileId, setSelectedTileId });
 
+const reportKey = ref(0);
 const editorKey = ref(0);
 
 const config: Ref<NamedSection> = ref({
@@ -107,13 +108,15 @@ function closeEditor() {
 <template>
     <Splitter>
         <SplitterPanel style="overflow: auto">
-            <component
-                :is="componentLookup[component.component].component"
-                v-for="component in config.components"
-                :key="componentLookup[component.component].key"
-                :component
-                :resource-instance-id
-            />
+            <div :key="reportKey">
+                <component
+                    :is="componentLookup[component.component].component"
+                    v-for="component in config.components"
+                    :key="componentLookup[component.component].key"
+                    :component
+                    :resource-instance-id
+                />
+            </div>
         </SplitterPanel>
         <SplitterPanel
             v-show="selectedNodegroupAlias"
@@ -140,7 +143,10 @@ function closeEditor() {
                         aria-hidden="true"
                     />
                 </template>
-                <ResourceEditor v-if="userCanEditResourceInstance" />
+                <ResourceEditor
+                    v-if="userCanEditResourceInstance"
+                    @save="reportKey++"
+                />
             </Panel>
         </SplitterPanel>
     </Splitter>

@@ -55,21 +55,21 @@ class ReportConfig(models.Model):
             "name": "Untitled Report",
             "components": [
                 {
-                    "component": "ReportHeader",
+                    "component": "arches_modular_reports/ModularReport/components/ReportHeader",
                     "config": {
                         "descriptor": f"{self.graph.name} descriptor template",
                         "node_alias_options": {},  # e.g. limit, separator
                     },
                 },
                 {
-                    "component": "ReportToolbar",
+                    "component": "arches_modular_reports/ModularReport/components/ReportToolbar",
                     "config": {
                         "lists": True,
                         "export_formats": ["csv", "json-ld", "json"],
                     },
                 },
                 {
-                    "component": "ReportTombstone",
+                    "component": "arches_modular_reports/ModularReport/components/ReportTombstone",
                     "config": {
                         "node_aliases": [],
                         "image_node_alias": None,
@@ -77,14 +77,14 @@ class ReportConfig(models.Model):
                     },
                 },
                 {
-                    "component": "ReportTabs",
+                    "component": "arches_modular_reports/ModularReport/components/ReportTabs",
                     "config": {
                         "tabs": [
                             {
                                 "name": "Data",
                                 "components": [
                                     {
-                                        "component": "LinkedSections",
+                                        "component": "arches_modular_reports/ModularReport/components/LinkedSections",
                                         "config": {
                                             "sections": self.generate_card_sections()
                                         },
@@ -95,7 +95,7 @@ class ReportConfig(models.Model):
                                 "name": "Related Resources",
                                 "components": [
                                     {
-                                        "component": "LinkedSections",
+                                        "component": "arches_modular_reports/ModularReport/components/LinkedSections",
                                         "config": {
                                             "sections": self.generate_related_resources_sections()
                                         },
@@ -132,7 +132,7 @@ class ReportConfig(models.Model):
                 "name": str(card.name),
                 "components": [
                     {
-                        "component": "DataSection",
+                        "component": "arches_modular_reports/ModularReport/components/DataSection",
                         "config": {
                             # TODO: arches v8: card.nodegroup.grouping_node.alias
                             "nodegroup_alias": card.nodegroup.node_set.filter(
@@ -168,7 +168,7 @@ class ReportConfig(models.Model):
                 "name": str(other_graph.name),
                 "components": [
                     {
-                        "component": "RelatedResourcesSection",
+                        "component": "arches_modular_reports/ModularReport/components/RelatedResourcesSection",
                         "config": {
                             "graph_slug": other_graph.slug,
                             "node_aliases": [],

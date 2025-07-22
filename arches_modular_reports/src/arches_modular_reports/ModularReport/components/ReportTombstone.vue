@@ -108,11 +108,10 @@ onMounted(fetchData);
             >
                 {{ $gettext("Unable to fetch resource") }}
             </Message>
-            <template v-else-if="displayDataByAlias && nodePresentationLookup">
+            <template v-else-if="displayDataByAlias">
                 <LabeledNodeValues
                     v-for="nodeAlias in props.component.config.node_aliases"
                     :key="nodeAlias"
-                    :node-presentation="nodePresentationLookup[nodeAlias]"
                     :widget-label="bestWidgetLabel(nodeAlias)"
                     :display-data="displayDataByAlias[nodeAlias]"
                 />

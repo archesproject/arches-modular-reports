@@ -14,16 +14,23 @@ const { selectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
 const { selectedTileId } = inject("selectedTileId") as {
     selectedTileId: string | null | undefined;
 };
+
+const emit = defineEmits(["save"]);
 </script>
 
 <template>
     <DefaultCard
         v-if="selectedNodegroupAlias && graphSlug"
+        ref="defaultCard"
         :mode="EDIT"
         :nodegroup-alias="selectedNodegroupAlias"
         :graph-slug="graphSlug"
         :resource-instance-id="resourceInstanceId"
         :tile-id="selectedTileId"
+        @save="
+            console.log('save', $event);
+            emit('save', $event);
+        "
         @update:widget-dirty-states="
             console.log('update:widgetDirtyStates', $event)
         "

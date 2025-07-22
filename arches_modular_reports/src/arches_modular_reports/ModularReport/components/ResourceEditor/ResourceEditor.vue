@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, onMounted, ref } from "vue";
+import { inject, ref, watchEffect } from "vue";
 
 import Message from "primevue/message";
 import ProgressSpinner from "primevue/progressspinner";
@@ -15,7 +15,9 @@ const resourceId = inject<string>("resourceInstanceId")!;
 const resourceData = ref<ResourceData>();
 const isLoading = ref(true);
 
-onMounted(async () => {
+const emit = defineEmits(["save"]);
+
+watchEffect(async () => {
     try {
         resourceData.value = await fetchModularReportResource({
             graphSlug,
@@ -38,7 +40,7 @@ onMounted(async () => {
         {{ $gettext("Unable to fetch resource") }}
     </Message>
     <template v-else>
-        <CardEditor />
+        <CardEditor @save="emit('save', $event)" />
         <DataTree :resource-data="resourceData" />
     </template>
 </template>
