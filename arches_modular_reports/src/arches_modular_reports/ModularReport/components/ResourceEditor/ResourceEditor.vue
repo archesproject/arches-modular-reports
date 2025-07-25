@@ -1,46 +1,131 @@
 <script setup lang="ts">
-import { inject, ref, watchEffect } from "vue";
+import { computed, inject, reactive, ref, watchEffect } from "vue";
 
 import Message from "primevue/message";
-import ProgressSpinner from "primevue/progressspinner";
+import Skeleton from "primevue/skeleton";
+
+import DataTree from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree.vue";
+import GenericCard from "@/arches_component_lab/generic/GenericCard/GenericCard.vue";
 
 import { fetchModularReportResource } from "@/arches_modular_reports/ModularReport/api.ts";
-import CardEditor from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/CardEditor/CardEditor.vue";
-import DataTree from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree.vue";
 
-import type { ResourceData } from "@/arches_modular_reports/ModularReport/types.ts";
+import { EDIT } from "@/arches_component_lab/widgets/constants.ts";
+
+import type { Ref } from "vue";
+import type {
+    ResourceData,
+    TileData,
+} from "@/arches_modular_reports/ModularReport/types.ts";
+
+const { selectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
+    selectedNodegroupAlias: Ref<string | null>;
+};
+const { selectedTileId } = inject("selectedTileId") as {
+    selectedTileId: string | null | undefined;
+};
 
 const graphSlug = inject<string>("graphSlug")!;
-const resourceId = inject<string>("resourceInstanceId")!;
-const resourceData = ref<ResourceData>();
-const isLoading = ref(true);
+const resourceInstanceId = inject<string>("resourceInstanceId")!;
 
 const emit = defineEmits(["save"]);
 
+const resourceData = reactive<ResourceData>({} as ResourceData);
+const configurationError = ref<Error | null>(null);
+const isLoading = ref(true);
+
 watchEffect(async () => {
     try {
-        resourceData.value = await fetchModularReportResource({
-            graphSlug,
-            resourceId,
-            fillBlanks: true,
-        });
+        Object.assign(
+            resourceData,
+            await fetchModularReportResource({
+                graphSlug,
+                resourceId: resourceInstanceId,
+                fillBlanks: true,
+            }),
+        );
+    } catch (error) {
+        configurationError.value = error as Error;
     } finally {
         isLoading.value = false;
     }
 });
+
+const selectedTileData = computed(() => {
+    if (!selectedNodegroupAlias || !resourceData) {
+        return null;
+    }
+
+    const selectedNodegroupTileData =
+        resourceData.aliased_data[selectedNodegroupAlias.value!];
+
+    if (Array.isArray(selectedNodegroupTileData)) {
+        return (
+            selectedNodegroupTileData.find(
+                (tile: TileData) => tile.tileid === selectedTileId,
+            ) || null
+        );
+    } else {
+        return selectedNodegroupTileData;
+    }
+});
+
+function onUpdateTileData(updatedTileData: TileData) {
+    if (!selectedNodegroupAlias || !resourceData) {
+        return null;
+    }
+
+    const selectedNodegroupTileData =
+        resourceData.aliased_data[selectedNodegroupAlias.value!];
+
+    console.log(
+        "Updating tile data:",
+        updatedTileData,
+        selectedNodegroupTileData,
+    );
+
+    if (Array.isArray(selectedNodegroupTileData)) {
+        const tileData = selectedNodegroupTileData.find(
+            (tile: TileData) => tile.tileid === selectedTileId,
+        );
+        if (tileData) {
+            Object.assign(tileData, updatedTileData);
+        }
+    } else {
+        Object.assign(selectedNodegroupTileData as TileData, updatedTileData);
+    }
+}
 </script>
 
 <template>
-    <ProgressSpinner v-if="isLoading" />
+    <Skeleton
+        v-if="isLoading"
+        style="height: 10rem"
+    />
     <Message
-        v-else-if="!resourceData"
+        v-else-if="configurationError"
         severity="error"
-        style="width: fit-content"
     >
-        {{ $gettext("Unable to fetch resource") }}
+        {{ configurationError.message }}
     </Message>
     <template v-else>
-        <CardEditor @save="emit('save', $event)" />
+        <GenericCard
+            v-if="selectedNodegroupAlias && graphSlug"
+            ref="defaultCard"
+            :mode="EDIT"
+            :nodegroup-alias="selectedNodegroupAlias"
+            :graph-slug="graphSlug"
+            :resource-instance-id="resourceInstanceId"
+            :tile-id="selectedTileId"
+            :tile-data="selectedTileData"
+            @save="
+                console.log('save', $event);
+                emit('save', $event);
+            "
+            @update:widget-dirty-states="
+                console.log('update:widgetDirtyStates', $event)
+            "
+            @update:tile-data="onUpdateTileData($event)"
+        />
         <DataTree :resource-data="resourceData" />
     </template>
 </template>
