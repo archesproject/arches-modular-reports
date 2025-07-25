@@ -259,7 +259,7 @@ class ReportConfig(models.Model):
     def validate_datasection(self, card_config):
         nodegroup_alias = self.get_or_raise(card_config, "nodegroup_alias", "Data")
 
-        if "related_node_alias" in card_config:
+        if "node_alias_for_resource_relation" in card_config:
             graph_slug = self.get_or_raise(card_config, "related_graph_slug", "Data")
             nodegroup = NodeGroup.objects.filter(
                 node__alias=nodegroup_alias, node__graph__slug=graph_slug
@@ -274,7 +274,7 @@ class ReportConfig(models.Model):
             ).first()
             if nodegroup:
                 if invalid_keys := set(card_config).intersection(
-                    {"related_graph_slug", "related_node_alias"}
+                    {"related_graph_slug", "node_alias_for_resource_relation"}
                 ):
                     msg = f"Section for {nodegroup_alias} contains invalid keys: {invalid_keys}"
                     raise ValidationError(msg)
