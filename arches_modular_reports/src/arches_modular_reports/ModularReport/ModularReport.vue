@@ -9,7 +9,7 @@ import Toast from "primevue/toast";
 import { useToast } from "primevue/usetoast";
 
 import {
-    fetchNodePresentation,
+    fetchGraphPresentation,
     fetchReportConfig,
     fetchUserResourcePermissions,
 } from "@/arches_modular_reports/ModularReport/api.ts";
@@ -76,7 +76,7 @@ const gutterVisibility = computed(() => {
 watchEffect(async () => {
     try {
         await Promise.all([
-            fetchNodePresentation(resourceInstanceId).then((data) => {
+            fetchGraphPresentation(resourceInstanceId).then((data) => {
                 graphPresentationLookup.value = data;
             }),
             fetchUserResourcePermissions(resourceInstanceId).then((data) => {
