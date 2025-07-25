@@ -242,7 +242,6 @@ class NodePresentationView(APIBase):
         nodes = (
             models.Node.objects.filter(graph=graph)
             .filter(nodegroup__in=permitted_nodegroups)
-            .exclude(datatype__in={"annotation", "geojson-feature-collection"})
             .select_related("nodegroup")
             .prefetch_related(
                 "nodegroup__cardmodel_set",
