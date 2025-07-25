@@ -14,6 +14,7 @@ import type {
 
 const {
     data,
+    graphSlug,
     depth,
     divider = false,
     customLabels,
@@ -21,6 +22,7 @@ const {
     userIsRdmAdmin = false,
 } = defineProps<{
     data: TileData;
+    graphSlug: string;
     depth: number;
     divider?: boolean;
     customLabels?: Record<string, string>;
@@ -28,7 +30,6 @@ const {
     userIsRdmAdmin?: boolean;
 }>();
 
-const graphSlug = inject<string>("graphSlug");
 const graphPresentationLookup = inject<Ref<GraphPresentationLookup>>(
     "graphPresentationLookup",
 )!;
@@ -126,6 +127,7 @@ function bestWidgetLabel(nodeAlias: string) {
             <ChildTile
                 v-for="child in visibleChildren"
                 :key="child.tileid!"
+                :graph-slug
                 :divider="true"
                 :data="child"
                 :depth="depth + 1"

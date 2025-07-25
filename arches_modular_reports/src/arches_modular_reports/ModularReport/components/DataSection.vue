@@ -384,8 +384,14 @@ function initiateEdit(tileId: string | null) {
                 </div>
             </template>
         </Column>
-        <template #expansion="slotProps">
+        <template
+            v-if="graphSlug"
+            #expansion="slotProps"
+        >
             <HierarchicalTileViewer
+                :graph-slug="
+                    props.component.config.related_graph_slug ?? graphSlug
+                "
                 :nodegroup-alias="props.component.config.nodegroup_alias"
                 :tile-id="slotProps.data['@tile_id']"
                 :custom-labels="props.component.config.custom_labels"
