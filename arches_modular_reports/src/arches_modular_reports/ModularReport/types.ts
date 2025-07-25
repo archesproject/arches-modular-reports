@@ -35,11 +35,11 @@ export interface NodePresentation {
 }
 
 export interface GraphPresentationLookup {
-    [key: string]: NodePresentationLookup;
+    [graph_slug: string]: NodePresentationLookup;
 }
 
 export interface NodePresentationLookup {
-    [key: string]: NodePresentation;
+    [node_alias: string]: NodePresentation;
 }
 
 export interface KeyedComponent {
