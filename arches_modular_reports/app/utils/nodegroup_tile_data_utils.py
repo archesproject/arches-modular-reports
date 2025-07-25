@@ -222,12 +222,12 @@ def get_sorted_filtered_tiles(
         )
 
         value_ids = None
-        if (
-            node.datatype == "concept"
-            or node.datatype == "concept-list"
-            or node.datatype == "resource-instance"
-            or node.datatype == "resource-instance-list"
-            or node.datatype == "url"
+        if node.datatype in (
+            "concept",
+            "concept-list",
+            "resource-instance",
+            "resource-instance-list",
+            "url",
         ):
             value_ids = ArchesGetValueId(
                 F("data"), Value(node.pk), Value(user_language)
@@ -264,20 +264,20 @@ def get_sorted_filtered_tiles(
     else:
         resource_filter = Q(resourceinstance_id=resourceinstanceid)
 
+    has_children = Exists(models.TileModel.objects.filter(parenttile=OuterRef("pk")))
+
     tiles = (
-        models.TileModel.objects.filter(nodegroup_id=nodes[0].nodegroup_id)
-        .filter(resource_filter)
-        .annotate(**field_annotations)
-        .annotate(alias_annotations=JSONObject(**alias_annotations))
+        models.TileModel.objects.filter(
+            resource_filter,
+            nodegroup_id=nodes[0].nodegroup_id,
+        )
         .annotate(
-            search_text=Concat(*display_values_with_spaces, output_field=TextField())
+            **field_annotations,
+            alias_annotations=JSONObject(**alias_annotations),
+            search_text=Concat(*display_values_with_spaces, output_field=TextField()),
         )
         .filter(search_text__icontains=query)
-        .annotate(
-            has_children=Exists(
-                models.TileModel.objects.filter(parenttile=OuterRef("pk"))
-            )
-        )
+        .annotate(has_children=has_children)
     )
 
     if sort_node_id:
@@ -290,14 +290,11 @@ def get_sorted_filtered_tiles(
             output_field=IntegerField(),
         )
 
+        tiles = tiles.annotate(sort_priority=sort_priority)
         if direction.lower().startswith("asc"):
-            tiles = tiles.annotate(sort_priority=sort_priority).order_by(
-                "sort_priority", F(sort_field_name).asc()
-            )
+            tiles = tiles.order_by("sort_priority", F(sort_field_name).asc())
         else:
-            tiles = tiles.annotate(sort_priority=sort_priority).order_by(
-                "-sort_priority", F(sort_field_name).desc()
-            )
+            tiles = tiles.order_by("-sort_priority", F(sort_field_name).desc())
     else:
         # default sort order for consistent pagination
         tiles = tiles.order_by("sortorder")
