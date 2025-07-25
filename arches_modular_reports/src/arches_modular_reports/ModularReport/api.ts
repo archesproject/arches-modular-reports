@@ -35,7 +35,7 @@ export const fetchModularReportTile = async (
     return parsed;
 };
 
-export const fetchNodePresentation = async (resourceId: string) => {
+export const fetchGraphPresentation = async (resourceId: string) => {
     const url = arches.urls.api_node_presentation(resourceId);
     const response = await fetch(url);
     const parsed = await response.json();
