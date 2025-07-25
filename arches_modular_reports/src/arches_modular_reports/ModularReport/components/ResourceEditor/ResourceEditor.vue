@@ -13,6 +13,8 @@ import { EDIT } from "@/arches_component_lab/widgets/constants.ts";
 
 import type { Ref } from "vue";
 import type {
+    NodeData,
+    NodegroupData,
     ResourceData,
     TileData,
 } from "@/arches_modular_reports/ModularReport/types.ts";
@@ -21,7 +23,7 @@ const { selectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
     selectedNodegroupAlias: Ref<string | null>;
 };
 const { selectedTileId } = inject("selectedTileId") as {
-    selectedTileId: string | null | undefined;
+    selectedTileId: Ref<string | null | undefined>;
 };
 
 const graphSlug = inject<string>("graphSlug")!;
@@ -50,48 +52,32 @@ watchEffect(async () => {
     }
 });
 
-const selectedTileData = computed(() => {
-    if (!selectedNodegroupAlias || !resourceData) {
-        return null;
-    }
-
-    const selectedNodegroupTileData =
+const selectedTileData = computed<TileData | undefined>(() => {
+    const selectedNodegroupAliasedTileData: NodeData | NodegroupData =
         resourceData.aliased_data[selectedNodegroupAlias.value!];
 
-    if (Array.isArray(selectedNodegroupTileData)) {
-        return (
-            selectedNodegroupTileData.find(
-                (tile: TileData) => tile.tileid === selectedTileId,
-            ) || null
+    if (Array.isArray(selectedNodegroupAliasedTileData)) {
+        return selectedNodegroupAliasedTileData.find(
+            (tileDatum) => tileDatum.tileid === selectedTileId.value,
         );
-    } else {
-        return selectedNodegroupTileData;
     }
+    return selectedNodegroupAliasedTileData as TileData;
 });
 
 function onUpdateTileData(updatedTileData: TileData) {
-    if (!selectedNodegroupAlias || !resourceData) {
-        return null;
-    }
-
-    const selectedNodegroupTileData =
+    const selectedNodegroupAliasedTileData: NodeData | NodegroupData =
         resourceData.aliased_data[selectedNodegroupAlias.value!];
 
-    console.log(
-        "Updating tile data:",
-        updatedTileData,
-        selectedNodegroupTileData,
-    );
-
-    if (Array.isArray(selectedNodegroupTileData)) {
-        const tileData = selectedNodegroupTileData.find(
-            (tile: TileData) => tile.tileid === selectedTileId,
+    if (Array.isArray(selectedNodegroupAliasedTileData)) {
+        const selectedTileDatum = selectedNodegroupAliasedTileData.find(
+            (tileDatum) => tileDatum.tileid === selectedTileId.value,
         );
-        if (tileData) {
-            Object.assign(tileData, updatedTileData);
+
+        if (selectedTileDatum) {
+            Object.assign(selectedTileDatum, updatedTileData);
         }
     } else {
-        Object.assign(selectedNodegroupTileData as TileData, updatedTileData);
+        Object.assign(selectedNodegroupAliasedTileData, updatedTileData);
     }
 }
 </script>

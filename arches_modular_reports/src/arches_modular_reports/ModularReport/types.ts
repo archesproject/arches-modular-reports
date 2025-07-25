@@ -85,7 +85,7 @@ export interface NodeData {
 export type NodegroupData = TileData | TileData[];
 
 export interface AliasedData {
-    [key: string]: NodeData | NodegroupData | null;
+    [key: string]: NodeData | NodegroupData;
 }
 
 export interface TileData {
