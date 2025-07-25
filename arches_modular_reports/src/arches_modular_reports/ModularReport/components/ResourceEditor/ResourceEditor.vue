@@ -5,7 +5,7 @@ import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 
 import DataTree from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree.vue";
-import GenericCard from "@/arches_component_lab/generic/GenericCard/GenericCard.vue";
+import GenericCard from "@/arches_component_lab/generics/GenericCard/GenericCard.vue";
 
 import { fetchModularReportResource } from "@/arches_modular_reports/ModularReport/api.ts";
 

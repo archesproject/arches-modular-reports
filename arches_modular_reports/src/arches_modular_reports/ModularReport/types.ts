@@ -82,7 +82,7 @@ export interface NodeData {
     interchange_value: unknown;
 }
 
-export type NodegroupData = TileData | TileData[];
+export type NodegroupData = TileData | TileData[] | null;
 
 export interface AliasedData {
     [key: string]: NodeData | NodegroupData;
