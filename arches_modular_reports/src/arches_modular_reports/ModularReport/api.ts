@@ -106,7 +106,10 @@ export const fetchNodegroupTileData = async (
         params.set("related_graph_slug", relatedGraphSlug);
     }
     if (nodeAliasForResourceRelation) {
-        params.set("related_node_alias", nodeAliasForResourceRelation);
+        params.set(
+            "node_alias_for_resource_relation",
+            nodeAliasForResourceRelation,
+        );
     }
 
     const response = await fetch(url + "?" + params.toString());
