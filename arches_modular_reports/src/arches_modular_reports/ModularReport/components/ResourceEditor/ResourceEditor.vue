@@ -77,7 +77,10 @@ function onUpdateTileData(updatedTileData: TileData) {
             Object.assign(selectedTileDatum, updatedTileData);
         }
     } else {
-        Object.assign(selectedNodegroupAliasedTileData, updatedTileData);
+        Object.assign(
+            selectedNodegroupAliasedTileData as TileData,
+            updatedTileData,
+        );
     }
 }
 </script>
