@@ -35,7 +35,7 @@ const props = defineProps<{
             custom_card_name: string | null;
             has_write_permission: boolean;
             related_graph_slug?: string;
-            related_node_alias?: string;
+            node_alias_for_resource_relation?: string;
         };
     };
     resourceInstanceId: string;
@@ -183,7 +183,7 @@ async function fetchData(page: number = 1) {
             direction.value,
             query.value,
             props.component.config.related_graph_slug,
-            props.component.config.related_node_alias,
+            props.component.config.node_alias_for_resource_relation,
         );
 
         pageNumberToNodegroupTileData.value[fetchedPage] = results;

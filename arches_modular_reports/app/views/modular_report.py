@@ -319,7 +319,9 @@ class NodegroupTileDataView(APIBase):
         page_number = request.GET.get("page")
         rows_per_page = request.GET.get("rows_per_page")
         related_graph_slug = request.GET.get("related_graph_slug")
-        related_node_alias = request.GET.get("related_node_alias")
+        node_alias_for_resource_relation = request.GET.get(
+            "node_alias_for_resource_relation"
+        )
 
         query = request.GET.get("query")
         sort_node_id = request.GET.get("sort_node_id")
@@ -333,7 +335,7 @@ class NodegroupTileDataView(APIBase):
             resourceinstanceid=resourceid,
             nodegroup_alias=nodegroup_alias,
             related_graph_slug=related_graph_slug,
-            related_node_alias=related_node_alias,
+            node_alias_for_resource_relation=node_alias_for_resource_relation,
             sort_node_id=sort_node_id,
             direction=direction,
             query=query,

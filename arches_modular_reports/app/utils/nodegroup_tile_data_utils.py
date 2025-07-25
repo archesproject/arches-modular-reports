@@ -181,7 +181,7 @@ def get_sorted_filtered_tiles(
     resourceinstanceid,
     nodegroup_alias,
     related_graph_slug,
-    related_node_alias,
+    node_alias_for_resource_relation,
     sort_node_id,
     direction,
     query,
@@ -258,7 +258,7 @@ def get_sorted_filtered_tiles(
         resource_filter = Q(
             **{
                 f"resourceinstance__{to_resxres}__{from_resource}": resourceinstanceid,
-                f"resourceinstance__{to_resxres}__{node_field}__alias": related_node_alias,
+                f"resourceinstance__{to_resxres}__{node_field}__alias": node_alias_for_resource_relation,
             }
         )
     else:
