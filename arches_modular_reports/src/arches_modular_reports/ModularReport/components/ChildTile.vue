@@ -5,6 +5,7 @@ import ChildTileNodeValue from "@/arches_modular_reports/ModularReport/component
 
 import type { Ref } from "vue";
 import type {
+    GraphPresentationLookup,
     NodeData,
     NodegroupData,
     NodePresentationLookup,
@@ -13,6 +14,7 @@ import type {
 
 const {
     data,
+    graphSlug,
     depth,
     divider = false,
     customLabels,
@@ -20,6 +22,7 @@ const {
     userIsRdmAdmin = false,
 } = defineProps<{
     data: TileData;
+    graphSlug: string;
     depth: number;
     divider?: boolean;
     customLabels?: Record<string, string>;
@@ -27,9 +30,9 @@ const {
     userIsRdmAdmin?: boolean;
 }>();
 
-const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
-    NodePresentationLookup | undefined
->;
+const graphPresentationLookup = inject<Ref<GraphPresentationLookup>>(
+    "graphPresentationLookup",
+)!;
 
 const marginUnit = 1.5;
 const marginUnitRem = `${marginUnit}rem`;
@@ -39,6 +42,10 @@ const nodeAliasValuePairs = computed(() => {
     const filtered = Object.entries(data.aliased_data).filter(shouldShowNode);
     return (filtered || [[]]) as [string, NodeData][];
 });
+
+const nodePresentationLookup = computed<NodePresentationLookup>(
+    () => graphPresentationLookup?.value?.[graphSlug!],
+);
 
 const visibleChildren = computed(() => {
     return Object.entries(data.aliased_data).reduce(
@@ -120,6 +127,7 @@ function bestWidgetLabel(nodeAlias: string) {
             <ChildTile
                 v-for="child in visibleChildren"
                 :key="child.tileid!"
+                :graph-slug
                 :divider="true"
                 :data="child"
                 :depth="depth + 1"

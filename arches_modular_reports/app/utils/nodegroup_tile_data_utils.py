@@ -180,17 +180,31 @@ def get_sorted_filtered_tiles(
     *,
     resourceinstanceid,
     nodegroup_alias,
+    related_graph_slug,
+    node_alias_for_resource_relation,
     sort_node_id,
     direction,
     query,
     user_language,
+    user,
 ):
+    if related_graph_slug:
+        node_filters = Q(
+            graph__slug=related_graph_slug,
+            nodegroup__node__alias=nodegroup_alias,
+        )
+    else:
+        node_filters = Q(
+            graph__resourceinstance=resourceinstanceid,
+            nodegroup__node__alias=nodegroup_alias,
+        )
+    node_filters &= Q(nodegroup__in=user.userprofile.viewable_nodegroups)
+    if arches_version >= (8, 0):
+        node_filters &= Q(source_identifier=None)
+
     # semantic, annotation, and geojson-feature-collection data types are
     # excluded in __arches_get_node_display_value
-    nodes = models.Node.objects.filter(
-        graph__resourceinstance=resourceinstanceid,
-        nodegroup__node__alias=nodegroup_alias,
-    ).exclude(
+    nodes = models.Node.objects.filter(node_filters).exclude(
         datatype__in={"semantic", "annotation", "geojson-feature-collection"},
     )
 
@@ -208,12 +222,12 @@ def get_sorted_filtered_tiles(
         )
 
         value_ids = None
-        if (
-            node.datatype == "concept"
-            or node.datatype == "concept-list"
-            or node.datatype == "resource-instance"
-            or node.datatype == "resource-instance-list"
-            or node.datatype == "url"
+        if node.datatype in (
+            "concept",
+            "concept-list",
+            "resource-instance",
+            "resource-instance-list",
+            "url",
         ):
             value_ids = ArchesGetValueId(
                 F("data"), Value(node.pk), Value(user_language)
@@ -232,21 +246,38 @@ def get_sorted_filtered_tiles(
         display_values_with_spaces.append(field)
         display_values_with_spaces.append(Value(" "))
 
+    if related_graph_slug:
+        if arches_version < (8, 0):
+            to_resxres = "resxres_resource_instance_ids_to"
+            from_resource = "resourceinstanceidfrom"
+            node_field = "nodeid"
+        else:
+            to_resxres = "to_resxres"
+            from_resource = "from_resource"
+            node_field = "node"
+        resource_filter = Q(
+            **{
+                f"resourceinstance__{to_resxres}__{from_resource}": resourceinstanceid,
+                f"resourceinstance__{to_resxres}__{node_field}__alias": node_alias_for_resource_relation,
+            }
+        )
+    else:
+        resource_filter = Q(resourceinstance_id=resourceinstanceid)
+
+    has_children = Exists(models.TileModel.objects.filter(parenttile=OuterRef("pk")))
+
     tiles = (
         models.TileModel.objects.filter(
-            resourceinstance_id=resourceinstanceid, nodegroup_id=nodes[0].nodegroup_id
+            resource_filter,
+            nodegroup_id=nodes[0].nodegroup_id,
         )
-        .annotate(**field_annotations)
-        .annotate(alias_annotations=JSONObject(**alias_annotations))
         .annotate(
-            search_text=Concat(*display_values_with_spaces, output_field=TextField())
+            **field_annotations,
+            alias_annotations=JSONObject(**alias_annotations),
+            search_text=Concat(*display_values_with_spaces, output_field=TextField()),
         )
         .filter(search_text__icontains=query)
-        .annotate(
-            has_children=Exists(
-                models.TileModel.objects.filter(parenttile=OuterRef("pk"))
-            )
-        )
+        .annotate(has_children=has_children)
     )
 
     if sort_node_id:
@@ -259,14 +290,11 @@ def get_sorted_filtered_tiles(
             output_field=IntegerField(),
         )
 
+        tiles = tiles.annotate(sort_priority=sort_priority)
         if direction.lower().startswith("asc"):
-            tiles = tiles.annotate(sort_priority=sort_priority).order_by(
-                "sort_priority", F(sort_field_name).asc()
-            )
+            tiles = tiles.order_by("sort_priority", F(sort_field_name).asc())
         else:
-            tiles = tiles.annotate(sort_priority=sort_priority).order_by(
-                "-sort_priority", F(sort_field_name).desc()
-            )
+            tiles = tiles.order_by("-sort_priority", F(sort_field_name).desc())
     else:
         # default sort order for consistent pagination
         tiles = tiles.order_by("sortorder")

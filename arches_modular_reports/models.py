@@ -26,7 +26,7 @@ class ReportConfig(models.Model):
         GraphModel,
         blank=False,
         on_delete=models.CASCADE,
-        related_name="report",
+        related_name="report_configs",
         limit_choices_to=get_graph_choices,
     )
 
@@ -258,13 +258,27 @@ class ReportConfig(models.Model):
 
     def validate_datasection(self, card_config):
         nodegroup_alias = self.get_or_raise(card_config, "nodegroup_alias", "Data")
-        nodegroup = NodeGroup.objects.filter(
-            node__alias=nodegroup_alias, node__graph=self.graph
-        ).first()
-        if not nodegroup:
-            raise ValidationError(
-                f"Section contains invalid nodegroup: {nodegroup_alias}"
-            )
+
+        if "node_alias_for_resource_relation" in card_config:
+            graph_slug = self.get_or_raise(card_config, "related_graph_slug", "Data")
+            nodegroup = NodeGroup.objects.filter(
+                node__alias=nodegroup_alias, node__graph__slug=graph_slug
+            ).first()
+            if not nodegroup:
+                raise ValidationError(
+                    f"Section contains invalid nodegroup: {nodegroup_alias}"
+                )
+        else:
+            nodegroup = NodeGroup.objects.filter(
+                node__alias=nodegroup_alias, node__graph=self.graph
+            ).first()
+            if nodegroup:
+                if invalid_keys := set(card_config).intersection(
+                    {"related_graph_slug", "node_alias_for_resource_relation"}
+                ):
+                    raise ValidationError(
+                        f"Section for {nodegroup_alias} contains invalid keys: {invalid_keys}"
+                    )
 
         self.validate_node_aliases(
             card_config,

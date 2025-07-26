@@ -35,7 +35,7 @@ export const fetchModularReportTile = async (
     return parsed;
 };
 
-export const fetchNodePresentation = async (resourceId: string) => {
+export const fetchGraphPresentation = async (resourceId: string) => {
     const url = arches.urls.api_node_presentation(resourceId);
     const response = await fetch(url);
     const parsed = await response.json();
@@ -88,6 +88,8 @@ export const fetchNodegroupTileData = async (
     sortNodeId: string | null,
     direction: string | null,
     query: string | null,
+    relatedGraphSlug?: string,
+    nodeAliasForResourceRelation?: string,
 ) => {
     const url = arches.urls.api_nodegroup_tile_data(
         resourceInstanceId,
@@ -100,6 +102,15 @@ export const fetchNodegroupTileData = async (
         direction: direction || "",
         query: query || "",
     });
+    if (relatedGraphSlug) {
+        params.set("related_graph_slug", relatedGraphSlug);
+    }
+    if (nodeAliasForResourceRelation) {
+        params.set(
+            "node_alias_for_resource_relation",
+            nodeAliasForResourceRelation,
+        );
+    }
 
     const response = await fetch(url + "?" + params.toString());
     const parsed = await response.json();

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Message from "primevue/message";
@@ -13,11 +13,13 @@ import ChildTile from "@/arches_modular_reports/ModularReport/components/ChildTi
 import type { TileData } from "@/arches_modular_reports/ModularReport/types";
 
 const {
+    graphSlug,
     nodegroupAlias,
     tileId,
     customLabels,
     showEmptyNodes = true,
 } = defineProps<{
+    graphSlug: string;
     nodegroupAlias: string;
     tileId: string;
     customLabels?: Record<string, string>;
@@ -30,8 +32,6 @@ const isLoading = ref(true);
 const hasLoadingError = ref(false);
 const tileData = ref<TileData>();
 const userIsRdmAdmin = ref(false);
-
-const graphSlug = inject<string>("graphSlug")!;
 
 async function fetchData() {
     try {
@@ -57,6 +57,7 @@ onMounted(fetchData);
     <ChildTile
         v-if="tileData"
         :data="tileData"
+        :graph-slug
         :depth="1"
         :custom-labels
         :show-empty-nodes
