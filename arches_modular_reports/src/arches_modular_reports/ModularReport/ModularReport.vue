@@ -37,7 +37,6 @@ const { graphSlug, resourceInstanceId, reportConfigName } = defineProps<{
 
 provide("graphSlug", graphSlug);
 provide("resourceInstanceId", resourceInstanceId);
-provide("reportConfigName", reportConfigName);
 
 const nodePresentationLookup: Ref<NodePresentationLookup | undefined> = ref();
 provide("nodePresentationLookup", nodePresentationLookup);
