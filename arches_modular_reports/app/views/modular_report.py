@@ -42,7 +42,9 @@ from arches_modular_reports.app.utils.nodegroup_tile_data_utils import (
 @method_decorator(can_read_resource_instance, name="dispatch")
 class ModularReportConfigView(View):
     def get(self, request):
-        filters = Q(graph__resourceinstance=request.GET.get("resourceId"))
+        filters = Q(graph__source_identifier=None) & Q(
+            graph__resourceinstance=request.GET.get("resourceId")
+        )
 
         report = request.GET.get("reportConfigName", None)
         if report:
