@@ -210,7 +210,8 @@ class ReportConfig(models.Model):
                         raise ValidationError(f"Invalid key in components: {key}")
                 component = self.get_or_raise(item, "component", "")
                 config = self.get_or_raise(item, "config", "")
-                method = getattr(self, "validate_" + component.lower(), lambda _: None)
+                component_name = component.rsplit("/")[-1].lower()
+                method = getattr(self, "validate_" + component_name, lambda _: None)
                 # example method: validate_relatedresourcessection
                 method(config)
 
