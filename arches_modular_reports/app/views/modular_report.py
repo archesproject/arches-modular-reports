@@ -322,6 +322,7 @@ class NodegroupTileDataView(APIBase):
         node_alias_for_resource_relation = request.GET.get(
             "node_alias_for_resource_relation"
         )
+        node_origin = request.GET.get("node_origin")
 
         query = request.GET.get("query")
         sort_node_id = request.GET.get("sort_node_id")
@@ -336,6 +337,7 @@ class NodegroupTileDataView(APIBase):
             nodegroup_alias=nodegroup_alias,
             related_graph_slug=related_graph_slug,
             node_alias_for_resource_relation=node_alias_for_resource_relation,
+            node_origin=node_origin,
             sort_node_id=sort_node_id,
             direction=direction,
             query=query,

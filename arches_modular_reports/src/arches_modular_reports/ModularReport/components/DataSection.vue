@@ -36,6 +36,7 @@ const props = defineProps<{
             has_write_permission: boolean;
             related_graph_slug?: string;
             node_alias_for_resource_relation?: string;
+            node_origin?: "from" | "to";
         };
     };
     resourceInstanceId: string;
@@ -184,6 +185,7 @@ async function fetchData(page: number = 1) {
             query.value,
             props.component.config.related_graph_slug,
             props.component.config.node_alias_for_resource_relation,
+            props.component.config.node_origin,
         );
 
         pageNumberToNodegroupTileData.value[fetchedPage] = results;

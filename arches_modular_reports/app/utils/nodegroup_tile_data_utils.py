@@ -182,6 +182,7 @@ def get_sorted_filtered_tiles(
     nodegroup_alias,
     related_graph_slug,
     node_alias_for_resource_relation,
+    node_origin="from",
     sort_node_id,
     direction,
     query,
@@ -248,24 +249,33 @@ def get_sorted_filtered_tiles(
 
     if related_graph_slug:
         if arches_version < (8, 0):
+            from_resxres = "resxres_resource_instance_ids_from"
             to_resxres = "resxres_resource_instance_ids_to"
             from_resource = "resourceinstanceidfrom"
+            to_resource = "resourceinstanceidto"
             node_field = "nodeid"
         else:
+            from_resxres = "from_resxres"
             to_resxres = "to_resxres"
             from_resource = "from_resource"
+            to_resource = "to_resource"
             node_field = "node"
+        if node_origin == "to":
+            resxres = from_resxres
+            other_resource = to_resource
+        else:  # more common
+            resxres = to_resxres
+            other_resource = from_resource
         resource_filter = Q(
             **{
-                f"resourceinstance__{to_resxres}__{from_resource}": resourceinstanceid,
-                f"resourceinstance__{to_resxres}__{node_field}__alias": node_alias_for_resource_relation,
+                f"resourceinstance__{resxres}__{other_resource}": resourceinstanceid,
+                f"resourceinstance__{resxres}__{node_field}__alias": node_alias_for_resource_relation,
             }
         )
     else:
         resource_filter = Q(resourceinstance_id=resourceinstanceid)
 
     has_children = Exists(models.TileModel.objects.filter(parenttile=OuterRef("pk")))
-
     tiles = (
         models.TileModel.objects.filter(
             resource_filter,

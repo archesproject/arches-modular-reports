@@ -259,23 +259,42 @@ class ReportConfig(models.Model):
     def validate_datasection(self, card_config):
         nodegroup_alias = self.get_or_raise(card_config, "nodegroup_alias", "Data")
 
+        node_origin = card_config.get("node_origin", "from")
+        if node_origin not in ("to", "from"):
+            msg = f"Section for {nodegroup_alias} contains invalid node_origin: {node_origin}"
+            raise ValidationError(msg)
         if "node_alias_for_resource_relation" in card_config:
-            graph_slug = self.get_or_raise(card_config, "related_graph_slug", "Data")
+            related_graph_slug = self.get_or_raise(
+                card_config, "related_graph_slug", "Data"
+            )
             nodegroup = NodeGroup.objects.filter(
-                node__alias=nodegroup_alias, node__graph__slug=graph_slug
+                node__alias=nodegroup_alias, node__graph__slug=related_graph_slug
             ).first()
             if not nodegroup:
-                raise ValidationError(
-                    f"Section contains invalid nodegroup: {nodegroup_alias}"
-                )
+                msg = f"Section contains invalid nodegroup: {nodegroup_alias}"
+                raise ValidationError(msg)
+            node_alias_for_relation = card_config["node_alias_for_resource_relation"]
+            node_query = Node.objects.filter(alias=node_alias_for_relation)
+            if arches_version >= (8, 0):
+                node_query = node_query.filter(source_identifier=None)
+            if node_origin == "from":
+                node_query = node_query.filter(graph=self.graph)
+            else:
+                node_query = node_query.filter(graph__slug=related_graph_slug)
+            if not node_query.exists():
+                msg = f"Section for {nodegroup_alias} contains invalid node_alias_for_resource_relation: {node_alias_for_relation}"
+                raise ValidationError(msg)
         else:
             nodegroup = NodeGroup.objects.filter(
                 node__alias=nodegroup_alias, node__graph=self.graph
             ).first()
             if nodegroup:
-                if invalid_keys := set(card_config).intersection(
-                    {"related_graph_slug", "node_alias_for_resource_relation"}
-                ):
+                keys = {
+                    "related_graph_slug",
+                    "node_alias_for_resource_relation",
+                    "node_origin",
+                }
+                if invalid_keys := set(card_config).intersection(keys):
                     msg = f"Section for {nodegroup_alias} contains invalid keys: {invalid_keys}"
                     raise ValidationError(msg)
             else:
