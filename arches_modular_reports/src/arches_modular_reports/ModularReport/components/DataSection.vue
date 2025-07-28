@@ -62,10 +62,10 @@ const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
     NodePresentationLookup | undefined
 >;
 const { setSelectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
-    setSelectedNodegroupAlias: (nodegroupAlias: string | null) => void;
+    setSelectedNodegroupAlias: (nodegroupAlias: string | undefined) => void;
 };
 const { setSelectedTileId } = inject("selectedTileId") as {
-    setSelectedTileId: (tileId: string | null) => void;
+    setSelectedTileId: (tileId: string | null | undefined) => void;
 };
 
 const first = computed(() => {
