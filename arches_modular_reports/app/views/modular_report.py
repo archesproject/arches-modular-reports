@@ -42,12 +42,17 @@ from arches_modular_reports.app.utils.nodegroup_tile_data_utils import (
 @method_decorator(can_read_resource_instance, name="dispatch")
 class ModularReportConfigView(View):
     def get(self, request):
-        """Just get first. But if there are multiple in the future,
-        the vue component will need to know which one to request."""
+        filters = Q(graph__resourceinstance=request.GET.get("resourceId"))
+
+        if arches_version >= (8, 0):
+            filters &= Q(graph__source_identifier=None)
+
+        report = request.GET.get("reportConfigName", None)
+        if report:
+            filters &= Q(config__name__iexact=report)
+
         config_instance = (
-            ReportConfig.objects.filter(
-                graph__resourceinstance=request.GET.get("resourceId")
-            )
+            ReportConfig.objects.filter(filters)
             .select_related("graph")
             .prefetch_related("graph__node_set", "graph__node_set__nodegroup")
             .first()

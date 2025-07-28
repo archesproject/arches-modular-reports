@@ -12,7 +12,10 @@ export const fetchModularReportResource = async ({
     const params = new URLSearchParams();
     params.append("fill_blanks", fillBlanks.toString());
     const response = await fetch(
-        `${arches.urls.api_modular_reports_resource(graphSlug, resourceId)}?${params}`,
+        `${arches.urls.api_modular_reports_resource(
+            graphSlug,
+            resourceId
+        )}?${params}`
     );
     const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);
@@ -22,12 +25,12 @@ export const fetchModularReportResource = async ({
 export const fetchModularReportTile = async (
     graphSlug: string,
     nodegroupAlias: string,
-    tileId: string,
+    tileId: string
 ) => {
     const url = arches.urls.api_modular_reports_tile(
         graphSlug,
         nodegroupAlias,
-        tileId,
+        tileId
     );
     const response = await fetch(url);
     const parsed = await response.json();
@@ -43,8 +46,18 @@ export const fetchNodePresentation = async (resourceId: string) => {
     return parsed;
 };
 
-export const fetchReportConfig = async (resourceId: string) => {
-    const url = arches.urls.modular_report_config + `?resourceId=${resourceId}`;
+export const fetchReportConfig = async (
+    resourceId: string,
+    reportConfigName: string | undefined
+) => {
+    let params = new URLSearchParams();
+
+    if (reportConfigName) {
+        params.append("reportConfigName", reportConfigName);
+    }
+    params.append("resourceId", resourceId);
+    const url = `${arches.urls.modular_report_config}?${params.toString()}`;
+
     const response = await fetch(url);
     const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);
@@ -62,14 +75,14 @@ export const fetchNodegroup = async (nodegroupId: string) => {
 export const fetchNodeTileData = async (
     resourceInstanceId: string,
     nodeAliases: string[],
-    tileLimit: number,
+    tileLimit: number
 ) => {
     const params = new URLSearchParams();
     nodeAliases.forEach((alias) => params.append("node_alias", alias));
     params.append("tile_limit", tileLimit.toString());
 
     const response = await fetch(
-        `${arches.urls.api_node_tile_data(resourceInstanceId)}?${params}`,
+        `${arches.urls.api_node_tile_data(resourceInstanceId)}?${params}`
     );
     const parsed = await response.json();
 
@@ -87,11 +100,11 @@ export const fetchNodegroupTileData = async (
     page: number,
     sortNodeId: string | null,
     direction: string | null,
-    query: string | null,
+    query: string | null
 ) => {
     const url = arches.urls.api_nodegroup_tile_data(
         resourceInstanceId,
-        nodegroupAlias,
+        nodegroupAlias
     );
     const params = new URLSearchParams({
         rows_per_page: rowsPerPage.toString(),
@@ -116,11 +129,11 @@ export const fetchRelatedResourceData = async (
     page: number,
     sortField: string,
     direction: string,
-    query: string,
+    query: string
 ) => {
     const url = arches.urls.api_related_resources(
         resourceInstanceId,
-        relatedGraphSlug,
+        relatedGraphSlug
     );
     const params = new URLSearchParams({
         node_aliases: nodeAliases.join(","),
@@ -147,7 +160,7 @@ export const fetchCardFromNodegroupId = async (nodegroupId: string) => {
 };
 
 export const fetchUserResourcePermissions = async (
-    resourceInstanceId: string,
+    resourceInstanceId: string
 ) => {
     const url =
         arches.urls.api_instance_permissions +
