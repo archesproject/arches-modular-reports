@@ -260,9 +260,9 @@ class ReportConfig(models.Model):
     def validate_datasection(self, card_config):
         nodegroup_alias = self.get_or_raise(card_config, "nodegroup_alias", "Data")
 
-        node_origin = card_config.get("node_origin", "from")
-        if node_origin not in ("to", "from"):
-            msg = f"Section for {nodegroup_alias} contains invalid node_origin: {node_origin}"
+        relationship_direction = card_config.get("relationship_direction", "forward")
+        if relationship_direction not in ("forward", "reverse"):
+            msg = f"Section for {nodegroup_alias} contains invalid relationship_direction: {relationship_direction}"
             raise ValidationError(msg)
         if "node_alias_for_resource_relation" in card_config:
             related_graph_slug = self.get_or_raise(
@@ -278,7 +278,7 @@ class ReportConfig(models.Model):
             node_query = Node.objects.filter(alias=node_alias_for_relation)
             if arches_version >= (8, 0):
                 node_query = node_query.filter(source_identifier=None)
-            if node_origin == "from":
+            if relationship_direction == "forward":
                 node_query = node_query.filter(graph=self.graph)
             else:
                 node_query = node_query.filter(graph__slug=related_graph_slug)
@@ -293,7 +293,7 @@ class ReportConfig(models.Model):
                 keys = {
                     "related_graph_slug",
                     "node_alias_for_resource_relation",
-                    "node_origin",
+                    "relationship_direction",
                 }
                 if invalid_keys := set(card_config).intersection(keys):
                     msg = f"Section for {nodegroup_alias} contains invalid keys: {invalid_keys}"

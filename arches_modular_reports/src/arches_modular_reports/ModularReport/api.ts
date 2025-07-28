@@ -90,7 +90,7 @@ export const fetchNodegroupTileData = async (
     query: string | null,
     relatedGraphSlug?: string,
     nodeAliasForResourceRelation?: string,
-    nodeOrigin?: "from" | "to",
+    relationshipDirection?: "forward" | "reverse",
 ) => {
     const url = arches.urls.api_nodegroup_tile_data(
         resourceInstanceId,
@@ -106,7 +106,9 @@ export const fetchNodegroupTileData = async (
         ...(nodeAliasForResourceRelation && {
             node_alias_for_resource_relation: nodeAliasForResourceRelation,
         }),
-        ...(nodeOrigin && { node_origin: nodeOrigin }),
+        ...(relationshipDirection && {
+            relationship_direction: relationshipDirection,
+        }),
     });
 
     const response = await fetch(url + "?" + params.toString());

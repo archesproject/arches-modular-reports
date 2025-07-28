@@ -182,7 +182,7 @@ def get_sorted_filtered_tiles(
     nodegroup_alias,
     related_graph_slug,
     node_alias_for_resource_relation,
-    node_origin="from",
+    relationship_direction="forward",
     sort_node_id,
     direction,
     query,
@@ -260,10 +260,10 @@ def get_sorted_filtered_tiles(
             from_resource = "from_resource"
             to_resource = "to_resource"
             node_field = "node"
-        if node_origin == "to":
+        if relationship_direction == "reverse":
             resxres = from_resxres
             other_resource = to_resource
-        else:  # more common
+        else:
             resxres = to_resxres
             other_resource = from_resource
         resource_filter = Q(
