@@ -1,14 +1,13 @@
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
 from django.urls import include, path
-import arches_modular_reports.urls as app_urls
 
 from arches.app.models.system_settings import settings
 
 uuid_regex = settings.UUID_REGEX
 
 urlpatterns = [
-    [*app_urls],
+    path("", include("arches_modular_reports.urls")),
     path("", include("arches_querysets.urls")),
     path("", include("arches_component_lab.urls")),
 ]
