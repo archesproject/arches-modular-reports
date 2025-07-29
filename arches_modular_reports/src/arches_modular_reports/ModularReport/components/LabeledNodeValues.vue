@@ -6,7 +6,7 @@ import Button from "primevue/button";
 import { RESOURCE_LIMIT_FOR_HEADER } from "@/arches_modular_reports/constants.ts";
 import { truncateDisplayData } from "@/arches_modular_reports/ModularReport/utils.ts";
 
-import type { NodeValueDisplayData } from "@/arches_modular_reports/ModularReport/types";
+import type { NodeValueDisplayData } from "@/arches_modular_reports/ModularReport/types.ts";
 
 const props = defineProps<{
     widgetLabel: string;

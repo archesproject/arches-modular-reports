@@ -23,7 +23,7 @@ import type { DataTablePageEvent } from "primevue/datatable";
 import type {
     LabelBasedCard,
     NodePresentationLookup,
-} from "@/arches_modular_reports/ModularReport/types";
+} from "@/arches_modular_reports/ModularReport/types.ts";
 
 const props = defineProps<{
     component: {

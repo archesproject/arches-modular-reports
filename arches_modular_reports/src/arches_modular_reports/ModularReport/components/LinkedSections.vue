@@ -13,7 +13,7 @@ import type {
     ComponentLookup,
     CollapsibleSection,
     SectionContent,
-} from "@/arches_modular_reports/ModularReport/types";
+} from "@/arches_modular_reports/ModularReport/types.ts";
 
 const componentLookup: ComponentLookup = {};
 const { component, resourceInstanceId } = defineProps<{

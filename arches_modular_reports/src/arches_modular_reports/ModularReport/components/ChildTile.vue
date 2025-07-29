@@ -9,7 +9,7 @@ import type {
     NodegroupData,
     NodePresentationLookup,
     TileData,
-} from "@/arches_modular_reports/ModularReport/types";
+} from "@/arches_modular_reports/ModularReport/types.ts";
 
 const {
     data,

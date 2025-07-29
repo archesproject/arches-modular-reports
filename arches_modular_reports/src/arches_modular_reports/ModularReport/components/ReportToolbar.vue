@@ -4,7 +4,7 @@ import { useGettext } from "vue3-gettext";
 
 import Button from "primevue/button";
 
-import type { SectionContent } from "@/arches_modular_reports/ModularReport/types";
+import type { SectionContent } from "@/arches_modular_reports/ModularReport/types.ts";
 
 const { $gettext } = useGettext();
 

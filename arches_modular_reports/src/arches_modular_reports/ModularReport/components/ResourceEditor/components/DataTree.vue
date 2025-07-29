@@ -10,11 +10,11 @@ import { uniqueId } from "@/arches_modular_reports/ModularReport/utils.ts";
 import type { Ref } from "vue";
 import type { TreeExpandedKeys, TreeSelectionKeys } from "primevue/tree";
 import type { TreeNode } from "primevue/treenode";
-import type { NodePresentationLookup } from "@/arches_modular_reports/ModularReport/types";
 import type {
     ResourceData,
     NodeData,
     NodegroupData,
+    NodePresentationLookup,
     TileData,
     URLDetails,
 } from "@/arches_modular_reports/ModularReport/types.ts";

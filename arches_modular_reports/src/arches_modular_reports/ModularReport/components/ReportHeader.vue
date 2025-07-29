@@ -12,7 +12,7 @@ import type { Ref } from "vue";
 import type {
     NodeValueDisplayDataLookup,
     SectionContent,
-} from "@/arches_modular_reports/ModularReport/types";
+} from "@/arches_modular_reports/ModularReport/types.ts";
 
 const resourceInstanceId = inject("resourceInstanceId") as string;
 

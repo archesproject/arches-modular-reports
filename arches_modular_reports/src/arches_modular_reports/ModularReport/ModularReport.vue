@@ -23,7 +23,7 @@ import type {
     ComponentLookup,
     NamedSection,
     NodePresentationLookup,
-} from "@/arches_modular_reports/ModularReport/types";
+} from "@/arches_modular_reports/ModularReport/types.ts";
 
 const toast = useToast();
 const { $gettext } = useGettext();
@@ -83,10 +83,12 @@ watchEffect(async () => {
             fetchUserResourcePermissions(resourceInstanceId).then((data) => {
                 userCanEditResourceInstance.value = data.edit;
             }),
-            fetchReportConfig(resourceInstanceId.value, reportConfigName).then((data) => {
-                importComponents([data], componentLookup);
-                config.value = data;
-            }),
+            fetchReportConfig(resourceInstanceId.value, reportConfigName).then(
+                (data) => {
+                    importComponents([data], componentLookup);
+                    config.value = data;
+                },
+            ),
         ]);
     } catch (error) {
         toast.add({

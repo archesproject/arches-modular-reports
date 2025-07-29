@@ -10,7 +10,7 @@ import {
 } from "@/arches_modular_reports/ModularReport/api.ts";
 import ChildTile from "@/arches_modular_reports/ModularReport/components/ChildTile.vue";
 
-import type { TileData } from "@/arches_modular_reports/ModularReport/types";
+import type { TileData } from "@/arches_modular_reports/ModularReport/types.ts";
 
 const {
     nodegroupAlias,

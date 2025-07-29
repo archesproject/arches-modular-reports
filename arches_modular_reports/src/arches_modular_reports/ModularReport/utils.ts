@@ -5,7 +5,7 @@ import type {
     NamedSection,
     NodeValueDisplayData,
     SectionContent,
-} from "@/arches_modular_reports/ModularReport/types";
+} from "@/arches_modular_reports/ModularReport/types.ts";
 
 export function uniqueId(_unused: unknown) {
     /* Not cryptographically secure, but good enough for Vue component keys. */

@@ -11,7 +11,7 @@ import type {
     NodeData,
     ResourceDetails,
     URLDetails,
-} from "@/arches_modular_reports/ModularReport/types";
+} from "@/arches_modular_reports/ModularReport/types.ts";
 
 const { value, userIsRdmAdmin = false } = defineProps<{
     value: NodeData | null;
