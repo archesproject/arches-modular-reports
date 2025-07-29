@@ -83,12 +83,10 @@ watchEffect(async () => {
             fetchUserResourcePermissions(resourceInstanceId).then((data) => {
                 userCanEditResourceInstance.value = data.edit;
             }),
-            fetchReportConfig(resourceInstanceId.value, reportConfigName).then(
-                (data) => {
-                    importComponents([data], componentLookup);
-                    config.value = data;
-                },
-            ),
+            fetchReportConfig(resourceInstanceId, reportConfigName).then((data) => {
+                importComponents([data], componentLookup);
+                config.value = data;
+            }),
         ]);
     } catch (error) {
         toast.add({
