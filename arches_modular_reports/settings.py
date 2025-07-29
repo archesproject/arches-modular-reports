@@ -270,17 +270,6 @@ LOGGING = {
     },
 }
 
-REST_FRAMEWORK = {  # if you are using the Django REST Framework integration
-    # TODO: choose most appropriate default.
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
-    ],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "PAGE_SIZE": API_MAX_PAGE_SIZE,
-}
-
 # Rate limit for authentication views
 # See options (including None or python callables):
 # https://django-ratelimit.readthedocs.io/en/stable/rates.html#rates-chapter
