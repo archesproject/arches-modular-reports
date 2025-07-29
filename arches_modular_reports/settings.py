@@ -58,7 +58,7 @@ SECRET_KEY = "django-insecure-bw-qkksf4f&^a9o5ykl511-3ym$_d*2e9&s!jv6e%%j9g24)7f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ROOT_URLCONF = "arches_modular_reports.urls_local"
+ROOT_URLCONF = "arches_modular_reports.arches_modular_reports_urls"
 ROOT_HOSTCONF = "arches_modular_reports.hosts"
 
 DEFAULT_HOST = "arches_modular_reports"
