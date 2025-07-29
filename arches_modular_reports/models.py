@@ -117,7 +117,9 @@ class ReportConfig(models.Model):
         )
         ordered_top_cards = (
             self.graph.cardmodel_set.filter(nodegroup__parentnodegroup__isnull=True)
-            .select_related("nodegroup")
+            .select_related(
+                "nodegroup__grouping_node" if arches_version >= (8, 0) else "nodegroup"
+            )
             .prefetch_related(
                 models.Prefetch(
                     "nodegroup__node_set",
@@ -127,6 +129,12 @@ class ReportConfig(models.Model):
             )
             .order_by("sortorder")
         )
+
+        def get_grouping_node(nodegroup):
+            if arches_version >= (8, 0):
+                return nodegroup.grouping_node
+            return nodegroup.node_set.filter(pk=nodegroup.pk).first()
+
         return [
             {
                 "name": str(card.name),
@@ -134,12 +142,7 @@ class ReportConfig(models.Model):
                     {
                         "component": "arches_modular_reports/ModularReport/components/DataSection",
                         "config": {
-                            # TODO: arches v8: card.nodegroup.grouping_node.alias
-                            "nodegroup_alias": card.nodegroup.node_set.filter(
-                                pk=card.nodegroup.pk
-                            )
-                            .first()
-                            .alias,
+                            "nodegroup_alias": get_grouping_node(card.nodegroup).alias,
                             "node_aliases": [
                                 node.alias for node in card.nodegroup.allowed_nodes
                             ],
