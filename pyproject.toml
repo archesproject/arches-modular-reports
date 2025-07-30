@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arches-modular-reports"
-version = "1.0.0b0"
+version = "1.0.0b2-dev"
 readme = "README.md"
 authors = [
     {name = "Arches Project"}

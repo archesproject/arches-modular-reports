@@ -12,7 +12,10 @@ export const fetchModularReportResource = async ({
     const params = new URLSearchParams();
     params.append("fill_blanks", fillBlanks.toString());
     const response = await fetch(
-        `${arches.urls.api_modular_reports_resource(graphSlug, resourceId)}?${params}`,
+        `${arches.urls.api_modular_reports_resource(
+            graphSlug,
+            resourceId,
+        )}?${params}`,
     );
     const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);
@@ -43,8 +46,18 @@ export const fetchGraphPresentation = async (resourceId: string) => {
     return parsed;
 };
 
-export const fetchReportConfig = async (resourceId: string) => {
-    const url = arches.urls.modular_report_config + `?resourceId=${resourceId}`;
+export const fetchReportConfig = async (
+    resourceId: string,
+    reportConfigName: string | undefined,
+) => {
+    const params = new URLSearchParams();
+
+    if (reportConfigName) {
+        params.append("reportConfigName", reportConfigName);
+    }
+    params.append("resourceId", resourceId);
+    const url = `${arches.urls.modular_report_config}?${params.toString()}`;
+
     const response = await fetch(url);
     const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);
