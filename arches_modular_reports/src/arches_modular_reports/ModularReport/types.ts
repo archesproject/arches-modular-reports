@@ -98,7 +98,7 @@ export interface TileData {
     aliased_data: AliasedData;
     nodegroup: string;
     parenttile: string | null;
-    provisionaledits: AliasedData | null;
+    provisionaledits: object | null;
     resourceinstance: string;
     sortorder: number;
     tileid: string | null;
