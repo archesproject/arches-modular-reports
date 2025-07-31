@@ -26,7 +26,7 @@ class ReportConfig(models.Model):
         GraphModel,
         blank=False,
         on_delete=models.CASCADE,
-        related_name="report",
+        related_name="report_configs",
         limit_choices_to=get_graph_choices,
     )
 
