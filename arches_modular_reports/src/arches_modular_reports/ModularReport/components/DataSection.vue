@@ -16,6 +16,7 @@ import {
     ROWS_PER_PAGE_OPTIONS,
 } from "@/arches_modular_reports/constants.ts";
 import { fetchNodegroupTileData } from "@/arches_modular_reports/ModularReport/api.ts";
+import FileListViewer from "@/arches_modular_reports/ModularReport/components/FileListViewer.vue";
 import HierarchicalTileViewer from "@/arches_modular_reports/ModularReport/components/HierarchicalTileViewer.vue";
 
 import type { Ref } from "vue";
@@ -313,7 +314,12 @@ function initiateEdit(tileId: string | null) {
             :sortable="cardinality === CARDINALITY_N"
         >
             <template #body="{ data, field }">
-                <div style="max-height: 12rem; overflow: auto">
+                <div
+                    :style="{
+                        maxHeight: data[field].file_data ? '32rem' : '12rem',
+                        overflow: 'auto',
+                    }"
+                >
                     <template v-if="data[field]?.has_links">
                         <Button
                             v-for="item in data[field].display_value"
@@ -326,6 +332,10 @@ function initiateEdit(tileId: string | null) {
                             style="display: block; width: fit-content"
                         />
                     </template>
+                    <FileListViewer
+                        v-else-if="data[field]?.is_file"
+                        :file-data="data[field].file_data"
+                    />
                     <template v-else>
                         {{ data[field]?.display_value }}
                     </template>

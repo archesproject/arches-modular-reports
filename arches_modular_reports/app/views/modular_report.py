@@ -329,7 +329,9 @@ class NodegroupTileDataView(APIBase):
             "results": [
                 {
                     **{
-                        key: build_valueid_annotation(value, is_user_rdm_admin)
+                        key: build_valueid_annotation(
+                            value, is_user_rdm_admin, user_language
+                        )
                         for key, value in tile.alias_annotations.items()
                     },
                     "@has_children": tile.has_children,
