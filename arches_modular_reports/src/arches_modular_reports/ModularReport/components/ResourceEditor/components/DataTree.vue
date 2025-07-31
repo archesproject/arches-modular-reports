@@ -147,12 +147,13 @@ function extractAndOverrideDisplayValue(value: NodeData | null): string {
     if (value === null) {
         return $gettext("(Empty)");
     }
-    if (value.display_value.includes("url_label")) {
+    // arches_version: https://github.com/archesproject/arches/issues/12349
+    if (value.display_value && value.display_value.includes("url_label")) {
         // The URL datatype deserves a better display value in core Arches.
         const urlPair = value.node_value as URLDetails;
         return urlPair.url_label || urlPair.url;
     }
-    return value.display_value;
+    return value.display_value ?? "";
 }
 
 function isTileOrTiles(nodeData: NodeData | NodegroupData | null) {
