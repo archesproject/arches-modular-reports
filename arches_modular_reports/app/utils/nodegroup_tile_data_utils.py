@@ -407,6 +407,7 @@ def get_sorted_filtered_relations(
             "resource-instance",
             "resource-instance-list",
             "url",
+            "file-list",
         }
         and node.nodegroup_id in permitted_nodegroups
     }
@@ -609,11 +610,22 @@ def prepare_links(
                 )
             case "file-list":
                 for file in tile_val:
-                    alt = file.get("altText", {}).get(request_language)["value"]
                     links.append(
                         {
-                            "alt_text": alt,
-                            "link": form_file_url(file["url"]),
+                            "is_file": True,
+                            "altText": file.get("altText", {}).get(request_language)[
+                                "value"
+                            ],
+                            "attribution": file.get("attribution", {}).get(
+                                request_language
+                            )["value"],
+                            "title": file.get("title", {}).get(request_language, "")[
+                                "value"
+                            ],
+                            "description": file.get("description", {}).get(
+                                request_language, ""
+                            )["value"],
+                            "url": form_file_url(file["url"]),
                         }
                     )
 

@@ -37,17 +37,19 @@ function changeIndex(number: number) {
         :value="imageData"
         :show-thumbnails="showThumbnails"
         v-model:activeIndex="activeIndex"
-        @update:activeIndex="changeIndex">
+        @update:activeIndex="changeIndex"
+        :showItemNavigators="true" 
+        containerClass="galleria-container"
     >
-        <template #header>
-            <span class="header">{{ activeMetadata.title }}</span>
-        </template>
         <template #item="slotProps">
-            <Image
-                class="mainImage"
-                :src="slotProps.item.itemImageSrc"
-                :alt="slotProps.item.alt"
-            />
+            <div class="item-container">
+                <div class="header">{{ slotProps.item.title }}</div>
+                <Image
+                    class="mainImage"
+                    :src="slotProps.item.itemImageSrc"
+                    :alt="slotProps.item.alt"
+                />
+            </div>
         </template>
         <template
             v-if="showThumbnails"
@@ -60,11 +62,9 @@ function changeIndex(number: number) {
                 :header="slotProps.item.title"
             />
         </template>
-        <template #caption>
-            <span>{{ activeMetadata.attribution }}</span>
-        </template>
-        <template #footer>
-            <span class="description">{{ activeMetadata.description }}</span>
+        <template #caption="slotProps">
+            <div class="description">{{ slotProps.item.description }}</div>
+            <div class="attribution">{{ slotProps.item.attribution }}</div>
         </template>
     </Galleria>
 </template>
@@ -84,13 +84,27 @@ function changeIndex(number: number) {
     max-height: 5rem;
 }
 
-span.header {
+div.header {
     display: flex;
     justify-content: center;
     padding: 0.5rem;
 }
 
-span.description {
+.galleria-container {
+    max-width: 30rem;
+}
+
+.item-container {
+    display: flex;
+    flex-direction: column;
+}
+
+div.description {
     padding: 0.25rem;
+}
+
+div.attribution {
+    text-align: end;
+    font-size: 1rem;
 }
 </style>
