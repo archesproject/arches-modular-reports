@@ -184,15 +184,19 @@ def get_sorted_filtered_tiles(
     direction,
     query,
     user_language,
+    user,
 ):
     # semantic, annotation, and geojson-feature-collection data types are
     # excluded in __arches_get_node_display_value
     nodes = models.Node.objects.filter(
         graph__resourceinstance=resourceinstanceid,
         nodegroup__node__alias=nodegroup_alias,
+        nodegroup__in=user.userprofile.viewable_nodegroups,
     ).exclude(
         datatype__in={"semantic", "annotation", "geojson-feature-collection"},
     )
+    if arches_version >= (8, 0):
+        nodes = nodes.filter(source_identifier=None)
 
     if not nodes:
         return models.TileModel.objects.none()
