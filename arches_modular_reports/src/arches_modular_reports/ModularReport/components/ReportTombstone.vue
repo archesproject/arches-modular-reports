@@ -12,6 +12,7 @@ import LabeledNodeValues from "@/arches_modular_reports/ModularReport/components
 
 import type { Ref } from "vue";
 import type {
+    GraphPresentationLookup,
     NodePresentationLookup,
     NodeValueDisplayDataLookup,
     SectionContent,
@@ -23,9 +24,11 @@ const props = defineProps<{
     component: SectionContent;
 }>();
 
-const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
-    NodePresentationLookup | undefined
->;
+const graphSlug = inject<string>("graphSlug");
+const graphPresentationLookup = inject<Ref<GraphPresentationLookup>>(
+    "graphPresentationLookup",
+)!;
+
 const { $gettext } = useGettext();
 
 const isLoading = ref(true);
@@ -37,6 +40,10 @@ interface ImageTileData {
     display_value: string;
     links: { alt_text: string; link: string }[];
 }
+
+const nodePresentationLookup = computed<NodePresentationLookup>(
+    () => graphPresentationLookup?.value?.[graphSlug!],
+);
 
 const firstImageTileData = computed(() => {
     const data =

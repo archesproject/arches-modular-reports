@@ -26,7 +26,7 @@ class ReportConfig(models.Model):
         GraphModel,
         blank=False,
         on_delete=models.CASCADE,
-        related_name="report",
+        related_name="report_configs",
         limit_choices_to=get_graph_choices,
     )
 
@@ -207,7 +207,8 @@ class ReportConfig(models.Model):
                         raise ValidationError(f"Invalid key in components: {key}")
                 component = self.get_or_raise(item, "component", "")
                 config = self.get_or_raise(item, "config", "")
-                method = getattr(self, "validate_" + component.lower(), lambda _: None)
+                component_name = component.rsplit("/")[-1].lower()
+                method = getattr(self, "validate_" + component_name, lambda _: None)
                 # example method: validate_relatedresourcessection
                 method(config)
 
@@ -258,13 +259,48 @@ class ReportConfig(models.Model):
 
     def validate_datasection(self, card_config):
         nodegroup_alias = self.get_or_raise(card_config, "nodegroup_alias", "Data")
-        nodegroup = NodeGroup.objects.filter(
-            node__alias=nodegroup_alias, node__graph=self.graph
-        ).first()
-        if not nodegroup:
-            raise ValidationError(
-                f"Section contains invalid nodegroup: {nodegroup_alias}"
+
+        relationship_direction = card_config.get("relationship_direction", "forward")
+        if relationship_direction not in ("forward", "reverse"):
+            msg = f"Section for {nodegroup_alias} contains invalid relationship_direction: {relationship_direction}"
+            raise ValidationError(msg)
+        if "node_alias_for_resource_relation" in card_config:
+            related_graph_slug = self.get_or_raise(
+                card_config, "related_graph_slug", "Data"
             )
+            nodegroup = NodeGroup.objects.filter(
+                node__alias=nodegroup_alias, node__graph__slug=related_graph_slug
+            ).first()
+            if not nodegroup:
+                msg = f"Section contains invalid nodegroup: {nodegroup_alias}"
+                raise ValidationError(msg)
+            node_alias_for_relation = card_config["node_alias_for_resource_relation"]
+            node_query = Node.objects.filter(alias=node_alias_for_relation)
+            if arches_version >= (8, 0):
+                node_query = node_query.filter(source_identifier=None)
+            if relationship_direction == "forward":
+                node_query = node_query.filter(graph=self.graph)
+            else:
+                node_query = node_query.filter(graph__slug=related_graph_slug)
+            if not node_query.exists():
+                msg = f"Section for {nodegroup_alias} contains invalid node_alias_for_resource_relation: {node_alias_for_relation}"
+                raise ValidationError(msg)
+        else:
+            nodegroup = NodeGroup.objects.filter(
+                node__alias=nodegroup_alias, node__graph=self.graph
+            ).first()
+            if nodegroup:
+                keys = {
+                    "related_graph_slug",
+                    "node_alias_for_resource_relation",
+                    "relationship_direction",
+                }
+                if invalid_keys := set(card_config).intersection(keys):
+                    msg = f"Section for {nodegroup_alias} contains invalid keys: {invalid_keys}"
+                    raise ValidationError(msg)
+            else:
+                msg = f"Section contains invalid nodegroup: {nodegroup_alias}"
+                raise ValidationError(msg)
 
         self.validate_node_aliases(
             card_config,

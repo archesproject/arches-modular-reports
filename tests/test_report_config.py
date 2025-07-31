@@ -76,7 +76,7 @@ class ReportConfigTests(TestCase):
                             },
                         },
                     },
-                    "component": "ReportHeader",
+                    "component": "arches_modular_reports/ModularReport/components/ReportHeader",
                 },
             ],
         }
