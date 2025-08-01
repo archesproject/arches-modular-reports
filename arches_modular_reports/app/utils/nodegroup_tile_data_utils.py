@@ -557,77 +557,78 @@ def prepare_links(
 
     ### BEGIN LINK GENERATION
     for tile_val in tile_values:
-        match node.datatype:
-            case "resource-instance":
-                links.append(
-                    {
-                        "label": node_display_value,
-                        "link": get_link(node.datatype, tile_val[0]["resourceId"]),
-                    }
-                )
-            case "resource-instance-list":
-                labels = get_resource_labels(tile_val)
-                for related_resource, label in zip(tile_val, labels, strict=True):
-                    links.append(
-                        {
-                            "label": label,
-                            "link": get_link(
-                                node.datatype, related_resource["resourceId"]
-                            ),
-                        }
-                    )
-            case "concept":
-                if is_user_rdm_admin and (
-                    concept_id_results := get_concept_ids([tile_val])
-                ):
+        if tile_val:
+            match node.datatype:
+                case "resource-instance":
                     links.append(
                         {
                             "label": node_display_value,
-                            "link": get_link(node.datatype, concept_id_results[0]),
+                            "link": get_link(node.datatype, tile_val[0]["resourceId"]),
                         }
                     )
-            case "concept-list":
-                if is_user_rdm_admin:
-                    concept_ids = get_concept_ids(tile_val)
-                    labels = get_concept_labels(tile_val)
-                    for concept_id, label in zip(concept_ids, labels, strict=True):
+                case "resource-instance-list":
+                    labels = get_resource_labels(tile_val)
+                    for related_resource, label in zip(tile_val, labels, strict=True):
                         links.append(
                             {
                                 "label": label,
-                                "link": get_link(node.datatype, concept_id),
+                                "link": get_link(
+                                    node.datatype, related_resource["resourceId"]
+                                ),
                             }
                         )
-            case "url":
-                links.append(
-                    {
-                        "label": (
-                            tile_val["url_label"]
-                            if tile_val["url_label"]
-                            else tile_val["url"]
-                        ),
-                        "link": tile_val["url"],
-                    }
-                )
-            case "file-list":
-                for file in tile_val:
+                case "concept":
+                    if is_user_rdm_admin and (
+                        concept_id_results := get_concept_ids([tile_val])
+                    ):
+                        links.append(
+                            {
+                                "label": node_display_value,
+                                "link": get_link(node.datatype, concept_id_results[0]),
+                            }
+                        )
+                case "concept-list":
+                    if is_user_rdm_admin:
+                        concept_ids = get_concept_ids(tile_val)
+                        labels = get_concept_labels(tile_val)
+                        for concept_id, label in zip(concept_ids, labels, strict=True):
+                            links.append(
+                                {
+                                    "label": label,
+                                    "link": get_link(node.datatype, concept_id),
+                                }
+                            )
+                case "url":
                     links.append(
                         {
-                            "is_file": True,
-                            "altText": file.get("altText", {}).get(request_language)[
-                                "value"
-                            ],
-                            "attribution": file.get("attribution", {}).get(
-                                request_language
-                            )["value"],
-                            "title": file.get("title", {}).get(request_language, "")[
-                                "value"
-                            ],
-                            "description": file.get("description", {}).get(
-                                request_language, ""
-                            )["value"],
-                            "url": form_file_url(file["url"]),
+                            "label": (
+                                tile_val["url_label"]
+                                if tile_val["url_label"]
+                                else tile_val["url"]
+                            ),
+                            "link": tile_val["url"],
                         }
                     )
+                case "file-list":
+                    for file in tile_val:
+                        links.append(
+                            {
+                                "is_file": True,
+                                "altText": file.get("altText", {}).get(
+                                    request_language
+                                )["value"],
+                                "attribution": file.get("attribution", {}).get(
+                                    request_language
+                                )["value"],
+                                "title": file.get("title", {}).get(
+                                    request_language, ""
+                                )["value"],
+                                "description": file.get("description", {}).get(
+                                    request_language, ""
+                                )["value"],
+                                "url": form_file_url(file["url"]),
+                            }
+                        )
 
     return links
 
