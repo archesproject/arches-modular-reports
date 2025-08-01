@@ -163,6 +163,8 @@ function closeEditor() {
     height: 100%;
     width: 100%;
     display: flex;
+    border: 0;
+    border-radius: 0;
 }
 
 :deep(.p-splitter-gutter) {
