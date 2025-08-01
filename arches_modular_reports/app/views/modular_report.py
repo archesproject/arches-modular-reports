@@ -319,6 +319,7 @@ class NodegroupTileDataView(APIBase):
             direction=direction,
             query=query,
             user_language=user_language,
+            user=request.user,
         )
 
         paginator = Paginator(tiles, rows_per_page)
