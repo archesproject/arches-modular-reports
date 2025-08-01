@@ -31,12 +31,14 @@ const componentLookup: ComponentLookup = {};
 
 const { graphSlug, resourceInstanceId, reportConfigName } = defineProps<{
     graphSlug: string;
-    resourceInstanceId: string;
+    resourceInstanceId: string | Ref<string>;
     reportConfigName?: string;
 }>();
 
+const resourceInstanceIdRef: Ref<string> = resourceInstanceId?.value ? resourceInstanceId : ref(resourceInstanceId);
+
 provide("graphSlug", graphSlug);
-provide("resourceInstanceId", resourceInstanceId);
+provide("resourceInstanceId", resourceInstanceIdRef.value);
 
 const nodePresentationLookup: Ref<NodePresentationLookup | undefined> = ref();
 provide("nodePresentationLookup", nodePresentationLookup);
@@ -77,13 +79,13 @@ const gutterVisibility = computed(() => {
 watchEffect(async () => {
     try {
         await Promise.all([
-            fetchNodePresentation(resourceInstanceId).then((data) => {
+            fetchNodePresentation(resourceInstanceIdRef.value).then((data) => {
                 nodePresentationLookup.value = data;
             }),
-            fetchUserResourcePermissions(resourceInstanceId).then((data) => {
+            fetchUserResourcePermissions(resourceInstanceIdRef.value).then((data) => {
                 userCanEditResourceInstance.value = data.edit;
             }),
-            fetchReportConfig(resourceInstanceId, reportConfigName).then(
+            fetchReportConfig(resourceInstanceIdRef.value, reportConfigName).then(
                 (data) => {
                     importComponents([data], componentLookup);
                     config.value = data;
