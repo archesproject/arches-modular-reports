@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { ref, watch, watchEffect } from "vue";
 
 import Tab from "primevue/tab";
 import Tabs from "primevue/tabs";
@@ -28,7 +28,7 @@ const { component, resourceInstanceId } = defineProps<{
 const activeTab = ref(component.config.tabs[0].name);
 const visitedTabs = ref<Set<string>>(new Set([activeTab.value]));
 
-onMounted(() => {
+watchEffect(() => {
     importComponents(component.config.tabs, componentLookup);
 
     component.config.tabs.forEach((tab: NamedSection) => {
