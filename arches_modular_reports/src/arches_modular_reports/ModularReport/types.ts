@@ -1,9 +1,10 @@
 import type { Component } from "vue";
 
-import type {
-    AliasedNodeData,
-    AliasedNodegroupData,
-} from "@/arches_component_lab/types.ts";
+// TODO: re-add this if this branch jtw/galleria is merged into main.
+// import type {
+//     AliasedNodeData,
+//     AliasedNodegroupData,
+// } from "@/arches_component_lab/types.ts";
 
 export interface Settings {
     ACTIVE_LANGUAGE: string;
@@ -90,9 +91,14 @@ export interface NodeData {
 
 export type NodegroupData = TileData | TileData[] | null;
 
+// TODO: re-add this if this branch jtw/galleria is merged into main.
+// export interface AliasedData {
+//     [key: string]: AliasedNodeData | AliasedNodegroupData;
+// }
 export interface AliasedData {
-    [key: string]: AliasedNodeData | AliasedNodegroupData;
+    [key: string]: NodeData | NodegroupData;
 }
+
 
 export interface TileData {
     aliased_data: AliasedData;
