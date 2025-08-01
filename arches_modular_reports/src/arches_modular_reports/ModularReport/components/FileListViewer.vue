@@ -11,8 +11,8 @@ const props = defineProps<{
 const imageData = computed(() => {
     return props.fileData.map((fileReference) => {
         return {
-            thumbnailImageSrc: `${fileReference.url}`,
-            itemImageSrc: `${fileReference.url}?thumbnail=true`,
+            thumbnailImageSrc: `${fileReference.url}?thumbnail=true`,
+            itemImageSrc: `${fileReference.url}`,
             alt: fileReference.altText,
             title: fileReference.title,
             attribution: fileReference.attribution,
@@ -44,11 +44,16 @@ function changeIndex(number: number) {
         <template #item="slotProps">
             <div class="item-container">
                 <div class="header">{{ slotProps.item.title }}</div>
-                <Image
-                    class="mainImage"
-                    :src="slotProps.item.itemImageSrc"
-                    :alt="slotProps.item.alt"
-                />
+                <a
+                    :href="slotProps.item.itemImageSrc"
+                    target="_blank"
+                >
+                    <Image
+                        class="mainImage"
+                        :src="slotProps.item.thumbnailImageSrc"
+                        :alt="slotProps.item.alt"
+                    />
+                </a>
             </div>
         </template>
         <template
@@ -57,7 +62,7 @@ function changeIndex(number: number) {
         >
             <Image
                 class="thumbnailImage"
-                :src="slotProps.item.itemImageSrc"
+                :src="slotProps.item.thumbnailImageSrc"
                 :alt="slotProps.item.alt"
                 :header="slotProps.item.title"
             />
