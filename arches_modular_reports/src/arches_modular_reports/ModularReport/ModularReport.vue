@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watchEffect, provide, ref } from "vue";
+import { computed, watchEffect, provide, ref, isRef } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
@@ -35,7 +35,7 @@ const { graphSlug, resourceInstanceId, reportConfigName } = defineProps<{
     reportConfigName?: string;
 }>();
 
-const resourceInstanceIdRef: Ref<string> = resourceInstanceId?.value ? resourceInstanceId : ref(resourceInstanceId);
+const resourceInstanceIdRef: Ref<string> = isRef(resourceInstanceId) ? resourceInstanceId : ref(resourceInstanceId);
 
 provide("graphSlug", graphSlug);
 provide("resourceInstanceId", resourceInstanceIdRef.value);
