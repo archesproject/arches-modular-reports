@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { computed, inject, ref } from "vue";
+import { computed, inject, ref, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
 import Tree from "primevue/tree";
 
-import { uniqueId } from "@/arches_modular_reports/ModularReport/utils.ts";
+import {
+    findNodeInTree,
+    uniqueId,
+} from "@/arches_modular_reports/ModularReport/utils.ts";
 
 import type { Ref } from "vue";
 import type { TreeExpandedKeys, TreeSelectionKeys } from "primevue/tree";
@@ -25,10 +28,12 @@ const props = defineProps<{ resourceData: ResourceData }>();
 
 const selectedKeys: Ref<TreeSelectionKeys> = ref({});
 const expandedKeys: Ref<TreeExpandedKeys> = ref({});
-const { setSelectedNodegroupAlias } = inject<{
+const { selectedNodegroupAlias, setSelectedNodegroupAlias } = inject<{
+    selectedNodegroupAlias: Ref<string>;
     setSelectedNodegroupAlias: (nodegroupAlias: string | null) => void;
 }>("selectedNodegroupAlias")!;
-const { setSelectedTileId } = inject<{
+const { selectedTileId, setSelectedTileId } = inject<{
+    selectedTileId: Ref<string | null>;
     setSelectedTileId: (tileId: string | null | undefined) => void;
 }>("selectedTileId")!;
 const nodePresentationLookup = inject<Ref<NodePresentationLookup>>(
@@ -48,6 +53,25 @@ const tree = computed(() => {
             nodePresentationLookup.value[b.data.alias].card_order
         );
     });
+});
+
+watch([selectedTileId, selectedNodegroupAlias], () => {
+    const { found, path } = findNodeInTree(
+        tree.value,
+        selectedTileId.value,
+        selectedNodegroupAlias.value,
+    );
+    if (found) {
+        const itemsToExpandKeys = path.map(
+            (itemInPath: TreeNode) => itemInPath.key,
+        );
+        expandedKeys.value = {
+            ...expandedKeys.value,
+            ...Object.fromEntries(itemsToExpandKeys.map((x) => [x, true])),
+            ...{ [found.key]: true },
+        };
+        selectedKeys.value = { [found.key]: true };
+    }
 });
 
 function processTileData(tile: TileData, nodegroupAlias: string): TreeNode[] {
