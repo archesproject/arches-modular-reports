@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -210,7 +211,7 @@ class ReportConfig(models.Model):
                         raise ValidationError(f"Invalid key in components: {key}")
                 component = self.get_or_raise(item, "component", "")
                 config = self.get_or_raise(item, "config", "")
-                component_name = component.rsplit("/")[-1].lower()
+                component_name = Path(component).stem.lower()
                 method = getattr(self, "validate_" + component_name, lambda _: None)
                 # example method: validate_relatedresourcessection
                 method(config)
