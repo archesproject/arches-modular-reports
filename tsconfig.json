@@ -1,5 +1,16 @@
 {
     "extends": "./frontend_configuration/tsconfig-paths.json",
+    "settings": {
+      "import/resolver": {
+        "typescript": true,
+        "node": true,
+        "alias": {
+          "map": [
+            ["@", "./src"],
+          ],
+        }
+      }
+    },
     "compilerOptions": {
         "target": "ESNext",
         "module": "ESNext",

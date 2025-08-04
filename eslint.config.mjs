@@ -1,5 +1,6 @@
 
 import js from "@eslint/js";
+import * as importX from "eslint-plugin-import-x";
 import pluginVue from 'eslint-plugin-vue';
 import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from "eslint-config-prettier";
@@ -8,6 +9,8 @@ import vueESLintParser from 'vue-eslint-parser';
 
 export default [
     js.configs.recommended,
+    importX.flatConfigs.recommended,
+    importX.flatConfigs.typescript,
     ...pluginVue.configs['flat/recommended'],
     ...tseslint.configs.recommended,
     eslintConfigPrettier,
@@ -41,6 +44,11 @@ export default [
                 "error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
             ],
             "semi": ["error", "always"],
+            "import-x/no-unresolved": [
+                "error",
+                { ignore: ["arches"] }
+            ],
+            "import-x/order": "error",
         },
     },
 ];
