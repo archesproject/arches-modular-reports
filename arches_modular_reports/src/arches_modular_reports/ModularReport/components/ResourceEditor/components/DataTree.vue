@@ -85,7 +85,7 @@ function processTileData(tile: TileData, nodegroupAlias: string): TreeNode[] {
                         tile.tileid,
                     ),
                 );
-            } else {
+            } else if (nodePresentationLookup.value[alias].visible) {
                 acc.push(
                     processNode(
                         alias,
