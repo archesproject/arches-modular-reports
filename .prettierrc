@@ -1,4 +1,7 @@
 {
+    "plugins": ["@trivago/prettier-plugin-sort-imports"],
+    "importOrder": ["^vue", "^primeuix/(.*)", "^primevue/(.*)", "<THIRD_PARTY_MODULES>", "@/(.*)"],
+    "importOrderSeparation": true,
     "singleAttributePerLine": true,
     "tabWidth": 4
 }
