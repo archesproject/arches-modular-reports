@@ -8,16 +8,16 @@ import DataTree from "@/arches_modular_reports/ModularReport/components/Resource
 import GenericCard from "@/arches_component_lab/generics/GenericCard/GenericCard.vue";
 
 import { fetchModularReportResource } from "@/arches_modular_reports/ModularReport/api.ts";
+import { findTileInTileTree } from "@/arches_modular_reports/ModularReport/utils.ts";
 
 import { EDIT } from "@/arches_component_lab/widgets/constants.ts";
 
 import type { Ref } from "vue";
 import type {
-    NodeData,
-    NodegroupData,
     ResourceData,
     TileData,
 } from "@/arches_modular_reports/ModularReport/types.ts";
+import type { AliasedTileData } from "@/arches_component_lab/types";
 
 const { selectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
     selectedNodegroupAlias: Ref<string | null>;
@@ -53,34 +53,21 @@ watchEffect(async () => {
 });
 
 const selectedTileData = computed<TileData | undefined>(() => {
-    const selectedNodegroupAliasedTileData: NodeData | NodegroupData =
-        resourceData.aliased_data[selectedNodegroupAlias.value!];
-
-    if (Array.isArray(selectedNodegroupAliasedTileData)) {
-        return selectedNodegroupAliasedTileData.find(
-            (tileDatum) => tileDatum.tileid === selectedTileId.value,
-        );
+    if (selectedTileId.value) {
+        return findTileInTileTree(resourceData, selectedTileId.value);
     }
-    return selectedNodegroupAliasedTileData as TileData;
+    return undefined;
 });
 
 function onUpdateTileData(updatedTileData: TileData) {
-    const selectedNodegroupAliasedTileData: NodeData | NodegroupData =
-        resourceData.aliased_data[selectedNodegroupAlias.value!];
-
-    if (Array.isArray(selectedNodegroupAliasedTileData)) {
-        const selectedTileDatum = selectedNodegroupAliasedTileData.find(
-            (tileDatum) => tileDatum.tileid === selectedTileId.value,
+    if (selectedTileId.value) {
+        const selectedTileDatum = findTileInTileTree(
+            resourceData,
+            selectedTileId.value,
         );
-
-        if (selectedTileDatum) {
-            Object.assign(selectedTileDatum, updatedTileData);
-        }
+        Object.assign(selectedTileDatum, updatedTileData);
     } else {
-        Object.assign(
-            selectedNodegroupAliasedTileData as TileData,
-            updatedTileData,
-        );
+        throw new Error("Missing tile id for update");
     }
 }
 </script>
@@ -105,7 +92,7 @@ function onUpdateTileData(updatedTileData: TileData) {
             :graph-slug="graphSlug"
             :resource-instance-id="resourceInstanceId"
             :tile-id="selectedTileId"
-            :tile-data="selectedTileData"
+            :tile-data="selectedTileData as unknown as AliasedTileData"
             @save="
                 console.log('save', $event);
                 emit('save', $event);
