@@ -6,6 +6,8 @@ import type {
     NamedSection,
     NodeValueDisplayData,
     SectionContent,
+    ResourceData,
+    TileData,
 } from "@/arches_modular_reports/ModularReport/types";
 
 export function uniqueId(_unused: unknown) {
@@ -86,4 +88,39 @@ export function findNodeInTree(
     }
 
     return { found, path };
+}
+
+export function findTileInTileTree(
+    resourceOrTileData: ResourceData | TileData,
+    tileId: string,
+) {
+    function traverse(
+        resourceOrTileData: ResourceData | TileData,
+    ): TileData | undefined {
+        if ((resourceOrTileData as TileData).tileid === tileId) {
+            return resourceOrTileData as TileData;
+        }
+        for (const data of Object.values(resourceOrTileData.aliased_data)) {
+            let found;
+            if (Array.isArray(data)) {
+                for (const tileData of data) {
+                    found = traverse(tileData);
+                    if (found) {
+                        return found;
+                    }
+                }
+            } else if (data?.aliased_data) {
+                found = traverse(data);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+    }
+
+    const found = traverse(resourceOrTileData);
+    if (!found) {
+        throw new Error();
+    }
+    return found;
 }
