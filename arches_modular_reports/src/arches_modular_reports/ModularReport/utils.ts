@@ -109,7 +109,7 @@ export function findTileInTileTree(
                         return found;
                     }
                 }
-            } else if (data.aliased_data) {
+            } else if (data?.aliased_data) {
                 found = traverse(data);
                 if (found) {
                     return found;
