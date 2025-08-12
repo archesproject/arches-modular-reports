@@ -59,23 +59,23 @@ export function findNodeInTree(
 ) {
     const path: TreeNode[] = [];
 
-    const matches = tileId
-        ? (node: TreeNode) => node.data.tileid === tileId
-        : (node: TreeNode) => node.data.alias === nodegroupAlias;
+    const matches = (node: TreeNode) => {
+        if (tileId) {
+            return node.data.tileid === tileId;
+        }
+        return node.data.alias === nodegroupAlias;
+    };
 
-    function recurse(items: TreeNode[]): TreeNode | undefined {
-        for (let index = 0; index < items.length; index += 1) {
-            const item = items[index];
-
-            if (matches(item)) {
-                return item;
+    function recurse(nodes: TreeNode[]): TreeNode | undefined {
+        for (const currentNode of nodes) {
+            if (matches(currentNode)) {
+                return currentNode;
             }
-
-            const children = item.children;
-            if (children && children.length > 0) {
-                const foundInChildren = recurse(children);
+            const childNodes = currentNode.children;
+            if (childNodes?.length) {
+                const foundInChildren = recurse(childNodes);
                 if (foundInChildren) {
-                    path.push(item); // keep same bottom→top path behavior
+                    path.push(currentNode);
                     return foundInChildren;
                 }
             }
