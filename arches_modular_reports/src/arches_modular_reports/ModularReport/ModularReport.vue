@@ -29,6 +29,10 @@ const toast = useToast();
 const { $gettext } = useGettext();
 const componentLookup: ComponentLookup = {};
 
+// Prevents spamming i18n functions on panel drag
+const EDITOR = $gettext("Editor");
+const CLOSE_EDITOR = $gettext("Close editor");
+
 const { graphSlug, resourceInstanceId, reportConfigName } = defineProps<{
     graphSlug: string;
     resourceInstanceId: string;
@@ -109,7 +113,7 @@ function closeEditor() {
 </script>
 
 <template>
-    <Splitter>
+    <Splitter style="overflow: hidden">
         <SplitterPanel style="overflow: auto">
             <div :key="reportKey">
                 <component
@@ -124,12 +128,13 @@ function closeEditor() {
         <SplitterPanel
             v-show="selectedNodegroupAlias"
             style="overflow: auto"
+            :size="30"
         >
             <Panel
                 :key="editorKey"
                 toggleable
                 :toggle-button-props="{
-                    ariaLabel: $gettext('Close editor'),
+                    ariaLabel: CLOSE_EDITOR,
                     severity: 'secondary',
                 }"
                 :style="{
@@ -137,7 +142,7 @@ function closeEditor() {
                     height: '100%',
                     border: 'none',
                 }"
-                :header="$gettext('Editor')"
+                :header="EDITOR"
                 @toggle="closeEditor"
             >
                 <template #toggleicon>
@@ -169,5 +174,9 @@ function closeEditor() {
 
 :deep(.p-splitter-gutter) {
     visibility: v-bind(gutterVisibility);
+}
+
+:deep(.p-panel-content) {
+    padding: 0;
 }
 </style>

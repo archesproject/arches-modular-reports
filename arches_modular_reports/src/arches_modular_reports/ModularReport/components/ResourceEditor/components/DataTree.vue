@@ -5,15 +5,13 @@ import { useGettext } from "vue3-gettext";
 import Panel from "primevue/panel";
 import Tree from "primevue/tree";
 
-import {
-    findNodeInTree,
-    uniqueId,
-} from "@/arches_modular_reports/ModularReport/utils.ts";
+import { findNodeInTree } from "@/arches_modular_reports/ModularReport/utils.ts";
 
 import type { Ref } from "vue";
 import type { TreeExpandedKeys, TreeSelectionKeys } from "primevue/tree";
 import type { TreeNode } from "primevue/treenode";
 import type { NodePresentationLookup } from "@/arches_modular_reports/ModularReport/types";
+
 import type {
     ResourceData,
     NodeData,
@@ -21,13 +19,20 @@ import type {
     TileData,
     URLDetails,
 } from "@/arches_modular_reports/ModularReport/types.ts";
+import type { WidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/types.ts";
 
 const { $gettext } = useGettext();
 
-const props = defineProps<{ resourceData: ResourceData }>();
+const selectedNodeAlias = defineModel<string | null>("selected-node-alias");
+
+const { resourceData, widgetDirtyStates } = defineProps<{
+    resourceData: ResourceData;
+    widgetDirtyStates: WidgetDirtyStates;
+}>();
 
 const selectedKeys: Ref<TreeSelectionKeys> = ref({});
 const expandedKeys: Ref<TreeExpandedKeys> = ref({});
+
 const { selectedNodegroupAlias, setSelectedNodegroupAlias } = inject<{
     selectedNodegroupAlias: Ref<string>;
     setSelectedNodegroupAlias: (nodegroupAlias: string | null) => void;
@@ -41,44 +46,93 @@ const nodePresentationLookup = inject<Ref<NodePresentationLookup>>(
 )!;
 
 const tree = computed(() => {
-    const topCards = Object.entries(props.resourceData.aliased_data).reduce<
+    const topCards = Object.entries(resourceData.aliased_data).reduce<
         TreeNode[]
-    >((acc, [alias, data]) => {
-        acc.push(processNodegroup(alias, data as TileData | TileData[], null));
-        return acc;
+    >((accumulatedNodes, [alias, data]) => {
+        accumulatedNodes.push(
+            processNodegroup(alias, data as TileData | TileData[], null),
+        );
+        return accumulatedNodes;
     }, []);
-    return topCards.sort((a, b) => {
+    return topCards.sort((first, second) => {
         return (
-            nodePresentationLookup.value[a.data.alias].card_order -
-            nodePresentationLookup.value[b.data.alias].card_order
+            nodePresentationLookup.value[first.data.alias].card_order -
+            nodePresentationLookup.value[second.data.alias].card_order
         );
     });
 });
 
-watch([selectedTileId, selectedNodegroupAlias], () => {
+watch([selectedTileId, selectedNodegroupAlias, selectedNodeAlias], () => {
+    if (!selectedTileId.value || !selectedNodegroupAlias.value) {
+        return;
+    }
+
     const { found, path } = findNodeInTree(
         tree.value,
         selectedTileId.value,
         selectedNodegroupAlias.value,
     );
+
     if (found) {
-        const itemsToExpandKeys = path.map(
-            (itemInPath: TreeNode) => itemInPath.key,
-        );
-        expandedKeys.value = {
-            ...expandedKeys.value,
-            ...Object.fromEntries(itemsToExpandKeys.map((x) => [x, true])),
-            ...{ [found.key]: true },
-        };
-        selectedKeys.value = { [found.key]: true };
+        for (const pathNode of path) {
+            const pathKey = pathNode.key as string | number;
+            if (!expandedKeys.value[pathKey]) {
+                expandedKeys.value[pathKey] = true;
+            }
+        }
+        const foundKey = found.key as string | number;
+        if (!expandedKeys.value[foundKey]) {
+            expandedKeys.value[foundKey] = true;
+        }
+
+        let keyToSelect: string | number | undefined = found.key;
+
+        if (selectedNodeAlias.value) {
+            const matchingChildNode = found.children?.find(
+                (childNode) => childNode.data.alias === selectedNodeAlias.value,
+            );
+            if (matchingChildNode?.key) {
+                keyToSelect = matchingChildNode.key as string | number;
+            }
+        }
+
+        const targetKey = String(keyToSelect);
+        const currentSelectedKey = Object.keys(selectedKeys.value)[0];
+
+        if (currentSelectedKey !== targetKey) {
+            const selectionObject = selectedKeys.value as Record<
+                string,
+                boolean
+            >;
+            if (currentSelectedKey) {
+                delete selectionObject[currentSelectedKey];
+            }
+            selectionObject[targetKey] = true;
+        }
     }
 });
 
+function getBooleanAtPath(
+    root: WidgetDirtyStates,
+    ...pathSegments: Array<string | null>
+): boolean {
+    let current: boolean | WidgetDirtyStates = root;
+
+    for (const pathSegment of pathSegments) {
+        if (!pathSegment || typeof current !== "object") {
+            return false;
+        }
+
+        current = current[pathSegment];
+    }
+    return current === true;
+}
+
 function processTileData(tile: TileData, nodegroupAlias: string): TreeNode[] {
     const tileValues = Object.entries(tile.aliased_data).reduce<TreeNode[]>(
-        (acc, [alias, data]) => {
+        (accumulatedNodes, [alias, data]) => {
             if (isTileOrTiles(data)) {
-                acc.push(
+                accumulatedNodes.push(
                     processNodegroup(
                         alias,
                         data as TileData | TileData[],
@@ -86,7 +140,7 @@ function processTileData(tile: TileData, nodegroupAlias: string): TreeNode[] {
                     ),
                 );
             } else if (nodePresentationLookup.value[alias].visible) {
-                acc.push(
+                accumulatedNodes.push(
                     processNode(
                         alias,
                         data as NodeData | null,
@@ -95,14 +149,14 @@ function processTileData(tile: TileData, nodegroupAlias: string): TreeNode[] {
                     ),
                 );
             }
-            return acc;
+            return accumulatedNodes;
         },
         [],
     );
-    return tileValues.sort((a, b) => {
+    return tileValues.sort((first, second) => {
         return (
-            nodePresentationLookup.value[a.data.alias].widget_order -
-            nodePresentationLookup.value[b.data.alias].widget_order
+            nodePresentationLookup.value[first.data.alias].widget_order -
+            nodePresentationLookup.value[second.data.alias].widget_order
         );
     });
 }
@@ -113,14 +167,23 @@ function processNode(
     tileId: string | null,
     nodegroupAlias: string,
 ): TreeNode {
+    const isDirty = getBooleanAtPath(
+        widgetDirtyStates,
+        nodegroupAlias,
+        tileId ?? "null",
+        alias,
+    );
+
     const localizedLabel = $gettext("%{label}: %{labelData}", {
         label: nodePresentationLookup.value[alias].widget_label,
         labelData: extractAndOverrideDisplayValue(data),
     });
+
     return {
         key: `${alias}-node-value-for-${tileId}`,
         label: localizedLabel,
         data: { alias: alias, tileid: tileId, nodegroupAlias },
+        styleClass: isDirty ? "is-dirty" : undefined,
     };
 }
 
@@ -136,11 +199,23 @@ function processNodegroup(
             parentTileId,
         );
     } else {
+        const children = processTileData(tileOrTiles, nodegroupAlias);
+
+        const isDirty = children.some((child) => {
+            return getBooleanAtPath(
+                widgetDirtyStates,
+                nodegroupAlias,
+                child.data.tileid ?? "null",
+                child.data.alias,
+            );
+        });
+
         return {
-            key: `${nodegroupAlias}-child-of-${parentTileId ?? uniqueId(0)}`,
+            key: `${nodegroupAlias}-child-of-${parentTileId}`,
             label: nodePresentationLookup.value[nodegroupAlias].card_name,
-            data: { ...tileOrTiles, alias: nodegroupAlias },
-            children: processTileData(tileOrTiles, nodegroupAlias),
+            data: { tileid: tileOrTiles.tileid, alias: nodegroupAlias },
+            children: children,
+            styleClass: isDirty ? "is-dirty" : undefined,
         };
     }
 }
@@ -150,20 +225,32 @@ function createCardinalityNWrapper(
     tiles: TileData[],
     parentTileId: string | null,
 ): TreeNode {
+    let isDirty = false;
+
     return {
-        key: `${nodegroupAlias}-child-of-${parentTileId ?? uniqueId(0)}`,
+        key: `${nodegroupAlias}-child-of-${parentTileId}`,
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
         data: { tileid: parentTileId, alias: nodegroupAlias },
-        children: tiles.map((tile, idx) => {
-            const result = {
-                key: tile.tileid ?? uniqueId(0).toString(),
-                label: idx.toString(),
-                data: { ...tile, alias: nodegroupAlias },
-                children: processTileData(tile, nodegroupAlias),
+        children: tiles.map((tile, indexWithinGroup) => {
+            const children = processTileData(tile, nodegroupAlias);
+            const hasDirtyChildren = children.some(
+                (child) => child.styleClass === "is-dirty",
+            );
+
+            isDirty = isDirty || hasDirtyChildren;
+
+            const tileNode: TreeNode = {
+                key: tile.tileid!,
+                label: indexWithinGroup.toString(),
+                data: { tileid: tile.tileid, alias: nodegroupAlias },
+                children: children,
+                styleClass: hasDirtyChildren ? "is-dirty" : undefined,
             };
-            result.label = result.children[0].label as string;
-            return result;
+            tileNode.label = tileNode.children?.[0].label as string;
+
+            return tileNode;
         }),
+        styleClass: isDirty ? "is-dirty" : undefined,
     };
 }
 
@@ -171,9 +258,7 @@ function extractAndOverrideDisplayValue(value: NodeData | null): string {
     if (value === null) {
         return $gettext("(Empty)");
     }
-    // arches_version: https://github.com/archesproject/arches/issues/12349
     if (value.display_value && value.display_value.includes("url_label")) {
-        // The URL datatype deserves a better display value in core Arches.
         const urlPair = value.node_value as URLDetails;
         return urlPair.url_label || urlPair.url;
     }
@@ -186,8 +271,21 @@ function isTileOrTiles(nodeData: NodeData | NodegroupData | null) {
 }
 
 function onNodeSelect(node: TreeNode) {
+    if (!node.data.nodegroupAlias) {
+        selectedNodeAlias.value = null;
+    } else {
+        selectedNodeAlias.value = node.data.alias;
+    }
+
     setSelectedNodegroupAlias(node.data.nodegroupAlias ?? node.data.alias);
     setSelectedTileId(node.data.tileid);
+}
+
+function onNodeUnselect() {
+    selectedNodeAlias.value = null;
+    // TODO: re-enable this when panel show/hide is not tied to it
+    // setSelectedNodegroupAlias(null);
+    setSelectedTileId(null);
 }
 </script>
 
@@ -202,6 +300,19 @@ function onNodeSelect(node: TreeNode) {
             :value="tree"
             selection-mode="single"
             @node-select="onNodeSelect"
+            @node-unselect="onNodeUnselect"
         />
     </Panel>
 </template>
+
+<style scoped>
+:deep(.is-dirty) {
+    font-weight: bold;
+    background-color: var(--p-yellow-100) !important;
+}
+
+:deep(.p-tree-node-content.p-tree-node-selected) {
+    border: 0.125rem solid var(--p-form-field-border-color);
+    color: var(--p-tree-node-color);
+}
+</style>
