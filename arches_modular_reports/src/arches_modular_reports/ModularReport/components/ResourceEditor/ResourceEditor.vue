@@ -188,6 +188,20 @@ function onUpdateWidgetDirtyStates(
         updatedWidgetDirtyStates,
     );
 }
+
+function onUpdateWidgetFocusStates(
+    updatedWidgetFocusStates: Record<string, boolean>,
+) {
+    for (const [nodeAliasKey, isFocused] of Object.entries(
+        updatedWidgetFocusStates,
+    )) {
+        if (isFocused) {
+            selectedNodeAlias.value = nodeAliasKey;
+            return;
+        }
+    }
+    selectedNodeAlias.value = null;
+}
 </script>
 
 <template>
@@ -226,6 +240,9 @@ function onUpdateWidgetDirtyStates(
                         :widget-dirty-states="selectedTileWidgetDirtyStates"
                         @save="onSave($event)"
                         @reset="onReset($event)"
+                        @update:widget-focus-states="
+                            onUpdateWidgetFocusStates($event)
+                        "
                         @update:widget-dirty-states="
                             onUpdateWidgetDirtyStates($event)
                         "

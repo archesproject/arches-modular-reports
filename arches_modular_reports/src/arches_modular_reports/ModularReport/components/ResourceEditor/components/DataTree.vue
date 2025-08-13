@@ -80,55 +80,49 @@ const tree = computed(() => {
     });
 });
 
-watch([selectedTileId, selectedNodegroupAlias, selectedNodeAlias], () => {
-    if (!selectedTileId.value || !selectedNodegroupAlias.value) {
-        return;
-    }
-
-    const { found, path } = findNodeInTree(
-        tree.value,
-        selectedTileId.value,
-        selectedNodegroupAlias.value,
-    );
-
-    if (found) {
-        for (const pathNode of path) {
-            const pathKey = pathNode.key as string | number;
-            if (!expandedKeys.value[pathKey]) {
-                expandedKeys.value[pathKey] = true;
-            }
-        }
-        const foundKey = found.key as string | number;
-        if (!expandedKeys.value[foundKey]) {
-            expandedKeys.value[foundKey] = true;
+watch(
+    [selectedTileId, selectedNodegroupAlias, selectedNodeAlias],
+    () => {
+        if (!selectedTileId.value || !selectedNodegroupAlias.value) {
+            return;
         }
 
-        let keyToSelect: string | number | undefined = found.key;
-
-        if (selectedNodeAlias.value) {
-            const matchingChildNode = found.children?.find(
-                (childNode) => childNode.data.alias === selectedNodeAlias.value,
-            );
-            if (matchingChildNode?.key) {
-                keyToSelect = matchingChildNode.key as string | number;
-            }
+        const { found, path } = findNodeInTree(
+            tree.value,
+            selectedTileId.value,
+            selectedNodegroupAlias.value,
+        );
+        if (!found) {
+            return;
         }
 
-        const targetKey = String(keyToSelect);
+        const nextExpandedKeys: TreeExpandedKeys = { ...expandedKeys.value };
+        for (const ancestorNode of path) {
+            nextExpandedKeys[ancestorNode.key as string | number] = true;
+        }
+        nextExpandedKeys[found.key as string | number] = true;
+        expandedKeys.value = nextExpandedKeys;
+
+        if (!selectedNodeAlias.value) {
+            return;
+        }
+
+        const targetChild = found.children?.find(
+            (childNode) => childNode.data.alias === selectedNodeAlias.value,
+        );
+        if (!targetChild?.key) {
+            return;
+        }
+
+        const newSelectedKey = String(targetChild.key);
         const currentSelectedKey = Object.keys(selectedKeys.value)[0];
 
-        if (currentSelectedKey !== targetKey) {
-            const selectionObject = selectedKeys.value as Record<
-                string,
-                boolean
-            >;
-            if (currentSelectedKey) {
-                delete selectionObject[currentSelectedKey];
-            }
-            selectionObject[targetKey] = true;
+        if (currentSelectedKey !== newSelectedKey) {
+            selectedKeys.value = { [newSelectedKey]: true };
         }
-    }
-});
+    },
+    { flush: "post" },
+);
 
 function getBooleanAtPath(
     root: WidgetDirtyStates,
