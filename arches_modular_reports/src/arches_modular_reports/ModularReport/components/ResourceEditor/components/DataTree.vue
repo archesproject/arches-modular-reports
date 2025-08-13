@@ -157,7 +157,7 @@ function handleExternalPointerDown(event: PointerEvent) {
         return;
     }
 
-    onNodeUnselect();
+    selectedKeys.value = {};
 }
 
 function processTileData(tile: TileData, nodegroupAlias: string): TreeNode[] {
@@ -318,7 +318,6 @@ function onNodeUnselect() {
     // TODO: re-enable this when panel show/hide is not tied to it
     // setSelectedNodegroupAlias(null);
     setSelectedTileId(null);
-    selectedKeys.value = {};
 }
 </script>
 
