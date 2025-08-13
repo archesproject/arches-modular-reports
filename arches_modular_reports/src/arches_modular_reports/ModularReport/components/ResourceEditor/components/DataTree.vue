@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch } from "vue";
+import {
+    computed,
+    inject,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    useTemplateRef,
+    watch,
+} from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
@@ -30,6 +38,8 @@ const { resourceData, widgetDirtyStates } = defineProps<{
     widgetDirtyStates: WidgetDirtyStates;
 }>();
 
+const treeContainerElement = useTemplateRef("treeContainerElement");
+
 const selectedKeys: Ref<TreeSelectionKeys> = ref({});
 const expandedKeys: Ref<TreeExpandedKeys> = ref({});
 
@@ -44,6 +54,14 @@ const { selectedTileId, setSelectedTileId } = inject<{
 const nodePresentationLookup = inject<Ref<NodePresentationLookup>>(
     "nodePresentationLookup",
 )!;
+
+onMounted(() => {
+    document.addEventListener("pointerdown", handleExternalPointerDown);
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener("pointerdown", handleExternalPointerDown);
+});
 
 const tree = computed(() => {
     const topCards = Object.entries(resourceData.aliased_data).reduce<
@@ -126,6 +144,20 @@ function getBooleanAtPath(
         current = current[pathSegment];
     }
     return current === true;
+}
+
+function handleExternalPointerDown(event: PointerEvent) {
+    const rootElement = treeContainerElement.value;
+    const eventTargetNode = event.target as Node | null;
+
+    if (
+        !rootElement ||
+        (eventTargetNode && rootElement.contains(eventTargetNode))
+    ) {
+        return;
+    }
+
+    onNodeUnselect();
 }
 
 function processTileData(tile: TileData, nodegroupAlias: string): TreeNode[] {
@@ -286,23 +318,26 @@ function onNodeUnselect() {
     // TODO: re-enable this when panel show/hide is not tied to it
     // setSelectedNodegroupAlias(null);
     setSelectedTileId(null);
+    selectedKeys.value = {};
 }
 </script>
 
 <template>
-    <Panel
-        :header="$gettext('Data Tree')"
-        :pt="{ header: { style: { padding: '1rem' } } }"
-    >
-        <Tree
-            v-model:selection-keys="selectedKeys"
-            v-model:expanded-keys="expandedKeys"
-            :value="tree"
-            selection-mode="single"
-            @node-select="onNodeSelect"
-            @node-unselect="onNodeUnselect"
-        />
-    </Panel>
+    <div ref="treeContainerElement">
+        <Panel
+            :header="$gettext('Data Tree')"
+            :pt="{ header: { style: { padding: '1rem' } } }"
+        >
+            <Tree
+                v-model:selection-keys="selectedKeys"
+                v-model:expanded-keys="expandedKeys"
+                :value="tree"
+                selection-mode="single"
+                @node-select="onNodeSelect"
+                @node-unselect="onNodeUnselect"
+            />
+        </Panel>
+    </div>
 </template>
 
 <style scoped>
