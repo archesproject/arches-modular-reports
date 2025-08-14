@@ -59,25 +59,28 @@ export function findNodeInTree(
 ) {
     const path: TreeNode[] = [];
 
-    function recurse(items: TreeNode[]): TreeNode | undefined {
-        for (const item of items) {
-            if (tileId && item.data.tileid === tileId) {
-                return item;
+    const matches = (node: TreeNode) => {
+        if (tileId) {
+            return node.data.tileid === tileId;
+        }
+        return node.data.alias === nodegroupAlias;
+    };
+
+    function recurse(nodes: TreeNode[]): TreeNode | undefined {
+        for (const currentNode of nodes) {
+            if (matches(currentNode)) {
+                return currentNode;
             }
-            if (!tileId && item.data.alias === nodegroupAlias) {
-                // Wrapper nodes for top cards
-                return item;
-            }
-            if (item.children) {
-                for (const child of item.children) {
-                    const found = recurse([child]);
-                    if (found) {
-                        path.push(item);
-                        return found;
-                    }
+            const childNodes = currentNode.children;
+            if (childNodes?.length) {
+                const foundInChildren = recurse(childNodes);
+                if (foundInChildren) {
+                    path.push(currentNode);
+                    return foundInChildren;
                 }
             }
         }
+        return undefined;
     }
 
     const found = recurse(tree);
