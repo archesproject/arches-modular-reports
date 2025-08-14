@@ -22,8 +22,7 @@
     "dependencies": {
         "arches": "archesproject/arches#stable/7.6.12",
         "arches-component-lab": "archesproject/arches-component-lab#alpha/0.0.1a2",
-        "@primeuix/themes": "1.0.1",
-        "@primeuix/styles": "1.0.3"
+        "@primeuix/themes": "1.0.1"
     },
     "devDependencies": {
         "arches-dev-dependencies": "archesproject/arches-dev-dependencies#stable/7.6.12"
@@ -31,7 +30,6 @@
     "nodeModulesPaths": {
     },
     "overrides": {
-        "primevue": "4.2.5",
-        "@primeuix/themes": "1.0.1"
+        "primevue": "4.2.5"
     }
 }
