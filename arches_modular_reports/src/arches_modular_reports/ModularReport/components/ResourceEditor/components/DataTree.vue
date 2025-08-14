@@ -83,10 +83,6 @@ const tree = computed(() => {
 watch(
     [selectedTileId, selectedNodegroupAlias, selectedNodeAlias],
     () => {
-        if (!selectedTileId.value || !selectedNodegroupAlias.value) {
-            return;
-        }
-
         const { found, path } = findNodeInTree(
             tree.value,
             selectedTileId.value,
