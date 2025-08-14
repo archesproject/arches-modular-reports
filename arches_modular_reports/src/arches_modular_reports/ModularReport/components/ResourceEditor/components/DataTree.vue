@@ -272,7 +272,7 @@ function createCardinalityNWrapper(
                 children: children,
                 styleClass: hasDirtyChildren ? "is-dirty" : undefined,
             };
-            tileNode.label = tileNode.children?.[0].label as string;
+            tileNode.label = tileNode.children?.[0]?.label as string;
 
             return tileNode;
         }),
