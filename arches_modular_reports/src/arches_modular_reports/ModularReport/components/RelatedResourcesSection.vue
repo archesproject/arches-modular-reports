@@ -255,14 +255,14 @@ onMounted(fetchData);
             :sortable="true"
         >
             <template #body="{ data, field }">
-                <template v-if="data[field].links.length > 0">
+                <template v-if="data[field as string].links.length > 0">
                     <FileListViewer
-                        v-if="data[field].links[0]?.is_file"
-                        :file-data="data[field].links"
+                        v-if="data[field as string].links[0]?.is_file"
+                        :file-data="data[field as string].links"
                     />
                     <template v-else>
                         <Button
-                            v-for="link in data[field].links"
+                            v-for="link in data[field as string].links"
                             :key="JSON.stringify(link)"
                             as="a"
                             variant="link"
@@ -275,7 +275,9 @@ onMounted(fetchData);
                     </template>
                 </template>
                 <template v-else>
-                    {{ formatDisplayValue(data[field].display_value) }}
+                    {{
+                        formatDisplayValue(data[field as string].display_value)
+                    }}
                 </template>
             </template>
         </Column>

@@ -316,13 +316,15 @@ function initiateEdit(tileId: string | null) {
             <template #body="{ data, field }">
                 <div
                     :style="{
-                        maxHeight: data[field].file_data ? '32rem' : '12rem',
+                        maxHeight: data[field as string].file_data
+                            ? '32rem'
+                            : '12rem',
                         overflow: 'auto',
                     }"
                 >
-                    <template v-if="data[field]?.has_links">
+                    <template v-if="data[field as string]?.has_links">
                         <Button
-                            v-for="item in data[field].display_value"
+                            v-for="item in data[field as string].display_value"
                             :key="item.link"
                             :href="item.link"
                             target="_blank"
@@ -333,11 +335,11 @@ function initiateEdit(tileId: string | null) {
                         />
                     </template>
                     <FileListViewer
-                        v-else-if="data[field]?.is_file"
-                        :file-data="data[field].file_data"
+                        v-else-if="data[field as string]?.is_file"
+                        :file-data="data[field as string].file_data"
                     />
                     <template v-else>
-                        {{ data[field]?.display_value }}
+                        {{ data[field as string]?.display_value }}
                     </template>
                 </div>
             </template>
