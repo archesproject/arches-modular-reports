@@ -86,7 +86,6 @@ const isEmpty = computed(
 
 const shouldShowAddButton = computed(
     () =>
-        false && // DEMO
         userCanEditResourceInstance.value &&
         props.component.config.has_write_permission &&
         (isEmpty.value || cardinality.value === CARDINALITY_N),
@@ -357,8 +356,7 @@ function initiateEdit(tileId: string | null) {
                         justify-content: flex-end;
                     "
                 >
-                    <!-- DEMO -->
-                    <!-- <div
+                    <div
                         style="
                             display: flex;
                             justify-content: space-evenly;
@@ -379,7 +377,7 @@ function initiateEdit(tileId: string | null) {
                             :aria-label="$gettext('Delete')"
                             rounded
                         />
-                    </div> -->
+                    </div>
                 </div>
             </template>
         </Column>

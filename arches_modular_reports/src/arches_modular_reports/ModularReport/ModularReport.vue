@@ -50,8 +50,7 @@ provide("userCanEditResourceInstance", userCanEditResourceInstance);
 
 const selectedNodegroupAlias = ref<string>();
 function setSelectedNodegroupAlias(nodegroupAlias: string | undefined) {
-    console.info("Cancelled setting nodegroup alias for demo purposes");
-    // selectedNodegroupAlias.value = nodegroupAlias;
+    selectedNodegroupAlias.value = nodegroupAlias;
 }
 provide("selectedNodegroupAlias", {
     selectedNodegroupAlias,
