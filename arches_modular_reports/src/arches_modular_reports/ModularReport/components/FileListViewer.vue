@@ -34,12 +34,12 @@ function changeIndex(number: number) {
 
 <template>
     <Galleria
+        v-model:active-index="activeIndex"
         :value="imageData"
         :show-thumbnails="showThumbnails"
-        v-model:activeIndex="activeIndex"
-        @update:activeIndex="changeIndex"
-        :showItemNavigators="true" 
-        containerClass="galleria-container"
+        :show-item-navigators="true"
+        container-class="galleria-container"
+        @update:active-index="changeIndex"
     >
         <template #item="slotProps">
             <div class="item-container">
