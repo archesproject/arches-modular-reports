@@ -55,7 +55,7 @@ def get_link(datatype, value_id):
     return ""
 
 
-def build_valueid_annotation(data, is_user_rdm_admin):
+def build_valueid_annotation(data, is_user_rdm_admin, user_language):
     datatype = data.get("datatype", "")
     display_value = data.get("display_value")
 
@@ -109,6 +109,36 @@ def build_valueid_annotation(data, is_user_rdm_admin):
                     }
                 ],
                 "has_links": True,
+            }
+        return {"display_value": display_value, "has_links": False}
+
+    elif datatype == "file-list":
+        file_tile_value = data.get("file_tile_value")
+
+        def get_localized_metadata(file_info, key):
+            nonlocal user_language
+            if not (localized_values := file_info.get(key)):
+                return None
+            if not (value_for_lang := localized_values.get(user_language)):
+                # todo(polish): handle variation in language regions.
+                return list(localized_values.values)[0]["value"]
+            return value_for_lang["value"]
+
+        if file_tile_value:
+            return {
+                "display_value": display_value,
+                "file_data": [
+                    {
+                        "file_id": file_info.get("file_id"),
+                        "url": file_info.get("url"),
+                        "title": get_localized_metadata(file_info, "title"),
+                        "attribution": get_localized_metadata(file_info, "attribution"),
+                        "description": get_localized_metadata(file_info, "description"),
+                        "altText": get_localized_metadata(file_info, "altText"),
+                    }
+                    for file_info in file_tile_value
+                ],
+                "is_file": True,
             }
         return {"display_value": display_value, "has_links": False}
 
@@ -212,6 +242,7 @@ def get_sorted_filtered_tiles(
         )
 
         value_ids = None
+        tile_value = None
         if (
             node.datatype == "concept"
             or node.datatype == "concept-list"
@@ -222,12 +253,15 @@ def get_sorted_filtered_tiles(
             value_ids = ArchesGetValueId(
                 F("data"), Value(node.pk), Value(user_language)
             )
+        elif node.datatype == "file-list":
+            tile_value = F(f"data__{node.pk}")
 
         field_annotations[field_key] = display_value
         alias_annotations[node.alias] = JSONObject(
             display_value=display_value,
             datatype=Value(node.datatype),
             value_ids=value_ids,
+            file_tile_value=tile_value,
         )
 
     # adds spaces between fields
@@ -373,6 +407,7 @@ def get_sorted_filtered_relations(
             "resource-instance",
             "resource-instance-list",
             "url",
+            "file-list",
         }
         and node.nodegroup_id in permitted_nodegroups
     }
@@ -522,66 +557,78 @@ def prepare_links(
 
     ### BEGIN LINK GENERATION
     for tile_val in tile_values:
-        match node.datatype:
-            case "resource-instance":
-                links.append(
-                    {
-                        "label": node_display_value,
-                        "link": get_link(node.datatype, tile_val[0]["resourceId"]),
-                    }
-                )
-            case "resource-instance-list":
-                labels = get_resource_labels(tile_val)
-                for related_resource, label in zip(tile_val, labels, strict=True):
-                    links.append(
-                        {
-                            "label": label,
-                            "link": get_link(
-                                node.datatype, related_resource["resourceId"]
-                            ),
-                        }
-                    )
-            case "concept":
-                if is_user_rdm_admin and (
-                    concept_id_results := get_concept_ids([tile_val])
-                ):
+        if tile_val:
+            match node.datatype:
+                case "resource-instance":
                     links.append(
                         {
                             "label": node_display_value,
-                            "link": get_link(node.datatype, concept_id_results[0]),
+                            "link": get_link(node.datatype, tile_val[0]["resourceId"]),
                         }
                     )
-            case "concept-list":
-                if is_user_rdm_admin:
-                    concept_ids = get_concept_ids(tile_val)
-                    labels = get_concept_labels(tile_val)
-                    for concept_id, label in zip(concept_ids, labels, strict=True):
+                case "resource-instance-list":
+                    labels = get_resource_labels(tile_val)
+                    for related_resource, label in zip(tile_val, labels, strict=True):
                         links.append(
                             {
                                 "label": label,
-                                "link": get_link(node.datatype, concept_id),
+                                "link": get_link(
+                                    node.datatype, related_resource["resourceId"]
+                                ),
                             }
                         )
-            case "url":
-                links.append(
-                    {
-                        "label": (
-                            tile_val["url_label"]
-                            if tile_val["url_label"]
-                            else tile_val["url"]
-                        ),
-                        "link": tile_val["url"],
-                    }
-                )
-            case "file-list":
-                for file in tile_val:
-                    alt = file.get("altText", {}).get(request_language)["value"]
+                case "concept":
+                    if is_user_rdm_admin and (
+                        concept_id_results := get_concept_ids([tile_val])
+                    ):
+                        links.append(
+                            {
+                                "label": node_display_value,
+                                "link": get_link(node.datatype, concept_id_results[0]),
+                            }
+                        )
+                case "concept-list":
+                    if is_user_rdm_admin:
+                        concept_ids = get_concept_ids(tile_val)
+                        labels = get_concept_labels(tile_val)
+                        for concept_id, label in zip(concept_ids, labels, strict=True):
+                            links.append(
+                                {
+                                    "label": label,
+                                    "link": get_link(node.datatype, concept_id),
+                                }
+                            )
+                case "url":
                     links.append(
                         {
-                            "alt_text": alt,
-                            "link": form_file_url(file["url"]),
+                            "label": (
+                                tile_val["url_label"]
+                                if tile_val["url_label"]
+                                else tile_val["url"]
+                            ),
+                            "link": tile_val["url"],
                         }
                     )
+                case "file-list":
+                    for file in tile_val:
+                        links.append(
+                            {
+                                "is_file": True,
+                                "altText": file.get("altText", {}).get(
+                                    request_language
+                                )["value"],
+                                "attribution": file.get("attribution", {}).get(
+                                    request_language
+                                )["value"],
+                                "title": file.get("title", {}).get(
+                                    request_language, ""
+                                )["value"],
+                                "description": file.get("description", {}).get(
+                                    request_language, ""
+                                )["value"],
+                                "url": form_file_url(file["url"]),
+                            }
+                        )
 
     return links
 

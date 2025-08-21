@@ -16,6 +16,7 @@ import {
     ROWS_PER_PAGE_OPTIONS,
 } from "@/arches_modular_reports/constants.ts";
 import { fetchRelatedResourceData } from "@/arches_modular_reports/ModularReport/api.ts";
+import FileListViewer from "@/arches_modular_reports/ModularReport/components/FileListViewer.vue";
 
 import type { DataTablePageEvent } from "primevue/datatable";
 
@@ -254,19 +255,29 @@ onMounted(fetchData);
             :sortable="true"
         >
             <template #body="{ data, field }">
-                <Button
-                    v-for="link in data[field].links"
-                    :key="JSON.stringify(link)"
-                    as="a"
-                    variant="link"
-                    target="_blank"
-                    :href="link.link"
-                    class="node-value-link"
-                >
-                    {{ link.label }}
-                </Button>
-                <template v-if="data[field].links.length === 0">
-                    {{ formatDisplayValue(data[field].display_value) }}
+                <template v-if="data[field as string].links.length > 0">
+                    <FileListViewer
+                        v-if="data[field as string].links[0]?.is_file"
+                        :file-data="data[field as string].links"
+                    />
+                    <template v-else>
+                        <Button
+                            v-for="link in data[field as string].links"
+                            :key="JSON.stringify(link)"
+                            as="a"
+                            variant="link"
+                            target="_blank"
+                            :href="link.link"
+                            class="node-value-link"
+                        >
+                            {{ link.label }}
+                        </Button>
+                    </template>
+                </template>
+                <template v-else>
+                    {{
+                        formatDisplayValue(data[field as string].display_value)
+                    }}
                 </template>
             </template>
         </Column>

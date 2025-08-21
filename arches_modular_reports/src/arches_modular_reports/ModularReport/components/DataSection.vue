@@ -16,6 +16,7 @@ import {
     ROWS_PER_PAGE_OPTIONS,
 } from "@/arches_modular_reports/constants.ts";
 import { fetchNodegroupTileData } from "@/arches_modular_reports/ModularReport/api.ts";
+import FileListViewer from "@/arches_modular_reports/ModularReport/components/FileListViewer.vue";
 import HierarchicalTileViewer from "@/arches_modular_reports/ModularReport/components/HierarchicalTileViewer.vue";
 
 import type { Ref } from "vue";
@@ -313,10 +314,17 @@ function initiateEdit(tileId: string | null) {
             :sortable="cardinality === CARDINALITY_N"
         >
             <template #body="{ data, field }">
-                <div style="max-height: 12rem; overflow: auto">
-                    <template v-if="data[field]?.has_links">
+                <div
+                    :style="{
+                        maxHeight: data[field as string].file_data
+                            ? '32rem'
+                            : '12rem',
+                        overflow: 'auto',
+                    }"
+                >
+                    <template v-if="data[field as string]?.has_links">
                         <Button
-                            v-for="item in data[field].display_value"
+                            v-for="item in data[field as string].display_value"
                             :key="item.link"
                             :href="item.link"
                             target="_blank"
@@ -326,8 +334,12 @@ function initiateEdit(tileId: string | null) {
                             style="display: block; width: fit-content"
                         />
                     </template>
+                    <FileListViewer
+                        v-else-if="data[field as string]?.is_file"
+                        :file-data="data[field as string].file_data"
+                    />
                     <template v-else>
-                        {{ data[field]?.display_value }}
+                        {{ data[field as string]?.display_value }}
                     </template>
                 </div>
             </template>

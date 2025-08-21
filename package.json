@@ -20,18 +20,12 @@
         "vitest": "vitest --run --coverage"
     },
     "dependencies": {
-        "arches": "archesproject/arches#stable/7.6.12",
-        "arches-component-lab": "archesproject/arches-component-lab#main",
-        "@primeuix/themes": "1.0.1",
-        "@primeuix/styles": "1.0.3"
+        "arches": "archesproject/arches#dev/8.0.x",
+        "arches-component-lab": "archesproject/arches-component-lab#main"
     },
     "devDependencies": {
-        "arches-dev-dependencies": "archesproject/arches-dev-dependencies#stable/7.6.12"
+        "arches-dev-dependencies": "archesproject/arches-dev-dependencies#dev/8.0.x"
     },
-    "nodeModulesPaths": {
-    },
-    "overrides": {
-        "primevue": "4.2.5",
-        "@primeuix/themes": "1.0.1"
-    }
+    "nodeModulesPaths": {},
+    "overrides": {}
 }
