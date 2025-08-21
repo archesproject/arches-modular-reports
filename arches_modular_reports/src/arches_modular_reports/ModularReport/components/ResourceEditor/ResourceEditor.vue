@@ -166,9 +166,12 @@ function onUpdateTileData(updatedTileData: TileData) {
 function onUpdateWidgetDirtyStates(
     updatedWidgetDirtyStates: WidgetDirtyStates,
 ) {
-    const nodegroupDirtyStates = widgetDirtyStates[
+    const nodegroupDirtyStates = (widgetDirtyStates[
         selectedNodegroupAlias.value!
-    ] as WidgetDirtyStates;
+    ] ?? {}) as WidgetDirtyStates;
+    if (!(selectedTileId.value! in nodegroupDirtyStates)) {
+        nodegroupDirtyStates[selectedTileId.value!] = {};
+    }
     Object.assign(
         nodegroupDirtyStates[selectedTileId.value!],
         updatedWidgetDirtyStates,
