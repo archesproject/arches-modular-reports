@@ -159,7 +159,7 @@ function onUpdateTileData(updatedTileData: TileData) {
         );
         Object.assign(selectedTileDatum, updatedTileData);
     } else {
-        throw new Error("Missing tile id for update");
+        console.warn("Missing tile id for update");
     }
 }
 
