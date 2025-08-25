@@ -55,6 +55,7 @@ class ModularReportConfigView(View):
             ReportConfig.objects.filter(filters)
             .select_related("graph")
             .prefetch_related("graph__node_set", "graph__node_set__nodegroup")
+            .order_by("config__name__desc")
             .first()
         )
 
