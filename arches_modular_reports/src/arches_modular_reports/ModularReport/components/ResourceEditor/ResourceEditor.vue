@@ -19,13 +19,12 @@ import DataTree from "@/arches_modular_reports/ModularReport/components/Resource
 import GenericCard from "@/arches_component_lab/generics/GenericCard/GenericCard.vue";
 
 import { fetchModularReportResource } from "@/arches_modular_reports/ModularReport/api.ts";
+import { findTileInTileTree } from "@/arches_modular_reports/ModularReport/utils.ts";
 
 import { EDIT } from "@/arches_component_lab/widgets/constants.ts";
 
 import type { Ref } from "vue";
 import type {
-    NodeData,
-    NodegroupData,
     ResourceData,
     TileData,
 } from "@/arches_modular_reports/ModularReport/types.ts";
@@ -59,15 +58,10 @@ const configurationError = ref<Error | null>(null);
 const isLoading = ref(true);
 
 const selectedTileData = computed<TileData | undefined>(() => {
-    const selectedNodegroupAliasedTileData: NodeData | NodegroupData =
-        resourceData.aliased_data[selectedNodegroupAlias.value!];
-
-    if (Array.isArray(selectedNodegroupAliasedTileData)) {
-        return selectedNodegroupAliasedTileData.find(
-            (tileDatum) => tileDatum.tileid === selectedTileId.value,
-        );
+    if (selectedTileId.value) {
+        return findTileInTileTree(resourceData, selectedTileId.value);
     }
-    return selectedNodegroupAliasedTileData as TileData;
+    return undefined;
 });
 
 const selectedTileWidgetDirtyStates = computed<Record<string, boolean>>(() => {
@@ -158,31 +152,26 @@ function onSave(tileData: TileData) {
 }
 
 function onUpdateTileData(updatedTileData: TileData) {
-    const selectedNodegroupAliasedTileData: NodeData | NodegroupData =
-        resourceData.aliased_data[selectedNodegroupAlias.value!];
-
-    if (Array.isArray(selectedNodegroupAliasedTileData)) {
-        const selectedTileDatum = selectedNodegroupAliasedTileData.find(
-            (tileDatum) => tileDatum.tileid === selectedTileId.value,
+    if (selectedTileId.value) {
+        const selectedTileDatum = findTileInTileTree(
+            resourceData,
+            selectedTileId.value,
         );
-
-        if (selectedTileDatum) {
-            Object.assign(selectedTileDatum, updatedTileData);
-        }
+        Object.assign(selectedTileDatum, updatedTileData);
     } else {
-        Object.assign(
-            selectedNodegroupAliasedTileData as TileData,
-            updatedTileData,
-        );
+        console.warn("Missing tile id for update");
     }
 }
 
 function onUpdateWidgetDirtyStates(
     updatedWidgetDirtyStates: WidgetDirtyStates,
 ) {
-    const nodegroupDirtyStates = widgetDirtyStates[
+    const nodegroupDirtyStates = (widgetDirtyStates[
         selectedNodegroupAlias.value!
-    ] as WidgetDirtyStates;
+    ] ?? {}) as WidgetDirtyStates;
+    if (!(selectedTileId.value! in nodegroupDirtyStates)) {
+        nodegroupDirtyStates[selectedTileId.value!] = {};
+    }
     Object.assign(
         nodegroupDirtyStates[selectedTileId.value!],
         updatedWidgetDirtyStates,

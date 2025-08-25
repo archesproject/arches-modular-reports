@@ -1,9 +1,6 @@
 import type { Component } from "vue";
 
-import type {
-    AliasedNodeData,
-    AliasedNodegroupData,
-} from "@/arches_component_lab/types.ts";
+import type { AliasedNodeData } from "@/arches_component_lab/types.ts";
 
 export interface Settings {
     ACTIVE_LANGUAGE: string;
@@ -91,7 +88,7 @@ export interface NodeData {
 export type NodegroupData = TileData | TileData[] | null;
 
 export interface AliasedData {
-    [key: string]: AliasedNodeData | AliasedNodegroupData;
+    [key: string]: AliasedNodeData | NodegroupData;
 }
 
 export interface TileData {
