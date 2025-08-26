@@ -20,8 +20,8 @@
         "vitest": "vitest --run --coverage"
     },
     "dependencies": {
-        "arches": "archesproject/arches#dev/8.0.x",
-        "arches-component-lab": "archesproject/arches-component-lab#main"
+        "arches": "archesproject/arches#cbyrd-fix-primevue-deps",
+        "arches-component-lab": "archesproject/arches-component-lab#cbyrd-fix-primevue-deps"
     },
     "devDependencies": {
         "arches-dev-dependencies": "archesproject/arches-dev-dependencies#dev/8.0.x"
