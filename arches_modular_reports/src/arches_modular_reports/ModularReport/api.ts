@@ -48,12 +48,12 @@ export const fetchNodePresentation = async (resourceId: string) => {
 
 export const fetchReportConfig = async (
     resourceId: string,
-    context: string | undefined,
+    slug: string | undefined,
 ) => {
     const params = new URLSearchParams();
 
-    if (context) {
-        params.append("context", context);
+    if (slug) {
+        params.append("slug", slug);
     }
     params.append("resourceId", resourceId);
     const url = `${arches.urls.modular_report_config}?${params.toString()}`;
