@@ -49,14 +49,14 @@ class ModularReportConfigView(View):
 
         slug = request.GET.get("slug", None)
         if slug:
-            filters &= Q(config__slug__iexact=slug)
+            filters &= Q(slug__iexact=slug)
+        else:
+            filters &= Q(slug__iexact="default")
 
         config_instance = (
-            ReportConfig.objects.filter(filters)
-            .select_related("graph")
+            ReportConfig.objects.select_related("graph")
             .prefetch_related("graph__node_set", "graph__node_set__nodegroup")
-            .order_by("-config__slug")
-            .first()
+            .get(filters)
         )
 
         if not config_instance:
