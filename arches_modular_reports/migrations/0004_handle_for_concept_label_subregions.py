@@ -413,6 +413,8 @@ class Migration(migrations.Migration):
                                 display_value := __arches_get_concept_label_v2((in_tiledata ->> in_nodeid::text)::uuid);
                             when 'concept-list' then
                                 display_value := __arches_get_concept_list_label_v2(in_tiledata -> in_nodeid::text);
+                            WHEN 'reference' THEN
+                                display_value := __arches_get_reference_label(in_tiledata -> in_nodeid::TEXT, language_id);
                             when 'edtf' then
                                 display_value := (in_tiledata ->> in_nodeid::text);
                             when 'file-list' then
@@ -433,6 +435,8 @@ class Migration(migrations.Migration):
                                 display_value := __arches_get_resourceinstance_label(in_tiledata -> in_nodeid::text, 'name', language_id);
                             when 'resource-instance-list' then
                                 display_value := __arches_get_resourceinstance_list_label_v2(in_tiledata -> in_nodeid::text, 'name', language_id);
+                            when 'date' then
+                                display_value := TO_CHAR((in_tiledata ->> in_nodeid::text)::timestamp, in_node_config ->> 'dateFormat');
                             else
                                 display_value := (in_tiledata ->> in_nodeid::text)::text;
 
