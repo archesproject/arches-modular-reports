@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("arches_modular_reports", "0006_improve_report_config_related_name"),
-        ("models", "12394_resource_identifier"),
+        ("models", "12284_resource_fields_read_only"),
     ]
 
     operations = [
