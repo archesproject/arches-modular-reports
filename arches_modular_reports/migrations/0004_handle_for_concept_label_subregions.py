@@ -433,6 +433,8 @@ class Migration(migrations.Migration):
                                 display_value := __arches_get_resourceinstance_label(in_tiledata -> in_nodeid::text, 'name', language_id);
                             when 'resource-instance-list' then
                                 display_value := __arches_get_resourceinstance_list_label_v2(in_tiledata -> in_nodeid::text, 'name', language_id);
+                            when 'date' then
+                                display_value := TO_CHAR((in_tiledata ->> in_nodeid::text)::timestamp, in_node_config ->> 'dateFormat');
                             else
                                 display_value := (in_tiledata ->> in_nodeid::text)::text;
 
