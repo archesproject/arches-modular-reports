@@ -21,7 +21,8 @@
     },
     "dependencies": {
         "arches": "archesproject/arches#dev/8.0.x",
-        "arches-component-lab": "archesproject/arches-component-lab#main"
+        "arches-component-lab": "archesproject/arches-component-lab#main",
+        "es-toolkit": "^1.39.10"
     },
     "devDependencies": {
         "arches-dev-dependencies": "archesproject/arches-dev-dependencies#dev/8.0.x"
