@@ -68,6 +68,15 @@ const { setSelectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
 const { setSelectedTileId } = inject("selectedTileId") as {
     setSelectedTileId: (tileId: string | null | undefined) => void;
 };
+const { setSelectedTilePath } = inject("selectedTilePath") as {
+    setSelectedTilePath: (path: string[] | null) => void;
+};
+const { setSelectedNodeAlias } = inject("selectedNodeAlias") as {
+    setSelectedNodeAlias: (nodeAlias: string | null) => void;
+};
+const { setShouldShowEditor } = inject("shouldShowEditor") as {
+    setShouldShowEditor: (shouldShow: boolean) => void;
+};
 
 const first = computed(() => {
     if (resettingToFirstPage.value) {
@@ -209,7 +218,13 @@ function rowClass(data: LabelBasedCard) {
 
 function initiateEdit(tileId: string | null) {
     setSelectedNodegroupAlias(props.component.config.nodegroup_alias);
+    setSelectedNodeAlias(props.component.config.node_aliases[0]);
+
+    // We cannot derive the path from the tileid alone, so clear it.
+    setSelectedTilePath(null);
     setSelectedTileId(tileId);
+
+    setShouldShowEditor(true);
 }
 </script>
 

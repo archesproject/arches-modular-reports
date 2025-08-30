@@ -48,8 +48,8 @@ provide("nodePresentationLookup", nodePresentationLookup);
 const userCanEditResourceInstance = ref(false);
 provide("userCanEditResourceInstance", userCanEditResourceInstance);
 
-const selectedNodegroupAlias = ref<string>();
-function setSelectedNodegroupAlias(nodegroupAlias: string | undefined) {
+const selectedNodegroupAlias = ref<string | null>();
+function setSelectedNodegroupAlias(nodegroupAlias: string | null | undefined) {
     selectedNodegroupAlias.value = nodegroupAlias;
 }
 provide("selectedNodegroupAlias", {
@@ -57,14 +57,41 @@ provide("selectedNodegroupAlias", {
     setSelectedNodegroupAlias,
 });
 
-// string: persisted tile
-// null: dummy (blank) tile
-// undefined: nothing selected; hide editor
-const selectedTileId = ref<string | null | undefined>(undefined);
+const selectedNodeAlias = ref<string | null>();
+function setSelectedNodeAlias(nodeAlias: string | null) {
+    selectedNodeAlias.value = nodeAlias;
+}
+provide("selectedNodeAlias", {
+    selectedNodeAlias,
+    setSelectedNodeAlias,
+});
+
+const selectedTileId = ref<string | null | undefined>();
 function setSelectedTileId(tileId?: string | null) {
     selectedTileId.value = tileId;
 }
-provide("selectedTileId", { selectedTileId, setSelectedTileId });
+provide("selectedTileId", {
+    selectedTileId,
+    setSelectedTileId,
+});
+
+const selectedTilePath = ref<string[] | null>();
+function setSelectedTilePath(path: string[] | null) {
+    selectedTilePath.value = path;
+}
+provide("selectedTilePath", {
+    selectedTilePath,
+    setSelectedTilePath,
+});
+
+const shouldShowEditor = ref(false);
+function setShouldShowEditor(shouldShow: boolean) {
+    shouldShowEditor.value = shouldShow;
+}
+provide("shouldShowEditor", {
+    shouldShowEditor,
+    setShouldShowEditor,
+});
 
 const reportKey = ref(0);
 const editorKey = ref(0);
@@ -106,8 +133,11 @@ watchEffect(async () => {
 });
 
 function closeEditor() {
-    setSelectedNodegroupAlias(undefined);
-    setSelectedTileId(undefined);
+    setSelectedNodegroupAlias(null);
+    setSelectedTileId(null);
+    setSelectedTilePath(null);
+    setShouldShowEditor(false);
+
     editorKey.value++;
 }
 </script>
@@ -126,7 +156,7 @@ function closeEditor() {
             </div>
         </SplitterPanel>
         <SplitterPanel
-            v-show="selectedNodegroupAlias"
+            v-show="shouldShowEditor"
             style="overflow: auto"
             :size="30"
         >

@@ -1,6 +1,5 @@
 import { defineAsyncComponent } from "vue";
 
-import type { TreeNode } from "primevue/treenode";
 import type {
     ComponentLookup,
     NamedSection,
@@ -49,44 +48,4 @@ export function truncateDisplayData(
         }
         return acc;
     }, [] as NodeValueDisplayData[]);
-}
-
-// a riff on the version from arches-controlled-lists using different attributes
-export function findNodeInTree(
-    tree: TreeNode[],
-    tileId: string | null,
-    nodegroupAlias: string | undefined,
-) {
-    const path: TreeNode[] = [];
-
-    const matches = (node: TreeNode) => {
-        if (tileId) {
-            return node.data.tileid === tileId;
-        }
-        return node.data.alias === nodegroupAlias;
-    };
-
-    function recurse(nodes: TreeNode[]): TreeNode | undefined {
-        for (const currentNode of nodes) {
-            if (matches(currentNode)) {
-                return currentNode;
-            }
-            const childNodes = currentNode.children;
-            if (childNodes?.length) {
-                const foundInChildren = recurse(childNodes);
-                if (foundInChildren) {
-                    path.push(currentNode);
-                    return foundInChildren;
-                }
-            }
-        }
-        return undefined;
-    }
-
-    const found = recurse(tree);
-    if (!found) {
-        throw new Error();
-    }
-
-    return { found, path };
 }
