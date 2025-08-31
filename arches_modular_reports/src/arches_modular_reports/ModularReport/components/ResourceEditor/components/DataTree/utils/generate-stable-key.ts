@@ -1,43 +1,62 @@
 import uniqueId from "es-toolkit/compat/uniqueId";
 
-const objectIdentityCache = new WeakMap<object, string>();
-const primitiveIdentityCache = new Map<unknown, string>();
-const compositeTrieRoot = new Map<unknown, unknown>();
-const compositeLeafMarker = Symbol("leaf");
+const objectKeyCache = new WeakMap<object, string>();
+const primitiveKeyCache = new Map<unknown, string>();
+
+const compositeLeafMarker = Symbol("composite-leaf");
+const compositeRootNode = new Map();
+
+function getCompositeArrayKey(elementValues: unknown[]): string {
+    let currentNode = compositeRootNode;
+
+    for (const elementValue of elementValues) {
+        const elementStableKey = generateStableKey(elementValue);
+        const existingChild = currentNode.get(elementStableKey);
+
+        let nextNode;
+        if (existingChild instanceof Map) {
+            nextNode = existingChild;
+        } else {
+            nextNode = new Map();
+            currentNode.set(elementStableKey, nextNode);
+        }
+
+        currentNode = nextNode;
+    }
+
+    const existingCompositeKey = currentNode.get(compositeLeafMarker);
+    if (typeof existingCompositeKey === "string") {
+        return existingCompositeKey;
+    }
+
+    const generatedKey = uniqueId();
+    currentNode.set(compositeLeafMarker, generatedKey);
+
+    return generatedKey;
+}
 
 export function generateStableKey(identityValue: unknown): string {
-    if (identityValue !== null && typeof identityValue === "object") {
-        if (Array.isArray(identityValue)) {
-            let currentMapNode = compositeTrieRoot as Map<unknown, unknown>;
-            for (const elementValue of identityValue) {
-                let nextMapNode = currentMapNode.get(elementValue) as
-                    | Map<unknown, unknown>
-                    | undefined;
-                if (!nextMapNode) {
-                    nextMapNode = new Map<unknown, unknown>();
-                    currentMapNode.set(elementValue, nextMapNode);
-                }
-                currentMapNode = nextMapNode;
-            }
-            const existingCompositeKey = currentMapNode.get(
-                compositeLeafMarker,
-            ) as string | undefined;
-            if (existingCompositeKey) return existingCompositeKey;
-            const generatedCompositeKey = uniqueId();
-            currentMapNode.set(compositeLeafMarker, generatedCompositeKey);
-            return generatedCompositeKey;
+    if (Array.isArray(identityValue)) {
+        return getCompositeArrayKey(identityValue);
+    }
+
+    if (identityValue && typeof identityValue === "object") {
+        const cachedObjectKey = objectKeyCache.get(identityValue);
+        if (cachedObjectKey) {
+            return cachedObjectKey;
         }
-        const existingObjectKey = objectIdentityCache.get(
-            identityValue as object,
-        );
-        if (existingObjectKey) return existingObjectKey;
+
         const generatedObjectKey = uniqueId();
-        objectIdentityCache.set(identityValue as object, generatedObjectKey);
+        objectKeyCache.set(identityValue, generatedObjectKey);
         return generatedObjectKey;
     }
-    const existingPrimitiveKey = primitiveIdentityCache.get(identityValue);
-    if (existingPrimitiveKey) return existingPrimitiveKey;
+
+    const cachedPrimitiveKey = primitiveKeyCache.get(identityValue);
+    if (cachedPrimitiveKey) {
+        return cachedPrimitiveKey;
+    }
+
     const generatedPrimitiveKey = uniqueId();
-    primitiveIdentityCache.set(identityValue, generatedPrimitiveKey);
+    primitiveKeyCache.set(identityValue, generatedPrimitiveKey);
     return generatedPrimitiveKey;
 }

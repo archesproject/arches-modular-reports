@@ -1,112 +1,45 @@
 import type { TreeNode } from "primevue/treenode";
 
-function childrenOf(cursor: TreeNode[] | TreeNode | null): TreeNode[] {
-    if (Array.isArray(cursor)) {
-        return cursor;
-    }
-
-    if (cursor === null) {
-        return [];
-    }
-
-    if (Array.isArray(cursor.children)) {
-        return cursor.children as TreeNode[];
-    }
-
-    return [];
-}
-
-function getAlias(node: TreeNode): string | undefined {
-    const nodeData = node.data;
-
-    if (nodeData === null || nodeData === undefined) {
-        return undefined;
-    }
-
-    return nodeData.alias;
-}
-
 export function findNodeInTree(
     rootNodes: TreeNode[],
-    pathWithAliasedData: Array<string | number>,
-): { foundNode: TreeNode | null; nodePath: TreeNode[] } {
-    const cleanedPath = pathWithAliasedData.filter(
+    path: Array<string | number>,
+) {
+    let currentLevelNodes = rootNodes;
+    const traversedPath = [];
+    let previousAliasForIndex: string | undefined;
+
+    for (const currentSegment of path.filter(
         (segment) => segment !== "aliased_data",
-    );
-
-    let currentCursor: TreeNode[] | TreeNode | null = rootNodes;
-    const nodePath: TreeNode[] = [];
-    let previousAlias: string | undefined = undefined;
-
-    let segmentIndex = 0;
-    while (segmentIndex < cleanedPath.length) {
-        if (currentCursor === null) {
-            break;
-        }
-
-        const candidateChildren = childrenOf(currentCursor);
-        const currentSegment = cleanedPath[segmentIndex];
+    )) {
+        let matchedNode;
 
         if (typeof currentSegment === "string") {
-            const matchedNode =
-                candidateChildren.find(
-                    (candidateNode) =>
-                        getAlias(candidateNode) === currentSegment,
-                ) || null;
-
-            if (matchedNode === null) {
-                currentCursor = null;
-                break;
-            }
-
-            currentCursor = matchedNode;
-            nodePath.push(matchedNode);
-            previousAlias = currentSegment;
-            segmentIndex += 1;
-            continue;
+            matchedNode = currentLevelNodes.find(
+                (candidateNode) => candidateNode.data?.alias === currentSegment,
+            );
+            previousAliasForIndex = currentSegment;
         }
 
         if (typeof currentSegment === "number") {
-            if (typeof previousAlias !== "string") {
-                currentCursor = null;
-                break;
-            }
-
-            const siblingsWithSameAlias = candidateChildren.filter(
-                (candidateNode) => getAlias(candidateNode) === previousAlias,
+            const siblings = currentLevelNodes.filter(
+                (candidateNode) =>
+                    candidateNode.data?.alias === previousAliasForIndex,
             );
-
-            if (currentSegment < 0) {
-                currentCursor = null;
-                break;
-            }
-            if (currentSegment >= siblingsWithSameAlias.length) {
-                currentCursor = null;
-                break;
-            }
-
-            const matchedIndexedNode = siblingsWithSameAlias[currentSegment];
-            currentCursor = matchedIndexedNode;
-            nodePath.push(matchedIndexedNode);
-            segmentIndex += 1;
-            continue;
+            matchedNode = siblings[currentSegment];
         }
 
-        currentCursor = null;
-        break;
-    }
-
-    let foundNode: TreeNode | null = null;
-    if (currentCursor !== null) {
-        if (!Array.isArray(currentCursor)) {
-            foundNode = currentCursor;
+        if (!matchedNode) {
+            break;
         }
+
+        traversedPath.push(matchedNode);
+        currentLevelNodes = Array.isArray(matchedNode.children)
+            ? matchedNode.children
+            : [];
     }
 
-    let ancestorPathExcludingFound: TreeNode[] = [];
-    if (foundNode !== null) {
-        ancestorPathExcludingFound = nodePath.slice(0, -1);
-    }
-
-    return { foundNode, nodePath: ancestorPathExcludingFound };
+    return {
+        foundNode: traversedPath.at(-1),
+        nodePath: traversedPath.slice(0, -1),
+    };
 }

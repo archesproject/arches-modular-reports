@@ -296,7 +296,7 @@ function createCardinalityNWrapper(
         );
 
         return {
-            key: generateStableKey(tile),
+            key: generateStableKey([tile, index]),
             label: children[0]?.label || $gettext("Empty"),
             data: { tileid: tile.tileid, alias: nodegroupAlias },
             children,
@@ -309,7 +309,7 @@ function createCardinalityNWrapper(
     );
 
     return {
-        key: generateStableKey([nodegroupAlias, parentTileId]),
+        key: generateStableKey([...tiles, parentTileId, nodegroupAlias]),
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
         data: { tileid: parentTileId, alias: nodegroupAlias },
         children: childNodes,

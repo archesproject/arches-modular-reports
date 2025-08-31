@@ -5,17 +5,14 @@ function findTreePathByKey(
     rootNodes: TreeNode[],
     targetKey: string | number,
 ): TreeNode[] | null {
-    for (const rootNode of rootNodes) {
-        if (rootNode.key === targetKey) {
-            return [rootNode];
+    for (const node of rootNodes) {
+        if (node.key === targetKey) {
+            return [node];
         }
-        if (rootNode.children?.length) {
-            const descendantPath = findTreePathByKey(
-                rootNode.children,
-                targetKey,
-            );
-            if (descendantPath) {
-                return [rootNode, ...descendantPath];
+        if (Array.isArray(node.children)) {
+            const path = findTreePathByKey(node.children, targetKey);
+            if (path) {
+                return [node, ...path];
             }
         }
     }
@@ -23,60 +20,31 @@ function findTreePathByKey(
 }
 
 function resolveArrayIndex(
-    arrayValue: unknown,
+    tiles: unknown,
     parentNode: TreeNode,
     childNode: TreeNode | undefined,
 ): number {
-    const fallbackIndex = 0;
-
-    if (!Array.isArray(arrayValue) || !childNode) {
-        return fallbackIndex;
+    if (!childNode || !Array.isArray(tiles)) {
+        return 0;
     }
 
     const siblings = parentNode.children ?? [];
-    const indexFromTree = siblings.findIndex(
-        (candidate) => candidate === childNode,
-    );
-    if (indexFromTree >= 0) {
-        return indexFromTree;
+    const indexByTree = siblings.indexOf(childNode);
+    if (indexByTree >= 0) {
+        return indexByTree;
     }
 
-    let childTileId: string | null | undefined;
-    if (
-        childNode.data &&
-        typeof childNode.data === "object" &&
-        "tileid" in childNode.data
-    ) {
-        const possible = (childNode.data as { tileid?: unknown }).tileid;
-        childTileId =
-            typeof possible === "string"
-                ? possible
-                : possible === null
-                  ? null
-                  : undefined;
-    } else {
-        childTileId = undefined;
-    }
+    if (childNode.data?.tileid) {
+        const indexByTileId = tiles.findIndex(
+            (tile) => tile?.tileid === childNode.data?.tileid,
+        );
 
-    if (childTileId) {
-        const array = arrayValue as unknown[];
-        const indexFromTileId = array.findIndex((tileObject) => {
-            if (
-                tileObject &&
-                typeof tileObject === "object" &&
-                "tileid" in tileObject
-            ) {
-                const candidate = (tileObject as { tileid?: unknown }).tileid;
-                return candidate === childTileId;
-            }
-            return false;
-        });
-        if (indexFromTileId >= 0) {
-            return indexFromTileId;
+        if (indexByTileId >= 0) {
+            return indexByTileId;
         }
     }
 
-    return (arrayValue as unknown[]).length === 1 ? 0 : fallbackIndex;
+    return 0;
 }
 
 export function generateTilePath(
@@ -89,108 +57,59 @@ export function generateTilePath(
         return [];
     }
 
-    const jsonPathSegments: Array<string | number> = ["aliased_data"];
+    const segments: Array<string | number> = ["aliased_data"];
+    let pointer: Record<string, unknown> | undefined =
+        resourceData.aliased_data;
 
-    let currentPointer: unknown;
-    if (
-        resourceData &&
-        typeof resourceData === "object" &&
-        "aliased_data" in resourceData
-    ) {
-        currentPointer = (resourceData as { aliased_data?: unknown })
-            .aliased_data;
-    } else {
-        currentPointer = undefined;
-    }
-
-    for (let nodeIndex = 0; nodeIndex < pathNodes.length; nodeIndex += 1) {
-        const currentNode = pathNodes[nodeIndex];
-        const parentNode = pathNodes[nodeIndex - 1];
-        const nextNode = pathNodes[nodeIndex + 1];
-
-        const currentData = currentNode.data;
-        const isLeafNode = !!(
-            currentData &&
-            typeof currentData === "object" &&
-            "nodegroupAlias" in currentData
-        );
-
-        let currentAlias: string | undefined;
-        if (
-            currentData &&
-            typeof currentData === "object" &&
-            "alias" in currentData
-        ) {
-            const possibleAlias = (currentData as { alias?: unknown }).alias;
-            currentAlias =
-                typeof possibleAlias === "string" ? possibleAlias : undefined;
-        } else {
-            currentAlias = undefined;
+    for (const [pathIndex, currentNode] of pathNodes.entries()) {
+        let parentNode;
+        if (pathIndex > 0) {
+            parentNode = pathNodes[pathIndex - 1];
         }
 
-        if (!isLeafNode) {
-            let parentAlias: string | undefined;
+        let nextNode;
+        if (pathIndex + 1 < pathNodes.length) {
+            nextNode = pathNodes[pathIndex + 1];
+        }
+
+        if (!("nodegroupAlias" in currentNode.data)) {
             if (
-                parentNode?.data &&
-                typeof parentNode.data === "object" &&
-                "alias" in parentNode.data
+                currentNode.data?.alias &&
+                parentNode?.data?.alias !== currentNode.data?.alias
             ) {
-                const possibleParentAlias = (
-                    parentNode.data as { alias?: unknown }
-                ).alias;
-                parentAlias =
-                    typeof possibleParentAlias === "string"
-                        ? possibleParentAlias
-                        : undefined;
-            } else {
-                parentAlias = undefined;
-            }
+                segments.push(currentNode.data?.alias);
 
-            const shouldPushAlias = !parentNode || parentAlias !== currentAlias;
-
-            if (shouldPushAlias && currentAlias) {
-                jsonPathSegments.push(currentAlias);
-                if (
-                    currentPointer &&
-                    typeof currentPointer === "object" &&
-                    currentAlias in (currentPointer as Record<string, unknown>)
-                ) {
-                    currentPointer = (
-                        currentPointer as Record<string, unknown>
-                    )[currentAlias];
-                } else {
-                    currentPointer = undefined;
+                if (pointer && !Array.isArray(pointer)) {
+                    pointer = pointer[currentNode.data?.alias] as Record<
+                        string,
+                        unknown
+                    >;
                 }
             }
 
-            if (Array.isArray(currentPointer) && nextNode) {
-                const indexWithinArray = resolveArrayIndex(
-                    currentPointer,
+            if (Array.isArray(pointer) && nextNode) {
+                const arrayIndex = resolveArrayIndex(
+                    pointer,
                     currentNode,
                     nextNode,
                 );
-                jsonPathSegments.push(indexWithinArray);
-                currentPointer = currentPointer[indexWithinArray];
+                segments.push(arrayIndex);
+                pointer = pointer[arrayIndex];
             }
 
-            if (
-                currentPointer &&
-                typeof currentPointer === "object" &&
-                "aliased_data" in currentPointer
-            ) {
-                jsonPathSegments.push("aliased_data");
-                currentPointer = (currentPointer as { aliased_data?: unknown })
-                    .aliased_data;
+            if ("aliased_data" in pointer!) {
+                segments.push("aliased_data");
+                pointer = pointer.aliased_data as Record<string, unknown>;
             }
 
             continue;
         }
 
-        if (currentAlias) {
-            jsonPathSegments.push(currentAlias);
+        if (currentNode.data?.alias) {
+            segments.push(currentNode.data?.alias);
         }
         break;
     }
 
-    return jsonPathSegments;
+    return segments;
 }
