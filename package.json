@@ -20,9 +20,9 @@
         "vitest": "vitest --run --coverage"
     },
     "dependencies": {
-        "arches": "archesproject/arches#stable/7.6.12",
+        "arches": "archesproject/arches#cbyrd-fix-primevue-deps",
         "arches-component-lab": "archesproject/arches-component-lab#alpha/0.0.1a0",
-        "@primeuix/themes": "1.0.1"
+        "@primeuix/themes": "1.2.3"
     },
     "devDependencies": {
         "arches-dev-dependencies": "archesproject/arches-dev-dependencies#stable/7.6.12"
@@ -30,7 +30,7 @@
     "nodeModulesPaths": {
     },
     "overrides": {
-        "primevue": "4.2.5",
-        "@primeuix/themes": "1.0.1"
+        "primevue": "4.3.7",
+        "@primeuix/themes": "1.2.3"
     }
 }
