@@ -52,6 +52,8 @@ def get_link(datatype, value_id):
         return reverse("resource_report", args=[value_id])
     elif datatype in ["url"]:
         return value_id
+    elif datatype in ["reference"]:
+        return value_id["uri"]
     return ""
 
 
@@ -76,9 +78,12 @@ def build_valueid_annotation(data, is_user_rdm_admin, user_language):
             }
         return {"display_value": display_value, "has_links": False}
 
-    elif datatype in ["concept-list", "resource-instance-list"]:
-        value_ids = json.loads(data.get("value_ids", "[]"))
+    elif datatype in ["concept-list", "resource-instance-list", "reference"]:
         display_values = json.loads(data.get("display_value", "[]"))
+        value_ids = data.get("value_ids", "[]") if data.get("value_ids", "[]") else []
+
+        if datatype in ["concept-list", "resource-instance-list"]:
+            value_ids = json.loads(value_ids)
 
         annotations = []
         if datatype == "concept-list" and not is_user_rdm_admin:
@@ -255,6 +260,8 @@ def get_sorted_filtered_tiles(
             )
         elif node.datatype == "file-list":
             tile_value = F(f"data__{node.pk}")
+        elif node.datatype == "reference":
+            value_ids = F(f"data__{node.pk}")
 
         field_annotations[field_key] = display_value
         alias_annotations[node.alias] = JSONObject(
@@ -629,6 +636,13 @@ def prepare_links(
                                 "url": form_file_url(file["url"]),
                             }
                         )
+                # case "reference":
+                #     links.append(
+                #         {
+                #             "label": node_display_value,
+                #             "link": get_link(node.datatype, tile_val[0]["resourceId"]),
+                #         }
+                #     )
 
     return links
 
