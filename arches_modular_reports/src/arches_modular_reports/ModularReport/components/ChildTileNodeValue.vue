@@ -70,7 +70,7 @@ const details = computed(() => value?.details);
             <dd>{{ displayValue }}</dd>
         </div>
     </div>
-    <dd v-else-if="(nodeValue as URLDetails).url">
+    <dd v-else-if="(nodeValue as URLDetails)?.url">
         <Button
             as="a"
             variant="link"
