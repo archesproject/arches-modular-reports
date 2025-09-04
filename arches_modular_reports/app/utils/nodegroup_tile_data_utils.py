@@ -636,13 +636,17 @@ def prepare_links(
                                 "url": form_file_url(file["url"]),
                             }
                         )
-                # case "reference":
-                #     links.append(
-                #         {
-                #             "label": node_display_value,
-                #             "link": get_link(node.datatype, tile_val[0]["resourceId"]),
-                #         }
-                #     )
+                case "reference":
+                    for val_id, disp_val in zip(
+                        tile_val, json.loads(node_display_value)
+                    ):
+                        if val_id:
+                            links.append(
+                                {
+                                    "label": disp_val,
+                                    "link": get_link(node.datatype, val_id),
+                                }
+                            )
 
     return links
 
