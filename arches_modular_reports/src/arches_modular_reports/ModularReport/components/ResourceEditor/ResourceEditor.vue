@@ -12,6 +12,7 @@ import {
 
 import { isEqual } from "es-toolkit";
 
+import Button from "primevue/button";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import Splitter from "primevue/splitter";
@@ -20,11 +21,14 @@ import SplitterPanel from "primevue/splitterpanel";
 import DataTree from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree/DataTree.vue";
 import GenericCard from "@/arches_component_lab/generics/GenericCard/GenericCard.vue";
 
-import { fetchModularReportResource } from "@/arches_modular_reports/ModularReport/api.ts";
 import {
-    getValueFromPath,
-    generateWidgetDirtyStates,
-} from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils.ts";
+    fetchModularReportResource,
+    updateModularReportResource,
+} from "@/arches_modular_reports/ModularReport/api.ts";
+
+import { generateWidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/generate-widget-dirty-states.ts";
+import { getValueFromPath } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/get-value-from-path.ts";
+import { pruneResourceData } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/prune-resource-data.ts";
 
 import { EDIT } from "@/arches_component_lab/widgets/constants.ts";
 
@@ -37,6 +41,7 @@ import type {
 } from "@/arches_modular_reports/ModularReport/types.ts";
 
 import type { WidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/types.ts";
+import type { AliasedTileData } from "@/arches_component_lab/types";
 
 const graphSlug = inject<string>("graphSlug")!;
 const resourceInstanceId = inject<string>("resourceInstanceId")!;
@@ -60,8 +65,10 @@ const { selectedTilePath, setSelectedTilePath } = inject(
     setSelectedTilePath: (path: Array<string | number> | null) => void;
 };
 
+const emit = defineEmits(["save"]);
+
 const isLoading = ref(true);
-const configurationError = ref<Error | null>(null);
+const apiError = ref<Error | null>(null);
 
 const resourceData = reactive<ResourceData>({} as ResourceData);
 const originalResourceData = shallowRef<Readonly<ResourceData>>(
@@ -100,7 +107,7 @@ watchEffect(async () => {
             generateWidgetDirtyStates(modularReportResource),
         );
     } catch (error) {
-        configurationError.value = error as Error;
+        apiError.value = error as Error;
     } finally {
         isLoading.value = false;
     }
@@ -157,14 +164,13 @@ function onUpdateTileData(updatedTileData: TileData) {
         currentTileValue[tileKey] = tileValue;
     }
 
-    const currentAliasedData = currentTileValue["aliased_data"] as Record<
-        string,
-        unknown
-    >;
-    const originalAliasedData = originalTileValue["aliased_data"] as Record<
-        string,
-        unknown
-    >;
+    const currentAliasedData = currentTileValue[
+        "aliased_data"
+    ] as AliasedTileData["aliased_data"];
+    const originalAliasedData = originalTileValue[
+        "aliased_data"
+    ] as AliasedTileData["aliased_data"];
+
     const dirtyAliasedData = (
         tileDirtyStates as { aliased_data: Record<string, boolean> }
     ).aliased_data;
@@ -193,6 +199,41 @@ function onUpdateWidgetFocusStates(
 
     setSelectedNodeAlias(focusedNodeAlias ?? null);
 }
+
+function onSave() {
+    isLoading.value = true;
+
+    updateModularReportResource(
+        graphSlug,
+        resourceInstanceId,
+        pruneResourceData(resourceData, widgetDirtyStates),
+    )
+        .then(async (_updatedResource) => {
+            emit("save");
+
+            // this is sloppy but `_updatedResource` does not have the option to fill in blanks
+            const modularReportResource = await fetchModularReportResource({
+                graphSlug,
+                resourceId: resourceInstanceId,
+                fillBlanks: true,
+            });
+            originalResourceData.value = readonly(
+                structuredClone({ ...modularReportResource }),
+            );
+
+            Object.assign(resourceData, modularReportResource);
+            Object.assign(
+                widgetDirtyStates,
+                generateWidgetDirtyStates(modularReportResource),
+            );
+        })
+        .catch((error) => {
+            apiError.value = error as Error;
+        })
+        .finally(() => {
+            isLoading.value = false;
+        });
+}
 </script>
 
 <template>
@@ -201,10 +242,10 @@ function onUpdateWidgetFocusStates(
         style="height: 10rem"
     />
     <Message
-        v-else-if="configurationError"
+        v-else-if="apiError"
         severity="error"
     >
-        {{ configurationError.message }}
+        {{ apiError.message }}
     </Message>
     <template v-else>
         <Splitter
@@ -214,10 +255,12 @@ function onUpdateWidgetFocusStates(
             <SplitterPanel
                 style="
                     padding: var(--p-panel-toggleable-header-padding);
-                    overflow: auto;
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
                 "
             >
-                <div>
+                <div style="flex: 1; overflow: auto">
                     <GenericCard
                         v-if="selectedTileData"
                         ref="defaultCard"
@@ -226,12 +269,28 @@ function onUpdateWidgetFocusStates(
                         :graph-slug="graphSlug"
                         :resource-instance-id="resourceInstanceId"
                         :selected-node-alias="selectedNodeAlias"
+                        :should-show-form-buttons="false"
                         :tile-id="selectedTileId"
                         :tile-data="selectedTileData"
                         @update:widget-focus-states="
                             onUpdateWidgetFocusStates($event)
                         "
                         @update:tile-data="onUpdateTileData($event)"
+                    />
+                </div>
+                <div
+                    style="
+                        border-top: 1px solid
+                            var(--p-panel-content-border-color);
+                        padding: 0.5rem;
+                        text-align: right;
+                        display: flex;
+                    "
+                >
+                    <Button
+                        :label="$gettext('Save')"
+                        icon="pi pi-check"
+                        @click="onSave"
                     />
                 </div>
             </SplitterPanel>

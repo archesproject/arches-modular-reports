@@ -1,5 +1,9 @@
 import arches from "arches";
 
+import Cookies from "js-cookie";
+
+import type { ResourceData } from "@/arches_modular_reports/ModularReport/types.ts";
+
 export const fetchModularReportResource = async ({
     graphSlug,
     resourceId,
@@ -17,6 +21,25 @@ export const fetchModularReportResource = async ({
             resourceId,
         )}?${params}`,
     );
+    const parsed = await response.json();
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};
+
+export const updateModularReportResource = async (
+    graphSlug: string,
+    resourceId: string,
+    data: ResourceData,
+) => {
+    const url = arches.urls.api_modular_reports_resource(graphSlug, resourceId);
+    const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": Cookies.get("csrftoken"),
+        },
+        body: JSON.stringify(data),
+    });
     const parsed = await response.json();
     if (!response.ok) throw new Error(parsed.message || response.statusText);
     return parsed;
