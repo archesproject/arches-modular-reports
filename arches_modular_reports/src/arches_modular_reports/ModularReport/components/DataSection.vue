@@ -383,6 +383,7 @@ function initiateEdit(tileId: string | null) {
                         <Button
                             icon="pi pi-pencil"
                             class="p-button-outlined"
+                            severity="info"
                             :aria-label="$gettext('Edit')"
                             rounded
                             @click="initiateEdit(data['@tile_id'])"
