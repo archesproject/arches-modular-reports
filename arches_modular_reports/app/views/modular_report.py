@@ -47,16 +47,16 @@ class ModularReportConfigView(View):
         if arches_version >= (8, 0):
             filters &= Q(graph__source_identifier=None)
 
-        report = request.GET.get("reportConfigName", None)
-        if report:
-            filters &= Q(config__name__iexact=report)
+        slug = request.GET.get("slug", None)
+        if slug:
+            filters &= Q(slug__iexact=slug)
+        else:
+            filters &= Q(slug__iexact="default")
 
         config_instance = (
-            ReportConfig.objects.filter(filters)
-            .select_related("graph")
+            ReportConfig.objects.select_related("graph")
             .prefetch_related("graph__node_set", "graph__node_set__nodegroup")
-            .order_by("config__name__desc")
-            .first()
+            .get(filters)
         )
 
         if not config_instance:
