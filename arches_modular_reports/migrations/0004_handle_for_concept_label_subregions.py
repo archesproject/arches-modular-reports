@@ -413,6 +413,8 @@ class Migration(migrations.Migration):
                                 display_value := __arches_get_concept_label_v2((in_tiledata ->> in_nodeid::text)::uuid);
                             when 'concept-list' then
                                 display_value := __arches_get_concept_list_label_v2(in_tiledata -> in_nodeid::text);
+                            when 'reference' then
+								display_value := __arches_controlled_lists_get_reference_label_list(in_tiledata -> in_nodeid::text, language_id);
                             when 'edtf' then
                                 display_value := (in_tiledata ->> in_nodeid::text);
                             when 'file-list' then
