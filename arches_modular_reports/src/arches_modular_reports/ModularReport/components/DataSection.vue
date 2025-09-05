@@ -331,7 +331,7 @@ function initiateEdit(tileId: string | null) {
             <template #body="{ data, field }">
                 <div
                     :style="{
-                        maxHeight: data[field as string].file_data
+                        maxHeight: data[field as string]?.file_data
                             ? '32rem'
                             : '12rem',
                         overflow: 'auto',
