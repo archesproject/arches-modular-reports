@@ -73,6 +73,7 @@ export interface URLDetails {
 export interface ReferenceDetails {
     uri: string;
     display_value: string;
+    list_item_id: string;
 }
 
 export interface NodeValueDisplayData {
