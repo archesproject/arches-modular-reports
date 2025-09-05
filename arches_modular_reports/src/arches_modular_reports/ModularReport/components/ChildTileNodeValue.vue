@@ -88,8 +88,10 @@ const details = computed(() => value?.details);
         v-else-if="(details as ReferenceDetails[])[0]?.list_item_id"
         style="flex-direction: column"
     >
-        <dd v-for="resourceDetail in details as ReferenceDetails[]"
-            :key="resourceDetail.list_item_id">
+        <dd
+            v-for="resourceDetail in details as ReferenceDetails[]"
+            :key="resourceDetail.list_item_id"
+        >
             <Button
                 as="a"
                 variant="link"
