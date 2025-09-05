@@ -70,6 +70,12 @@ export interface URLDetails {
     url_label: string;
 }
 
+export interface ReferenceDetails {
+    uri: string;
+    display_value: string;
+    list_item_id: string;
+}
+
 export interface NodeValueDisplayData {
     display_values: string[];
     links: {

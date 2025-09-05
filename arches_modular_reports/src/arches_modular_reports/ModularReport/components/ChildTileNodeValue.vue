@@ -11,6 +11,7 @@ import type {
     NodeData,
     ResourceDetails,
     URLDetails,
+    ReferenceDetails,
 } from "@/arches_modular_reports/ModularReport/types";
 
 const { value, userIsRdmAdmin = false } = defineProps<{
@@ -83,7 +84,28 @@ const details = computed(() => value?.details);
             }}
         </Button>
     </dd>
-    <dd v-else>{{ displayValue }}</dd>
+    <div
+        v-else-if="(details as ReferenceDetails[])[0]?.list_item_id"
+        style="flex-direction: column"
+    >
+        <dd
+            v-for="resourceDetail in details as ReferenceDetails[]"
+            :key="resourceDetail.list_item_id"
+        >
+            <Button
+                as="a"
+                variant="link"
+                target="_blank"
+                :href="(resourceDetail as ReferenceDetails).uri"
+            >
+                {{
+                    (resourceDetail as ReferenceDetails).display_value ||
+                    (resourceDetail as ReferenceDetails).uri
+                }}
+            </Button>
+        </dd>
+    </div>
+    <dd v-else>{{ nodeValue }}</dd>
 </template>
 
 <style scoped>
