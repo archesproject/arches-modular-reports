@@ -660,7 +660,9 @@ def is_number(s):
 
 
 def array_from_string(input_str):
-    if is_number(input_str):
+    if not input_str:
+        return []
+    elif is_number(input_str):
         return [input_str]
     else:
         try:
