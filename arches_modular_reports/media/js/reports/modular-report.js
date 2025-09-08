@@ -35,6 +35,36 @@ const ModularReportPreset = definePreset(Aura, {
             900: '{sky.900}',
             950: '{sky.950}'
         },
+        colorScheme: {
+            light: {
+                primary: {
+                    color: '{sky.700}',
+                    inverseColor: '#ffffff',
+                    hoverColor: '{sky.900}',
+                    activeColor: '{sky.800}'
+                },
+                highlight: {
+                    background: '{sky.300}',
+                    focusBackground: '{sky.700}',
+                    color: '#ffffff',
+                    focusColor: '#ffffff'
+                }
+            },
+            dark: {
+                primary: {
+                    color: '{sky.300}',
+                    inverseColor: '{sky.950}',
+                    hoverColor: '{sky.100}',
+                    activeColor: '{sky.200}'
+                },
+                highlight: {
+                    background: 'rgba(250, 250, 250, .16)',
+                    focusBackground: 'rgba(250, 250, 250, .24)',
+                    color: 'rgba(255,255,255,.87)',
+                    focusColor: 'rgba(255,255,255,.87)'
+                }
+            }
+        }
     },
     components: {
         datatable: {
@@ -64,16 +94,6 @@ const ModularReportPreset = definePreset(Aura, {
                 }
             }
         },
-        // TODO: arches v8: provided by default.ts, remove
-        splitter: {
-            handle: {
-                background: "{surface.500}",
-            },
-        },
-        toast: {
-            summary: { fontSize: '1.5rem' },
-            detail: { fontSize: '1.25rem' },
-        },
         tabs: {
             colorScheme: {  
                 light: {
@@ -88,59 +108,14 @@ const ModularReportPreset = definePreset(Aura, {
                 }
             }
         },
-        card: {
-            colorScheme: {  
-                light: {
-                    background: '{surface-100}'
-                },
-                dark: {
-                    background: '{surface-800}'
-                }
-            }
-        },
-        // custom button tokens and additional style
         button: {
-            extend: {
-                baseButton: {
-                    fontSize: '1.4rem',
-                }
-            },
-            colorScheme: {  
-                light: { 
-                    primary: {
-                        color: '{primary-700}',
-                    },
-                    link: {  
-                        hoverColor: '{button-text-plain-color}',  
-                        color: '{button-primary-color}',  
-                    },  
-                    outlined: {  
-                        primary: { 
-                            color: '{button-primary-color}', 
-                        },
-                    },
-                },  
-                dark: {  
-                    link: {  
-                        hoverColor: '{button-text-plain-color}',  
-                    },
-                    outlined: {  
-                        primary: {
-                            hover:{  
-                                color: '{primary-700}', // this doesn't work, but should based on primevue docs
-                                background: '{button-text-plain-color}',  
-                            },      
-                        }
-                    }
-                },  
-            },  
             css: ({ dt }) => `
                 .p-button {
                     font-size: ${dt('base.button.font.size')};
                 }
             `
         }
-    },
+    }
 });
 
 const ModularReportTheme = {
