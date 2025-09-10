@@ -33,10 +33,10 @@ const componentLookup: ComponentLookup = {};
 const EDITOR = $gettext("Editor");
 const CLOSE_EDITOR = $gettext("Close editor");
 
-const { graphSlug, resourceInstanceId, reportConfigName } = defineProps<{
+const { graphSlug, resourceInstanceId, reportConfigSlug } = defineProps<{
     graphSlug: string;
     resourceInstanceId: string;
-    reportConfigName?: string;
+    reportConfigSlug?: string;
 }>();
 
 provide("graphSlug", graphSlug);
@@ -114,7 +114,7 @@ watchEffect(async () => {
             fetchUserResourcePermissions(resourceInstanceId).then((data) => {
                 userCanEditResourceInstance.value = data.edit;
             }),
-            fetchReportConfig(resourceInstanceId, reportConfigName).then(
+            fetchReportConfig(resourceInstanceId, reportConfigSlug).then(
                 (data) => {
                     importComponents([data], componentLookup);
                     config.value = data;

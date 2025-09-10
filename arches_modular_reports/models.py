@@ -23,6 +23,7 @@ class ReportConfig(models.Model):
     config = models.JSONField(
         blank=True, null=False, default=dict, encoder=PrettyJSONEncoder
     )
+    slug = models.TextField(default="default", blank=False, null=False)
     graph = models.ForeignKey(
         GraphModel,
         blank=False,
@@ -34,6 +35,12 @@ class ReportConfig(models.Model):
     class Meta:
         managed = True
         db_table = "arches_modular_report_config"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["graph", "slug"],
+                name="unique_slug_graph",
+            )
+        ]
 
     def __str__(self):
         if self.config and self.graph:
