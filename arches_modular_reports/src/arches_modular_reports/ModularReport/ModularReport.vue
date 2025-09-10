@@ -33,10 +33,10 @@ const componentLookup: ComponentLookup = {};
 const EDITOR = $gettext("Editor");
 const CLOSE_EDITOR = $gettext("Close editor");
 
-const { graphSlug, resourceInstanceId, slug } = defineProps<{
+const { graphSlug, resourceInstanceId, reportConfigSlug } = defineProps<{
     graphSlug: string;
     resourceInstanceId: string;
-    slug?: string;
+    reportConfigSlug?: string;
 }>();
 
 provide("graphSlug", graphSlug);
@@ -87,10 +87,12 @@ watchEffect(async () => {
             fetchUserResourcePermissions(resourceInstanceId).then((data) => {
                 userCanEditResourceInstance.value = data.edit;
             }),
-            fetchReportConfig(resourceInstanceId, slug).then((data) => {
-                importComponents([data], componentLookup);
-                config.value = data;
-            }),
+            fetchReportConfig(resourceInstanceId, reportConfigSlug).then(
+                (data) => {
+                    importComponents([data], componentLookup);
+                    config.value = data;
+                },
+            ),
         ]);
     } catch (error) {
         toast.add({
