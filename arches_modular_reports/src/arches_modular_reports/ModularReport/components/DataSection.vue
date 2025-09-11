@@ -238,7 +238,7 @@ function initiateEdit(tileId: string | null) {
     setSelectedTilePath(null);
     setSelectedTileId(tileId);
 
-    setShouldShowEditor(true);
+    setShouldShowEditor(false);
 }
 </script>
 
