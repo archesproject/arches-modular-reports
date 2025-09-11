@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("arches_modular_reports", "0006_improve_report_config_related_name"),
-        ("models", "12343_generate_geom_feature_id"),
+        ("models", "11499_add_editlog_resourceinstance_idx"),
     ]
 
     operations = [
