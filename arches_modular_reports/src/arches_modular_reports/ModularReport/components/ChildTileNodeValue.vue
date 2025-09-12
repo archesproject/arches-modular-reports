@@ -105,7 +105,7 @@ const details = computed(() => value?.details);
             </Button>
         </dd>
     </div>
-    <dd v-else>{{ nodeValue }}</dd>
+    <dd v-else>{{ displayValue }}</dd>
 </template>
 
 <style scoped>
