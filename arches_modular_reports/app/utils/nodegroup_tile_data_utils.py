@@ -220,6 +220,7 @@ def get_sorted_filtered_tiles(
     query,
     user_language,
     user,
+    filters,
 ):
     # semantic, annotation, and geojson-feature-collection data types are
     # excluded in __arches_get_node_display_value
@@ -238,6 +239,7 @@ def get_sorted_filtered_tiles(
 
     field_annotations = {}
     alias_annotations = {}
+    tile_filters = Q()
 
     for node in nodes:
         field_key = f'field_{str(node.pk).replace("-", "_")}'
@@ -270,6 +272,16 @@ def get_sorted_filtered_tiles(
             value_ids=value_ids,
             file_tile_value=tile_value,
         )
+        if filters:
+            for filter in filters:
+                if node.alias == filter["alias"]:
+                    tile_filters &= Q(
+                        **{
+                            f"data__{node.pk}__{filter['field_lookup']}": filter[
+                                "value"
+                            ]
+                        }
+                    )
 
     # adds spaces between fields
     display_values_with_spaces = []
@@ -286,7 +298,7 @@ def get_sorted_filtered_tiles(
         .annotate(
             search_text=Concat(*display_values_with_spaces, output_field=TextField())
         )
-        .filter(search_text__icontains=query)
+        .filter(tile_filters & Q(search_text__icontains=query))
         .annotate(
             has_children=Exists(
                 models.TileModel.objects.filter(parenttile=OuterRef("pk"))
