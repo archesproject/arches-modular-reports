@@ -37,6 +37,7 @@ export interface NodePresentation {
         nodegroup_id: string;
         cardinality: string;
     };
+    is_rich_text: boolean;
 }
 
 export interface NodePresentationLookup {
