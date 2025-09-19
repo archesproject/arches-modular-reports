@@ -107,11 +107,12 @@ const columnData = computed(() => {
     return props.component.config.node_aliases.map((nodeAlias) => {
         const nodeDetails = nodePresentationLookup.value![nodeAlias];
         return {
-            nodeAlias,
+            nodeAlias: nodeAlias,
             widgetLabel:
                 props.component.config.custom_labels?.[nodeAlias] ??
                 nodeDetails?.widget_label ??
                 nodeAlias,
+            is_rich_text: nodeDetails?.is_rich_text,
         };
     });
 });
@@ -353,6 +354,9 @@ function initiateEdit(tileId: string | null) {
                         v-else-if="data[field as string]?.is_file"
                         :file-data="data[field as string].file_data"
                     />
+                    <template v-else-if="data.is_rich_text">
+                        <span v-html="data[field as string]?.display_value"></span>
+                    </template>
                     <template v-else>
                         {{ data[field as string]?.display_value }}
                     </template>
