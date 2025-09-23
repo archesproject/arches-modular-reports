@@ -255,6 +255,11 @@ class NodePresentationView(APIBase):
                 return getattr(queryset[0], attr, fallback)
             return fallback
 
+        def get_widget_name(queryset, fallback):
+            if queryset and queryset[0].widget:
+                return getattr(queryset[0].widget, "name", fallback)
+            return fallback
+
         def get_node_visibility(node):
             if node.pk == node.nodegroup.pk and node.nodegroup.cardmodel_set.all():
                 return node.nodegroup.cardmodel_set.all()[0].visible
@@ -292,6 +297,10 @@ class NodePresentationView(APIBase):
                         "nodegroup_id": node.nodegroup.pk,
                         "cardinality": node.nodegroup.cardinality,
                     },
+                    "is_rich_text": get_widget_name(
+                        node.cardxnodexwidget_set.all(), None
+                    )
+                    == "rich-text-widget",
                 }
                 for node in nodes
             }
