@@ -354,7 +354,7 @@ function initiateEdit(tileId: string | null) {
                         v-else-if="data[field as string]?.is_file"
                         :file-data="data[field as string].file_data"
                     />
-                    <template v-else-if="data.is_rich_text">
+                    <template v-else-if="columnDatum.is_rich_text">
                         <span
                             v-html="data[field as string]?.display_value"
                         ></span>
