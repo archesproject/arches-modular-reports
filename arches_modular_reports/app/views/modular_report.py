@@ -14,6 +14,7 @@ from django.views.generic import View
 from arches import VERSION as arches_version
 from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
+from arches.app.utils.betterJSONSerializer import JSONDeserializer
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.permission_backend import get_nodegroups_by_perm, group_required
 from arches.app.utils.response import JSONErrorResponse, JSONResponse
@@ -313,10 +314,12 @@ class NodegroupTileDataView(APIBase):
     def get(self, request, resourceid, nodegroup_alias):
         page_number = request.GET.get("page")
         rows_per_page = request.GET.get("rows_per_page")
-
+        filters = request.GET.get("filters", None)
         query = request.GET.get("query")
         sort_node_id = request.GET.get("sort_node_id")
         direction = request.GET.get("direction", "asc")
+
+        filters = JSONDeserializer().deserialize(filters) if filters else None
 
         user_language = translation.get_language()
 
@@ -330,6 +333,7 @@ class NodegroupTileDataView(APIBase):
             query=query,
             user_language=user_language,
             user=request.user,
+            filters=filters,
         )
 
         paginator = Paginator(tiles, rows_per_page)
