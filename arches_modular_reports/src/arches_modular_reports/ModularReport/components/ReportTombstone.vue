@@ -159,4 +159,11 @@ img {
     object-fit: contain;
     align-self: end;
 }
+
+@media print {
+    .data-container {
+        grid-template-columns: unset;
+        padding: 2rem
+    }
+}
 </style>
