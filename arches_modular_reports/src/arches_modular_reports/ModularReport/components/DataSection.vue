@@ -462,4 +462,10 @@ function initiateEdit(tileId: string | null) {
 .p-button-link {
     padding: 0;
 }
+
+@media print {
+    .section-table-header-functions {
+        display: none;
+    }
+}
 </style>

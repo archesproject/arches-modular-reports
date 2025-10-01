@@ -114,4 +114,10 @@ onMounted(fetchData);
     font-size: 2rem;
     margin: 1rem;
 }
+
+@media print {
+    .report-header {
+        position: unset;
+    }
+}
 </style>

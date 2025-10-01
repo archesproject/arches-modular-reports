@@ -92,4 +92,9 @@ function exportData(exportFormat: ExportFormat) {
     padding: 10px;
     color: var(--p-text-color);
 }
+@media print {
+    .export-links {
+        display: none;
+    }
+}
 </style>

@@ -209,4 +209,14 @@ function closeEditor() {
 :deep(.p-panel-content) {
     padding: 0;
 }
+@media print {
+    .p-splitter {
+        position: unset;
+    }
+    button,
+    :deep(svg),
+    :deep(button) {
+        display: none;
+    }
+}
 </style>
