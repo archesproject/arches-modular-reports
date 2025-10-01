@@ -328,7 +328,7 @@ onMounted(fetchData);
 
 @media print {
     .section-table-header-functions,
-    :deep(svg)  {
+    :deep(svg) {
         display: none;
     }
 }

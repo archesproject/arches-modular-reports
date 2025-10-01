@@ -163,7 +163,7 @@ img {
 @media print {
     .data-container {
         grid-template-columns: unset;
-        padding: 2rem
+        padding: 2rem;
     }
 }
 </style>
