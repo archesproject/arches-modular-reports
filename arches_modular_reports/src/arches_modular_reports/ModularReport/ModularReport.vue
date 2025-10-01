@@ -209,4 +209,9 @@ function closeEditor() {
 :deep(.p-panel-content) {
     padding: 0;
 }
+@media print {
+    .p-splitter {
+        position: unset;
+    }
+}
 </style>
