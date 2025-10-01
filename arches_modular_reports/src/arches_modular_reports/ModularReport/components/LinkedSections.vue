@@ -164,4 +164,12 @@ button.back-to-top {
 .linked-section-container h3 {
     margin: 10px 0px;
 }
+
+@media print {
+    .linked-section-button-container,
+    button,
+    :deep(button) {
+        display: none;
+    }
+}
 </style>

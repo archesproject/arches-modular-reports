@@ -325,4 +325,11 @@ onMounted(fetchData);
     font-size: inherit;
     padding: 0;
 }
+
+@media print {
+    .section-table-header-functions,
+    :deep(svg)  {
+        display: none;
+    }
+}
 </style>
