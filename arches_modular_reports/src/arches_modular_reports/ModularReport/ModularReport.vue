@@ -213,5 +213,10 @@ function closeEditor() {
     .p-splitter {
         position: unset;
     }
+    button,
+    :deep(svg),
+    :deep(button) {
+        display: none;
+    }
 }
 </style>

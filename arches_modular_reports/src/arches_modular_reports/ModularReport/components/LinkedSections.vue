@@ -166,9 +166,7 @@ button.back-to-top {
 }
 
 @media print {
-    .linked-section-button-container,
-    button,
-    :deep(button) {
+    .linked-section-button-container {
         display: none;
     }
 }

@@ -464,9 +464,7 @@ function initiateEdit(tileId: string | null) {
 }
 
 @media print {
-    .section-table-header-functions,
-    button,
-    :deep(svg) {
+    .section-table-header-functions {
         display: none;
     }
 }

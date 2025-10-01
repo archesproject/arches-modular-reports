@@ -327,8 +327,7 @@ onMounted(fetchData);
 }
 
 @media print {
-    .section-table-header-functions,
-    :deep(svg) {
+    .section-table-header-functions {
         display: none;
     }
 }
