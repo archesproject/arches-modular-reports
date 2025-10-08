@@ -124,6 +124,7 @@ export const fetchNodegroupTileData = async (
     sortNodeId: string | null,
     direction: string | null,
     query: string | null,
+    filters: { alias: string; value: string; field_lookup: string }[] | null,
 ) => {
     const url = arches.urls.api_nodegroup_tile_data(
         resourceInstanceId,
@@ -135,6 +136,7 @@ export const fetchNodegroupTileData = async (
         sort_node_id: sortNodeId || "",
         direction: direction || "",
         query: query || "",
+        filters: JSON.stringify(filters || []),
     });
 
     const response = await fetch(url + "?" + params.toString());
