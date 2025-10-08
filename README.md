@@ -210,7 +210,7 @@ Each `section` has a name and an array of components like `DataSection` or `Rela
 
 #### `DataSection`
 
-Displays a group of nodes from the main resource graph. DataSection objects can be grouped together under a common name within LinkedSection components. By default, top-level node groups will appear as individual sections each with its own DataSection in the "Data" tab. For cardinality-n tiles, reports can be filtered to limit the tile(s) displayed in the report.
+Displays a group of nodes from the main resource graph. DataSection objects can be grouped together under a common name within LinkedSection components. By default, top-level node groups will appear as individual sections each with its own DataSection in the "Data" tab. For cardinality-n tiles, reports can optionally be filtered to limit the tile(s) displayed in the report.
 
 ```json
 {
