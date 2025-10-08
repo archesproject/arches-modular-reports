@@ -224,6 +224,29 @@ Displays a group of nodes from the main resource graph. DataSection objects can 
 }
 ```
 
+OR
+
+```json
+{
+    "component": "DataSection",
+    "config": {
+        "node_aliases": ["color", "status_date", "status_type"],
+        "filters": [{
+              "alias": "status_date"
+              "value": "2024-12-31",
+              "field_lookup": "lt"
+        },{
+            "alias": "status_type",
+            "value": "dd48ae2d-025a-4d62-978b-be35e106e6e9",
+            "field_lookup": "0__uri__icontains"
+        }],
+        "custom_labels": {},
+        "nodegroup_alias": "physical_characteristics",
+        "custom_card_name": "Physical Description"
+    }
+}
+```
+
 ---
 
 #### `RelatedResourcesSection`
