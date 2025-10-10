@@ -2,6 +2,8 @@
 import { computed, inject, onMounted, ref, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
+import numeral from "numeral";
+
 import Button from "primevue/button";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
@@ -116,6 +118,8 @@ const columnData = computed(() => {
                 nodeDetails?.widget_label ??
                 nodeAlias,
             is_rich_text: nodeDetails?.is_rich_text,
+            is_numeric: nodeDetails?.is_numeric,
+            number_format: nodeDetails?.number_format,
         };
     });
 });
@@ -362,6 +366,13 @@ function initiateEdit(tileId: string | null) {
                         <span
                             v-html="data[field as string]?.display_value"
                         ></span>
+                    </template>
+                    <template v-else-if="columnDatum.is_numeric">
+                        {{
+                            numeral(
+                                data[field as string]?.display_value,
+                            ).format(columnDatum.number_format)
+                        }}
                     </template>
                     <template v-else>
                         {{ data[field as string]?.display_value }}

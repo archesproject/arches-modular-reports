@@ -247,7 +247,7 @@ class NodePresentationView(APIBase):
             .select_related("nodegroup")
             .prefetch_related(
                 "nodegroup__cardmodel_set",
-                "cardxnodexwidget_set",
+                "cardxnodexwidget_set__widget",
             )
         )
 
@@ -259,6 +259,15 @@ class NodePresentationView(APIBase):
         def get_widget_name(queryset, fallback):
             if queryset and queryset[0].widget:
                 return getattr(queryset[0].widget, "name", fallback)
+            return fallback
+
+        def get_widget_format(queryset, fallback=""):
+            if queryset and queryset[0].widget:
+                if getattr(queryset[0].widget, "name", None) != "number-widget":
+                    return fallback
+                config = getattr(queryset[0], "config", None)
+                if config:
+                    return config.get("format", fallback)
             return fallback
 
         def get_node_visibility(node):
@@ -302,6 +311,11 @@ class NodePresentationView(APIBase):
                         node.cardxnodexwidget_set.all(), None
                     )
                     == "rich-text-widget",
+                    "is_numeric": get_widget_name(node.cardxnodexwidget_set.all(), None)
+                    == "number-widget",
+                    "number_format": get_widget_format(
+                        node.cardxnodexwidget_set.all(), ""
+                    ),
                 }
                 for node in nodes
             }
