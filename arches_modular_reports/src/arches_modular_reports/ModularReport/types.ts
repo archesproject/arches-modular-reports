@@ -38,6 +38,8 @@ export interface NodePresentation {
         cardinality: string;
     };
     is_rich_text: boolean;
+    is_numeric: boolean;
+    number_format: string;
 }
 
 export interface NodePresentationLookup {
