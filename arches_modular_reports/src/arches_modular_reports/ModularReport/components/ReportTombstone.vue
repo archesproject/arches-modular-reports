@@ -112,6 +112,7 @@ onMounted(fetchData);
                 <LabeledNodeValues
                     v-for="nodeAlias in props.component.config.node_aliases"
                     :key="nodeAlias"
+                    :node-alias="nodeAlias"
                     :widget-label="bestWidgetLabel(nodeAlias)"
                     :display-data="displayDataByAlias[nodeAlias]"
                 />

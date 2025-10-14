@@ -1,21 +1,36 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, inject } from "vue";
 
 import Button from "primevue/button";
+
+import numeral from "numeral";
 
 import { RESOURCE_LIMIT_FOR_HEADER } from "@/arches_modular_reports/constants.ts";
 import { truncateDisplayData } from "@/arches_modular_reports/ModularReport/utils.ts";
 
-import type { NodeValueDisplayData } from "@/arches_modular_reports/ModularReport/types";
+import type { Ref } from "vue";
+import type { NodeValueDisplayData, NodePresentationLookup } from "@/arches_modular_reports/ModularReport/types";
 
 const props = defineProps<{
     widgetLabel: string;
     displayData: NodeValueDisplayData[];
+    nodeAlias: string;
 }>();
+
+const nodePresentationLookup = inject("nodePresentationLookup") as Ref<NodePresentationLookup | undefined>;
 
 const truncatedDisplayData = computed(() => {
     return truncateDisplayData(props.displayData, RESOURCE_LIMIT_FOR_HEADER);
 });
+
+function formatValue(value: string): string {
+    const nodePresentation = nodePresentationLookup.value?.[props.nodeAlias];
+    if (nodePresentation?.is_numeric && nodePresentation?.number_format) {
+        return numeral(value).format(nodePresentation.number_format)
+    }
+    return value;
+}
+
 </script>
 
 <template>
@@ -49,7 +64,7 @@ const truncatedDisplayData = computed(() => {
                         :key="innerValue"
                         class="node-value"
                     >
-                        {{ innerValue }}
+                        {{ formatValue(innerValue) }}
                     </div>
                 </template>
             </template>
