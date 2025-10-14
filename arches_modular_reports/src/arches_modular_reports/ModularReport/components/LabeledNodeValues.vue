@@ -9,7 +9,10 @@ import { RESOURCE_LIMIT_FOR_HEADER } from "@/arches_modular_reports/constants.ts
 import { truncateDisplayData } from "@/arches_modular_reports/ModularReport/utils.ts";
 
 import type { Ref } from "vue";
-import type { NodeValueDisplayData, NodePresentationLookup } from "@/arches_modular_reports/ModularReport/types";
+import type {
+    NodeValueDisplayData,
+    NodePresentationLookup,
+} from "@/arches_modular_reports/ModularReport/types";
 
 const props = defineProps<{
     widgetLabel: string;
@@ -17,7 +20,9 @@ const props = defineProps<{
     nodeAlias: string;
 }>();
 
-const nodePresentationLookup = inject("nodePresentationLookup") as Ref<NodePresentationLookup | undefined>;
+const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
+    NodePresentationLookup | undefined
+>;
 
 const truncatedDisplayData = computed(() => {
     return truncateDisplayData(props.displayData, RESOURCE_LIMIT_FOR_HEADER);
@@ -26,11 +31,10 @@ const truncatedDisplayData = computed(() => {
 function formatValue(value: string): string {
     const nodePresentation = nodePresentationLookup.value?.[props.nodeAlias];
     if (nodePresentation?.is_numeric && nodePresentation?.number_format) {
-        return numeral(value).format(nodePresentation.number_format)
+        return numeral(value).format(nodePresentation.number_format);
     }
     return value;
 }
-
 </script>
 
 <template>
