@@ -1,10 +1,13 @@
-import { defineAsyncComponent } from "vue";
+import numeral from "numeral";
+
+import { defineAsyncComponent, isRef, Ref } from "vue";
 
 import type {
     ComponentLookup,
     NamedSection,
     NodeValueDisplayData,
     SectionContent,
+    LanguageSettings,
 } from "@/arches_modular_reports/ModularReport/types";
 
 export function uniqueId(_unused: unknown) {
@@ -48,4 +51,13 @@ export function truncateDisplayData(
         }
         return acc;
     }, [] as NodeValueDisplayData[]);
+}
+
+export function formatNumber(value: number, numberFormat: Record<string, string>, languageSettings: LanguageSettings | Ref<LanguageSettings>) {
+    const language = isRef(languageSettings)
+        ? (languageSettings.value as LanguageSettings).ACTIVE_LANGUAGE
+        : languageSettings.ACTIVE_LANGUAGE;
+    const prefix = numberFormat.prefix?.[language] ?? "";
+    const suffix = numberFormat.suffix?.[language] ?? "";
+    return `${prefix}${numeral(value).format(numberFormat.format)}${suffix}`;
 }

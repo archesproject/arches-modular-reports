@@ -3,15 +3,14 @@ import { computed, inject } from "vue";
 
 import Button from "primevue/button";
 
-import numeral from "numeral";
-
 import { RESOURCE_LIMIT_FOR_HEADER } from "@/arches_modular_reports/constants.ts";
-import { truncateDisplayData } from "@/arches_modular_reports/ModularReport/utils.ts";
+import { truncateDisplayData, formatNumber } from "@/arches_modular_reports/ModularReport/utils.ts";
 
 import type { Ref } from "vue";
 import type {
     NodeValueDisplayData,
     NodePresentationLookup,
+    LanguageSettings,
 } from "@/arches_modular_reports/ModularReport/types";
 
 const props = defineProps<{
@@ -23,7 +22,9 @@ const props = defineProps<{
 const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
     NodePresentationLookup | undefined
 >;
-
+const languageSettings = inject("languageSettings") as Ref<
+    LanguageSettings | undefined
+>;
 const truncatedDisplayData = computed(() => {
     return truncateDisplayData(props.displayData, RESOURCE_LIMIT_FOR_HEADER);
 });
@@ -31,7 +32,7 @@ const truncatedDisplayData = computed(() => {
 function formatValue(value: string): string {
     const nodePresentation = nodePresentationLookup.value?.[props.nodeAlias];
     if (nodePresentation?.is_numeric && nodePresentation?.number_format) {
-        return numeral(value).format(nodePresentation.number_format);
+        return formatNumber(value, nodePresentation.number_format, languageSettings);
     }
     return value;
 }

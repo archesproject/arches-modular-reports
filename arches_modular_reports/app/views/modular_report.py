@@ -8,7 +8,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils import translation
 from django.utils.decorators import method_decorator
-from django.utils.translation import gettext as _
+from django.utils.translation import get_language, get_language_info, gettext as _
 from django.views.generic import View
 
 from arches import VERSION as arches_version
@@ -267,7 +267,12 @@ class NodePresentationView(APIBase):
                     return fallback
                 config = getattr(queryset[0], "config", None)
                 if config:
-                    return config.get("format", fallback)
+                    ret = {
+                        "format": config.get("format", fallback),
+                        "prefix": config.get("prefix", fallback),
+                        "suffix": config.get("suffix", fallback),
+                    }
+                    return ret
             return fallback
 
         def get_node_visibility(node):
@@ -420,3 +425,15 @@ class UserPermissionsView(APIBase):
             if permission == "RDM Administrator":
                 user_permissions[permission] = group_required(request.user, permission)
         return JSONResponse(user_permissions)
+
+
+class LanguageSettingsView(APIBase):
+    def get(self, request):
+        return JSONResponse(
+            {
+                "language": get_language(),
+                "language_dir": (
+                    "ltr" if not get_language_info(get_language())["bidi"] else "rtl"
+                ),
+            }
+        )
