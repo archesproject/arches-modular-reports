@@ -207,3 +207,11 @@ export const fetchUserPermissions = async (permissions: [string]) => {
     if (!response.ok) throw new Error(parsed.message || response.statusText);
     return parsed;
 };
+
+export const fetchLanguageSettings = async () => {
+    const url = arches.urls.api_client_language_settings;
+    const response = await fetch(url);
+    const parsed = await response.json();
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};
