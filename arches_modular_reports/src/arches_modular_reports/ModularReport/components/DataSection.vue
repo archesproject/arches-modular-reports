@@ -2,8 +2,6 @@
 import { computed, inject, onMounted, ref, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
-import numeral from "numeral";
-
 import Button from "primevue/button";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
@@ -26,7 +24,10 @@ import type { DataTablePageEvent } from "primevue/datatable";
 import type {
     LabelBasedCard,
     NodePresentationLookup,
+    LanguageSettings
 } from "@/arches_modular_reports/ModularReport/types";
+
+import { formatNumber } from "@/arches_modular_reports/ModularReport/utils.ts";
 
 const props = defineProps<{
     component: {
@@ -66,6 +67,9 @@ const userCanEditResourceInstance = inject(
 ) as Ref<boolean>;
 const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
     NodePresentationLookup | undefined
+>;
+const languageSettings = inject("languageSettings") as Ref<
+    LanguageSettings | undefined
 >;
 const { setSelectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
     setSelectedNodegroupAlias: (nodegroupAlias: string | undefined) => void;
@@ -369,9 +373,11 @@ function initiateEdit(tileId: string | null) {
                     </template>
                     <template v-else-if="columnDatum.is_numeric">
                         {{
-                            numeral(
+                            formatNumber(
                                 data[field as string]?.display_value,
-                            ).format(columnDatum.number_format)
+                                columnDatum.number_format,
+                                languageSettings
+                            )
                         }}
                     </template>
                     <template v-else>

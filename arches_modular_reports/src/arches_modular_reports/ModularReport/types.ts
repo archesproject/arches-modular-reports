@@ -5,7 +5,7 @@ import type {
     AliasedNodegroupData,
 } from "@/arches_component_lab/types.ts";
 
-export interface Settings {
+export interface LanguageSettings {
     ACTIVE_LANGUAGE: string;
     ACTIVE_LANGUAGE_DIRECTION: string;
 }

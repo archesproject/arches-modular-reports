@@ -12,6 +12,7 @@ import {
     fetchNodePresentation,
     fetchReportConfig,
     fetchUserResourcePermissions,
+    fetchLanguageSettings,
 } from "@/arches_modular_reports/ModularReport/api.ts";
 
 import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_modular_reports/constants.ts";
@@ -23,6 +24,7 @@ import type {
     ComponentLookup,
     NamedSection,
     NodePresentationLookup,
+    LanguageSettings,
 } from "@/arches_modular_reports/ModularReport/types";
 
 const toast = useToast();
@@ -47,6 +49,9 @@ provide("nodePresentationLookup", nodePresentationLookup);
 
 const userCanEditResourceInstance = ref(false);
 provide("userCanEditResourceInstance", userCanEditResourceInstance);
+
+const languageSettings = ref<LanguageSettings>({});
+provide("languageSettings", languageSettings);
 
 const selectedNodegroupAlias = ref<string | null>();
 function setSelectedNodegroupAlias(nodegroupAlias: string | null | undefined) {
@@ -113,6 +118,12 @@ watchEffect(async () => {
             }),
             fetchUserResourcePermissions(resourceInstanceId).then((data) => {
                 userCanEditResourceInstance.value = data.edit;
+            }),
+            fetchLanguageSettings().then((data: LanguageSettings) => {
+                languageSettings.value = {
+                    ACTIVE_LANGUAGE: data.language,
+                    ACTIVE_LANGUAGE_DIRECTION: data.language_dir,
+                };
             }),
             fetchReportConfig(resourceInstanceId, reportConfigSlug).then(
                 (data) => {

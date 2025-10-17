@@ -10,6 +10,7 @@ from arches_modular_reports.app.views.modular_report import (
     ModularReportConfigView,
     RelatedResourceView,
     UserPermissionsView,
+    LanguageSettingsView,
 )
 
 uuid_regex = settings.UUID_REGEX
@@ -51,6 +52,11 @@ urlpatterns = [
         "api/has_permissions",
         UserPermissionsView.as_view(),
         name="api_has_permissions",
+    ),
+    path(
+        "api/client_language_settings",
+        LanguageSettingsView.as_view(),
+        name="api_client_language_settings",
     ),
     path("", include("arches_querysets.urls")),
     path("", include("arches_component_lab.urls")),
