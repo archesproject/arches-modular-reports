@@ -9,7 +9,7 @@ import type {
     NodeValueDisplayData,
     SectionContent,
     LanguageSettings,
-    NumberFormat
+    NumberFormat,
 } from "@/arches_modular_reports/ModularReport/types";
 
 export function uniqueId(_unused: unknown) {
