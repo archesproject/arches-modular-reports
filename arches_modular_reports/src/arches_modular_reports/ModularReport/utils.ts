@@ -9,6 +9,7 @@ import type {
     NodeValueDisplayData,
     SectionContent,
     LanguageSettings,
+    NumberFormat
 } from "@/arches_modular_reports/ModularReport/types";
 
 export function uniqueId(_unused: unknown) {
@@ -54,7 +55,11 @@ export function truncateDisplayData(
     }, [] as NodeValueDisplayData[]);
 }
 
-export function formatNumber(value: string | number, numberFormat: Record<string, string>, languageSettings: LanguageSettings | Ref<LanguageSettings>) {
+export function formatNumber(
+    value: string | number,
+    numberFormat: NumberFormat,
+    languageSettings: LanguageSettings | Ref<LanguageSettings>,
+) {
     const language = isRef(languageSettings)
         ? (languageSettings.value as LanguageSettings).ACTIVE_LANGUAGE
         : languageSettings.ACTIVE_LANGUAGE;
