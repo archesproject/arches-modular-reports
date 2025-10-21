@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject } from "vue";
+import { computed, inject, ref } from "vue";
 
 import Button from "primevue/button";
 
@@ -22,9 +22,10 @@ const props = defineProps<{
 const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
     NodePresentationLookup | undefined
 >;
-const languageSettings = inject("languageSettings") as Ref<
-    LanguageSettings | undefined
->;
+const languageSettings = inject(
+    "languageSettings",
+    ref({ ACTIVE_LANGUAGE: "en", ACTIVE_LANGUAGE_DIRECTION: "ltr"})
+) as Ref<LanguageSettings>;
 const truncatedDisplayData = computed(() => {
     return truncateDisplayData(props.displayData, RESOURCE_LIMIT_FOR_HEADER);
 });
