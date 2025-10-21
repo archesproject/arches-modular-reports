@@ -24,7 +24,7 @@ import type { DataTablePageEvent } from "primevue/datatable";
 import type {
     LabelBasedCard,
     NodePresentationLookup,
-    LanguageSettings
+    LanguageSettings,
 } from "@/arches_modular_reports/ModularReport/types";
 
 import { formatNumber } from "@/arches_modular_reports/ModularReport/utils.ts";
@@ -70,7 +70,7 @@ const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
 >;
 const languageSettings = inject(
     "languageSettings",
-    ref({ ACTIVE_LANGUAGE: "en", ACTIVE_LANGUAGE_DIRECTION: "ltr"})
+    ref({ ACTIVE_LANGUAGE: "en", ACTIVE_LANGUAGE_DIRECTION: "ltr" }),
 ) as Ref<LanguageSettings>;
 const { setSelectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
     setSelectedNodegroupAlias: (nodegroupAlias: string | undefined) => void;
@@ -377,7 +377,7 @@ function initiateEdit(tileId: string | null) {
                             formatNumber(
                                 data[field as string]?.display_value,
                                 columnDatum.number_format,
-                                languageSettings
+                                languageSettings,
                             )
                         }}
                     </template>
