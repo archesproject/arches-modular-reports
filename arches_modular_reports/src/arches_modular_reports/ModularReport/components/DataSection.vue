@@ -68,9 +68,10 @@ const userCanEditResourceInstance = inject(
 const nodePresentationLookup = inject("nodePresentationLookup") as Ref<
     NodePresentationLookup | undefined
 >;
-const languageSettings = inject("languageSettings") as Ref<
-    LanguageSettings | undefined
->;
+const languageSettings = inject(
+    "languageSettings",
+    ref({ ACTIVE_LANGUAGE: "en", ACTIVE_LANGUAGE_DIRECTION: "ltr"})
+) as Ref<LanguageSettings>;
 const { setSelectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
     setSelectedNodegroupAlias: (nodegroupAlias: string | undefined) => void;
 };
