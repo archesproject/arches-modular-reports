@@ -320,9 +320,7 @@ class NodePresentationView(APIBase):
                     == "rich-text-widget",
                     "is_numeric": get_widget_name(node.cardxnodexwidget_set.all(), None)
                     == "number-widget",
-                    "number_format": get_widget_format(
-                        node.cardxnodexwidget_set.all()
-                    ),
+                    "number_format": get_widget_format(node.cardxnodexwidget_set.all()),
                 }
                 for node in nodes
             }
