@@ -137,3 +137,9 @@ export interface LabelBasedCard {
     "@tile_id": string;
     [key: string]: boolean | string | null;
 }
+
+export interface NumberFormat {
+    format: string;
+    prefix: Record<string, string>;
+    suffix: Record<string, string>;
+}
