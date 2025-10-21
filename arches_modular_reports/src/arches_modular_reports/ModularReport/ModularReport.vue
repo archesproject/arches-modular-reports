@@ -50,7 +50,7 @@ provide("nodePresentationLookup", nodePresentationLookup);
 const userCanEditResourceInstance = ref(false);
 provide("userCanEditResourceInstance", userCanEditResourceInstance);
 
-const languageSettings = ref<LanguageSettings>({});
+const languageSettings = ref<Partial<LanguageSettings>>({});
 provide("languageSettings", languageSettings);
 
 const selectedNodegroupAlias = ref<string | null>();
@@ -119,7 +119,7 @@ watchEffect(async () => {
             fetchUserResourcePermissions(resourceInstanceId).then((data) => {
                 userCanEditResourceInstance.value = data.edit;
             }),
-            fetchLanguageSettings().then((data: LanguageSettings) => {
+            fetchLanguageSettings().then((data) => {
                 languageSettings.value = {
                     ACTIVE_LANGUAGE: data.language,
                     ACTIVE_LANGUAGE_DIRECTION: data.language_dir,
