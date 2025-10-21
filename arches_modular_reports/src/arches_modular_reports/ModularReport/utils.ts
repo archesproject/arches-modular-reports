@@ -1,6 +1,7 @@
 import numeral from "numeral";
 
-import { defineAsyncComponent, isRef, Ref } from "vue";
+import { defineAsyncComponent, isRef } from "vue";
+import type { Ref } from "vue";
 
 import type {
     ComponentLookup,
@@ -53,7 +54,7 @@ export function truncateDisplayData(
     }, [] as NodeValueDisplayData[]);
 }
 
-export function formatNumber(value: number, numberFormat: Record<string, string>, languageSettings: LanguageSettings | Ref<LanguageSettings>) {
+export function formatNumber(value: string | number, numberFormat: Record<string, string>, languageSettings: LanguageSettings | Ref<LanguageSettings>) {
     const language = isRef(languageSettings)
         ? (languageSettings.value as LanguageSettings).ACTIVE_LANGUAGE
         : languageSettings.ACTIVE_LANGUAGE;
