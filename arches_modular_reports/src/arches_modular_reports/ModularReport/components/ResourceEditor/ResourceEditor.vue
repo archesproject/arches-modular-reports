@@ -227,8 +227,14 @@ function onSave() {
                 generateWidgetDirtyStates(modularReportResource),
             );
         })
-        .catch((error) => {
-            apiError.value = error as Error;
+        .catch((error: Error) => {
+            if (error.message.includes("This card requires")) {
+                error.message =
+                    "The required value in the current card or the parent card is missing.";
+            } else if (error.message.includes("Tile Cardinality Error")) {
+                error.message = "The tile already exists.";
+            }
+            apiError.value = error;
         })
         .finally(() => {
             isLoading.value = false;
