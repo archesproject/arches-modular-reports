@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arches-modular-reports"
-version = "1.0.0b2"
+version = "1.0.0b3-dev"
 readme = "README.md"
 authors = [
     {name = "Arches Project"}
@@ -31,7 +31,7 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "arches>=7.6.19,<8.2.0",
-    "arches-component-lab>=0.0.1a3"
+    "arches-component-lab @ git+https://github.com/archesproject/arches-component-lab@main"
 ]
 
 [project.urls]
