@@ -254,10 +254,10 @@ function processNode(
     nodegroupAlias: string,
     tileDirtyStates: WidgetDirtyStates,
 ): TreeNode {
-    const localizedLabel = $gettext("%{label}: %{labelData}", {
-        label: nodePresentationLookup.value[alias].widget_label,
-        labelData: extractAndOverrideDisplayValue(data),
-    });
+    const label = $gettext(nodePresentationLookup.value[alias].widget_label);
+    const labelData = extractAndOverrideDisplayValue(data);
+    const required = nodePresentationLookup.value[alias].is_required ? "*" : "";
+    const localizedLabel = `${label}${required}: ${labelData}`;
 
     return {
         key: generateStableKey(data),
