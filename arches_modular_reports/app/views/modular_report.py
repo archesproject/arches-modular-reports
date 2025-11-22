@@ -318,6 +318,7 @@ class NodePresentationView(APIBase):
                         node.cardxnodexwidget_set.all(), None
                     )
                     == "rich-text-widget",
+                    "is_required": node.isrequired,
                     "is_numeric": get_widget_name(node.cardxnodexwidget_set.all(), None)
                     == "number-widget",
                     "number_format": get_widget_format(node.cardxnodexwidget_set.all()),
