@@ -205,6 +205,7 @@ function onUpdateWidgetFocusStates(
 
 function onSave() {
     isLoading.value = true;
+    apiError.value = null;
 
     updateModularReportResource(
         graphSlug,
@@ -247,16 +248,24 @@ function onSave() {
 </script>
 
 <template>
-    <Skeleton
-        v-if="isLoading"
-        style="height: 10rem"
-    />
     <Message
-        v-else-if="apiError"
+        v-if="apiError"
         severity="error"
+        class="error-message"
     >
         {{ apiError.message }}
     </Message>
+    <div
+        v-if="isLoading"
+        class="loading-skeleton"
+    >
+        <div style="display: flex; gap: 1rem; align-items: center"> 
+            <Skeleton height="2.5rem"></Skeleton>
+            <Skeleton height="2.5rem" width="10rem"></Skeleton>
+        </div>
+        <Skeleton height="2.5rem"></Skeleton>
+        <Skeleton height="8rem"></Skeleton>
+    </div>
     <template v-else>
         <Splitter
             style="height: 100%; height: stretch; width: stretch"
@@ -292,7 +301,7 @@ function onSave() {
                     style="
                         border-top: 1px solid
                             var(--p-panel-content-border-color);
-                        padding: 0.5rem;
+                        margin-top: 1.5rem;
                         text-align: right;
                         display: flex;
                     "
@@ -318,3 +327,15 @@ function onSave() {
         </Splitter>
     </template>
 </template>
+
+<style scoped>
+.error-message, .loading-skeleton {
+    margin: 1rem;
+}
+.loading-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+</style>
