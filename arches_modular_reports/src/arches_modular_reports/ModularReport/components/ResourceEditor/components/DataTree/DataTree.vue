@@ -254,14 +254,27 @@ function processNode(
     nodegroupAlias: string,
     tileDirtyStates: WidgetDirtyStates,
 ): TreeNode {
-    const label = $gettext(nodePresentationLookup.value[alias].widget_label);
-    const labelData = extractAndOverrideDisplayValue(data);
+    const isEmpty = !data || !(data?.display_value);
+    const isRichText = nodePresentationLookup.value[alias].is_rich_text;
     const required = nodePresentationLookup.value[alias].is_required ? "*" : "";
-    const localizedLabel = `${label}${required}: ${labelData}`;
-
+    let label = $gettext(nodePresentationLookup.value[alias].widget_label);
+    label = `${label}${required}`;
+    
+    let nodeValue = extractAndOverrideDisplayValue(data);
+    if (isRichText) {
+        nodeValue = nodeValue.replace(/(<([^>]+)>)/gi, "");
+        nodeValue = nodeValue.replaceAll("&nbsp;", " ");
+    }
+    nodeValue = nodeValue.length > 50 ? nodeValue.slice(0, 47) + "..." : nodeValue;
+    const nodeValueClass = isEmpty ? "is-empty" : "has-value";
+    
+    
     return {
         key: generateStableKey(data),
-        label: localizedLabel,
+        label: label,
+        nodeValue: nodeValue,
+        isEmpty: isEmpty,
+        nodeValueClass: nodeValueClass,
         data: {
             alias: alias,
             tileid: tileId,
@@ -385,7 +398,12 @@ function onNodeUnselect() {
                 @node-unselect="onNodeUnselect"
                 @node-expand="onCaretExpand"
                 @node-collapse="onCaretCollapse"
-            />
+            >
+                <template #default="slotProps">
+                    <span>{{ slotProps.node.label }}: </span> 
+                    <span :class="slotProps.node.nodeValueClass">{{ slotProps.node.nodeValue  }}</span>
+                </template>
+            </Tree>
         </Panel>
     </div>
 </template>
@@ -394,6 +412,13 @@ function onNodeUnselect() {
 :deep(.is-dirty) {
     font-weight: bold;
     background-color: var(--p-yellow-100) !important;
+}
+:deep(.is-empty) {
+    font-weight: normal;
+    font-style: italic;
+}
+:deep(.has-value) {
+    font-weight: bold;
 }
 
 :deep(.p-tree-node-content.p-tree-node-selected) {
