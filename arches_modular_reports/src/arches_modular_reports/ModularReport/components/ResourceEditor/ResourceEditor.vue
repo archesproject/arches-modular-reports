@@ -232,8 +232,9 @@ function onSave() {
         })
         .catch((error: Error) => {
             if (error.message.includes("This card requires")) {
-                error.message =
-                    $gettext("A required field in the current card or a parent of this card is missing.  Please enter a value for that field and try saving again..");
+                error.message = $gettext(
+                    "A required field in the current card or a parent of this card is missing.  Please enter a value for that field and try saving again..",
+                );
             } else if (error.message.includes("Tile Cardinality Error")) {
                 error.message = $gettext("The tile already exists.");
             }
