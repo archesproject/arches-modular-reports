@@ -4,6 +4,7 @@ import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
 import Tree from "primevue/tree";
+import Button from 'primevue/button';
 
 import { findNodeInTree } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree/utils/find-node-in-tree.ts";
 import { generateTilePath } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree/utils/generate-tile-path.ts";
@@ -175,9 +176,9 @@ function processNodegroup(
         key: generateStableKey(tileOrTiles),
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
         data: { tileid: tileOrTiles.tileid, alias: nodegroupAlias },
-        children,
+        children: children,
         styleClass: isDirty ? "is-dirty" : undefined,
-    };
+    } as TreeNode;
 }
 
 function isTileOrTiles(nodeData: NodeData | NodegroupData | null) {
@@ -262,18 +263,19 @@ function processNode(
     
     let nodeValue = extractAndOverrideDisplayValue(data);
     if (isRichText) {
+        const tempElement = document.createElement("textarea");
         nodeValue = nodeValue.replace(/(<([^>]+)>)/gi, "");
-        nodeValue = nodeValue.replaceAll("&nbsp;", " ");
+        tempElement.innerHTML = nodeValue;
+        nodeValue = tempElement.value;
+        tempElement.remove();
     }
     nodeValue = nodeValue.length > 50 ? nodeValue.slice(0, 47) + "..." : nodeValue;
     const nodeValueClass = isEmpty ? "is-empty" : "has-value";
-    
     
     return {
         key: generateStableKey(data),
         label: label,
         nodeValue: nodeValue,
-        isEmpty: isEmpty,
         nodeValueClass: nodeValueClass,
         data: {
             alias: alias,
@@ -281,7 +283,7 @@ function processNode(
             nodegroupAlias: nodegroupAlias,
         },
         styleClass: tileDirtyStates[alias] ? "is-dirty" : undefined,
-    };
+    } as TreeNode;
 }
 
 function createCardinalityNWrapper(
@@ -314,20 +316,23 @@ function createCardinalityNWrapper(
             data: { tileid: tile.tileid, alias: nodegroupAlias },
             children,
             styleClass: hasDirtyChildren ? "is-dirty" : undefined,
-        };
+        } as TreeNode;
     });
 
     const isDirty = childNodes.some(
         (childNode) => childNode.styleClass === "is-dirty",
     );
 
+    const cardinality = nodePresentationLookup.value[nodegroupAlias].nodegroup.cardinality;
+
     return {
         key: generateStableKey([...tiles, parentTileId, nodegroupAlias]),
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
         data: { tileid: parentTileId, alias: nodegroupAlias },
+        cardinality: cardinality,
         children: childNodes,
         styleClass: isDirty ? "is-dirty" : undefined,
-    };
+    } as TreeNode;
 }
 
 function onCaretExpand(node: TreeNode) {
@@ -400,8 +405,8 @@ function onNodeUnselect() {
                 @node-collapse="onCaretCollapse"
             >
                 <template #default="slotProps">
-                    <span>{{ slotProps.node.label }}: </span> 
-                    <span :class="slotProps.node.nodeValueClass">{{ slotProps.node.nodeValue  }}</span>
+                    <span>{{ slotProps.node.label }}: <span v-if="slotProps.node.cardinality == 'n'"><Button icon="pi pi-plus" size="small" rounded aria-label="Add new tile" /></span></span>
+                    <span :class="slotProps.node.nodeValueClass">{{ slotProps.node.nodeValue }}</span>
                 </template>
             </Tree>
         </Panel>
