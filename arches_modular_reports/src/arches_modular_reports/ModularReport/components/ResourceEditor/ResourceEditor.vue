@@ -11,6 +11,7 @@ import {
 } from "vue";
 
 import { isEqual } from "es-toolkit";
+import { useGettext } from "vue3-gettext";
 
 import Button from "primevue/button";
 import Message from "primevue/message";
@@ -42,6 +43,8 @@ import type {
 
 import type { WidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/types.ts";
 import type { AliasedTileData } from "@/arches_component_lab/types";
+
+const { $gettext } = useGettext();
 
 const graphSlug = inject<string>("graphSlug")!;
 const resourceInstanceId = inject<string>("resourceInstanceId")!;
@@ -227,8 +230,15 @@ function onSave() {
                 generateWidgetDirtyStates(modularReportResource),
             );
         })
-        .catch((error) => {
-            apiError.value = error as Error;
+        .catch((error: Error) => {
+            if (error.message.includes("This card requires")) {
+                error.message = $gettext(
+                    "A required field in the current card or a parent of this card is missing.  Please enter a value for that field and try saving again..",
+                );
+            } else if (error.message.includes("Tile Cardinality Error")) {
+                error.message = $gettext("The tile already exists.");
+            }
+            apiError.value = error;
         })
         .finally(() => {
             isLoading.value = false;
