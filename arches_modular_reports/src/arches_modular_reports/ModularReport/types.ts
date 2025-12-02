@@ -39,6 +39,7 @@ export interface NodePresentation {
     };
     is_rich_text: boolean;
     is_numeric: boolean;
+    is_required: boolean;
     number_format: NumberFormat;
 }
 
