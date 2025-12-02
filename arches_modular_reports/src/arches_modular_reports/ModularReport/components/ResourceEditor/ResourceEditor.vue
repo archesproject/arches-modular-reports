@@ -259,9 +259,12 @@ function onSave() {
         v-if="isLoading"
         class="loading-skeleton"
     >
-        <div style="display: flex; gap: 1rem; align-items: center"> 
+        <div style="display: flex; gap: 1rem; align-items: center">
             <Skeleton height="2.5rem"></Skeleton>
-            <Skeleton height="2.5rem" width="10rem"></Skeleton>
+            <Skeleton
+                height="2.5rem"
+                width="10rem"
+            ></Skeleton>
         </div>
         <Skeleton height="2.5rem"></Skeleton>
         <Skeleton height="8rem"></Skeleton>
@@ -329,7 +332,8 @@ function onSave() {
 </template>
 
 <style scoped>
-.error-message, .loading-skeleton {
+.error-message,
+.loading-skeleton {
     margin: 1rem;
 }
 .loading-skeleton {
@@ -337,5 +341,4 @@ function onSave() {
     flex-direction: column;
     gap: 0.5rem;
 }
-
 </style>
