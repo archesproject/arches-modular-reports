@@ -412,7 +412,7 @@ function onNodeUnselect() {
             >
                 <template #default="slotProps">
                     <span>
-                        {{ slotProps.node.label}}
+                        {{ slotProps.node.label }}
                         <span
                             v-if="slotProps.node.data.isRequired"
                             class="is-required"
