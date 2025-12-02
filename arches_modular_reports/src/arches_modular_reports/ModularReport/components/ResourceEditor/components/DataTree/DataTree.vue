@@ -257,9 +257,8 @@ function processNode(
 ): TreeNode {
     const isEmpty = !data || !(data?.display_value);
     const isRichText = nodePresentationLookup.value[alias].is_rich_text;
-    const required = nodePresentationLookup.value[alias].is_required ? "*" : "";
-    let label = $gettext(nodePresentationLookup.value[alias].widget_label);
-    label = `${label}${required}`;
+    const label = $gettext(nodePresentationLookup.value[alias].widget_label);
+    const nodeValueClass = isEmpty ? "is-empty" : "has-value";
     
     let nodeValue = extractAndOverrideDisplayValue(data);
     if (isRichText) {
@@ -270,17 +269,17 @@ function processNode(
         tempElement.remove();
     }
     nodeValue = nodeValue.length > 50 ? nodeValue.slice(0, 47) + "..." : nodeValue;
-    const nodeValueClass = isEmpty ? "is-empty" : "has-value";
     
     return {
         key: generateStableKey(data),
         label: label,
-        nodeValue: nodeValue,
-        nodeValueClass: nodeValueClass,
         data: {
             alias: alias,
             tileid: tileId,
             nodegroupAlias: nodegroupAlias,
+            nodeValue: nodeValue,
+            nodeValueClass: nodeValueClass,
+            isRequired: nodePresentationLookup.value[alias].is_required,
         },
         styleClass: tileDirtyStates[alias] ? "is-dirty" : undefined,
     } as TreeNode;
@@ -313,7 +312,10 @@ function createCardinalityNWrapper(
         return {
             key: generateStableKey([tile, index]),
             label: children[0]?.label || $gettext("Empty"),
-            data: { tileid: tile.tileid, alias: nodegroupAlias },
+            data: { 
+                tileid: tile.tileid, 
+                alias: nodegroupAlias,
+            },
             children,
             styleClass: hasDirtyChildren ? "is-dirty" : undefined,
         } as TreeNode;
@@ -323,13 +325,14 @@ function createCardinalityNWrapper(
         (childNode) => childNode.styleClass === "is-dirty",
     );
 
-    const cardinality = nodePresentationLookup.value[nodegroupAlias].nodegroup.cardinality;
-
     return {
         key: generateStableKey([...tiles, parentTileId, nodegroupAlias]),
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
-        data: { tileid: parentTileId, alias: nodegroupAlias },
-        cardinality: cardinality,
+        data: { 
+            tileid: parentTileId, 
+            alias: nodegroupAlias,
+            cardinality: nodePresentationLookup.value[nodegroupAlias].nodegroup.cardinality,
+        },
         children: childNodes,
         styleClass: isDirty ? "is-dirty" : undefined,
     } as TreeNode;
@@ -405,8 +408,18 @@ function onNodeUnselect() {
                 @node-collapse="onCaretCollapse"
             >
                 <template #default="slotProps">
-                    <span>{{ slotProps.node.label }}: <span v-if="slotProps.node.cardinality == 'n'"><Button icon="pi pi-plus" size="small" rounded aria-label="Add new tile" /></span></span>
-                    <span :class="slotProps.node.nodeValueClass">{{ slotProps.node.nodeValue }}</span>
+                    <span>{{ slotProps.node.label }}<span v-if="slotProps.node.data.isRequired" class="is-required">*</span> : 
+                        <span v-if="slotProps.node.data.cardinality == 'n'">
+                            <Button 
+                                icon="pi pi-plus" 
+                                size="small" 
+                                rounded 
+                                variant="outlined" 
+                                aria-label="Add new tile"
+                            />
+                        </span>
+                    </span>
+                    <span :class="slotProps.node.data.nodeValueClass">{{ slotProps.node.data.nodeValue }}</span>
                 </template>
             </Tree>
         </Panel>
@@ -424,6 +437,10 @@ function onNodeUnselect() {
 }
 :deep(.has-value) {
     font-weight: bold;
+}
+:deep(.is-required) {
+    font-weight: bold;
+    color: var(--p-red-600);
 }
 
 :deep(.p-tree-node-content.p-tree-node-selected) {
