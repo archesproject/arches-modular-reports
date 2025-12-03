@@ -26,6 +26,8 @@ import type { WidgetDirtyStates } from "@/arches_modular_reports/ModularReport/c
 
 const { $gettext } = useGettext();
 
+const CARDINALITY_N = "n";
+
 const { setSelectedNodegroupAlias } = inject<{
     setSelectedNodegroupAlias: (nodegroupAlias: string | null) => void;
 }>("selectedNodegroupAlias")!;
@@ -419,7 +421,11 @@ function onNodeUnselect() {
                             >*</span
                         >
                         :
-                        <span v-if="slotProps.node.data.cardinality == 'n'">
+                        <span
+                            v-if="
+                                slotProps.node.data.cardinality == CARDINALITY_N
+                            "
+                        >
                             <Button
                                 icon="pi pi-plus"
                                 size="small"
