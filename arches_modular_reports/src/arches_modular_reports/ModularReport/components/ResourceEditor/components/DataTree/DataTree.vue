@@ -250,6 +250,19 @@ function extractAndOverrideDisplayValue(value: NodeData | null): string {
     return "";
 }
 
+function convertRichHtmlToPlainText(htmlInput: string): string {
+    if (!htmlInput) {
+        return "";
+    }
+
+    const parser = new DOMParser();
+    const documentResult = parser.parseFromString(htmlInput, "text/html");
+
+    const rawTextContent = documentResult.body.textContent ?? "";
+
+    return rawTextContent.replace(/\s+/g, " ").trim();
+}
+
 function processNode(
     alias: string,
     data: NodeData | null,
@@ -264,11 +277,7 @@ function processNode(
 
     let nodeValue = extractAndOverrideDisplayValue(data);
     if (isRichText) {
-        const tempElement = document.createElement("textarea");
-        nodeValue = nodeValue.replace(/(<([^>]+)>)/gi, "");
-        tempElement.innerHTML = nodeValue;
-        nodeValue = tempElement.value;
-        tempElement.remove();
+        nodeValue = convertRichHtmlToPlainText(nodeValue);
     }
     nodeValue =
         nodeValue.length > 50 ? nodeValue.slice(0, 47) + "..." : nodeValue;
@@ -413,27 +422,24 @@ function onNodeUnselect() {
                 @node-collapse="onCaretCollapse"
             >
                 <template #default="slotProps">
-                    <span>
-                        {{ slotProps.node.label }}
-                        <span
-                            v-if="slotProps.node.data.isRequired"
-                            class="is-required"
-                            >*</span
-                        >
-                        :
-                        <span
-                            v-if="
-                                slotProps.node.data.cardinality == CARDINALITY_N
-                            "
-                        >
-                            <Button
-                                icon="pi pi-plus"
-                                size="small"
-                                rounded
-                                variant="outlined"
-                                aria-label="Add new tile"
-                            />
-                        </span>
+                    <span>{{ slotProps.node.label }}</span>
+                    <span
+                        v-if="slotProps.node.data.isRequired"
+                        class="is-required"
+                    >
+                        *
+                    </span>
+                    <span>: </span>
+                    <span
+                        v-if="slotProps.node.data.cardinality == CARDINALITY_N"
+                    >
+                        <Button
+                            icon="pi pi-plus"
+                            size="small"
+                            rounded
+                            variant="outlined"
+                            aria-label="Add new tile"
+                        />
                     </span>
                     <span :class="slotProps.node.data.nodeValueClass">
                         {{ slotProps.node.data.nodeValue }}
