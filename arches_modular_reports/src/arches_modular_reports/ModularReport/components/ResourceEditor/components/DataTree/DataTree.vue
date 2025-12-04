@@ -4,6 +4,7 @@ import { useGettext } from "vue3-gettext";
 
 import Panel from "primevue/panel";
 import Tree from "primevue/tree";
+import Button from "primevue/button";
 
 import { findNodeInTree } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree/utils/find-node-in-tree.ts";
 import { generateTilePath } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree/utils/generate-tile-path.ts";
@@ -24,6 +25,8 @@ import type {
 import type { WidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/types.ts";
 
 const { $gettext } = useGettext();
+
+const CARDINALITY_N = "n";
 
 const { setSelectedNodegroupAlias } = inject<{
     setSelectedNodegroupAlias: (nodegroupAlias: string | null) => void;
@@ -175,9 +178,9 @@ function processNodegroup(
         key: generateStableKey(tileOrTiles),
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
         data: { tileid: tileOrTiles.tileid, alias: nodegroupAlias },
-        children,
+        children: children,
         styleClass: isDirty ? "is-dirty" : undefined,
-    };
+    } as TreeNode;
 }
 
 function isTileOrTiles(nodeData: NodeData | NodegroupData | null) {
@@ -247,6 +250,19 @@ function extractAndOverrideDisplayValue(value: NodeData | null): string {
     return "";
 }
 
+function convertRichHtmlToPlainText(htmlInput: string): string {
+    if (!htmlInput) {
+        return "";
+    }
+
+    const parser = new DOMParser();
+    const documentResult = parser.parseFromString(htmlInput, "text/html");
+
+    const rawTextContent = documentResult.body.textContent ?? "";
+
+    return rawTextContent.replace(/\s+/g, " ").trim();
+}
+
 function processNode(
     alias: string,
     data: NodeData | null,
@@ -254,21 +270,31 @@ function processNode(
     nodegroupAlias: string,
     tileDirtyStates: WidgetDirtyStates,
 ): TreeNode {
-    const localizedLabel = $gettext("%{label}: %{labelData}", {
-        label: nodePresentationLookup.value[alias].widget_label,
-        labelData: extractAndOverrideDisplayValue(data),
-    });
+    const isEmpty = !data || !data?.display_value;
+    const isRichText = nodePresentationLookup.value[alias].is_rich_text;
+    const label = $gettext(nodePresentationLookup.value[alias].widget_label);
+    const nodeValueClass = isEmpty ? "is-empty" : "has-value";
+
+    let nodeValue = extractAndOverrideDisplayValue(data);
+    if (isRichText) {
+        nodeValue = convertRichHtmlToPlainText(nodeValue);
+    }
+    nodeValue =
+        nodeValue.length > 50 ? nodeValue.slice(0, 47) + "..." : nodeValue;
 
     return {
         key: generateStableKey(data),
-        label: localizedLabel,
+        label: label,
         data: {
             alias: alias,
             tileid: tileId,
             nodegroupAlias: nodegroupAlias,
+            nodeValue: nodeValue,
+            nodeValueClass: nodeValueClass,
+            isRequired: nodePresentationLookup.value[alias].is_required,
         },
         styleClass: tileDirtyStates[alias] ? "is-dirty" : undefined,
-    };
+    } as TreeNode;
 }
 
 function createCardinalityNWrapper(
@@ -298,10 +324,13 @@ function createCardinalityNWrapper(
         return {
             key: generateStableKey([tile, index]),
             label: children[0]?.label || $gettext("Empty"),
-            data: { tileid: tile.tileid, alias: nodegroupAlias },
+            data: {
+                tileid: tile.tileid,
+                alias: nodegroupAlias,
+            },
             children,
             styleClass: hasDirtyChildren ? "is-dirty" : undefined,
-        };
+        } as TreeNode;
     });
 
     const isDirty = childNodes.some(
@@ -311,10 +340,16 @@ function createCardinalityNWrapper(
     return {
         key: generateStableKey([...tiles, parentTileId, nodegroupAlias]),
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
-        data: { tileid: parentTileId, alias: nodegroupAlias },
+        data: {
+            tileid: parentTileId,
+            alias: nodegroupAlias,
+            cardinality:
+                nodePresentationLookup.value[nodegroupAlias].nodegroup
+                    .cardinality,
+        },
         children: childNodes,
         styleClass: isDirty ? "is-dirty" : undefined,
-    };
+    } as TreeNode;
 }
 
 function onCaretExpand(node: TreeNode) {
@@ -385,7 +420,32 @@ function onNodeUnselect() {
                 @node-unselect="onNodeUnselect"
                 @node-expand="onCaretExpand"
                 @node-collapse="onCaretCollapse"
-            />
+            >
+                <template #default="slotProps">
+                    <span>{{ slotProps.node.label }}</span>
+                    <span
+                        v-if="slotProps.node.data.isRequired"
+                        class="is-required"
+                    >
+                        *
+                    </span>
+                    <span>: </span>
+                    <span
+                        v-if="slotProps.node.data.cardinality == CARDINALITY_N"
+                    >
+                        <Button
+                            icon="pi pi-plus"
+                            size="small"
+                            rounded
+                            variant="outlined"
+                            aria-label="Add new tile"
+                        />
+                    </span>
+                    <span :class="slotProps.node.data.nodeValueClass">
+                        {{ slotProps.node.data.nodeValue }}
+                    </span>
+                </template>
+            </Tree>
         </Panel>
     </div>
 </template>
@@ -394,6 +454,17 @@ function onNodeUnselect() {
 :deep(.is-dirty) {
     font-weight: bold;
     background-color: var(--p-yellow-100) !important;
+}
+:deep(.is-empty) {
+    font-weight: normal;
+    font-style: italic;
+}
+:deep(.has-value) {
+    font-weight: bold;
+}
+:deep(.is-required) {
+    font-weight: bold;
+    color: var(--p-red-600);
 }
 
 :deep(.p-tree-node-content.p-tree-node-selected) {
