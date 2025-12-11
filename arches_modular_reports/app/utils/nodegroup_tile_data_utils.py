@@ -86,7 +86,9 @@ def build_valueid_annotation(data, is_user_rdm_admin, user_language):
             value_ids = json.loads(value_ids)
 
         annotations = []
-        if datatype == "concept-list" and not is_user_rdm_admin:
+        if (
+            datatype == "concept-list" or datatype == "reference"
+        ) and not is_user_rdm_admin:
             return {"display_value": ", ".join(display_values), "has_links": False}
         else:
             for val_id, disp_val in zip(value_ids, display_values):
