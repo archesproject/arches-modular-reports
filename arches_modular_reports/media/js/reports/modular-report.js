@@ -2,6 +2,7 @@ import ko from 'knockout';
 import ModularReport from '@/arches_modular_reports/ModularReport/ModularReport.vue';
 import createVueApplication from 'utils/create-vue-application';
 import ModularReportTemplate from 'templates/views/report-templates/modular-report.htm';
+import { fetchGraphSlugFromId } from '@/arches_modular_reports/ModularReport/api.ts';
 
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
@@ -126,10 +127,18 @@ const ModularReportTheme = {
 };
 
 ko.components.register('modular-report', {
-    viewModel: function(params) {
+    viewModel: async function(params) {
 
-        const graphSlug = params.report.graph?.slug || params.report.report_json.graph_slug;
+        let graphSlug = params.report.graph?.slug || params.report.report_json.graph_slug;
         const resourceInstanceId = params.report.report_json.resourceinstanceid;
+
+        if (!graphSlug) {
+            // fetch graph slug from graph id this can happen when viewing the 
+            // report from the "details" section of search
+            const graphId = params.report.graph?.id || params.report.report_json.graph_id;
+            const data = await fetchGraphSlugFromId(graphId);
+            graphSlug = data.graph_slug;
+        }
 
         createVueApplication(ModularReport, ModularReportTheme, { graphSlug, resourceInstanceId }).then(vueApp => {
             // handles the Graph Designer case of multiple mounting points on the same page
