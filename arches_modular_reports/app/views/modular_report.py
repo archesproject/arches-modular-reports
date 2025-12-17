@@ -40,6 +40,18 @@ from arches_modular_reports.app.utils.nodegroup_tile_data_utils import (
 )
 
 
+class GraphSlugFromIdView(APIBase):
+    def get(self, request, graphid):
+        try:
+            graph = models.GraphModel.objects.values_list("slug", flat=True).get(
+                pk=graphid
+            )
+        except models.GraphModel.DoesNotExist:
+            return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
+
+        return JSONResponse({"graph_slug": graph})
+
+
 @method_decorator(can_read_resource_instance, name="dispatch")
 class ModularReportConfigView(View):
     def get(self, request):

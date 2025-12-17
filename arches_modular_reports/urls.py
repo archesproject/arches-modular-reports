@@ -4,6 +4,7 @@ from arches.app.models.system_settings import settings
 
 from arches_modular_reports.app.views.modular_report import (
     ModularReportAwareResourceReportView,
+    GraphSlugFromIdView,
     NodegroupTileDataView,
     NodePresentationView,
     NodeTileDataView,
@@ -27,6 +28,11 @@ urlpatterns = [
         r"^report/(?P<resourceid>%s)$" % uuid_regex,
         ModularReportAwareResourceReportView.as_view(),
         name="resource_report",
+    ),
+    path(
+        "api/graph_slug/<uuid:graphid>",
+        GraphSlugFromIdView.as_view(),
+        name="api_graph_slug",
     ),
     path(
         "api/related_resources/<uuid:resourceid>/<slug:related_graph_slug>",

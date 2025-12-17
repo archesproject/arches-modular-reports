@@ -8,6 +8,7 @@
 {{ block.super }}
 <div class="arches-urls"
     modular_report_config = "{% url 'modular_report_config' %}"
+    api_graph_slug = '(graphid) => { return "{% url "api_graph_slug" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", graphid)}'
     api_node_tile_data = '(resourceid) => { return "{% url "api_node_tile_data" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resourceid)}'
     api_node_presentation = '(resourceid) => { return "{% url "api_node_presentation" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resourceid)}'
     api_nodegroup_tile_data = '(resourceinstanceid, nodegroupalias) => { return "{% url "api_nodegroup_tile_data" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" "alias" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resourceinstanceid).replace("alias", nodegroupalias)}'

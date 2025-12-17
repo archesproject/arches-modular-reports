@@ -4,6 +4,14 @@ import Cookies from "js-cookie";
 
 import type { ResourceData } from "@/arches_modular_reports/ModularReport/types.ts";
 
+export const fetchGraphSlugFromId = async (graphId: string) => {
+    const url = arches.urls.api_graph_slug(graphId);
+    const response = await fetch(url);
+    const parsed = await response.json();
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};
+
 export const fetchModularReportResource = async ({
     graphSlug,
     resourceId,
