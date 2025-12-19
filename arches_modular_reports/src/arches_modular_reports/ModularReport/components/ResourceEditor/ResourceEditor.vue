@@ -212,15 +212,9 @@ function onSave() {
         resourceInstanceId,
         pruneResourceData(resourceData, widgetDirtyStates),
     )
-        .then(async (_updatedResource) => {
+        .then(async (modularReportResource) => {
             emit("save");
 
-            // this is sloppy but `_updatedResource` does not have the option to fill in blanks
-            const modularReportResource = await fetchModularReportResource({
-                graphSlug,
-                resourceId: resourceInstanceId,
-                fillBlanks: true,
-            });
             originalResourceData.value = readonly(
                 structuredClone({ ...modularReportResource }),
             );

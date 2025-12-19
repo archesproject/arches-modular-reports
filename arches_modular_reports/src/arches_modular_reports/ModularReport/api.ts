@@ -40,7 +40,7 @@ export const updateModularReportResource = async (
     data: ResourceData,
 ) => {
     const url = arches.urls.api_modular_reports_resource(graphSlug, resourceId);
-    const response = await fetch(url, {
+    const response = await fetch(url+"?fill_blanks=true", {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
