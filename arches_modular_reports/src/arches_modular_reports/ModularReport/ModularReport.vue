@@ -185,21 +185,30 @@ function closeEditor() {
                 />
             </div>
         </SplitterPanel>
+
         <SplitterPanel
             v-show="shouldShowEditor"
-            style="overflow: auto"
+            style="
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+            "
             :size="30"
         >
             <Panel
                 :key="editorKey"
+                class="editor-panel"
                 toggleable
                 :toggle-button-props="{
                     ariaLabel: CLOSE_EDITOR,
                     severity: 'secondary',
                 }"
                 :style="{
-                    overflow: 'auto',
-                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flex: 1,
+                    minHeight: 0,
                     border: 'none',
                 }"
                 :header="EDITOR"
@@ -211,6 +220,7 @@ function closeEditor() {
                         aria-hidden="true"
                     />
                 </template>
+
                 <ResourceEditor
                     v-if="userCanEditResourceInstance"
                     @save="reportKey++"
@@ -224,7 +234,6 @@ function closeEditor() {
 
 <style scoped>
 .p-splitter {
-    position: absolute;
     height: 100%;
     width: 100%;
     display: flex;
@@ -236,9 +245,37 @@ function closeEditor() {
     visibility: v-bind(gutterVisibility);
 }
 
+:deep(.editor-panel > .p-panel-header) {
+    border-bottom: 0.125rem solid var(--p-content-border-color) !important;
+}
+
+:deep(.p-panel) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+:deep(.p-toggleable-content) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+:deep(.p-panel-content-container) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
 :deep(.p-panel-content) {
+    flex: 1;
+    min-height: 0;
     padding: 0;
 }
+
 @media print {
     .p-splitter {
         position: unset;

@@ -2,7 +2,6 @@
 import { computed, inject, ref, useTemplateRef, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
-import Panel from "primevue/panel";
 import Tree from "primevue/tree";
 import Button from "primevue/button";
 
@@ -165,6 +164,14 @@ watch(
     { immediate: true },
 );
 
+function isCardinalityNWrapperNode(treeNode: TreeNode): boolean {
+    return (
+        treeNode.data?.cardinality === CARDINALITY_N &&
+        treeNode.data?.isNodegroupWrapper === true &&
+        treeNode.data?.nodegroupAlias == null
+    );
+}
+
 function processNodegroup(
     nodegroupAlias: string,
     tileOrTiles: TileData | TileData[],
@@ -233,6 +240,7 @@ function processNodegroup(
             nodegroupValuePath,
             softDeleteKey,
             isSoftDeleted,
+            isNodegroupWrapper: true,
         },
         children: children,
         styleClass:
@@ -439,6 +447,7 @@ function createCardinalityNWrapper(
                 nodegroupValuePath: tileValuePath,
                 softDeleteKey: tileSoftDeleteKey,
                 isSoftDeleted: isTileSoftDeleted,
+                isNodegroupWrapper: false,
             },
             children,
             styleClass:
@@ -480,6 +489,7 @@ function createCardinalityNWrapper(
             nodegroupValuePath,
             softDeleteKey: wrapperSoftDeleteKey,
             isSoftDeleted: isWrapperSoftDeleted,
+            isNodegroupWrapper: true,
         },
         children: childNodes,
         styleClass:
@@ -503,6 +513,21 @@ function onCaretCollapse(node: TreeNode) {
 }
 
 function onNodeSelect(treeNode: TreeNode) {
+    if (isCardinalityNWrapperNode(treeNode)) {
+        const firstChildNode = treeNode.children?.[0];
+
+        if (firstChildNode?.key != null) {
+            selectedKeys.value = {};
+
+            requestAnimationFrame(() => {
+                selectedKeys.value = { [firstChildNode.key as string]: true };
+                onNodeSelect(firstChildNode);
+            });
+        }
+
+        return;
+    }
+
     let selectedTreeNodeAlias;
 
     if (!treeNode.data.nodegroupAlias) {
@@ -591,98 +616,88 @@ function onRestore(treeNode: TreeNode) {
 
 <template>
     <div ref="treeContainerElement">
-        <Panel
-            :header="$gettext('Data Tree')"
-            :pt="{ header: { style: { padding: '1rem' } } }"
+        <Tree
+            v-model:selection-keys="selectedKeys"
+            v-model:expanded-keys="expandedKeys"
+            :value="tree"
+            selection-mode="single"
+            @node-select="onNodeSelect"
+            @node-unselect="onNodeUnselect"
+            @node-expand="onCaretExpand"
+            @node-collapse="onCaretCollapse"
         >
-            <Tree
-                v-model:selection-keys="selectedKeys"
-                v-model:expanded-keys="expandedKeys"
-                :value="tree"
-                selection-mode="single"
-                @node-select="onNodeSelect"
-                @node-unselect="onNodeUnselect"
-                @node-expand="onCaretExpand"
-                @node-collapse="onCaretCollapse"
-            >
-                <template #default="slotProps">
-                    <div
-                        style="display: flex; align-items: center; gap: 0.5rem"
-                    >
-                        <div style="margin-inline-end: 0.5rem">
+            <template #default="slotProps">
+                <div style="display: flex; align-items: center; gap: 0.5rem">
+                    <div style="margin-inline-end: 0.5rem">
+                        <span
+                            :class="{
+                                'is-soft-deleted-text': Boolean(
+                                    slotProps.node.data.isSoftDeleted,
+                                ),
+                            }"
+                        >
+                            <span>{{ slotProps.node.label }}</span>
                             <span
-                                :class="{
-                                    'is-soft-deleted-text': Boolean(
-                                        slotProps.node.data.isSoftDeleted,
-                                    ),
-                                }"
+                                v-if="slotProps.node.data.isRequired"
+                                class="is-required"
+                                >*</span
                             >
-                                <span>{{ slotProps.node.label }}</span>
-                                <span
-                                    v-if="slotProps.node.data.isRequired"
-                                    class="is-required"
-                                    >*</span
-                                >
-                                <span>:</span>
-                            </span>
-                        </div>
+                            <span>:</span>
+                        </span>
+                    </div>
 
+                    <Button
+                        v-if="
+                            slotProps.node.data.cardinality === CARDINALITY_N &&
+                            slotProps.node.data.isNodegroupWrapper === true
+                        "
+                        icon="pi pi-plus"
+                        size="small"
+                        rounded
+                        variant="outlined"
+                        :disabled="Boolean(slotProps.node.data.isSoftDeleted)"
+                        :aria-label="$gettext('Add new tile')"
+                        @click.stop="onAddNewTile(slotProps.node)"
+                    />
+
+                    <template v-if="slotProps.node.data.nodegroupAlias == null">
                         <Button
-                            v-if="
-                                slotProps.node.data.cardinality == CARDINALITY_N
-                            "
-                            icon="pi pi-plus"
+                            v-if="!slotProps.node.data.isSoftDeleted"
+                            icon="pi pi-trash"
                             size="small"
                             rounded
                             variant="outlined"
-                            :disabled="
-                                Boolean(slotProps.node.data.isSoftDeleted)
-                            "
-                            :aria-label="$gettext('Add new tile')"
-                            @click.stop="onAddNewTile(slotProps.node)"
+                            severity="danger"
+                            :aria-label="$gettext('Delete')"
+                            @click.stop="onSoftDelete(slotProps.node)"
                         />
+                        <Button
+                            v-else
+                            icon="pi pi-undo"
+                            size="small"
+                            rounded
+                            severity="info"
+                            :aria-label="$gettext('Restore')"
+                            @click.stop="onRestore(slotProps.node)"
+                        />
+                    </template>
 
-                        <template
-                            v-if="slotProps.node.data.nodegroupAlias == null"
-                        >
-                            <Button
-                                v-if="!slotProps.node.data.isSoftDeleted"
-                                icon="pi pi-trash"
-                                size="small"
-                                rounded
-                                variant="outlined"
-                                severity="danger"
-                                :aria-label="$gettext('Delete')"
-                                @click.stop="onSoftDelete(slotProps.node)"
-                            />
-                            <Button
-                                v-else
-                                icon="pi pi-undo"
-                                size="small"
-                                rounded
-                                severity="info"
-                                :aria-label="$gettext('Restore')"
-                                @click.stop="onRestore(slotProps.node)"
-                            />
-                        </template>
-
-                        <span
-                            v-if="slotProps.node.data.nodegroupAlias != null"
-                            :class="[
-                                slotProps.node.data.nodeValueClass,
-                                {
-                                    'is-soft-deleted-text': Boolean(
-                                        slotProps.node.data.isSoftDeleted,
-                                    ),
-                                },
-                            ]"
-                        >
-                            {{ slotProps.node.data.nodeValue }}
-                        </span>
-                    </div>
-                </template>
-            </Tree>
-        </Panel>
+                    <span
+                        v-if="slotProps.node.data.nodegroupAlias != null"
+                        :class="[
+                            slotProps.node.data.nodeValueClass,
+                            {
+                                'is-soft-deleted-text': Boolean(
+                                    slotProps.node.data.isSoftDeleted,
+                                ),
+                            },
+                        ]"
+                    >
+                        {{ slotProps.node.data.nodeValue }}
+                    </span>
+                </div>
+            </template>
+        </Tree>
     </div>
 </template>
 

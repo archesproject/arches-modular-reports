@@ -18,6 +18,8 @@ import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
+import ConfirmDialog from "primevue/confirmdialog";
+import { useConfirm } from "primevue/useconfirm";
 
 import DataTree from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree/DataTree.vue";
 import GenericCard from "@/arches_component_lab/generics/GenericCard/GenericCard.vue";
@@ -52,6 +54,7 @@ type SoftDeletePayload = {
 };
 
 const { $gettext } = useGettext();
+const confirm = useConfirm();
 
 const CARDINALITY_N = "n" as const;
 
@@ -343,10 +346,8 @@ watchEffect(async () => {
         Object.assign(resourceData, modularReportResource);
 
         replaceReactiveRecord(
-            widgetDirtyStates as unknown as Record<string, unknown>,
-            generateWidgetDirtyStates(
-                modularReportResource,
-            ) as unknown as Record<string, unknown>,
+            widgetDirtyStates,
+            generateWidgetDirtyStates(modularReportResource),
         );
 
         unsavedTileKeys.value.clear();
@@ -366,7 +367,6 @@ watch(
             return;
         }
 
-        // Derive selectedTilePath if not explicitly set
         if (!selectedTilePath.value && selectedNodegroupAlias.value) {
             const aliasedTileData: NodeData | NodegroupData =
                 resourceData.aliased_data[selectedNodegroupAlias.value];
@@ -484,7 +484,7 @@ function onUpdateTileData(updatedTileData: TileData) {
     const originalTileValueFromSnapshot = getValueFromPath(
         originalResourceData.value,
         selectedTilePath.value,
-    ) as unknown as TileData | undefined;
+    );
 
     for (const [tileKey, tileValue] of Object.entries(updatedTileData)) {
         currentTileValue[tileKey] = tileValue;
@@ -570,6 +570,40 @@ function onToggleSoftDelete(payload: SoftDeletePayload) {
     softDeletedValuePaths.value = nextSoftDeletedValuePaths;
 }
 
+function onRequestUndoAllChanges() {
+    confirm.require({
+        message: $gettext(
+            "Are you sure? This will undo all of your pending changes.",
+        ),
+        header: $gettext("Undo all changes"),
+        icon: "pi pi-exclamation-triangle",
+        acceptLabel: $gettext("Continue"),
+        rejectLabel: $gettext("Cancel"),
+        accept: () => onUndoAllChanges(),
+    });
+}
+
+function onUndoAllChanges() {
+    apiError.value = null;
+
+    const snapshotResourceData = structuredClone(originalResourceData.value);
+
+    replaceReactiveRecord(resourceData, snapshotResourceData);
+
+    replaceReactiveRecord(
+        widgetDirtyStates,
+        generateWidgetDirtyStates(snapshotResourceData),
+    );
+
+    unsavedTileKeys.value.clear();
+    softDeletedTileKeys.value = new Set<string>();
+    softDeletedValuePaths.value = new Map<string, Array<string | number>>();
+
+    setSelectedNodeAlias(null);
+    setSelectedTileId(null);
+    setSelectedTilePath(null);
+}
+
 function onSave() {
     isLoading.value = true;
     apiError.value = null;
@@ -598,10 +632,8 @@ function onSave() {
             Object.assign(resourceData, modularReportResource);
 
             replaceReactiveRecord(
-                widgetDirtyStates as unknown as Record<string, unknown>,
-                generateWidgetDirtyStates(
-                    modularReportResource,
-                ) as unknown as Record<string, unknown>,
+                widgetDirtyStates,
+                generateWidgetDirtyStates(modularReportResource),
             );
 
             unsavedTileKeys.value.clear();
@@ -628,6 +660,8 @@ function onSave() {
 </script>
 
 <template>
+    <ConfirmDialog />
+
     <Message
         v-if="apiError"
         severity="error"
@@ -652,68 +686,65 @@ function onSave() {
     </div>
 
     <template v-else>
-        <Splitter
-            style="height: 100%; height: stretch; width: stretch"
-            layout="vertical"
-        >
-            <SplitterPanel
-                style="
-                    padding: var(--p-panel-toggleable-header-padding);
-                    overflow: hidden;
-                    display: flex;
-                    flex-direction: column;
-                "
+        <div class="editor-layout">
+            <Splitter
+                layout="vertical"
+                class="editor-splitter"
+                style="overflow: hidden"
             >
-                <div style="flex: 1; overflow: auto">
-                    <GenericCard
-                        v-if="selectedTileData && !isSelectedTileSoftDeleted"
-                        ref="defaultCard"
-                        :mode="EDIT"
-                        :nodegroup-alias="selectedNodegroupAlias!"
-                        :graph-slug="graphSlug"
-                        :resource-instance-id="resourceInstanceId"
-                        :selected-node-alias="selectedNodeAlias"
-                        :should-show-form-buttons="false"
-                        :tile-id="selectedTileId"
-                        :tile-data="selectedTileData"
-                        @update:widget-focus-states="
-                            onUpdateWidgetFocusStates($event)
-                        "
-                        @update:tile-data="onUpdateTileData($event)"
-                    />
-                </div>
+                <SplitterPanel class="top-panel">
+                    <div style="margin: 1rem">
+                        <GenericCard
+                            v-if="
+                                selectedTileData && !isSelectedTileSoftDeleted
+                            "
+                            :mode="EDIT"
+                            :nodegroup-alias="selectedNodegroupAlias!"
+                            :graph-slug="graphSlug"
+                            :resource-instance-id="resourceInstanceId"
+                            :selected-node-alias="selectedNodeAlias"
+                            :should-show-form-buttons="false"
+                            :tile-id="selectedTileId"
+                            :tile-data="selectedTileData"
+                            @update:widget-focus-states="
+                                onUpdateWidgetFocusStates($event)
+                            "
+                            @update:tile-data="onUpdateTileData($event)"
+                        />
+                    </div>
+                </SplitterPanel>
 
-                <div
-                    style="
-                        border-top: 1px solid
-                            var(--p-panel-content-border-color);
-                        margin-top: 1.5rem;
-                        text-align: right;
-                        display: flex;
-                    "
-                >
+                <SplitterPanel class="bottom-panel">
+                    <div class="bottom-panel-scroll">
+                        <DataTree
+                            :resource-data="resourceData"
+                            :widget-dirty-states="widgetDirtyStates"
+                            :soft-deleted-tile-keys="softDeletedTileKeys"
+                            @toggle-soft-delete="onToggleSoftDelete($event)"
+                        />
+                    </div>
+                </SplitterPanel>
+            </Splitter>
+
+            <div class="editor-footer">
+                <div class="editor-footer-actions">
                     <Button
-                        :label="$gettext('Save')"
-                        icon="pi pi-check"
+                        severity="danger"
+                        variant="outlined"
+                        icon="pi pi-undo"
+                        label="Undo all changes"
+                        @click="onRequestUndoAllChanges"
+                    />
+
+                    <Button
+                        severity="success"
+                        icon="pi pi-save"
+                        label="Save all changes"
                         @click="onSave"
                     />
                 </div>
-            </SplitterPanel>
-
-            <SplitterPanel
-                style="
-                    padding: var(--p-panel-toggleable-header-padding);
-                    overflow: auto;
-                "
-            >
-                <DataTree
-                    :resource-data="resourceData"
-                    :widget-dirty-states="widgetDirtyStates"
-                    :soft-deleted-tile-keys="softDeletedTileKeys"
-                    @toggle-soft-delete="onToggleSoftDelete($event)"
-                />
-            </SplitterPanel>
-        </Splitter>
+            </div>
+        </div>
     </template>
 </template>
 
@@ -722,9 +753,66 @@ function onSave() {
 .loading-skeleton {
     margin: 1rem;
 }
+
+.editor-layout {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.editor-splitter {
+    flex: 1;
+    min-height: 0;
+}
+
+.top-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: auto;
+}
+
+.bottom-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.bottom-panel-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.editor-footer {
+    border-top: 0.125rem solid var(--p-content-border-color);
+    padding: 0.75rem 1rem;
+    background: var(--surface-0);
+}
+
+.editor-footer-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+:deep(.editor-footer-actions .pi) {
+    font-size: 1.4rem !important;
+}
+
 .loading-skeleton {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+}
+
+:deep(.p-splitter) {
+    height: 100%;
+}
+
+:deep(.p-splitter-panel) {
+    min-height: 0;
 }
 </style>
