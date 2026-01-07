@@ -160,7 +160,7 @@ function setValueAtPath(
                 string | number,
                 unknown
             >,
-        targetObject as unknown as Record<string | number, unknown>,
+        targetObject,
     );
 
     parentContainer[lastSegment] = valueToAssign;
