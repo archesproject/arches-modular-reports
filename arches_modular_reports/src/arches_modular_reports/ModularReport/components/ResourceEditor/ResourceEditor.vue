@@ -3,11 +3,11 @@ import {
     computed,
     inject,
     reactive,
+    readonly,
     ref,
     shallowRef,
-    watchEffect,
-    readonly,
     watch,
+    watchEffect,
 } from "vue";
 
 import { isEqual } from "es-toolkit";
@@ -23,6 +23,7 @@ import DataTree from "@/arches_modular_reports/ModularReport/components/Resource
 import GenericCard from "@/arches_component_lab/generics/GenericCard/GenericCard.vue";
 
 import {
+    fetchModularReportBlankTile,
     fetchModularReportResource,
     updateModularReportResource,
 } from "@/arches_modular_reports/ModularReport/api.ts";
@@ -37,30 +38,49 @@ import type { Ref } from "vue";
 import type {
     NodeData,
     NodegroupData,
+    NodePresentationLookup,
     ResourceData,
     TileData,
 } from "@/arches_modular_reports/ModularReport/types.ts";
-
 import type { WidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/types.ts";
 import type { AliasedTileData } from "@/arches_component_lab/types";
 
 const { $gettext } = useGettext();
 
+const CARDINALITY_N = "n" as const;
+
 const graphSlug = inject<string>("graphSlug")!;
 const resourceInstanceId = inject<string>("resourceInstanceId")!;
+const nodePresentationLookup = inject<Ref<NodePresentationLookup>>(
+    "nodePresentationLookup",
+)!;
+
+const {
+    createTileRequestId,
+    createTileRequestedNodegroupAlias,
+    createTileRequestedTilePath,
+} = inject("createTile") as {
+    createTileRequestId: Ref<number>;
+    createTileRequestedNodegroupAlias: Ref<string | null>;
+    createTileRequestedTilePath?: Ref<Array<string | number> | null>;
+};
 
 const { selectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
     selectedNodegroupAlias: Ref<string | null>;
 };
+
 const { selectedNodeAlias, setSelectedNodeAlias } = inject(
     "selectedNodeAlias",
 ) as {
     selectedNodeAlias: Ref<string | null>;
     setSelectedNodeAlias: (nodeAlias: string | null) => void;
 };
-const { selectedTileId } = inject("selectedTileId") as {
+
+const { selectedTileId, setSelectedTileId } = inject("selectedTileId") as {
     selectedTileId: Ref<string | null | undefined>;
+    setSelectedTileId: (tileId: string | null | undefined) => void;
 };
+
 const { selectedTilePath, setSelectedTilePath } = inject(
     "selectedTilePath",
 ) as {
@@ -77,9 +97,134 @@ const resourceData = reactive<ResourceData>({} as ResourceData);
 const originalResourceData = shallowRef<Readonly<ResourceData>>(
     {} as ResourceData,
 );
-const widgetDirtyStates = reactive<WidgetDirtyStates>({});
+const widgetDirtyStates = reactive<WidgetDirtyStates>({} as WidgetDirtyStates);
 
-const selectedTileData = computed<TileData | undefined>(function () {
+const unsavedTileKeys = shallowRef<Set<string>>(new Set<string>());
+
+const selectedTileKey = computed<string>(() => {
+    if (selectedTileId.value) {
+        return selectedTileId.value;
+    }
+    return JSON.stringify(selectedTilePath.value ?? []);
+});
+
+function replaceReactiveRecord(
+    targetRecord: Record<string, unknown>,
+    nextRecord: Record<string, unknown>,
+) {
+    for (const existingKey of Object.keys(targetRecord)) {
+        delete targetRecord[existingKey];
+    }
+    Object.assign(targetRecord, nextRecord);
+}
+
+function setValueAtPath(
+    targetObject: Record<string, unknown>,
+    pathSegments: Array<string | number>,
+    valueToAssign: unknown,
+) {
+    if (pathSegments.length === 0) {
+        return;
+    }
+
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    const parentPathSegments = pathSegments.slice(0, -1);
+
+    const parentContainer = parentPathSegments.reduce<
+        Record<string | number, unknown>
+    >(
+        (currentContainer, currentSegment) =>
+            currentContainer[currentSegment] as Record<
+                string | number,
+                unknown
+            >,
+        targetObject as unknown as Record<string | number, unknown>,
+    );
+
+    parentContainer[lastSegment] = valueToAssign;
+}
+
+function isCardinalityNNodegroup(nodegroupAlias: string) {
+    return (
+        nodePresentationLookup.value?.[nodegroupAlias]?.nodegroup
+            ?.cardinality === CARDINALITY_N
+    );
+}
+
+function isTileData(value: unknown): value is TileData {
+    return (
+        typeof value === "object" && value !== null && "aliased_data" in value
+    );
+}
+
+function buildDirtyStatesForNewTile(tileData: TileData): WidgetDirtyStates {
+    const tileAliasedData = (tileData?.aliased_data ?? {}) as Record<
+        string,
+        unknown
+    >;
+
+    const dirtyAliasedData: Record<string, unknown> = {};
+
+    for (const [childAlias, childValue] of Object.entries(tileAliasedData)) {
+        if (Array.isArray(childValue)) {
+            dirtyAliasedData[childAlias] = childValue.map((nestedTile) =>
+                buildDirtyStatesForNewTile(nestedTile),
+            );
+            continue;
+        }
+
+        if (isTileData(childValue)) {
+            dirtyAliasedData[childAlias] =
+                buildDirtyStatesForNewTile(childValue);
+            continue;
+        }
+
+        dirtyAliasedData[childAlias] = true;
+    }
+
+    return { aliased_data: dirtyAliasedData } as unknown as WidgetDirtyStates;
+}
+
+function insertAtNodegroupPath(options: {
+    targetRoot: Record<string, unknown>;
+    nodegroupValuePath: Array<string | number>;
+    valueToInsert: unknown;
+    isCardinalityN: boolean;
+}) {
+    const existingNodegroupValue = getValueFromPath(
+        options.targetRoot,
+        options.nodegroupValuePath,
+    );
+
+    if (Array.isArray(existingNodegroupValue)) {
+        existingNodegroupValue.push(options.valueToInsert);
+
+        return [
+            ...options.nodegroupValuePath,
+            existingNodegroupValue.length - 1,
+        ];
+    }
+
+    if (existingNodegroupValue == null && options.isCardinalityN) {
+        setValueAtPath(options.targetRoot, options.nodegroupValuePath, [
+            options.valueToInsert,
+        ]);
+        return [...options.nodegroupValuePath, 0];
+    }
+
+    if (existingNodegroupValue == null) {
+        setValueAtPath(
+            options.targetRoot,
+            options.nodegroupValuePath,
+            options.valueToInsert,
+        );
+        return [...options.nodegroupValuePath];
+    }
+
+    return null;
+}
+
+const selectedTileData = computed<TileData | undefined>(() => {
     if (!selectedTilePath.value) {
         return undefined;
     }
@@ -100,15 +245,21 @@ watchEffect(async () => {
             resourceId: resourceInstanceId,
             fillBlanks: true,
         });
+
         originalResourceData.value = readonly(
             structuredClone({ ...modularReportResource }),
         );
 
         Object.assign(resourceData, modularReportResource);
-        Object.assign(
-            widgetDirtyStates,
-            generateWidgetDirtyStates(modularReportResource),
+
+        replaceReactiveRecord(
+            widgetDirtyStates as unknown as Record<string, unknown>,
+            generateWidgetDirtyStates(
+                modularReportResource,
+            ) as unknown as Record<string, unknown>,
         );
+
+        unsavedTileKeys.value.clear();
     } catch (error) {
         apiError.value = error as Error;
     } finally {
@@ -148,21 +299,101 @@ watch(
     },
 );
 
+watch(createTileRequestId, async () => {
+    if (isLoading.value) {
+        return;
+    }
+
+    const requestedNodegroupAlias = createTileRequestedNodegroupAlias.value;
+
+    if (!requestedNodegroupAlias) {
+        return;
+    }
+
+    const requestedNodegroupValuePath =
+        createTileRequestedTilePath?.value ?? null;
+
+    let nodegroupValuePath: Array<string | number> = [
+        "aliased_data",
+        requestedNodegroupAlias,
+    ];
+
+    if (requestedNodegroupValuePath && requestedNodegroupValuePath.length > 0) {
+        nodegroupValuePath = requestedNodegroupValuePath;
+    }
+
+    apiError.value = null;
+
+    try {
+        isLoading.value = true;
+
+        const blankTile = (await fetchModularReportBlankTile(
+            graphSlug,
+            requestedNodegroupAlias,
+        )) as TileData;
+
+        const isCardinalityN = isCardinalityNNodegroup(requestedNodegroupAlias);
+
+        const createdTilePath = insertAtNodegroupPath({
+            targetRoot: resourceData as unknown as Record<string, unknown>,
+            nodegroupValuePath,
+            valueToInsert: blankTile as unknown as NodeData,
+            isCardinalityN,
+        });
+
+        if (!createdTilePath) {
+            apiError.value = new Error($gettext("The tile already exists."));
+            return;
+        }
+
+        setSelectedTileId(blankTile.tileid ?? null);
+        setSelectedTilePath(createdTilePath);
+
+        unsavedTileKeys.value.add(
+            blankTile.tileid
+                ? blankTile.tileid
+                : JSON.stringify(createdTilePath),
+        );
+
+        const newTileDirtyStates = buildDirtyStatesForNewTile(blankTile);
+
+        const createdDirtyPath = insertAtNodegroupPath({
+            targetRoot: widgetDirtyStates as unknown as Record<string, unknown>,
+            nodegroupValuePath,
+            valueToInsert: newTileDirtyStates,
+            isCardinalityN,
+        });
+
+        if (!createdDirtyPath) {
+            setValueAtPath(
+                widgetDirtyStates as unknown as Record<string, unknown>,
+                nodegroupValuePath,
+                newTileDirtyStates,
+            );
+        }
+    } catch (error) {
+        apiError.value = error as Error;
+    } finally {
+        isLoading.value = false;
+    }
+});
+
 function onUpdateTileData(updatedTileData: TileData) {
     const currentTileValue = getValueFromPath(
         resourceData,
         selectedTilePath.value,
     )!;
-    const originalTileValue = getValueFromPath(
-        originalResourceData.value,
-        selectedTilePath.value,
-    )!;
+
     const tileDirtyStates = getValueFromPath(
         widgetDirtyStates,
         selectedTilePath.value,
     )!;
 
-    // first update the current tile values, cannot do whole tile replacement because of reactivity
+    const originalTileValueFromSnapshot = getValueFromPath(
+        originalResourceData.value,
+        selectedTilePath.value,
+    ) as unknown as TileData | undefined;
+
     for (const [tileKey, tileValue] of Object.entries(updatedTileData)) {
         currentTileValue[tileKey] = tileValue;
     }
@@ -170,15 +401,30 @@ function onUpdateTileData(updatedTileData: TileData) {
     const currentAliasedData = currentTileValue[
         "aliased_data"
     ] as AliasedTileData["aliased_data"];
-    const originalAliasedData = originalTileValue[
+
+    const dirtyAliasedData = (
+        tileDirtyStates as { aliased_data: Record<string, unknown> }
+    ).aliased_data;
+
+    if (unsavedTileKeys.value.has(selectedTileKey.value)) {
+        for (const nodeAlias of Object.keys(currentAliasedData)) {
+            if (typeof dirtyAliasedData[nodeAlias] === "boolean") {
+                dirtyAliasedData[nodeAlias] = true;
+            } else if (dirtyAliasedData[nodeAlias] == null) {
+                dirtyAliasedData[nodeAlias] = true;
+            }
+        }
+        return;
+    }
+
+    if (!originalTileValueFromSnapshot) {
+        return;
+    }
+
+    const originalAliasedData = originalTileValueFromSnapshot[
         "aliased_data"
     ] as AliasedTileData["aliased_data"];
 
-    const dirtyAliasedData = (
-        tileDirtyStates as { aliased_data: Record<string, boolean> }
-    ).aliased_data;
-
-    // then update the dirty states for each widget in the tile
     for (const [nodeAlias, aliasedData] of Object.entries(currentAliasedData)) {
         if (typeof dirtyAliasedData[nodeAlias] !== "boolean") {
             continue;
@@ -195,12 +441,14 @@ function onUpdateWidgetFocusStates(
     updatedWidgetFocusStates: Record<string, boolean>,
 ) {
     const focusedNodeAlias = Object.keys(updatedWidgetFocusStates).find(
-        function (nodeAliasKey) {
-            return updatedWidgetFocusStates[nodeAliasKey] === true;
-        },
+        (nodeAliasKey) => updatedWidgetFocusStates[nodeAliasKey] === true,
     );
 
-    setSelectedNodeAlias(focusedNodeAlias ?? null);
+    if (!focusedNodeAlias) {
+        return;
+    }
+
+    setSelectedNodeAlias(focusedNodeAlias);
 }
 
 function onSave() {
@@ -212,24 +460,31 @@ function onSave() {
         resourceInstanceId,
         pruneResourceData(resourceData, widgetDirtyStates),
     )
-        .then(async (_updatedResource) => {
+        .then(async (updatedResource) => {
+            void updatedResource;
+
             emit("save");
 
-            // this is sloppy but `_updatedResource` does not have the option to fill in blanks
             const modularReportResource = await fetchModularReportResource({
                 graphSlug,
                 resourceId: resourceInstanceId,
                 fillBlanks: true,
             });
+
             originalResourceData.value = readonly(
                 structuredClone({ ...modularReportResource }),
             );
 
             Object.assign(resourceData, modularReportResource);
-            Object.assign(
-                widgetDirtyStates,
-                generateWidgetDirtyStates(modularReportResource),
+
+            replaceReactiveRecord(
+                widgetDirtyStates as unknown as Record<string, unknown>,
+                generateWidgetDirtyStates(
+                    modularReportResource,
+                ) as unknown as Record<string, unknown>,
             );
+
+            unsavedTileKeys.value.clear();
         })
         .catch((error: Error) => {
             if (error.message.includes("This card requires")) {
@@ -255,6 +510,7 @@ function onSave() {
     >
         {{ apiError.message }}
     </Message>
+
     <div
         v-if="isLoading"
         class="loading-skeleton"
@@ -269,6 +525,7 @@ function onSave() {
         <Skeleton height="2.5rem"></Skeleton>
         <Skeleton height="8rem"></Skeleton>
     </div>
+
     <template v-else>
         <Splitter
             style="height: 100%; height: stretch; width: stretch"
@@ -300,6 +557,7 @@ function onSave() {
                         @update:tile-data="onUpdateTileData($event)"
                     />
                 </div>
+
                 <div
                     style="
                         border-top: 1px solid
@@ -316,6 +574,7 @@ function onSave() {
                     />
                 </div>
             </SplitterPanel>
+
             <SplitterPanel
                 style="
                     padding: var(--p-panel-toggleable-header-padding);
