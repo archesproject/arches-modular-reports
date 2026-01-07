@@ -45,6 +45,12 @@ import type {
 import type { WidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/types.ts";
 import type { AliasedTileData } from "@/arches_component_lab/types";
 
+type SoftDeletePayload = {
+    softDeleteKey: string;
+    nodegroupValuePath: Array<string | number>;
+    nextIsSoftDeleted: boolean;
+};
+
 const { $gettext } = useGettext();
 
 const CARDINALITY_N = "n" as const;
@@ -101,11 +107,24 @@ const widgetDirtyStates = reactive<WidgetDirtyStates>({} as WidgetDirtyStates);
 
 const unsavedTileKeys = shallowRef<Set<string>>(new Set<string>());
 
+const softDeletedTileKeys = shallowRef<Set<string>>(new Set<string>());
+const softDeletedValuePaths = shallowRef<Map<string, Array<string | number>>>(
+    new Map<string, Array<string | number>>(),
+);
+
 const selectedTileKey = computed<string>(() => {
     if (selectedTileId.value) {
         return selectedTileId.value;
     }
     return JSON.stringify(selectedTilePath.value ?? []);
+});
+
+const isSelectedTileSoftDeleted = computed<boolean>(() => {
+    if (!selectedTileId.value && !selectedTilePath.value) {
+        return false;
+    }
+
+    return softDeletedTileKeys.value.has(selectedTileKey.value);
 });
 
 function replaceReactiveRecord(
@@ -224,6 +243,77 @@ function insertAtNodegroupPath(options: {
     return null;
 }
 
+function sortPathsForSafeRemoval(paths: Array<Array<string | number>>) {
+    return [...paths].sort((firstPath, secondPath) => {
+        if (firstPath.length !== secondPath.length) {
+            return secondPath.length - firstPath.length;
+        }
+
+        const firstPathFinalSegment = firstPath[firstPath.length - 1];
+        const secondPathFinalSegment = secondPath[secondPath.length - 1];
+
+        if (
+            typeof firstPathFinalSegment === "number" &&
+            typeof secondPathFinalSegment === "number"
+        ) {
+            return secondPathFinalSegment - firstPathFinalSegment;
+        }
+
+        return 0;
+    });
+}
+
+function removeValueAtPath(
+    targetRoot: Record<string | number, unknown>,
+    pathSegments: Array<string | number>,
+) {
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    if (lastSegment == null) {
+        return;
+    }
+
+    let parentContainer: unknown = targetRoot;
+
+    for (const currentSegment of pathSegments.slice(0, -1)) {
+        parentContainer = (
+            parentContainer as Record<string | number, unknown> | undefined
+        )?.[currentSegment];
+
+        if (parentContainer == null) {
+            return;
+        }
+    }
+
+    if (Array.isArray(parentContainer) && typeof lastSegment === "number") {
+        parentContainer.splice(lastSegment, 1);
+        return;
+    }
+
+    const parentRecord = parentContainer as Record<string | number, unknown>;
+    const currentValue = parentRecord[lastSegment];
+
+    parentRecord[lastSegment] = Array.isArray(currentValue) ? [] : null;
+}
+
+function buildPayloadForSave() {
+    const resourceDataClone = structuredClone(resourceData);
+    const widgetDirtyStatesClone = structuredClone(widgetDirtyStates);
+
+    const pathsToRemove = sortPathsForSafeRemoval(
+        Array.from(softDeletedValuePaths.value.values()),
+    );
+
+    for (const pathToRemove of pathsToRemove) {
+        removeValueAtPath(resourceDataClone, pathToRemove);
+        removeValueAtPath(widgetDirtyStatesClone, pathToRemove);
+    }
+
+    return pruneResourceData(
+        resourceDataClone as unknown as ResourceData,
+        widgetDirtyStatesClone as unknown as WidgetDirtyStates,
+    );
+}
+
 const selectedTileData = computed<TileData | undefined>(() => {
     if (!selectedTilePath.value) {
         return undefined;
@@ -260,6 +350,8 @@ watchEffect(async () => {
         );
 
         unsavedTileKeys.value.clear();
+        softDeletedTileKeys.value = new Set<string>();
+        softDeletedValuePaths.value = new Map<string, Array<string | number>>();
     } catch (error) {
         apiError.value = error as Error;
     } finally {
@@ -451,6 +543,33 @@ function onUpdateWidgetFocusStates(
     setSelectedNodeAlias(focusedNodeAlias);
 }
 
+function onToggleSoftDelete(payload: SoftDeletePayload) {
+    const nextSoftDeletedTileKeys = new Set<string>(softDeletedTileKeys.value);
+    const nextSoftDeletedValuePaths = new Map<string, Array<string | number>>(
+        softDeletedValuePaths.value,
+    );
+
+    if (payload.nextIsSoftDeleted) {
+        nextSoftDeletedTileKeys.add(payload.softDeleteKey);
+        nextSoftDeletedValuePaths.set(
+            payload.softDeleteKey,
+            payload.nodegroupValuePath,
+        );
+
+        if (selectedTileKey.value === payload.softDeleteKey) {
+            setSelectedNodeAlias(null);
+            setSelectedTileId(null);
+            setSelectedTilePath(null);
+        }
+    } else {
+        nextSoftDeletedTileKeys.delete(payload.softDeleteKey);
+        nextSoftDeletedValuePaths.delete(payload.softDeleteKey);
+    }
+
+    softDeletedTileKeys.value = nextSoftDeletedTileKeys;
+    softDeletedValuePaths.value = nextSoftDeletedValuePaths;
+}
+
 function onSave() {
     isLoading.value = true;
     apiError.value = null;
@@ -458,7 +577,7 @@ function onSave() {
     updateModularReportResource(
         graphSlug,
         resourceInstanceId,
-        pruneResourceData(resourceData, widgetDirtyStates),
+        buildPayloadForSave(),
     )
         .then(async (updatedResource) => {
             void updatedResource;
@@ -486,6 +605,11 @@ function onSave() {
             );
 
             unsavedTileKeys.value.clear();
+            softDeletedTileKeys.value = new Set<string>();
+            softDeletedValuePaths.value = new Map<
+                string,
+                Array<string | number>
+            >();
         })
         .catch((error: Error) => {
             if (error.message.includes("This card requires")) {
@@ -542,7 +666,7 @@ function onSave() {
             >
                 <div style="flex: 1; overflow: auto">
                     <GenericCard
-                        v-if="selectedTileData"
+                        v-if="selectedTileData && !isSelectedTileSoftDeleted"
                         ref="defaultCard"
                         :mode="EDIT"
                         :nodegroup-alias="selectedNodegroupAlias!"
@@ -585,6 +709,8 @@ function onSave() {
                 <DataTree
                     :resource-data="resourceData"
                     :widget-dirty-states="widgetDirtyStates"
+                    :soft-deleted-tile-keys="softDeletedTileKeys"
+                    @toggle-soft-delete="onToggleSoftDelete($event)"
                 />
             </SplitterPanel>
         </Splitter>

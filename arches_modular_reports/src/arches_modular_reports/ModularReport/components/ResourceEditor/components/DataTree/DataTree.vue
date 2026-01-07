@@ -24,6 +24,16 @@ import type {
 } from "@/arches_modular_reports/ModularReport/types.ts";
 import type { WidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/types.ts";
 
+type SoftDeletePayload = {
+    softDeleteKey: string;
+    nodegroupValuePath: Array<string | number>;
+    nextIsSoftDeleted: boolean;
+};
+
+const emit = defineEmits<{
+    (eventName: "toggle-soft-delete", payload: SoftDeletePayload): void;
+}>();
+
 const { $gettext } = useGettext();
 
 const CARDINALITY_N = "n";
@@ -57,9 +67,10 @@ const { requestCreateTile } = inject("createTile") as {
     ) => void;
 };
 
-const { resourceData, widgetDirtyStates } = defineProps<{
+const { resourceData, widgetDirtyStates, softDeletedTileKeys } = defineProps<{
     resourceData: ResourceData;
     widgetDirtyStates: WidgetDirtyStates;
+    softDeletedTileKeys: Set<string>;
 }>();
 
 const treeContainerElement = useTemplateRef("treeContainerElement");
@@ -77,6 +88,8 @@ const tree = computed(() => {
             tileOrTiles as TileData | TileData[],
             null,
             widgetDirtyStates.aliased_data as WidgetDirtyStates,
+            ["aliased_data", nodegroupAlias],
+            false,
         );
     });
 
@@ -123,9 +136,9 @@ watch(
         if (!foundNode) return;
 
         expandedKeys.value = [...nodePath, foundNode].reduce(
-            function (acc, node) {
-                acc[node.key] = true;
-                return acc;
+            function (accumulatedExpandedKeys, node) {
+                accumulatedExpandedKeys[node.key] = true;
+                return accumulatedExpandedKeys;
             },
             { ...expandedKeys.value },
         );
@@ -157,6 +170,8 @@ function processNodegroup(
     tileOrTiles: TileData | TileData[],
     parentTileId: string | null,
     widgetDirtyStates: WidgetDirtyStates,
+    nodegroupValuePath: Array<string | number>,
+    isSoftDeletedAncestor: boolean,
 ): TreeNode {
     if (Array.isArray(tileOrTiles)) {
         return createCardinalityNWrapper(
@@ -164,8 +179,16 @@ function processNodegroup(
             tileOrTiles,
             parentTileId,
             widgetDirtyStates,
+            nodegroupValuePath,
+            isSoftDeletedAncestor,
         );
     }
+
+    const softDeleteKey =
+        tileOrTiles.tileid ?? JSON.stringify(nodegroupValuePath);
+
+    const isSoftDeletedSelf = softDeletedTileKeys.has(softDeleteKey);
+    const isSoftDeleted = isSoftDeletedAncestor || isSoftDeletedSelf;
 
     const tileDirtyStates = (
         widgetDirtyStates?.[nodegroupAlias] as WidgetDirtyStates
@@ -175,18 +198,45 @@ function processNodegroup(
         tileOrTiles,
         nodegroupAlias,
         tileDirtyStates as WidgetDirtyStates,
+        nodegroupValuePath,
+        isSoftDeleted,
     );
 
-    const isDirty = children.some(
-        (childNode) => childNode.styleClass === "is-dirty",
+    const styleClassParts = [];
+    if (isSoftDeleted) {
+        styleClassParts.push("is-soft-deleted");
+    }
+
+    const hasDirtyDescendants = children.some((childNode) =>
+        childNode.styleClass?.includes("is-dirty"),
     );
+    const hasSoftDeletedDescendants =
+        !isSoftDeleted &&
+        children.some((childNode) =>
+            childNode.styleClass?.includes("is-soft-deleted"),
+        );
+
+    const isDirty = hasDirtyDescendants || hasSoftDeletedDescendants;
+    if (isDirty) {
+        styleClassParts.push("is-dirty");
+    }
 
     return {
         key: generateStableKey(tileOrTiles),
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
-        data: { tileid: tileOrTiles.tileid, alias: nodegroupAlias },
+        data: {
+            tileid: tileOrTiles.tileid,
+            alias: nodegroupAlias,
+            cardinality:
+                nodePresentationLookup.value[nodegroupAlias].nodegroup
+                    .cardinality,
+            nodegroupValuePath,
+            softDeleteKey,
+            isSoftDeleted,
+        },
         children: children,
-        styleClass: isDirty ? "is-dirty" : undefined,
+        styleClass:
+            styleClassParts.length > 0 ? styleClassParts.join(" ") : undefined,
     } as TreeNode;
 }
 
@@ -201,6 +251,8 @@ function processTileData(
     tile: TileData,
     nodegroupAlias: string,
     tileDirtyStates: WidgetDirtyStates,
+    tileValuePath: Array<string | number>,
+    isSoftDeletedAncestor: boolean,
 ): TreeNode[] {
     if (!tile.aliased_data) {
         return [];
@@ -214,6 +266,8 @@ function processTileData(
                         childData as TileData | TileData[],
                         tile.tileid,
                         tileDirtyStates,
+                        [...tileValuePath, "aliased_data", childAlias],
+                        isSoftDeletedAncestor,
                     ),
                 );
             } else if (nodePresentationLookup.value[childAlias]?.visible) {
@@ -224,6 +278,7 @@ function processTileData(
                         tile.tileid,
                         nodegroupAlias,
                         tileDirtyStates,
+                        isSoftDeletedAncestor,
                     ),
                 );
             }
@@ -276,6 +331,7 @@ function processNode(
     tileId: string | null,
     nodegroupAlias: string,
     tileDirtyStates: WidgetDirtyStates,
+    isSoftDeletedAncestor: boolean,
 ): TreeNode {
     const isEmpty = !data || !data?.display_value;
     const isRichText = nodePresentationLookup.value[alias].is_rich_text;
@@ -289,6 +345,17 @@ function processNode(
     nodeValue =
         nodeValue.length > 50 ? nodeValue.slice(0, 47) + "..." : nodeValue;
 
+    const styleClassParts = [];
+
+    if (isSoftDeletedAncestor) {
+        styleClassParts.push("is-soft-deleted");
+    }
+
+    const isDirty = Boolean(tileDirtyStates[alias]);
+    if (isDirty) {
+        styleClassParts.push("is-dirty");
+    }
+
     return {
         key: generateStableKey(data),
         label: label,
@@ -299,8 +366,10 @@ function processNode(
             nodeValue: nodeValue,
             nodeValueClass: nodeValueClass,
             isRequired: nodePresentationLookup.value[alias].is_required,
+            isSoftDeleted: isSoftDeletedAncestor,
         },
-        styleClass: tileDirtyStates[alias] ? "is-dirty" : undefined,
+        styleClass:
+            styleClassParts.length > 0 ? styleClassParts.join(" ") : undefined,
     } as TreeNode;
 }
 
@@ -309,8 +378,20 @@ function createCardinalityNWrapper(
     tiles: TileData[],
     parentTileId: string | null,
     widgetDirtyStates: WidgetDirtyStates,
+    nodegroupValuePath: Array<string | number>,
+    isSoftDeletedAncestor: boolean,
 ): TreeNode {
+    const wrapperSoftDeleteKey = JSON.stringify(nodegroupValuePath);
+    const isWrapperSoftDeleted =
+        isSoftDeletedAncestor || softDeletedTileKeys.has(wrapperSoftDeleteKey);
+
     const childNodes = tiles.map((tile, index) => {
+        const tileValuePath = [...nodegroupValuePath, index];
+
+        const tileSoftDeleteKey = tile.tileid ?? JSON.stringify(tileValuePath);
+        const isTileSoftDeleted =
+            isWrapperSoftDeleted || softDeletedTileKeys.has(tileSoftDeleteKey);
+
         const nodegroupDirtyStates = widgetDirtyStates[
             nodegroupAlias
         ] as WidgetDirtyStates;
@@ -322,11 +403,29 @@ function createCardinalityNWrapper(
             tile,
             nodegroupAlias,
             tileDirtyStates.aliased_data as WidgetDirtyStates,
+            tileValuePath,
+            isTileSoftDeleted,
         );
 
-        const hasDirtyChildren = children.some(
-            (child) => child.styleClass === "is-dirty",
+        const styleClassParts = [];
+
+        if (isTileSoftDeleted) {
+            styleClassParts.push("is-soft-deleted");
+        }
+
+        const hasDirtyChildren = children.some((childNode) =>
+            childNode.styleClass?.includes("is-dirty"),
         );
+        const hasSoftDeletedChildren =
+            !isTileSoftDeleted &&
+            children.some((childNode) =>
+                childNode.styleClass?.includes("is-soft-deleted"),
+            );
+
+        const isDirty = hasDirtyChildren || hasSoftDeletedChildren;
+        if (isDirty) {
+            styleClassParts.push("is-dirty");
+        }
 
         return {
             key: generateStableKey([tile, index]),
@@ -334,15 +433,40 @@ function createCardinalityNWrapper(
             data: {
                 tileid: tile.tileid,
                 alias: nodegroupAlias,
+                cardinality:
+                    nodePresentationLookup.value[nodegroupAlias].nodegroup
+                        .cardinality,
+                nodegroupValuePath: tileValuePath,
+                softDeleteKey: tileSoftDeleteKey,
+                isSoftDeleted: isTileSoftDeleted,
             },
             children,
-            styleClass: hasDirtyChildren ? "is-dirty" : undefined,
+            styleClass:
+                styleClassParts.length > 0
+                    ? styleClassParts.join(" ")
+                    : undefined,
         } as TreeNode;
     });
 
-    const isDirty = childNodes.some(
-        (childNode) => childNode.styleClass === "is-dirty",
-    );
+    const styleClassParts = [];
+
+    if (isWrapperSoftDeleted) {
+        styleClassParts.push("is-soft-deleted");
+    }
+
+    const hasDirtyDescendants = childNodes.some((childNode) => {
+        return childNode.styleClass?.includes("is-dirty");
+    });
+    const hasSoftDeletedDescendants =
+        !isWrapperSoftDeleted &&
+        childNodes.some((childNode) =>
+            childNode.styleClass?.includes("is-soft-deleted"),
+        );
+
+    const isDirty = hasDirtyDescendants || hasSoftDeletedDescendants;
+    if (isDirty) {
+        styleClassParts.push("is-dirty");
+    }
 
     return {
         key: generateStableKey([...tiles, parentTileId, nodegroupAlias]),
@@ -353,9 +477,13 @@ function createCardinalityNWrapper(
             cardinality:
                 nodePresentationLookup.value[nodegroupAlias].nodegroup
                     .cardinality,
+            nodegroupValuePath,
+            softDeleteKey: wrapperSoftDeleteKey,
+            isSoftDeleted: isWrapperSoftDeleted,
         },
         children: childNodes,
-        styleClass: isDirty ? "is-dirty" : undefined,
+        styleClass:
+            styleClassParts.length > 0 ? styleClassParts.join(" ") : undefined,
     } as TreeNode;
 }
 
@@ -376,6 +504,7 @@ function onCaretCollapse(node: TreeNode) {
 
 function onNodeSelect(treeNode: TreeNode) {
     let selectedTreeNodeAlias;
+
     if (!treeNode.data.nodegroupAlias) {
         selectedTreeNodeAlias = null;
     } else {
@@ -412,17 +541,51 @@ function onNodeUnselect() {
 }
 
 function onAddNewTile(treeNode: TreeNode) {
-    const nodegroupValuePath = generateTilePath(
-        resourceData,
-        tree.value,
-        treeNode.key,
-    );
+    const treeNodeData = treeNode.data;
 
-    setSelectedNodegroupAlias(treeNode.data.alias);
+    const nodegroupValuePath =
+        treeNodeData.nodegroupValuePath ??
+        generateTilePath(resourceData, tree.value, treeNode.key);
+
+    setSelectedNodegroupAlias(treeNodeData.alias);
     setSelectedNodeAlias(null);
     setSelectedTileId(null);
 
-    requestCreateTile(treeNode.data.alias, nodegroupValuePath);
+    requestCreateTile(treeNodeData.alias, nodegroupValuePath);
+}
+
+function onSoftDelete(treeNode: TreeNode) {
+    const nodegroupValuePath =
+        treeNode.data.nodegroupValuePath ??
+        generateTilePath(resourceData, tree.value, treeNode.key);
+
+    const softDeleteKey =
+        treeNode.data.softDeleteKey ??
+        treeNode.data.tileid ??
+        JSON.stringify(nodegroupValuePath);
+
+    emit("toggle-soft-delete", {
+        softDeleteKey,
+        nodegroupValuePath,
+        nextIsSoftDeleted: true,
+    });
+}
+
+function onRestore(treeNode: TreeNode) {
+    const nodegroupValuePath =
+        treeNode.data.nodegroupValuePath ??
+        generateTilePath(resourceData, tree.value, treeNode.key);
+
+    const softDeleteKey =
+        treeNode.data.softDeleteKey ??
+        treeNode.data.tileid ??
+        JSON.stringify(nodegroupValuePath);
+
+    emit("toggle-soft-delete", {
+        softDeleteKey,
+        nodegroupValuePath,
+        nextIsSoftDeleted: false,
+    });
 }
 </script>
 
@@ -443,15 +606,25 @@ function onAddNewTile(treeNode: TreeNode) {
                 @node-collapse="onCaretCollapse"
             >
                 <template #default="slotProps">
-                    <div style="display: flex">
+                    <div
+                        style="display: flex; align-items: center; gap: 0.5rem"
+                    >
                         <div style="margin-inline-end: 0.5rem">
-                            <span>{{ slotProps.node.label }}</span>
                             <span
-                                v-if="slotProps.node.data.isRequired"
-                                class="is-required"
-                                >*</span
+                                :class="{
+                                    'is-soft-deleted-text': Boolean(
+                                        slotProps.node.data.isSoftDeleted,
+                                    ),
+                                }"
                             >
-                            <span>:</span>
+                                <span>{{ slotProps.node.label }}</span>
+                                <span
+                                    v-if="slotProps.node.data.isRequired"
+                                    class="is-required"
+                                    >*</span
+                                >
+                                <span>:</span>
+                            </span>
                         </div>
 
                         <Button
@@ -462,11 +635,48 @@ function onAddNewTile(treeNode: TreeNode) {
                             size="small"
                             rounded
                             variant="outlined"
+                            :disabled="
+                                Boolean(slotProps.node.data.isSoftDeleted)
+                            "
                             :aria-label="$gettext('Add new tile')"
                             @click.stop="onAddNewTile(slotProps.node)"
                         />
 
-                        <span :class="slotProps.node.data.nodeValueClass">
+                        <template
+                            v-if="slotProps.node.data.nodegroupAlias == null"
+                        >
+                            <Button
+                                v-if="!slotProps.node.data.isSoftDeleted"
+                                icon="pi pi-trash"
+                                size="small"
+                                rounded
+                                variant="outlined"
+                                severity="danger"
+                                :aria-label="$gettext('Delete')"
+                                @click.stop="onSoftDelete(slotProps.node)"
+                            />
+                            <Button
+                                v-else
+                                icon="pi pi-undo"
+                                size="small"
+                                rounded
+                                severity="info"
+                                :aria-label="$gettext('Restore')"
+                                @click.stop="onRestore(slotProps.node)"
+                            />
+                        </template>
+
+                        <span
+                            v-if="slotProps.node.data.nodegroupAlias != null"
+                            :class="[
+                                slotProps.node.data.nodeValueClass,
+                                {
+                                    'is-soft-deleted-text': Boolean(
+                                        slotProps.node.data.isSoftDeleted,
+                                    ),
+                                },
+                            ]"
+                        >
                             {{ slotProps.node.data.nodeValue }}
                         </span>
                     </div>
@@ -477,12 +687,36 @@ function onAddNewTile(treeNode: TreeNode) {
 </template>
 
 <style scoped>
-:deep(.p-tree-node-content.is-dirty:not(.p-tree-node-selected)) {
+.is-soft-deleted-text {
+    text-decoration: line-through;
+}
+
+:deep(.p-tree-node-content.is-soft-deleted:not(.p-tree-node-selected)) {
+    background-color: var(--p-red-100) !important;
+}
+
+:deep(
+        .p-tree-node.is-soft-deleted
+            > .p-tree-node-content:not(.p-tree-node-selected)
+    ) {
+    background-color: var(--p-red-100) !important;
+}
+
+:deep(
+        .p-tree-node-content.is-dirty:not(.p-tree-node-selected):not(
+                .is-soft-deleted
+            )
+    ) {
     font-weight: bold;
     background-color: var(--p-yellow-100) !important;
 }
 
-:deep(.p-tree-node.is-dirty > .p-tree-node-content:not(.p-tree-node-selected)) {
+:deep(
+        .p-tree-node.is-dirty
+            > .p-tree-node-content:not(.p-tree-node-selected):not(
+                .is-soft-deleted
+            )
+    ) {
     font-weight: bold;
     background-color: var(--p-yellow-100) !important;
 }
