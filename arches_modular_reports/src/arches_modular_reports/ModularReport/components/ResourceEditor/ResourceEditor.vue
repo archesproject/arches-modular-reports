@@ -327,17 +327,17 @@ watch(createTileRequestId, async () => {
     try {
         isLoading.value = true;
 
-        const blankTile = (await fetchModularReportBlankTile(
+        const blankTile = await fetchModularReportBlankTile(
             graphSlug,
             requestedNodegroupAlias,
-        )) as TileData;
+        );
 
         const isCardinalityN = isCardinalityNNodegroup(requestedNodegroupAlias);
 
         const createdTilePath = insertAtNodegroupPath({
-            targetRoot: resourceData as unknown as Record<string, unknown>,
+            targetRoot: resourceData,
             nodegroupValuePath,
-            valueToInsert: blankTile as unknown as NodeData,
+            valueToInsert: blankTile,
             isCardinalityN,
         });
 
@@ -358,7 +358,7 @@ watch(createTileRequestId, async () => {
         const newTileDirtyStates = buildDirtyStatesForNewTile(blankTile);
 
         const createdDirtyPath = insertAtNodegroupPath({
-            targetRoot: widgetDirtyStates as unknown as Record<string, unknown>,
+            targetRoot: widgetDirtyStates,
             nodegroupValuePath,
             valueToInsert: newTileDirtyStates,
             isCardinalityN,
@@ -366,7 +366,7 @@ watch(createTileRequestId, async () => {
 
         if (!createdDirtyPath) {
             setValueAtPath(
-                widgetDirtyStates as unknown as Record<string, unknown>,
+                widgetDirtyStates,
                 nodegroupValuePath,
                 newTileDirtyStates,
             );
@@ -465,6 +465,7 @@ function onSave() {
 
             emit("save");
 
+            // this is sloppy but `_updatedResource` does not have the option to fill in blanks
             const modularReportResource = await fetchModularReportResource({
                 graphSlug,
                 resourceId: resourceInstanceId,
