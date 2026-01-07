@@ -157,7 +157,7 @@ function setValueAtPath(
                 string | number,
                 unknown
             >,
-        targetObject as unknown as Record<string | number, unknown>,
+        targetObject,
     );
 
     parentContainer[lastSegment] = valueToAssign;
@@ -343,10 +343,8 @@ watchEffect(async () => {
         Object.assign(resourceData, modularReportResource);
 
         replaceReactiveRecord(
-            widgetDirtyStates as unknown as Record<string, unknown>,
-            generateWidgetDirtyStates(
-                modularReportResource,
-            ) as unknown as Record<string, unknown>,
+            widgetDirtyStates,
+            generateWidgetDirtyStates(modularReportResource),
         );
 
         unsavedTileKeys.value.clear();
@@ -484,7 +482,7 @@ function onUpdateTileData(updatedTileData: TileData) {
     const originalTileValueFromSnapshot = getValueFromPath(
         originalResourceData.value,
         selectedTilePath.value,
-    ) as unknown as TileData | undefined;
+    );
 
     for (const [tileKey, tileValue] of Object.entries(updatedTileData)) {
         currentTileValue[tileKey] = tileValue;
@@ -598,10 +596,8 @@ function onSave() {
             Object.assign(resourceData, modularReportResource);
 
             replaceReactiveRecord(
-                widgetDirtyStates as unknown as Record<string, unknown>,
-                generateWidgetDirtyStates(
-                    modularReportResource,
-                ) as unknown as Record<string, unknown>,
+                widgetDirtyStates,
+                generateWidgetDirtyStates(modularReportResource),
             );
 
             unsavedTileKeys.value.clear();
