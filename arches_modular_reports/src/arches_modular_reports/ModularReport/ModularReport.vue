@@ -117,6 +117,23 @@ provide("createTile", {
     requestCreateTile,
 });
 
+const softDeleteTileRequestId = ref(0);
+const softDeleteRequestedNodegroupAlias = ref<string | null>(null);
+const softDeleteRequestedTileId = ref<string | null>(null);
+
+function requestSoftDeleteTile(nodegroupAlias: string, tileId: string) {
+    softDeleteRequestedNodegroupAlias.value = nodegroupAlias;
+    softDeleteRequestedTileId.value = tileId;
+    softDeleteTileRequestId.value++;
+}
+
+provide("softDeleteTile", {
+    softDeleteTileRequestId,
+    softDeleteRequestedNodegroupAlias,
+    softDeleteRequestedTileId,
+    requestSoftDeleteTile,
+});
+
 const reportKey = ref(0);
 const editorKey = ref(0);
 
