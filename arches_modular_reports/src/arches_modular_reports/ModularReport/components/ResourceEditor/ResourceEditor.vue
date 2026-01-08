@@ -2,6 +2,7 @@
 import {
     computed,
     inject,
+    nextTick,
     reactive,
     readonly,
     ref,
@@ -72,6 +73,16 @@ const {
     createTileRequestId: Ref<number>;
     createTileRequestedNodegroupAlias: Ref<string | null>;
     createTileRequestedTilePath?: Ref<Array<string | number> | null>;
+};
+
+const {
+    softDeleteTileRequestId,
+    softDeleteRequestedNodegroupAlias,
+    softDeleteRequestedTileId,
+} = inject("softDeleteTile") as {
+    softDeleteTileRequestId: Ref<number>;
+    softDeleteRequestedNodegroupAlias: Ref<string | null>;
+    softDeleteRequestedTileId: Ref<string | null>;
 };
 
 const { selectedNodegroupAlias } = inject("selectedNodegroupAlias") as {
@@ -468,6 +479,40 @@ watch(createTileRequestId, async () => {
     } finally {
         isLoading.value = false;
     }
+});
+
+watch(softDeleteTileRequestId, async () => {
+    if (isLoading.value) {
+        return;
+    }
+
+    const requestedNodegroupAlias = softDeleteRequestedNodegroupAlias.value;
+    const requestedTileId = softDeleteRequestedTileId.value;
+
+    if (!requestedNodegroupAlias || !requestedTileId) {
+        return;
+    }
+
+    if (selectedNodegroupAlias.value !== requestedNodegroupAlias) {
+        return;
+    }
+
+    if (selectedTileId.value !== requestedTileId) {
+        setSelectedTileId(requestedTileId);
+        setSelectedTilePath(null);
+    }
+
+    await nextTick();
+
+    if (softDeletedTileKeys.value.has(requestedTileId)) {
+        return;
+    }
+
+    onToggleSoftDelete({
+        softDeleteKey: requestedTileId,
+        nodegroupValuePath: selectedTilePath.value!,
+        nextIsSoftDeleted: true,
+    });
 });
 
 function onUpdateTileData(updatedTileData: TileData) {
