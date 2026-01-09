@@ -24,8 +24,8 @@ urlpatterns = [
     ),
     # Override core arches resource report view to allow rendering
     # distinct template for modular reports.
-    re_path(
-        r"^report/(?P<resourceid>%s)$" % uuid_regex,
+    path(
+        "report/<uuid:resourceid>/<str:report_config_slug>",
         ModularReportAwareResourceReportView.as_view(),
         name="resource_report",
     ),

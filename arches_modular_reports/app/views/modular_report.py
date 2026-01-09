@@ -56,23 +56,18 @@ class GraphSlugFromIdView(APIBase):
 class ModularReportConfigView(View):
     def get(self, request):
         filters = Q(graph__resourceinstance=request.GET.get("resourceId"))
+        filters &= Q(slug__iexact=request.GET.get("slug", "default"))
 
         if arches_version >= (8, 0):
             filters &= Q(graph__source_identifier=None)
 
-        slug = request.GET.get("slug", None)
-        if slug:
-            filters &= Q(slug__iexact=slug)
-        else:
-            filters &= Q(slug__iexact="default")
-
-        config_instance = (
-            ReportConfig.objects.select_related("graph")
-            .prefetch_related("graph__node_set", "graph__node_set__nodegroup")
-            .get(filters)
-        )
-
-        if not config_instance:
+        try:
+            config_instance = (
+                ReportConfig.objects.select_related("graph")
+                .prefetch_related("graph__node_set", "graph__node_set__nodegroup")
+                .get(filters)
+            )
+        except ReportConfig.DoesNotExist:
             return JSONErrorResponse(
                 _("No report config found."), status=HTTPStatus.NOT_FOUND
             )
@@ -86,7 +81,7 @@ class ModularReportConfigView(View):
 
 @method_decorator(can_read_resource_instance, name="dispatch")
 class ModularReportAwareResourceReportView(ResourceReportView):
-    def get(self, request, resourceid=None):
+    def get(self, request, resourceid=None, report_config_slug=None):
         graph = (
             models.GraphModel.objects.filter(resourceinstance=resourceid)
             .select_related("template")
@@ -108,6 +103,7 @@ class ModularReportAwareResourceReportView(ResourceReportView):
                 graph_slug=graph.slug,
                 # To the extent possible, avoid DB queries needed for KO
                 report_templates=[graph.template],
+                report_config_slug=report_config_slug,
                 card_components=models.CardComponent.objects.none(),
                 widgets=models.Widget.objects.none(),
                 map_markers=models.MapMarker.objects.none(),
