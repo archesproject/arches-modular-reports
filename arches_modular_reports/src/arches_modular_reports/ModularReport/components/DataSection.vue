@@ -45,6 +45,10 @@ const props = defineProps<{
     resourceInstanceId: string;
 }>();
 
+const { requestCreateTile } = inject("createTile") as {
+    requestCreateTile: (nodegroupAlias: string) => void;
+};
+
 const { $gettext } = useGettext();
 const CARDINALITY_N = "n";
 const queryTimeoutValue = 500;
@@ -237,6 +241,10 @@ function initiateEdit(tileId: string | null) {
     // We cannot derive the path from the tileid alone, so clear it.
     setSelectedTilePath(null);
     setSelectedTileId(tileId);
+
+    if (!tileId) {
+        requestCreateTile(props.component.config.nodegroup_alias);
+    }
 
     setShouldShowEditor(true);
 }

@@ -50,6 +50,13 @@ const nodePresentationLookup = inject<Ref<NodePresentationLookup>>(
     "nodePresentationLookup",
 )!;
 
+const { requestCreateTile } = inject("createTile") as {
+    requestCreateTile: (
+        nodegroupAlias: string,
+        nodegroupValuePath: Array<string | number>,
+    ) => void;
+};
+
 const { resourceData, widgetDirtyStates } = defineProps<{
     resourceData: ResourceData;
     widgetDirtyStates: WidgetDirtyStates;
@@ -403,6 +410,20 @@ function onNodeUnselect() {
     setSelectedTileId(null);
     setSelectedTilePath(null);
 }
+
+function onAddNewTile(treeNode: TreeNode) {
+    const nodegroupValuePath = generateTilePath(
+        resourceData,
+        tree.value,
+        treeNode.key,
+    );
+
+    setSelectedNodegroupAlias(treeNode.data.alias);
+    setSelectedNodeAlias(null);
+    setSelectedTileId(null);
+
+    requestCreateTile(treeNode.data.alias, nodegroupValuePath);
+}
 </script>
 
 <template>
@@ -422,28 +443,33 @@ function onNodeUnselect() {
                 @node-collapse="onCaretCollapse"
             >
                 <template #default="slotProps">
-                    <span>{{ slotProps.node.label }}</span>
-                    <span
-                        v-if="slotProps.node.data.isRequired"
-                        class="is-required"
-                    >
-                        *
-                    </span>
-                    <span>: </span>
-                    <span
-                        v-if="slotProps.node.data.cardinality == CARDINALITY_N"
-                    >
+                    <div style="display: flex">
+                        <div style="margin-inline-end: 0.5rem">
+                            <span>{{ slotProps.node.label }}</span>
+                            <span
+                                v-if="slotProps.node.data.isRequired"
+                                class="is-required"
+                                >*</span
+                            >
+                            <span>:</span>
+                        </div>
+
                         <Button
+                            v-if="
+                                slotProps.node.data.cardinality == CARDINALITY_N
+                            "
                             icon="pi pi-plus"
                             size="small"
                             rounded
                             variant="outlined"
-                            aria-label="Add new tile"
+                            :aria-label="$gettext('Add new tile')"
+                            @click.stop="onAddNewTile(slotProps.node)"
                         />
-                    </span>
-                    <span :class="slotProps.node.data.nodeValueClass">
-                        {{ slotProps.node.data.nodeValue }}
-                    </span>
+
+                        <span :class="slotProps.node.data.nodeValueClass">
+                            {{ slotProps.node.data.nodeValue }}
+                        </span>
+                    </div>
                 </template>
             </Tree>
         </Panel>
@@ -451,10 +477,16 @@ function onNodeUnselect() {
 </template>
 
 <style scoped>
-:deep(.is-dirty) {
+:deep(.p-tree-node-content.is-dirty:not(.p-tree-node-selected)) {
     font-weight: bold;
     background-color: var(--p-yellow-100) !important;
 }
+
+:deep(.p-tree-node.is-dirty > .p-tree-node-content:not(.p-tree-node-selected)) {
+    font-weight: bold;
+    background-color: var(--p-yellow-100) !important;
+}
+
 :deep(.is-empty) {
     font-weight: normal;
     font-style: italic;
@@ -465,6 +497,7 @@ function onNodeUnselect() {
 :deep(.is-required) {
     font-weight: bold;
     color: var(--p-red-600);
+    margin-inline: 0.25rem;
 }
 
 :deep(.p-tree-node-content.p-tree-node-selected) {

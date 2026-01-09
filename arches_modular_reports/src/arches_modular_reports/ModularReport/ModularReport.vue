@@ -31,7 +31,6 @@ const toast = useToast();
 const { $gettext } = useGettext();
 const componentLookup: ComponentLookup = {};
 
-// Prevents spamming i18n functions on panel drag
 const EDITOR = $gettext("Editor");
 const CLOSE_EDITOR = $gettext("Close editor");
 
@@ -96,6 +95,26 @@ function setShouldShowEditor(shouldShow: boolean) {
 provide("shouldShowEditor", {
     shouldShowEditor,
     setShouldShowEditor,
+});
+
+const createTileRequestId = ref(0);
+const createTileRequestedNodegroupAlias = ref<string | null>(null);
+const createTileRequestedTilePath = ref<Array<string | number> | null>(null);
+
+function requestCreateTile(
+    nodegroupAlias: string,
+    tilePath: Array<string | number> | null = null,
+) {
+    createTileRequestedNodegroupAlias.value = nodegroupAlias;
+    createTileRequestedTilePath.value = tilePath;
+    createTileRequestId.value++;
+}
+
+provide("createTile", {
+    createTileRequestId,
+    createTileRequestedNodegroupAlias,
+    createTileRequestedTilePath,
+    requestCreateTile,
 });
 
 const reportKey = ref(0);
