@@ -120,6 +120,9 @@ const originalResourceData = shallowRef<Readonly<ResourceData>>(
 const widgetDirtyStates = reactive<WidgetDirtyStates>({} as WidgetDirtyStates);
 
 const unsavedTileKeys = shallowRef<Set<string>>(new Set<string>());
+const newTileBaselineSnapshots = shallowRef<Map<string, TileData>>(
+    new Map<string, TileData>(),
+);
 
 const softDeletedTileKeys = shallowRef<Set<string>>(new Set<string>());
 const softDeletedValuePaths = shallowRef<Map<string, Array<string | number>>>(
@@ -212,7 +215,7 @@ function buildDirtyStatesForNewTile(tileData: TileData): WidgetDirtyStates {
             continue;
         }
 
-        dirtyAliasedData[childAlias] = true;
+        dirtyAliasedData[childAlias] = false;
     }
 
     return { aliased_data: dirtyAliasedData } as unknown as WidgetDirtyStates;
@@ -362,6 +365,7 @@ watchEffect(async () => {
         );
 
         unsavedTileKeys.value.clear();
+        newTileBaselineSnapshots.value.clear();
         softDeletedTileKeys.value = new Set<string>();
         softDeletedValuePaths.value = new Map<string, Array<string | number>>();
     } catch (error) {
@@ -452,10 +456,14 @@ watch(createTileRequestId, async () => {
         setSelectedTileId(blankTile.tileid ?? null);
         setSelectedTilePath(createdTilePath);
 
-        unsavedTileKeys.value.add(
-            blankTile.tileid
-                ? blankTile.tileid
-                : JSON.stringify(createdTilePath),
+        const createdTileKey = blankTile.tileid
+            ? blankTile.tileid
+            : JSON.stringify(createdTilePath);
+
+        unsavedTileKeys.value.add(createdTileKey);
+        newTileBaselineSnapshots.value.set(
+            createdTileKey,
+            structuredClone(blankTile),
         );
 
         const newTileDirtyStates = buildDirtyStatesForNewTile(blankTile);
@@ -543,24 +551,24 @@ function onUpdateTileData(updatedTileData: TileData) {
         tileDirtyStates as { aliased_data: Record<string, unknown> }
     ).aliased_data;
 
+    let baselineTileAliasedData: AliasedTileData["aliased_data"] | null = null;
+
     if (unsavedTileKeys.value.has(selectedTileKey.value)) {
-        for (const nodeAlias of Object.keys(currentAliasedData)) {
-            if (typeof dirtyAliasedData[nodeAlias] === "boolean") {
-                dirtyAliasedData[nodeAlias] = true;
-            } else if (dirtyAliasedData[nodeAlias] == null) {
-                dirtyAliasedData[nodeAlias] = true;
-            }
-        }
-        return;
+        const baselineTile = newTileBaselineSnapshots.value.get(
+            selectedTileKey.value,
+        );
+        baselineTileAliasedData =
+            (baselineTile?.aliased_data as AliasedTileData["aliased_data"]) ??
+            null;
+    } else if (originalTileValueFromSnapshot) {
+        baselineTileAliasedData = originalTileValueFromSnapshot[
+            "aliased_data"
+        ] as AliasedTileData["aliased_data"];
     }
 
-    if (!originalTileValueFromSnapshot) {
+    if (!baselineTileAliasedData) {
         return;
     }
-
-    const originalAliasedData = originalTileValueFromSnapshot[
-        "aliased_data"
-    ] as AliasedTileData["aliased_data"];
 
     for (const [nodeAlias, aliasedData] of Object.entries(currentAliasedData)) {
         if (typeof dirtyAliasedData[nodeAlias] !== "boolean") {
@@ -569,7 +577,7 @@ function onUpdateTileData(updatedTileData: TileData) {
 
         dirtyAliasedData[nodeAlias] = !isEqual(
             aliasedData,
-            originalAliasedData[nodeAlias],
+            baselineTileAliasedData[nodeAlias],
         );
     }
 }
@@ -641,6 +649,7 @@ function onUndoAllChanges() {
     );
 
     unsavedTileKeys.value.clear();
+    newTileBaselineSnapshots.value.clear();
     softDeletedTileKeys.value = new Set<string>();
     softDeletedValuePaths.value = new Map<string, Array<string | number>>();
 
@@ -682,6 +691,7 @@ function onSave() {
             );
 
             unsavedTileKeys.value.clear();
+            newTileBaselineSnapshots.value.clear();
             softDeletedTileKeys.value = new Set<string>();
             softDeletedValuePaths.value = new Map<
                 string,
@@ -765,6 +775,7 @@ function onSave() {
                             :resource-data="resourceData"
                             :widget-dirty-states="widgetDirtyStates"
                             :soft-deleted-tile-keys="softDeletedTileKeys"
+                            :unsaved-tile-keys="unsavedTileKeys"
                             @toggle-soft-delete="onToggleSoftDelete($event)"
                         />
                     </div>

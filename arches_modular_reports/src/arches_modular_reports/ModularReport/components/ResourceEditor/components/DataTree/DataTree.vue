@@ -66,10 +66,16 @@ const { requestCreateTile } = inject("createTile") as {
     ) => void;
 };
 
-const { resourceData, widgetDirtyStates, softDeletedTileKeys } = defineProps<{
+const {
+    resourceData,
+    widgetDirtyStates,
+    softDeletedTileKeys,
+    unsavedTileKeys,
+} = defineProps<{
     resourceData: ResourceData;
     widgetDirtyStates: WidgetDirtyStates;
     softDeletedTileKeys: Set<string>;
+    unsavedTileKeys: Set<string>;
 }>();
 
 const treeContainerElement = useTemplateRef("treeContainerElement");
@@ -88,6 +94,7 @@ const tree = computed(() => {
             null,
             widgetDirtyStates.aliased_data as WidgetDirtyStates,
             ["aliased_data", nodegroupAlias],
+            false,
             false,
         );
     });
@@ -179,6 +186,7 @@ function processNodegroup(
     widgetDirtyStates: WidgetDirtyStates,
     nodegroupValuePath: Array<string | number>,
     isSoftDeletedAncestor: boolean,
+    isNewAncestor: boolean,
 ): TreeNode {
     if (Array.isArray(tileOrTiles)) {
         return createCardinalityNWrapper(
@@ -188,6 +196,7 @@ function processNodegroup(
             widgetDirtyStates,
             nodegroupValuePath,
             isSoftDeletedAncestor,
+            isNewAncestor,
         );
     }
 
@@ -196,6 +205,9 @@ function processNodegroup(
 
     const isSoftDeletedSelf = softDeletedTileKeys.has(softDeleteKey);
     const isSoftDeleted = isSoftDeletedAncestor || isSoftDeletedSelf;
+
+    const isNewSelf = unsavedTileKeys.has(softDeleteKey);
+    const isNew = isNewAncestor || isNewSelf;
 
     const tileDirtyStates = (
         widgetDirtyStates?.[nodegroupAlias] as WidgetDirtyStates
@@ -207,6 +219,7 @@ function processNodegroup(
         tileDirtyStates as WidgetDirtyStates,
         nodegroupValuePath,
         isSoftDeleted,
+        isNew,
     );
 
     const styleClassParts = [];
@@ -228,6 +241,10 @@ function processNodegroup(
         styleClassParts.push("is-dirty");
     }
 
+    if (isNew) {
+        styleClassParts.push("is-new");
+    }
+
     return {
         key: generateStableKey(tileOrTiles),
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
@@ -240,6 +257,7 @@ function processNodegroup(
             nodegroupValuePath,
             softDeleteKey,
             isSoftDeleted,
+            isNew,
             isNodegroupWrapper: true,
         },
         children: children,
@@ -261,6 +279,7 @@ function processTileData(
     tileDirtyStates: WidgetDirtyStates,
     tileValuePath: Array<string | number>,
     isSoftDeletedAncestor: boolean,
+    isNewAncestor: boolean,
 ): TreeNode[] {
     if (!tile.aliased_data) {
         return [];
@@ -276,6 +295,7 @@ function processTileData(
                         tileDirtyStates,
                         [...tileValuePath, "aliased_data", childAlias],
                         isSoftDeletedAncestor,
+                        isNewAncestor,
                     ),
                 );
             } else if (nodePresentationLookup.value[childAlias]?.visible) {
@@ -287,6 +307,7 @@ function processTileData(
                         nodegroupAlias,
                         tileDirtyStates,
                         isSoftDeletedAncestor,
+                        isNewAncestor,
                     ),
                 );
             }
@@ -340,6 +361,7 @@ function processNode(
     nodegroupAlias: string,
     tileDirtyStates: WidgetDirtyStates,
     isSoftDeletedAncestor: boolean,
+    isNewAncestor: boolean,
 ): TreeNode {
     const isEmpty = !data || !data?.display_value;
     const isRichText = nodePresentationLookup.value[alias].is_rich_text;
@@ -364,6 +386,10 @@ function processNode(
         styleClassParts.push("is-dirty");
     }
 
+    if (isNewAncestor) {
+        styleClassParts.push("is-new");
+    }
+
     return {
         key: generateStableKey(data),
         label: label,
@@ -375,6 +401,7 @@ function processNode(
             nodeValueClass: nodeValueClass,
             isRequired: nodePresentationLookup.value[alias].is_required,
             isSoftDeleted: isSoftDeletedAncestor,
+            isNew: isNewAncestor,
         },
         styleClass:
             styleClassParts.length > 0 ? styleClassParts.join(" ") : undefined,
@@ -388,10 +415,14 @@ function createCardinalityNWrapper(
     widgetDirtyStates: WidgetDirtyStates,
     nodegroupValuePath: Array<string | number>,
     isSoftDeletedAncestor: boolean,
+    isNewAncestor: boolean,
 ): TreeNode {
     const wrapperSoftDeleteKey = JSON.stringify(nodegroupValuePath);
     const isWrapperSoftDeleted =
         isSoftDeletedAncestor || softDeletedTileKeys.has(wrapperSoftDeleteKey);
+
+    const isWrapperNew =
+        isNewAncestor || unsavedTileKeys.has(wrapperSoftDeleteKey);
 
     const childNodes = tiles.map((tile, index) => {
         const tileValuePath = [...nodegroupValuePath, index];
@@ -399,6 +430,9 @@ function createCardinalityNWrapper(
         const tileSoftDeleteKey = tile.tileid ?? JSON.stringify(tileValuePath);
         const isTileSoftDeleted =
             isWrapperSoftDeleted || softDeletedTileKeys.has(tileSoftDeleteKey);
+
+        const isTileNew =
+            isWrapperNew || unsavedTileKeys.has(tileSoftDeleteKey);
 
         const nodegroupDirtyStates = widgetDirtyStates[
             nodegroupAlias
@@ -413,6 +447,7 @@ function createCardinalityNWrapper(
             tileDirtyStates.aliased_data as WidgetDirtyStates,
             tileValuePath,
             isTileSoftDeleted,
+            isTileNew,
         );
 
         const styleClassParts = [];
@@ -435,6 +470,10 @@ function createCardinalityNWrapper(
             styleClassParts.push("is-dirty");
         }
 
+        if (isTileNew) {
+            styleClassParts.push("is-new");
+        }
+
         return {
             key: generateStableKey([tile, index]),
             label: children[0]?.label || $gettext("Empty"),
@@ -447,6 +486,7 @@ function createCardinalityNWrapper(
                 nodegroupValuePath: tileValuePath,
                 softDeleteKey: tileSoftDeleteKey,
                 isSoftDeleted: isTileSoftDeleted,
+                isNew: isTileNew,
                 isNodegroupWrapper: false,
             },
             children,
@@ -477,6 +517,10 @@ function createCardinalityNWrapper(
         styleClassParts.push("is-dirty");
     }
 
+    if (isWrapperNew) {
+        styleClassParts.push("is-new");
+    }
+
     return {
         key: generateStableKey([...tiles, parentTileId, nodegroupAlias]),
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
@@ -489,6 +533,7 @@ function createCardinalityNWrapper(
             nodegroupValuePath,
             softDeleteKey: wrapperSoftDeleteKey,
             isSoftDeleted: isWrapperSoftDeleted,
+            isNew: isWrapperNew,
             isNodegroupWrapper: true,
         },
         children: childNodes,
@@ -734,6 +779,23 @@ function onRestore(treeNode: TreeNode) {
     ) {
     font-weight: bold;
     background-color: var(--p-yellow-100) !important;
+}
+
+:deep(
+        .p-tree-node-content.is-new:not(.p-tree-node-selected):not(
+                .is-soft-deleted
+            ):not(.is-dirty)
+    ) {
+    background-color: var(--p-green-100) !important;
+}
+
+:deep(
+        .p-tree-node.is-new
+            > .p-tree-node-content:not(.p-tree-node-selected):not(
+                .is-soft-deleted
+            ):not(.is-dirty)
+    ) {
+    background-color: var(--p-green-100) !important;
 }
 
 :deep(.is-empty) {

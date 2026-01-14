@@ -6,6 +6,7 @@ import Panel from "primevue/panel";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
 import Toast from "primevue/toast";
+import Button from "primevue/button";
 import { useToast } from "primevue/usetoast";
 
 import {
@@ -135,7 +136,6 @@ provide("softDeleteTile", {
 });
 
 const reportKey = ref(0);
-const editorKey = ref(0);
 
 const config: Ref<NamedSection> = ref({
     name: $gettext("Loading data"),
@@ -180,12 +180,7 @@ watchEffect(async () => {
 });
 
 function closeEditor() {
-    setSelectedNodegroupAlias(null);
-    setSelectedTileId(null);
-    setSelectedTilePath(null);
     setShouldShowEditor(false);
-
-    editorKey.value++;
 }
 </script>
 
@@ -213,29 +208,29 @@ function closeEditor() {
             "
             :size="30"
         >
-            <Panel
-                :key="editorKey"
-                class="editor-panel"
-                toggleable
-                :toggle-button-props="{
-                    ariaLabel: CLOSE_EDITOR,
-                    severity: 'secondary',
-                }"
-                :style="{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flex: 1,
-                    minHeight: 0,
-                    border: 'none',
-                }"
-                :header="EDITOR"
-                @toggle="closeEditor"
-            >
-                <template #toggleicon>
-                    <i
-                        class="pi pi-times"
-                        aria-hidden="true"
-                    />
+            <Panel class="editor-panel">
+                <template #header>
+                    <div
+                        style="
+                            width: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                        "
+                    >
+                        <div style="font-weight: 600; font-size: large">
+                            {{ EDITOR }}
+                        </div>
+
+                        <Button
+                            severity="secondary"
+                            variant="text"
+                            icon="pi pi-times"
+                            size="large"
+                            :aria-label="CLOSE_EDITOR"
+                            @click="closeEditor"
+                        />
+                    </div>
                 </template>
 
                 <ResourceEditor
@@ -250,6 +245,14 @@ function closeEditor() {
 </template>
 
 <style scoped>
+.editor-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    border: none;
+}
+
 .p-splitter {
     height: 100%;
     width: 100%;
