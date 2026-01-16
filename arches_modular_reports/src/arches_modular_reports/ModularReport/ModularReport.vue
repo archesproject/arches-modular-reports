@@ -6,6 +6,7 @@ import Panel from "primevue/panel";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
 import Toast from "primevue/toast";
+import Button from "primevue/button";
 import { useToast } from "primevue/usetoast";
 
 import {
@@ -135,7 +136,6 @@ provide("softDeleteTile", {
 });
 
 const reportKey = ref(0);
-const editorKey = ref(0);
 
 const config: Ref<NamedSection> = ref({
     name: $gettext("Loading data"),
@@ -180,12 +180,7 @@ watchEffect(async () => {
 });
 
 function closeEditor() {
-    setSelectedNodegroupAlias(null);
-    setSelectedTileId(null);
-    setSelectedTilePath(null);
     setShouldShowEditor(false);
-
-    editorKey.value++;
 }
 </script>
 
@@ -202,32 +197,42 @@ function closeEditor() {
                 />
             </div>
         </SplitterPanel>
+
         <SplitterPanel
             v-show="shouldShowEditor"
-            style="overflow: auto"
+            style="
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+            "
             :size="30"
         >
-            <Panel
-                :key="editorKey"
-                toggleable
-                :toggle-button-props="{
-                    ariaLabel: CLOSE_EDITOR,
-                    severity: 'secondary',
-                }"
-                :style="{
-                    overflow: 'auto',
-                    height: '100%',
-                    border: 'none',
-                }"
-                :header="EDITOR"
-                @toggle="closeEditor"
-            >
-                <template #toggleicon>
-                    <i
-                        class="pi pi-times"
-                        aria-hidden="true"
-                    />
+            <Panel class="editor-panel">
+                <template #header>
+                    <div
+                        style="
+                            width: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                        "
+                    >
+                        <div style="font-weight: 600; font-size: large">
+                            {{ EDITOR }}
+                        </div>
+
+                        <Button
+                            severity="secondary"
+                            variant="text"
+                            icon="pi pi-times"
+                            size="large"
+                            :aria-label="CLOSE_EDITOR"
+                            @click="closeEditor"
+                        />
+                    </div>
                 </template>
+
                 <ResourceEditor
                     v-if="userCanEditResourceInstance"
                     @save="reportKey++"
@@ -240,8 +245,15 @@ function closeEditor() {
 </template>
 
 <style scoped>
+.editor-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    border: none;
+}
+
 .p-splitter {
-    position: absolute;
     height: 100%;
     width: 100%;
     display: flex;
@@ -253,9 +265,37 @@ function closeEditor() {
     visibility: v-bind(gutterVisibility);
 }
 
+:deep(.editor-panel > .p-panel-header) {
+    border-bottom: 0.125rem solid var(--p-content-border-color) !important;
+}
+
+:deep(.p-panel) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+:deep(.p-toggleable-content) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+:deep(.p-panel-content-container) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
 :deep(.p-panel-content) {
+    flex: 1;
+    min-height: 0;
     padding: 0;
 }
+
 @media print {
     .p-splitter {
         position: unset;

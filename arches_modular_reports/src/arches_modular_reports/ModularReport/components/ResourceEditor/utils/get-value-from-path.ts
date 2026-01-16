@@ -9,6 +9,13 @@ export function getValueFromPath(
     let currentValue = sourceObject;
 
     for (const pathSegment of pathSegments) {
+        if (
+            currentValue === null ||
+            currentValue === undefined ||
+            !(pathSegment in currentValue)
+        ) {
+            return undefined;
+        }
         currentValue = currentValue[pathSegment] as Record<string, unknown>;
     }
 

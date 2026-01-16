@@ -13,12 +13,14 @@ import {
 
 import { isEqual } from "es-toolkit";
 import { useGettext } from "vue3-gettext";
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
 
 import Button from "primevue/button";
-import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
+import ConfirmDialog from "primevue/confirmdialog";
 
 import DataTree from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree/DataTree.vue";
 import GenericCard from "@/arches_component_lab/generics/GenericCard/GenericCard.vue";
@@ -28,6 +30,8 @@ import {
     fetchModularReportResource,
     updateModularReportResource,
 } from "@/arches_modular_reports/ModularReport/api.ts";
+
+import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_modular_reports/constants.ts";
 
 import { generateWidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/generate-widget-dirty-states.ts";
 import { getValueFromPath } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/get-value-from-path.ts";
@@ -52,9 +56,11 @@ type SoftDeletePayload = {
     nextIsSoftDeleted: boolean;
 };
 
+const toast = useToast();
+const confirm = useConfirm();
 const { $gettext } = useGettext();
 
-const CARDINALITY_N = "n" as const;
+const CARDINALITY_N = "n";
 
 const graphSlug = inject<string>("graphSlug")!;
 const resourceInstanceId = inject<string>("resourceInstanceId")!;
@@ -117,6 +123,9 @@ const originalResourceData = shallowRef<Readonly<ResourceData>>(
 const widgetDirtyStates = reactive<WidgetDirtyStates>({} as WidgetDirtyStates);
 
 const unsavedTileKeys = shallowRef<Set<string>>(new Set<string>());
+const newTileBaselineSnapshots = shallowRef<Map<string, TileData>>(
+    new Map<string, TileData>(),
+);
 
 const softDeletedTileKeys = shallowRef<Set<string>>(new Set<string>());
 const softDeletedValuePaths = shallowRef<Map<string, Array<string | number>>>(
@@ -136,6 +145,215 @@ const isSelectedTileSoftDeleted = computed<boolean>(() => {
     }
 
     return softDeletedTileKeys.value.has(selectedTileKey.value);
+});
+
+const selectedTileData = computed<TileData | undefined>(() => {
+    if (!selectedTilePath.value) {
+        return undefined;
+    }
+
+    const tileData = getValueFromPath(resourceData, selectedTilePath.value);
+
+    if (!tileData || Array.isArray(tileData)) {
+        return undefined;
+    }
+
+    return tileData as unknown as TileData;
+});
+
+watchEffect(async () => {
+    try {
+        const modularReportResource = await fetchModularReportResource({
+            graphSlug,
+            resourceId: resourceInstanceId,
+            fillBlanks: true,
+        });
+
+        originalResourceData.value = readonly(
+            structuredClone({ ...modularReportResource }),
+        );
+
+        Object.assign(resourceData, modularReportResource);
+
+        replaceReactiveRecord(
+            widgetDirtyStates,
+            generateWidgetDirtyStates(modularReportResource),
+        );
+
+        unsavedTileKeys.value.clear();
+        newTileBaselineSnapshots.value.clear();
+        softDeletedTileKeys.value = new Set<string>();
+        softDeletedValuePaths.value = new Map<string, Array<string | number>>();
+    } catch (error) {
+        apiError.value = error as Error;
+    } finally {
+        isLoading.value = false;
+    }
+});
+
+watch(apiError, (error) => {
+    if (!error) {
+        return;
+    }
+
+    toast.add({
+        severity: "error",
+        life: DEFAULT_ERROR_TOAST_LIFE,
+        summary: $gettext("Error"),
+        detail: error.message ?? error,
+    });
+});
+
+watch(
+    [selectedNodegroupAlias, selectedTileId, selectedTilePath, isLoading],
+    () => {
+        if (isLoading.value) {
+            return;
+        }
+
+        if (!selectedTilePath.value && selectedNodegroupAlias.value) {
+            const aliasedTileData: NodeData | NodegroupData =
+                resourceData.aliased_data[selectedNodegroupAlias.value];
+
+            const pathSegments: Array<string | number> = [
+                "aliased_data",
+                selectedNodegroupAlias.value,
+            ];
+
+            if (Array.isArray(aliasedTileData) && selectedTileId.value) {
+                const tileIndex = aliasedTileData.findIndex(
+                    (tile) => tile.tileid === selectedTileId.value,
+                );
+
+                if (tileIndex >= 0) {
+                    pathSegments.push(tileIndex);
+                }
+            }
+
+            setSelectedTilePath(pathSegments);
+        }
+    },
+);
+
+watch(createTileRequestId, async () => {
+    if (isLoading.value) {
+        return;
+    }
+
+    const requestedNodegroupAlias = createTileRequestedNodegroupAlias.value;
+
+    if (!requestedNodegroupAlias) {
+        return;
+    }
+
+    const requestedNodegroupValuePath =
+        createTileRequestedTilePath?.value ?? null;
+
+    let nodegroupValuePath: Array<string | number> = [
+        "aliased_data",
+        requestedNodegroupAlias,
+    ];
+
+    if (requestedNodegroupValuePath && requestedNodegroupValuePath.length > 0) {
+        nodegroupValuePath = requestedNodegroupValuePath;
+    }
+
+    apiError.value = null;
+
+    try {
+        isLoading.value = true;
+
+        const blankTile = await fetchModularReportBlankTile(
+            graphSlug,
+            requestedNodegroupAlias,
+        );
+
+        const isCardinalityN = isCardinalityNNodegroup(requestedNodegroupAlias);
+
+        const createdTilePath = insertAtNodegroupPath({
+            targetRoot: resourceData,
+            nodegroupValuePath,
+            valueToInsert: blankTile,
+            isCardinalityN,
+        });
+
+        if (!createdTilePath) {
+            apiError.value = new Error($gettext("The tile already exists."));
+            return;
+        }
+
+        setSelectedTileId(blankTile.tileid ?? null);
+        setSelectedTilePath(createdTilePath);
+
+        let createdTileKey;
+
+        if (blankTile.tileid) {
+            createdTileKey = blankTile.tileid;
+        } else {
+            createdTileKey = JSON.stringify(createdTilePath);
+        }
+
+        unsavedTileKeys.value.add(createdTileKey);
+        newTileBaselineSnapshots.value.set(
+            createdTileKey,
+            structuredClone(blankTile),
+        );
+
+        const newTileDirtyStates = buildDirtyStatesForNewTile(blankTile);
+
+        const createdDirtyPath = insertAtNodegroupPath({
+            targetRoot: widgetDirtyStates,
+            nodegroupValuePath,
+            valueToInsert: newTileDirtyStates,
+            isCardinalityN,
+        });
+
+        if (!createdDirtyPath) {
+            setValueAtPath(
+                widgetDirtyStates,
+                nodegroupValuePath,
+                newTileDirtyStates,
+            );
+        }
+    } catch (error) {
+        apiError.value = error as Error;
+    } finally {
+        isLoading.value = false;
+    }
+});
+
+watch(softDeleteTileRequestId, async () => {
+    if (isLoading.value) {
+        return;
+    }
+
+    const requestedNodegroupAlias = softDeleteRequestedNodegroupAlias.value;
+    const requestedTileId = softDeleteRequestedTileId.value;
+
+    if (!requestedNodegroupAlias || !requestedTileId) {
+        return;
+    }
+
+    if (selectedNodegroupAlias.value !== requestedNodegroupAlias) {
+        return;
+    }
+
+    if (selectedTileId.value !== requestedTileId) {
+        setSelectedTileId(requestedTileId);
+        setSelectedTilePath(null);
+    }
+
+    await nextTick();
+
+    if (softDeletedTileKeys.value.has(requestedTileId)) {
+        return;
+    }
+
+    onToggleSoftDelete({
+        softDeleteKey: requestedTileId,
+        nodegroupValuePath: selectedTilePath.value!,
+        nextIsSoftDeleted: true,
+    });
 });
 
 function replaceReactiveRecord(
@@ -209,7 +427,7 @@ function buildDirtyStatesForNewTile(tileData: TileData): WidgetDirtyStates {
             continue;
         }
 
-        dirtyAliasedData[childAlias] = true;
+        dirtyAliasedData[childAlias] = false;
     }
 
     return { aliased_data: dirtyAliasedData } as unknown as WidgetDirtyStates;
@@ -320,254 +538,136 @@ function buildPayloadForSave() {
     }
 
     return pruneResourceData(
-        resourceDataClone as unknown as ResourceData,
-        widgetDirtyStatesClone as unknown as WidgetDirtyStates,
+        resourceDataClone as ResourceData,
+        widgetDirtyStatesClone as WidgetDirtyStates,
     );
 }
 
-const selectedTileData = computed<TileData | undefined>(() => {
-    if (!selectedTilePath.value) {
-        return undefined;
-    }
-
-    const tileData = getValueFromPath(resourceData, selectedTilePath.value);
-
-    if (!tileData || Array.isArray(tileData)) {
-        return undefined;
-    }
-
-    return tileData as unknown as TileData;
-});
-
-watchEffect(async () => {
-    try {
-        const modularReportResource = await fetchModularReportResource({
-            graphSlug,
-            resourceId: resourceInstanceId,
-            fillBlanks: true,
-        });
-
-        originalResourceData.value = readonly(
-            structuredClone({ ...modularReportResource }),
-        );
-
-        Object.assign(resourceData, modularReportResource);
-
-        replaceReactiveRecord(
-            widgetDirtyStates,
-            generateWidgetDirtyStates(modularReportResource),
-        );
-
-        unsavedTileKeys.value.clear();
-        softDeletedTileKeys.value = new Set<string>();
-        softDeletedValuePaths.value = new Map<string, Array<string | number>>();
-    } catch (error) {
-        apiError.value = error as Error;
-    } finally {
-        isLoading.value = false;
-    }
-});
-
-watch(
-    [selectedNodegroupAlias, selectedTileId, selectedTilePath, isLoading],
-    () => {
-        if (isLoading.value) {
-            return;
-        }
-
-        // Derive selectedTilePath if not explicitly set
-        if (!selectedTilePath.value && selectedNodegroupAlias.value) {
-            const aliasedTileData: NodeData | NodegroupData =
-                resourceData.aliased_data[selectedNodegroupAlias.value];
-
-            const pathSegments: Array<string | number> = [
-                "aliased_data",
-                selectedNodegroupAlias.value,
-            ];
-
-            if (Array.isArray(aliasedTileData) && selectedTileId.value) {
-                const tileIndex = aliasedTileData.findIndex(
-                    (tile) => tile.tileid === selectedTileId.value,
-                );
-
-                if (tileIndex >= 0) {
-                    pathSegments.push(tileIndex);
-                }
-            }
-
-            setSelectedTilePath(pathSegments);
-        }
-    },
-);
-
-watch(createTileRequestId, async () => {
-    if (isLoading.value) {
-        return;
-    }
-
-    const requestedNodegroupAlias = createTileRequestedNodegroupAlias.value;
-
-    if (!requestedNodegroupAlias) {
-        return;
-    }
-
-    const requestedNodegroupValuePath =
-        createTileRequestedTilePath?.value ?? null;
-
-    let nodegroupValuePath: Array<string | number> = [
-        "aliased_data",
-        requestedNodegroupAlias,
-    ];
-
-    if (requestedNodegroupValuePath && requestedNodegroupValuePath.length > 0) {
-        nodegroupValuePath = requestedNodegroupValuePath;
-    }
-
-    apiError.value = null;
-
-    try {
-        isLoading.value = true;
-
-        const blankTile = await fetchModularReportBlankTile(
-            graphSlug,
-            requestedNodegroupAlias,
-        );
-
-        const isCardinalityN = isCardinalityNNodegroup(requestedNodegroupAlias);
-
-        const createdTilePath = insertAtNodegroupPath({
-            targetRoot: resourceData,
-            nodegroupValuePath,
-            valueToInsert: blankTile,
-            isCardinalityN,
-        });
-
-        if (!createdTilePath) {
-            apiError.value = new Error($gettext("The tile already exists."));
-            return;
-        }
-
-        setSelectedTileId(blankTile.tileid ?? null);
-        setSelectedTilePath(createdTilePath);
-
-        unsavedTileKeys.value.add(
-            blankTile.tileid
-                ? blankTile.tileid
-                : JSON.stringify(createdTilePath),
-        );
-
-        const newTileDirtyStates = buildDirtyStatesForNewTile(blankTile);
-
-        const createdDirtyPath = insertAtNodegroupPath({
-            targetRoot: widgetDirtyStates,
-            nodegroupValuePath,
-            valueToInsert: newTileDirtyStates,
-            isCardinalityN,
-        });
-
-        if (!createdDirtyPath) {
-            setValueAtPath(
-                widgetDirtyStates,
-                nodegroupValuePath,
-                newTileDirtyStates,
-            );
-        }
-    } catch (error) {
-        apiError.value = error as Error;
-    } finally {
-        isLoading.value = false;
-    }
-});
-
-watch(softDeleteTileRequestId, async () => {
-    if (isLoading.value) {
-        return;
-    }
-
-    const requestedNodegroupAlias = softDeleteRequestedNodegroupAlias.value;
-    const requestedTileId = softDeleteRequestedTileId.value;
-
-    if (!requestedNodegroupAlias || !requestedTileId) {
-        return;
-    }
-
-    if (selectedNodegroupAlias.value !== requestedNodegroupAlias) {
-        return;
-    }
-
-    if (selectedTileId.value !== requestedTileId) {
-        setSelectedTileId(requestedTileId);
-        setSelectedTilePath(null);
-    }
-
-    await nextTick();
-
-    if (softDeletedTileKeys.value.has(requestedTileId)) {
-        return;
-    }
-
-    onToggleSoftDelete({
-        softDeleteKey: requestedTileId,
-        nodegroupValuePath: selectedTilePath.value!,
-        nextIsSoftDeleted: true,
-    });
-});
-
 function onUpdateTileData(updatedTileData: TileData) {
+    const selectedPathSegments = selectedTilePath.value;
+    if (!selectedPathSegments) {
+        return;
+    }
+
     const currentTileValue = getValueFromPath(
         resourceData,
-        selectedTilePath.value,
-    )!;
+        selectedPathSegments,
+    ) as AliasedTileData | undefined;
 
-    const tileDirtyStates = getValueFromPath(
+    const currentDirtyStates = getValueFromPath(
         widgetDirtyStates,
-        selectedTilePath.value,
-    )!;
+        selectedPathSegments,
+    ) as WidgetDirtyStates | undefined;
 
-    const originalTileValueFromSnapshot = getValueFromPath(
-        originalResourceData.value,
-        selectedTilePath.value,
-    );
-
-    for (const [tileKey, tileValue] of Object.entries(updatedTileData)) {
-        currentTileValue[tileKey] = tileValue;
+    if (!currentTileValue || Array.isArray(currentTileValue)) {
+        return;
     }
 
-    const currentAliasedData = currentTileValue[
-        "aliased_data"
-    ] as AliasedTileData["aliased_data"];
+    if (!currentDirtyStates || Array.isArray(currentDirtyStates)) {
+        return;
+    }
 
-    const dirtyAliasedData = (
-        tileDirtyStates as { aliased_data: Record<string, unknown> }
-    ).aliased_data;
+    // Apply the incoming edits directly onto the selected tile object.
+    Object.assign(currentTileValue, updatedTileData);
+
+    const currentAliasedData =
+        currentTileValue.aliased_data as AliasedTileData["aliased_data"];
+    const dirtyAliasedData =
+        currentDirtyStates.aliased_data as WidgetDirtyStates;
+
+    if (!currentAliasedData || !dirtyAliasedData) {
+        return;
+    }
+
+    // Find the correct "baseline" for dirty checks:
+    // - if this tile is newly created (unsaved), use its snapshot
+    // - otherwise use the original resource data
+    // - if we're editing a child under a new tile, walk up to the nearest unsaved ancestor snapshot
+    let baselineTileValue: AliasedTileData | undefined;
 
     if (unsavedTileKeys.value.has(selectedTileKey.value)) {
-        for (const nodeAlias of Object.keys(currentAliasedData)) {
-            if (typeof dirtyAliasedData[nodeAlias] === "boolean") {
-                dirtyAliasedData[nodeAlias] = true;
-            } else if (dirtyAliasedData[nodeAlias] == null) {
-                dirtyAliasedData[nodeAlias] = true;
+        baselineTileValue =
+            newTileBaselineSnapshots.value.get(selectedTileKey.value) ??
+            undefined;
+    }
+
+    if (!baselineTileValue) {
+        baselineTileValue = getValueFromPath(
+            originalResourceData.value,
+            selectedPathSegments,
+        ) as AliasedTileData | undefined;
+    }
+
+    if (!baselineTileValue) {
+        const ancestorIndexes = selectedPathSegments
+            .map((_, index) => index)
+            .reverse();
+
+        for (const ancestorIndex of ancestorIndexes) {
+            const ancestorPathSegments = selectedPathSegments.slice(
+                0,
+                ancestorIndex + 1,
+            );
+            const ancestorTileValue = getValueFromPath(
+                resourceData,
+                ancestorPathSegments,
+            ) as AliasedTileData | undefined;
+
+            if (!ancestorTileValue || Array.isArray(ancestorTileValue)) {
+                continue;
             }
+
+            const ancestorTileId = ancestorTileValue.tileid;
+
+            let ancestorTileKey = JSON.stringify(ancestorPathSegments);
+            if (typeof ancestorTileId === "string" && ancestorTileId) {
+                ancestorTileKey = ancestorTileId;
+            }
+
+            if (!unsavedTileKeys.value.has(ancestorTileKey)) {
+                continue;
+            }
+
+            const ancestorBaselineTileValue =
+                newTileBaselineSnapshots.value.get(ancestorTileKey) ??
+                undefined;
+            if (!ancestorBaselineTileValue) {
+                continue;
+            }
+
+            baselineTileValue = ancestorBaselineTileValue;
+
+            const relativePathSegments = selectedPathSegments.slice(
+                ancestorIndex + 1,
+            );
+            if (relativePathSegments.length) {
+                baselineTileValue = getValueFromPath(
+                    ancestorBaselineTileValue as unknown as Record<
+                        string,
+                        unknown
+                    >,
+                    relativePathSegments,
+                ) as AliasedTileData | undefined;
+            }
+
+            break;
         }
+    }
+
+    if (!baselineTileValue?.aliased_data) {
         return;
     }
 
-    if (!originalTileValueFromSnapshot) {
-        return;
-    }
-
-    const originalAliasedData = originalTileValueFromSnapshot[
-        "aliased_data"
-    ] as AliasedTileData["aliased_data"];
-
-    for (const [nodeAlias, aliasedData] of Object.entries(currentAliasedData)) {
+    for (const [nodeAlias, aliasedValue] of Object.entries(
+        currentAliasedData,
+    )) {
         if (typeof dirtyAliasedData[nodeAlias] !== "boolean") {
             continue;
         }
 
         dirtyAliasedData[nodeAlias] = !isEqual(
-            aliasedData,
-            originalAliasedData[nodeAlias],
+            aliasedValue,
+            baselineTileValue?.aliased_data[nodeAlias],
         );
     }
 }
@@ -613,6 +713,41 @@ function onToggleSoftDelete(payload: SoftDeletePayload) {
     softDeletedValuePaths.value = nextSoftDeletedValuePaths;
 }
 
+function onRequestUndoAllChanges() {
+    confirm.require({
+        message: $gettext(
+            "Are you sure? This will undo all of your pending changes.",
+        ),
+        header: $gettext("Undo all changes"),
+        icon: "pi pi-exclamation-triangle",
+        acceptLabel: $gettext("Continue"),
+        rejectLabel: $gettext("Cancel"),
+        accept: () => onUndoAllChanges(),
+    });
+}
+
+function onUndoAllChanges() {
+    apiError.value = null;
+
+    const snapshotResourceData = structuredClone(originalResourceData.value);
+
+    replaceReactiveRecord(resourceData, snapshotResourceData);
+
+    replaceReactiveRecord(
+        widgetDirtyStates,
+        generateWidgetDirtyStates(snapshotResourceData),
+    );
+
+    unsavedTileKeys.value.clear();
+    newTileBaselineSnapshots.value.clear();
+    softDeletedTileKeys.value = new Set<string>();
+    softDeletedValuePaths.value = new Map<string, Array<string | number>>();
+
+    setSelectedNodeAlias(null);
+    setSelectedTileId(null);
+    setSelectedTilePath(null);
+}
+
 function onSave() {
     isLoading.value = true;
     apiError.value = null;
@@ -646,6 +781,7 @@ function onSave() {
             );
 
             unsavedTileKeys.value.clear();
+            newTileBaselineSnapshots.value.clear();
             softDeletedTileKeys.value = new Set<string>();
             softDeletedValuePaths.value = new Map<
                 string,
@@ -669,13 +805,7 @@ function onSave() {
 </script>
 
 <template>
-    <Message
-        v-if="apiError"
-        severity="error"
-        class="error-message"
-    >
-        {{ apiError.message }}
-    </Message>
+    <ConfirmDialog />
 
     <div
         v-if="isLoading"
@@ -693,79 +823,130 @@ function onSave() {
     </div>
 
     <template v-else>
-        <Splitter
-            style="height: 100%; height: stretch; width: stretch"
-            layout="vertical"
-        >
-            <SplitterPanel
-                style="
-                    padding: var(--p-panel-toggleable-header-padding);
-                    overflow: hidden;
-                    display: flex;
-                    flex-direction: column;
-                "
+        <div class="editor-layout">
+            <Splitter
+                layout="vertical"
+                class="editor-splitter"
+                style="overflow: hidden"
             >
-                <div style="flex: 1; overflow: auto">
-                    <GenericCard
-                        v-if="selectedTileData && !isSelectedTileSoftDeleted"
-                        ref="defaultCard"
-                        :mode="EDIT"
-                        :nodegroup-alias="selectedNodegroupAlias!"
-                        :graph-slug="graphSlug"
-                        :resource-instance-id="resourceInstanceId"
-                        :selected-node-alias="selectedNodeAlias"
-                        :should-show-form-buttons="false"
-                        :tile-id="selectedTileId"
-                        :tile-data="selectedTileData"
-                        @update:widget-focus-states="
-                            onUpdateWidgetFocusStates($event)
-                        "
-                        @update:tile-data="onUpdateTileData($event)"
-                    />
-                </div>
+                <SplitterPanel class="top-panel">
+                    <div style="margin: 1rem">
+                        <GenericCard
+                            v-if="
+                                selectedTileData && !isSelectedTileSoftDeleted
+                            "
+                            :mode="EDIT"
+                            :nodegroup-alias="selectedNodegroupAlias!"
+                            :graph-slug="graphSlug"
+                            :resource-instance-id="resourceInstanceId"
+                            :selected-node-alias="selectedNodeAlias"
+                            :should-show-form-buttons="false"
+                            :tile-id="selectedTileId"
+                            :tile-data="selectedTileData"
+                            @update:widget-focus-states="
+                                onUpdateWidgetFocusStates($event)
+                            "
+                            @update:tile-data="onUpdateTileData($event)"
+                        />
+                    </div>
+                </SplitterPanel>
 
-                <div
-                    style="
-                        border-top: 1px solid
-                            var(--p-panel-content-border-color);
-                        margin-top: 1.5rem;
-                        text-align: right;
-                        display: flex;
-                    "
-                >
+                <SplitterPanel class="bottom-panel">
+                    <div class="bottom-panel-scroll">
+                        <DataTree
+                            :resource-data="resourceData"
+                            :widget-dirty-states="widgetDirtyStates"
+                            :soft-deleted-tile-keys="softDeletedTileKeys"
+                            :unsaved-tile-keys="unsavedTileKeys"
+                            @toggle-soft-delete="onToggleSoftDelete($event)"
+                        />
+                    </div>
+                </SplitterPanel>
+            </Splitter>
+
+            <div class="editor-footer">
+                <div class="editor-footer-actions">
                     <Button
-                        :label="$gettext('Save')"
-                        icon="pi pi-check"
+                        severity="danger"
+                        variant="outlined"
+                        icon="pi pi-undo"
+                        label="Undo all changes"
+                        @click="onRequestUndoAllChanges"
+                    />
+
+                    <Button
+                        severity="success"
+                        icon="pi pi-save"
+                        label="Save all changes"
                         @click="onSave"
                     />
                 </div>
-            </SplitterPanel>
-
-            <SplitterPanel
-                style="
-                    padding: var(--p-panel-toggleable-header-padding);
-                    overflow: auto;
-                "
-            >
-                <DataTree
-                    :resource-data="resourceData"
-                    :widget-dirty-states="widgetDirtyStates"
-                    :soft-deleted-tile-keys="softDeletedTileKeys"
-                    @toggle-soft-delete="onToggleSoftDelete($event)"
-                />
-            </SplitterPanel>
-        </Splitter>
+            </div>
+        </div>
     </template>
 </template>
 
 <style scoped>
-.error-message,
 .loading-skeleton {
     margin: 1rem;
-}
-.loading-skeleton {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+}
+
+.editor-layout {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.editor-splitter {
+    flex: 1;
+    min-height: 0;
+}
+
+.top-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: auto;
+}
+
+.bottom-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.bottom-panel-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.editor-footer {
+    border-top: 0.125rem solid var(--p-content-border-color);
+    padding: 0.75rem 1rem;
+    background: var(--surface-0);
+}
+
+.editor-footer-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+:deep(.editor-footer-actions .pi) {
+    font-size: 1.4rem !important;
+}
+
+:deep(.p-splitter) {
+    height: 100%;
+}
+
+:deep(.p-splitter-panel) {
+    min-height: 0;
 }
 </style>
