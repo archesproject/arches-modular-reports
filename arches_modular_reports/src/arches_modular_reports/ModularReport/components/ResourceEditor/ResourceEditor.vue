@@ -13,14 +13,14 @@ import {
 
 import { isEqual } from "es-toolkit";
 import { useGettext } from "vue3-gettext";
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
 
 import Button from "primevue/button";
-import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
 import ConfirmDialog from "primevue/confirmdialog";
-import { useConfirm } from "primevue/useconfirm";
 
 import DataTree from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree/DataTree.vue";
 import GenericCard from "@/arches_component_lab/generics/GenericCard/GenericCard.vue";
@@ -30,6 +30,8 @@ import {
     fetchModularReportResource,
     updateModularReportResource,
 } from "@/arches_modular_reports/ModularReport/api.ts";
+
+import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_modular_reports/constants.ts";
 
 import { generateWidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/generate-widget-dirty-states.ts";
 import { getValueFromPath } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/get-value-from-path.ts";
@@ -54,10 +56,11 @@ type SoftDeletePayload = {
     nextIsSoftDeleted: boolean;
 };
 
-const { $gettext } = useGettext();
+const toast = useToast();
 const confirm = useConfirm();
+const { $gettext } = useGettext();
 
-const CARDINALITY_N = "n" as const;
+const CARDINALITY_N = "n";
 
 const graphSlug = inject<string>("graphSlug")!;
 const resourceInstanceId = inject<string>("resourceInstanceId")!;
@@ -142,6 +145,215 @@ const isSelectedTileSoftDeleted = computed<boolean>(() => {
     }
 
     return softDeletedTileKeys.value.has(selectedTileKey.value);
+});
+
+const selectedTileData = computed<TileData | undefined>(() => {
+    if (!selectedTilePath.value) {
+        return undefined;
+    }
+
+    const tileData = getValueFromPath(resourceData, selectedTilePath.value);
+
+    if (!tileData || Array.isArray(tileData)) {
+        return undefined;
+    }
+
+    return tileData as unknown as TileData;
+});
+
+watchEffect(async () => {
+    try {
+        const modularReportResource = await fetchModularReportResource({
+            graphSlug,
+            resourceId: resourceInstanceId,
+            fillBlanks: true,
+        });
+
+        originalResourceData.value = readonly(
+            structuredClone({ ...modularReportResource }),
+        );
+
+        Object.assign(resourceData, modularReportResource);
+
+        replaceReactiveRecord(
+            widgetDirtyStates,
+            generateWidgetDirtyStates(modularReportResource),
+        );
+
+        unsavedTileKeys.value.clear();
+        newTileBaselineSnapshots.value.clear();
+        softDeletedTileKeys.value = new Set<string>();
+        softDeletedValuePaths.value = new Map<string, Array<string | number>>();
+    } catch (error) {
+        apiError.value = error as Error;
+    } finally {
+        isLoading.value = false;
+    }
+});
+
+watch(apiError, (error) => {
+    if (!error) {
+        return;
+    }
+
+    toast.add({
+        severity: "error",
+        life: DEFAULT_ERROR_TOAST_LIFE,
+        summary: $gettext("Error"),
+        detail: error.message ?? error,
+    });
+});
+
+watch(
+    [selectedNodegroupAlias, selectedTileId, selectedTilePath, isLoading],
+    () => {
+        if (isLoading.value) {
+            return;
+        }
+
+        if (!selectedTilePath.value && selectedNodegroupAlias.value) {
+            const aliasedTileData: NodeData | NodegroupData =
+                resourceData.aliased_data[selectedNodegroupAlias.value];
+
+            const pathSegments: Array<string | number> = [
+                "aliased_data",
+                selectedNodegroupAlias.value,
+            ];
+
+            if (Array.isArray(aliasedTileData) && selectedTileId.value) {
+                const tileIndex = aliasedTileData.findIndex(
+                    (tile) => tile.tileid === selectedTileId.value,
+                );
+
+                if (tileIndex >= 0) {
+                    pathSegments.push(tileIndex);
+                }
+            }
+
+            setSelectedTilePath(pathSegments);
+        }
+    },
+);
+
+watch(createTileRequestId, async () => {
+    if (isLoading.value) {
+        return;
+    }
+
+    const requestedNodegroupAlias = createTileRequestedNodegroupAlias.value;
+
+    if (!requestedNodegroupAlias) {
+        return;
+    }
+
+    const requestedNodegroupValuePath =
+        createTileRequestedTilePath?.value ?? null;
+
+    let nodegroupValuePath: Array<string | number> = [
+        "aliased_data",
+        requestedNodegroupAlias,
+    ];
+
+    if (requestedNodegroupValuePath && requestedNodegroupValuePath.length > 0) {
+        nodegroupValuePath = requestedNodegroupValuePath;
+    }
+
+    apiError.value = null;
+
+    try {
+        isLoading.value = true;
+
+        const blankTile = await fetchModularReportBlankTile(
+            graphSlug,
+            requestedNodegroupAlias,
+        );
+
+        const isCardinalityN = isCardinalityNNodegroup(requestedNodegroupAlias);
+
+        const createdTilePath = insertAtNodegroupPath({
+            targetRoot: resourceData,
+            nodegroupValuePath,
+            valueToInsert: blankTile,
+            isCardinalityN,
+        });
+
+        if (!createdTilePath) {
+            apiError.value = new Error($gettext("The tile already exists."));
+            return;
+        }
+
+        setSelectedTileId(blankTile.tileid ?? null);
+        setSelectedTilePath(createdTilePath);
+
+        let createdTileKey;
+
+        if (blankTile.tileid) {
+            createdTileKey = blankTile.tileid;
+        } else {
+            createdTileKey = JSON.stringify(createdTilePath);
+        }
+
+        unsavedTileKeys.value.add(createdTileKey);
+        newTileBaselineSnapshots.value.set(
+            createdTileKey,
+            structuredClone(blankTile),
+        );
+
+        const newTileDirtyStates = buildDirtyStatesForNewTile(blankTile);
+
+        const createdDirtyPath = insertAtNodegroupPath({
+            targetRoot: widgetDirtyStates,
+            nodegroupValuePath,
+            valueToInsert: newTileDirtyStates,
+            isCardinalityN,
+        });
+
+        if (!createdDirtyPath) {
+            setValueAtPath(
+                widgetDirtyStates,
+                nodegroupValuePath,
+                newTileDirtyStates,
+            );
+        }
+    } catch (error) {
+        apiError.value = error as Error;
+    } finally {
+        isLoading.value = false;
+    }
+});
+
+watch(softDeleteTileRequestId, async () => {
+    if (isLoading.value) {
+        return;
+    }
+
+    const requestedNodegroupAlias = softDeleteRequestedNodegroupAlias.value;
+    const requestedTileId = softDeleteRequestedTileId.value;
+
+    if (!requestedNodegroupAlias || !requestedTileId) {
+        return;
+    }
+
+    if (selectedNodegroupAlias.value !== requestedNodegroupAlias) {
+        return;
+    }
+
+    if (selectedTileId.value !== requestedTileId) {
+        setSelectedTileId(requestedTileId);
+        setSelectedTilePath(null);
+    }
+
+    await nextTick();
+
+    if (softDeletedTileKeys.value.has(requestedTileId)) {
+        return;
+    }
+
+    onToggleSoftDelete({
+        softDeleteKey: requestedTileId,
+        nodegroupValuePath: selectedTilePath.value!,
+        nextIsSoftDeleted: true,
+    });
 });
 
 function replaceReactiveRecord(
@@ -326,258 +538,136 @@ function buildPayloadForSave() {
     }
 
     return pruneResourceData(
-        resourceDataClone as unknown as ResourceData,
-        widgetDirtyStatesClone as unknown as WidgetDirtyStates,
+        resourceDataClone as ResourceData,
+        widgetDirtyStatesClone as WidgetDirtyStates,
     );
 }
 
-const selectedTileData = computed<TileData | undefined>(() => {
-    if (!selectedTilePath.value) {
-        return undefined;
-    }
-
-    const tileData = getValueFromPath(resourceData, selectedTilePath.value);
-
-    if (!tileData || Array.isArray(tileData)) {
-        return undefined;
-    }
-
-    return tileData as unknown as TileData;
-});
-
-watchEffect(async () => {
-    try {
-        const modularReportResource = await fetchModularReportResource({
-            graphSlug,
-            resourceId: resourceInstanceId,
-            fillBlanks: true,
-        });
-
-        originalResourceData.value = readonly(
-            structuredClone({ ...modularReportResource }),
-        );
-
-        Object.assign(resourceData, modularReportResource);
-
-        replaceReactiveRecord(
-            widgetDirtyStates,
-            generateWidgetDirtyStates(modularReportResource),
-        );
-
-        unsavedTileKeys.value.clear();
-        newTileBaselineSnapshots.value.clear();
-        softDeletedTileKeys.value = new Set<string>();
-        softDeletedValuePaths.value = new Map<string, Array<string | number>>();
-    } catch (error) {
-        apiError.value = error as Error;
-    } finally {
-        isLoading.value = false;
-    }
-});
-
-watch(
-    [selectedNodegroupAlias, selectedTileId, selectedTilePath, isLoading],
-    () => {
-        if (isLoading.value) {
-            return;
-        }
-
-        if (!selectedTilePath.value && selectedNodegroupAlias.value) {
-            const aliasedTileData: NodeData | NodegroupData =
-                resourceData.aliased_data[selectedNodegroupAlias.value];
-
-            const pathSegments: Array<string | number> = [
-                "aliased_data",
-                selectedNodegroupAlias.value,
-            ];
-
-            if (Array.isArray(aliasedTileData) && selectedTileId.value) {
-                const tileIndex = aliasedTileData.findIndex(
-                    (tile) => tile.tileid === selectedTileId.value,
-                );
-
-                if (tileIndex >= 0) {
-                    pathSegments.push(tileIndex);
-                }
-            }
-
-            setSelectedTilePath(pathSegments);
-        }
-    },
-);
-
-watch(createTileRequestId, async () => {
-    if (isLoading.value) {
-        return;
-    }
-
-    const requestedNodegroupAlias = createTileRequestedNodegroupAlias.value;
-
-    if (!requestedNodegroupAlias) {
-        return;
-    }
-
-    const requestedNodegroupValuePath =
-        createTileRequestedTilePath?.value ?? null;
-
-    let nodegroupValuePath: Array<string | number> = [
-        "aliased_data",
-        requestedNodegroupAlias,
-    ];
-
-    if (requestedNodegroupValuePath && requestedNodegroupValuePath.length > 0) {
-        nodegroupValuePath = requestedNodegroupValuePath;
-    }
-
-    apiError.value = null;
-
-    try {
-        isLoading.value = true;
-
-        const blankTile = await fetchModularReportBlankTile(
-            graphSlug,
-            requestedNodegroupAlias,
-        );
-
-        const isCardinalityN = isCardinalityNNodegroup(requestedNodegroupAlias);
-
-        const createdTilePath = insertAtNodegroupPath({
-            targetRoot: resourceData,
-            nodegroupValuePath,
-            valueToInsert: blankTile,
-            isCardinalityN,
-        });
-
-        if (!createdTilePath) {
-            apiError.value = new Error($gettext("The tile already exists."));
-            return;
-        }
-
-        setSelectedTileId(blankTile.tileid ?? null);
-        setSelectedTilePath(createdTilePath);
-
-        const createdTileKey = blankTile.tileid
-            ? blankTile.tileid
-            : JSON.stringify(createdTilePath);
-
-        unsavedTileKeys.value.add(createdTileKey);
-        newTileBaselineSnapshots.value.set(
-            createdTileKey,
-            structuredClone(blankTile),
-        );
-
-        const newTileDirtyStates = buildDirtyStatesForNewTile(blankTile);
-
-        const createdDirtyPath = insertAtNodegroupPath({
-            targetRoot: widgetDirtyStates,
-            nodegroupValuePath,
-            valueToInsert: newTileDirtyStates,
-            isCardinalityN,
-        });
-
-        if (!createdDirtyPath) {
-            setValueAtPath(
-                widgetDirtyStates,
-                nodegroupValuePath,
-                newTileDirtyStates,
-            );
-        }
-    } catch (error) {
-        apiError.value = error as Error;
-    } finally {
-        isLoading.value = false;
-    }
-});
-
-watch(softDeleteTileRequestId, async () => {
-    if (isLoading.value) {
-        return;
-    }
-
-    const requestedNodegroupAlias = softDeleteRequestedNodegroupAlias.value;
-    const requestedTileId = softDeleteRequestedTileId.value;
-
-    if (!requestedNodegroupAlias || !requestedTileId) {
-        return;
-    }
-
-    if (selectedNodegroupAlias.value !== requestedNodegroupAlias) {
-        return;
-    }
-
-    if (selectedTileId.value !== requestedTileId) {
-        setSelectedTileId(requestedTileId);
-        setSelectedTilePath(null);
-    }
-
-    await nextTick();
-
-    if (softDeletedTileKeys.value.has(requestedTileId)) {
-        return;
-    }
-
-    onToggleSoftDelete({
-        softDeleteKey: requestedTileId,
-        nodegroupValuePath: selectedTilePath.value!,
-        nextIsSoftDeleted: true,
-    });
-});
-
 function onUpdateTileData(updatedTileData: TileData) {
+    const selectedPathSegments = selectedTilePath.value;
+    if (!selectedPathSegments) {
+        return;
+    }
+
     const currentTileValue = getValueFromPath(
         resourceData,
-        selectedTilePath.value,
-    )!;
+        selectedPathSegments,
+    ) as AliasedTileData | undefined;
 
-    const tileDirtyStates = getValueFromPath(
+    const currentDirtyStates = getValueFromPath(
         widgetDirtyStates,
-        selectedTilePath.value,
-    )!;
+        selectedPathSegments,
+    ) as WidgetDirtyStates | undefined;
 
-    const originalTileValueFromSnapshot = getValueFromPath(
-        originalResourceData.value,
-        selectedTilePath.value,
-    );
-
-    for (const [tileKey, tileValue] of Object.entries(updatedTileData)) {
-        currentTileValue[tileKey] = tileValue;
-    }
-
-    const currentAliasedData = currentTileValue[
-        "aliased_data"
-    ] as AliasedTileData["aliased_data"];
-
-    const dirtyAliasedData = (
-        tileDirtyStates as { aliased_data: Record<string, unknown> }
-    ).aliased_data;
-
-    let baselineTileAliasedData: AliasedTileData["aliased_data"] | null = null;
-
-    if (unsavedTileKeys.value.has(selectedTileKey.value)) {
-        const baselineTile = newTileBaselineSnapshots.value.get(
-            selectedTileKey.value,
-        );
-        baselineTileAliasedData =
-            (baselineTile?.aliased_data as AliasedTileData["aliased_data"]) ??
-            null;
-    } else if (originalTileValueFromSnapshot) {
-        baselineTileAliasedData = originalTileValueFromSnapshot[
-            "aliased_data"
-        ] as AliasedTileData["aliased_data"];
-    }
-
-    if (!baselineTileAliasedData) {
+    if (!currentTileValue || Array.isArray(currentTileValue)) {
         return;
     }
 
-    for (const [nodeAlias, aliasedData] of Object.entries(currentAliasedData)) {
+    if (!currentDirtyStates || Array.isArray(currentDirtyStates)) {
+        return;
+    }
+
+    // Apply the incoming edits directly onto the selected tile object.
+    Object.assign(currentTileValue, updatedTileData);
+
+    const currentAliasedData =
+        currentTileValue.aliased_data as AliasedTileData["aliased_data"];
+    const dirtyAliasedData =
+        currentDirtyStates.aliased_data as WidgetDirtyStates;
+
+    if (!currentAliasedData || !dirtyAliasedData) {
+        return;
+    }
+
+    // Find the correct "baseline" for dirty checks:
+    // - if this tile is newly created (unsaved), use its snapshot
+    // - otherwise use the original resource data
+    // - if we're editing a child under a new tile, walk up to the nearest unsaved ancestor snapshot
+    let baselineTileValue: AliasedTileData | undefined;
+
+    if (unsavedTileKeys.value.has(selectedTileKey.value)) {
+        baselineTileValue =
+            newTileBaselineSnapshots.value.get(selectedTileKey.value) ??
+            undefined;
+    }
+
+    if (!baselineTileValue) {
+        baselineTileValue = getValueFromPath(
+            originalResourceData.value,
+            selectedPathSegments,
+        ) as AliasedTileData | undefined;
+    }
+
+    if (!baselineTileValue) {
+        const ancestorIndexes = selectedPathSegments
+            .map((_, index) => index)
+            .reverse();
+
+        for (const ancestorIndex of ancestorIndexes) {
+            const ancestorPathSegments = selectedPathSegments.slice(
+                0,
+                ancestorIndex + 1,
+            );
+            const ancestorTileValue = getValueFromPath(
+                resourceData,
+                ancestorPathSegments,
+            ) as AliasedTileData | undefined;
+
+            if (!ancestorTileValue || Array.isArray(ancestorTileValue)) {
+                continue;
+            }
+
+            const ancestorTileId = ancestorTileValue.tileid;
+
+            let ancestorTileKey = JSON.stringify(ancestorPathSegments);
+            if (typeof ancestorTileId === "string" && ancestorTileId) {
+                ancestorTileKey = ancestorTileId;
+            }
+
+            if (!unsavedTileKeys.value.has(ancestorTileKey)) {
+                continue;
+            }
+
+            const ancestorBaselineTileValue =
+                newTileBaselineSnapshots.value.get(ancestorTileKey) ??
+                undefined;
+            if (!ancestorBaselineTileValue) {
+                continue;
+            }
+
+            baselineTileValue = ancestorBaselineTileValue;
+
+            const relativePathSegments = selectedPathSegments.slice(
+                ancestorIndex + 1,
+            );
+            if (relativePathSegments.length) {
+                baselineTileValue = getValueFromPath(
+                    ancestorBaselineTileValue as unknown as Record<
+                        string,
+                        unknown
+                    >,
+                    relativePathSegments,
+                ) as AliasedTileData | undefined;
+            }
+
+            break;
+        }
+    }
+
+    if (!baselineTileValue?.aliased_data) {
+        return;
+    }
+
+    for (const [nodeAlias, aliasedValue] of Object.entries(
+        currentAliasedData,
+    )) {
         if (typeof dirtyAliasedData[nodeAlias] !== "boolean") {
             continue;
         }
 
         dirtyAliasedData[nodeAlias] = !isEqual(
-            aliasedData,
-            baselineTileAliasedData[nodeAlias],
+            aliasedValue,
+            baselineTileValue?.aliased_data[nodeAlias],
         );
     }
 }
@@ -717,14 +807,6 @@ function onSave() {
 <template>
     <ConfirmDialog />
 
-    <Message
-        v-if="apiError"
-        severity="error"
-        class="error-message"
-    >
-        {{ apiError.message }}
-    </Message>
-
     <div
         v-if="isLoading"
         class="loading-skeleton"
@@ -805,9 +887,11 @@ function onSave() {
 </template>
 
 <style scoped>
-.error-message,
 .loading-skeleton {
     margin: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .editor-layout {
@@ -856,12 +940,6 @@ function onSave() {
 
 :deep(.editor-footer-actions .pi) {
     font-size: 1.4rem !important;
-}
-
-.loading-skeleton {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
 }
 
 :deep(.p-splitter) {
