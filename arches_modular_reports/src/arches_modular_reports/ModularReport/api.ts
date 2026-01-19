@@ -72,6 +72,20 @@ export const fetchModularReportTile = async (
     return parsed;
 };
 
+export const fetchModularReportBlankTile = async (
+    graphSlug: string,
+    nodegroupAlias: string,
+) => {
+    const url = arches.urls.api_modular_reports_blank_tile(
+        graphSlug,
+        nodegroupAlias,
+    );
+    const response = await fetch(url);
+    const parsed = await response.json();
+    if (!response.ok) throw new Error(parsed.message || response.statusText);
+    return parsed;
+};
+
 export const fetchNodePresentation = async (resourceId: string) => {
     const url = arches.urls.api_node_presentation(resourceId);
     const response = await fetch(url);

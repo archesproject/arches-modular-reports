@@ -45,6 +45,14 @@ const props = defineProps<{
     resourceInstanceId: string;
 }>();
 
+const { requestCreateTile } = inject("createTile") as {
+    requestCreateTile: (nodegroupAlias: string) => void;
+};
+
+const { requestSoftDeleteTile } = inject("softDeleteTile") as {
+    requestSoftDeleteTile: (nodegroupAlias: string, tileId: string) => void;
+};
+
 const { $gettext } = useGettext();
 const CARDINALITY_N = "n";
 const queryTimeoutValue = 500;
@@ -238,7 +246,16 @@ function initiateEdit(tileId: string | null) {
     setSelectedTilePath(null);
     setSelectedTileId(tileId);
 
+    if (!tileId) {
+        requestCreateTile(props.component.config.nodegroup_alias);
+    }
+
     setShouldShowEditor(true);
+}
+
+function initiateSoftDelete(tileId: string) {
+    initiateEdit(tileId);
+    requestSoftDeleteTile(props.component.config.nodegroup_alias, tileId);
 }
 </script>
 
@@ -421,6 +438,7 @@ function initiateEdit(tileId: string | null) {
                             severity="danger"
                             :aria-label="$gettext('Delete')"
                             rounded
+                            @click="initiateSoftDelete(data['@tile_id'])"
                         />
                     </div>
                 </div>
