@@ -756,43 +756,45 @@ function onRestore(treeNode: TreeNode) {
 }
 
 :deep(
-    .p-tree-node.is-soft-deleted
-        > .p-tree-node-content:not(.p-tree-node-selected)
-) {
+        .p-tree-node.is-soft-deleted
+            > .p-tree-node-content:not(.p-tree-node-selected)
+    ) {
     background-color: var(--p-red-100) !important;
 }
 
 :deep(
-    .p-tree-node-content.is-dirty:not(.p-tree-node-selected):not(
-            .is-soft-deleted
-        )
-) {
+        .p-tree-node-content.is-dirty:not(.p-tree-node-selected):not(
+                .is-soft-deleted
+            )
+    ) {
     font-weight: bold;
     background-color: var(--p-yellow-100) !important;
 }
 
 :deep(
-    .p-tree-node.is-dirty
-        > .p-tree-node-content:not(.p-tree-node-selected):not(.is-soft-deleted)
-) {
+        .p-tree-node.is-dirty
+            > .p-tree-node-content:not(.p-tree-node-selected):not(
+                .is-soft-deleted
+            )
+    ) {
     font-weight: bold;
     background-color: var(--p-yellow-100) !important;
 }
 
 :deep(
-    .p-tree-node-content.is-new:not(.p-tree-node-selected):not(
-            .is-soft-deleted
-        ):not(.is-dirty)
-) {
+        .p-tree-node-content.is-new:not(.p-tree-node-selected):not(
+                .is-soft-deleted
+            ):not(.is-dirty)
+    ) {
     background-color: var(--p-green-100) !important;
 }
 
 :deep(
-    .p-tree-node.is-new
-        > .p-tree-node-content:not(.p-tree-node-selected):not(
-            .is-soft-deleted
-        ):not(.is-dirty)
-) {
+        .p-tree-node.is-new
+            > .p-tree-node-content:not(.p-tree-node-selected):not(
+                .is-soft-deleted
+            ):not(.is-dirty)
+    ) {
     background-color: var(--p-green-100) !important;
 }
 
