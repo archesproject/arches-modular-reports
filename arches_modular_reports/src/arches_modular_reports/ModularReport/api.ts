@@ -38,16 +38,24 @@ export const updateModularReportResource = async (
     graphSlug: string,
     resourceId: string,
     data: ResourceData,
+    fillBlanks: boolean = false,
 ) => {
-    const url = arches.urls.api_modular_reports_resource(graphSlug, resourceId);
-    const response = await fetch(url, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": Cookies.get("csrftoken"),
+    const params = new URLSearchParams();
+    params.append("fill_blanks", fillBlanks.toString());
+    const response = await fetch(
+        `${arches.urls.api_modular_reports_resource(
+            graphSlug,
+            resourceId,
+        )}?${params}`,
+        {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": Cookies.get("csrftoken"),
+            },
+            body: JSON.stringify(data),
         },
-        body: JSON.stringify(data),
-    });
+    );
     const parsed = await response.json();
     if (!response.ok)
         throw new Error(

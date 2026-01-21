@@ -12,7 +12,7 @@
         "gettext:extract": "vue-gettext-extract",
         "gettext:compile": "vue-gettext-compile",
         "prettier:check": "prettier **/src --check",
-        "prettier:fix": "prettier --write",
+        "prettier:fix": "prettier **/src --write",
         "prettier:fix:all": "npm run prettier:fix **/src",
         "ts:check": "vue-tsc --noEmit",
         "ts:watch": "vue-tsc --watch --noEmit",
