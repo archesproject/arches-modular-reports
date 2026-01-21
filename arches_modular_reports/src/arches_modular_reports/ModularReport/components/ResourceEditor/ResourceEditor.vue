@@ -759,7 +759,7 @@ function onSave() {
         buildPayloadForSave(),
         fillBlanks
     )
-        .then(async (updatedResource: Record<string, unknown>) => {
+        .then(async (updatedResource: ResourceData) => {
             emit("save");
 
             originalResourceData.value = readonly(
