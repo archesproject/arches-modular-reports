@@ -751,33 +751,26 @@ function onUndoAllChanges() {
 function onSave() {
     isLoading.value = true;
     apiError.value = null;
+    const fillBlanks = true;
 
     updateModularReportResource(
         graphSlug,
         resourceInstanceId,
         buildPayloadForSave(),
+        fillBlanks
     )
-        .then(async (updatedResource) => {
-            void updatedResource;
-
+        .then(async (updatedResource: Record<string, unknown>) => {
             emit("save");
 
-            // this is sloppy but `_updatedResource` does not have the option to fill in blanks
-            const modularReportResource = await fetchModularReportResource({
-                graphSlug,
-                resourceId: resourceInstanceId,
-                fillBlanks: true,
-            });
-
             originalResourceData.value = readonly(
-                structuredClone({ ...modularReportResource }),
+                structuredClone({ ...updatedResource }),
             );
 
-            Object.assign(resourceData, modularReportResource);
+            Object.assign(resourceData, updatedResource);
 
             replaceReactiveRecord(
                 widgetDirtyStates,
-                generateWidgetDirtyStates(modularReportResource),
+                generateWidgetDirtyStates(updatedResource),
             );
 
             unsavedTileKeys.value.clear();
