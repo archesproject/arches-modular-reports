@@ -46,14 +46,16 @@ export const updateModularReportResource = async (
         `${arches.urls.api_modular_reports_resource(
             graphSlug,
             resourceId,
-        )}?${params}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": Cookies.get("csrftoken"),
+        )}?${params}`,
+        {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": Cookies.get("csrftoken"),
+            },
+            body: JSON.stringify(data),
         },
-        body: JSON.stringify(data),
-    });
+    );
     const parsed = await response.json();
     if (!response.ok)
         throw new Error(

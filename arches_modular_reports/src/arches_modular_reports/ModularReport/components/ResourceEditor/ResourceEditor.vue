@@ -757,7 +757,7 @@ function onSave() {
         graphSlug,
         resourceInstanceId,
         buildPayloadForSave(),
-        fillBlanks
+        fillBlanks,
     )
         .then(async (updatedResource) => {
             emit("save");
