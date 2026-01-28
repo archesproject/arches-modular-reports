@@ -3,6 +3,7 @@ import ModularReport from '@/arches_modular_reports/ModularReport/ModularReport.
 import createVueApplication from 'utils/create-vue-application';
 import ModularReportTemplate from 'templates/views/report-templates/modular-report.htm';
 import { fetchGraphSlugFromId } from '@/arches_modular_reports/ModularReport/api.ts';
+import { deepMerge } from '@/arches_modular_reports/ModularReport/utils.ts';
 
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
@@ -119,12 +120,6 @@ const ModularReportPreset = definePreset(Aura, {
     }
 });
 
-const ModularReportTheme = {
-    theme: {
-        ...DEFAULT_THEME.theme,
-        preset: ModularReportPreset,
-    },
-};
 
 ko.components.register('modular-report', {
     viewModel: async function(params) {
@@ -132,7 +127,26 @@ ko.components.register('modular-report', {
         let graphSlug = params.report.graph?.slug || params.report.report_json.graph_slug;
         const resourceInstanceId = params.report.report_json.resourceinstanceid;
         const reportConfigSlug = params.report.report_json.report_config_slug;
+        const reportThemePath = params.report.report_json.report_theme;
 
+        let reportTheme = {};
+        if (reportThemePath && reportThemePath !== "") {
+            try {
+                // strip file extension if present
+                const cleanedReportThemePath = reportThemePath.replace(/\.[^/.]+$/, '');
+                reportTheme = await import(`@/${cleanedReportThemePath}.json`);
+            } catch (error) {
+                console.error(`Failed to load report theme: ${reportThemePath}`, error);
+            }
+        }
+        
+        const ModularReportTheme = {
+            theme: {
+                ...DEFAULT_THEME.theme,
+                preset: deepMerge(ModularReportPreset, reportTheme) 
+            },
+        };
+        
         if (!graphSlug) {
             // fetch graph slug from graph id this can happen when viewing the 
             // report from the "details" section of search
