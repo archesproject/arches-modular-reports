@@ -3,121 +3,7 @@ import ModularReport from '@/arches_modular_reports/ModularReport/ModularReport.
 import createVueApplication from 'utils/create-vue-application';
 import ModularReportTemplate from 'templates/views/report-templates/modular-report.htm';
 import { fetchGraphSlugFromId } from '@/arches_modular_reports/ModularReport/api.ts';
-
-import { definePreset } from '@primeuix/themes';
-import Aura from '@primeuix/themes/aura';
-
-
-// TODO: when dropping support for 7.6, just import from arches 8.
-const DEFAULT_THEME = {
-    theme: {
-        // preset: ArchesPreset,
-        options: {
-            prefix: "p",
-            darkModeSelector: ".arches-dark",
-            cssLayer: false,
-        },
-    },
-};
-
-// TODO: when dropping support for 7.6, extend ArchesPreset.
-const ModularReportPreset = definePreset(Aura, {
-    semantic: {
-        primary: {
-            50: '{sky.50}',
-            100: '{sky.100}',
-            200: '{sky.200}',
-            300: '{sky.300}',
-            400: '{sky.400}',
-            500: '{sky.500}',
-            600: '{sky.600}',
-            700: '{sky.700}',
-            800: '{sky.800}',
-            900: '{sky.900}',
-            950: '{sky.950}'
-        },
-        colorScheme: {
-            light: {
-                primary: {
-                    color: '{sky.700}',
-                    inverseColor: '#ffffff',
-                    hoverColor: '{sky.900}',
-                    activeColor: '{sky.800}'
-                },
-                highlight: {
-                    background: '{sky.300}',
-                    focusBackground: '{sky.700}',
-                    color: '#ffffff',
-                    focusColor: '#ffffff'
-                }
-            },
-            dark: {
-                primary: {
-                    color: '{sky.300}',
-                    inverseColor: '{sky.950}',
-                    hoverColor: '{sky.100}',
-                    activeColor: '{sky.200}'
-                },
-                highlight: {
-                    background: 'rgba(250, 250, 250, .16)',
-                    focusBackground: 'rgba(250, 250, 250, .24)',
-                    color: 'rgba(255,255,255,.87)',
-                    focusColor: 'rgba(255,255,255,.87)'
-                }
-            }
-        }
-    },
-    components: {
-        datatable: {
-            rowToggleButton: {
-                size: '2.5rem',
-            },
-            colorScheme: {  
-                light: { 
-                    header: {
-                        cell: {
-                            background: '{surface-50}',
-                            hover: {
-                                background: '{surface-200}'
-                            }
-                        }
-                    }
-                },
-                dark: {
-                    header: {
-                        cell: {
-                            background: '{surface-800}',
-                            hover: {
-                                background: '{surface-700}'
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        tabs: {
-            colorScheme: {  
-                light: {
-                    tabpanel: {
-                        background: '{surface-100}',
-                    }
-                },
-                dark: {
-                    tabpanel: {
-                        background: '{surface-800}',
-                    }
-                }
-            }
-        },
-        button: {
-            css: ({ dt }) => `
-                .p-button {
-                    font-size: ${dt('base.button.font.size')};
-                }
-            `
-        }
-    }
-});
+import ModularReportTheme from '@/arches_modular_reports/report_themes/default_theme.ts';
 
 
 ko.components.register('modular-report', {
@@ -128,22 +14,16 @@ ko.components.register('modular-report', {
         const reportConfigSlug = params.report.report_json.report_config_slug;
         const reportThemePath = params.report.report_json.report_theme;
 
-
-        let ModularReportTheme = {
-            theme: {
-                ...DEFAULT_THEME.theme,
-                preset: ModularReportPreset
-            },
-        };
-        
         if (reportThemePath && reportThemePath !== "") {
-            const cleanedReportThemePath = reportThemePath.replace(/\.[^/.]+$/, '');
-            try {
-                // strip file extension if present
-                ModularReportTheme = (await import(`@/${cleanedReportThemePath}.ts`)).default;
-            } catch (error) {
-                console.error(`Failed to load report theme: @/${cleanedReportThemePath}.ts`, error);
-            }
+            // uncomment the next section once dynamic imports of .ts files work with webpack
+
+            // const cleanedReportThemePath = reportThemePath.replace(/\.[^/.]+$/, '');
+            // try {
+            //     // strip file extension if present
+            //     ModularReportTheme = (await import(`@/${cleanedReportThemePath}.ts`)).default;
+            // } catch (error) {
+            //     console.error(`Failed to load report theme: @/${cleanedReportThemePath}.ts`, error);
+            // }
         }
 
         if (!graphSlug) {
