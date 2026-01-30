@@ -9,6 +9,7 @@ import {
     shallowRef,
     watch,
     watchEffect,
+    toRaw,
 } from "vue";
 
 import { isEqual } from "es-toolkit";
@@ -525,8 +526,8 @@ function removeValueAtPath(
 }
 
 function buildPayloadForSave() {
-    const resourceDataClone = structuredClone(resourceData);
-    const widgetDirtyStatesClone = structuredClone(widgetDirtyStates);
+    const resourceDataClone = structuredClone(toRaw(resourceData));
+    const widgetDirtyStatesClone = structuredClone(toRaw(widgetDirtyStates));
 
     const pathsToRemove = sortPathsForSafeRemoval(
         Array.from(softDeletedValuePaths.value.values()),
