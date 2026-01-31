@@ -61,6 +61,7 @@ class ReportConfig(models.Model):
     def generate_config(self):
         return {
             "name": "Untitled Report",
+            "theme": "",
             "components": [
                 {
                     "component": "arches_modular_reports/ModularReport/components/ReportHeader",
@@ -201,6 +202,9 @@ class ReportConfig(models.Model):
                     if not isinstance(val, list):
                         raise ValidationError(f"Components is not a list: {val}")
                     validate_components(val)
+                elif key == "theme":
+                    if not isinstance(val, str):
+                        raise ValidationError(f"Theme is not a string: {val}")
                 else:
                     raise ValidationError(f"Invalid key in config: {key}")
 

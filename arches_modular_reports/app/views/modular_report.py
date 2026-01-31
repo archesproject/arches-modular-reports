@@ -14,7 +14,7 @@ from django.views.generic import View
 from arches import VERSION as arches_version
 from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
-from arches.app.utils.betterJSONSerializer import JSONDeserializer
+from arches.app.utils.betterJSONSerializer import JSONSerializer, JSONDeserializer
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.permission_backend import get_nodegroups_by_perm, group_required
 from arches.app.utils.response import JSONErrorResponse, JSONResponse
@@ -23,6 +23,7 @@ from arches.app.views.base import MapBaseManagerView
 from arches.app.views.resource import ResourceReportView
 
 from arches_modular_reports.app.utils.decorators import can_read_nodegroup
+from arches_modular_reports.app.utils.get_report_config import get_report_config
 from arches_modular_reports.models import ReportConfig
 
 from arches_modular_reports.app.utils.update_report_configuration_for_nodegroup_permissions import (
@@ -55,18 +56,10 @@ class GraphSlugFromIdView(APIBase):
 @method_decorator(can_read_resource_instance, name="dispatch")
 class ModularReportConfigView(View):
     def get(self, request):
-        filters = Q(graph__resourceinstance=request.GET.get("resourceId"))
-        filters &= Q(slug__iexact=request.GET.get("slug", "default"))
-
-        if arches_version >= (8, 0):
-            filters &= Q(graph__source_identifier=None)
-
         try:
-            config_instance = (
-                ReportConfig.objects.select_related("graph")
-                .prefetch_related("graph__node_set", "graph__node_set__nodegroup")
-                .get(filters)
-            )
+            resourceid = request.GET.get("resourceId")
+            report_config_slug = request.GET.get("report_config_slug", "default")
+            config_instance = get_report_config(resourceid, report_config_slug)
         except ReportConfig.DoesNotExist:
             return JSONErrorResponse(
                 _("No report config found."), status=HTTPStatus.NOT_FOUND
@@ -81,7 +74,7 @@ class ModularReportConfigView(View):
 
 @method_decorator(can_read_resource_instance, name="dispatch")
 class ModularReportAwareResourceReportView(ResourceReportView):
-    def get(self, request, resourceid=None, report_config_slug=None):
+    def get(self, request, resourceid=None, report_config_slug="default"):
         graph = (
             models.GraphModel.objects.filter(resourceinstance=resourceid)
             .select_related("template")
@@ -93,6 +86,16 @@ class ModularReportAwareResourceReportView(ResourceReportView):
             )
 
         if graph.template.componentname == "modular-report":
+            try:
+                config_instance = get_report_config(resourceid, report_config_slug)
+                report_theme = config_instance.config.get("theme", None)
+            except ReportConfig.DoesNotExist:
+                return JSONErrorResponse(
+                    _("No report config found."), status=HTTPStatus.NOT_FOUND
+                )
+            except:
+                report_theme = None
+
             template = "views/resource/modular_report.htm"
             # Skip a few queries by jumping over the MapBaseManagerView
             # and calling its parent. This report doesn't use a map.
@@ -101,6 +104,7 @@ class ModularReportAwareResourceReportView(ResourceReportView):
                 resourceid=resourceid,
                 templateid=graph.template.pk,
                 graph_slug=graph.slug,
+                report_theme=report_theme,
                 # To the extent possible, avoid DB queries needed for KO
                 report_templates=[graph.template],
                 report_config_slug=report_config_slug,
