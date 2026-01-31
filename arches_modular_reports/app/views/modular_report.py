@@ -23,6 +23,7 @@ from arches.app.views.base import MapBaseManagerView
 from arches.app.views.resource import ResourceReportView
 
 from arches_modular_reports.app.utils.decorators import can_read_nodegroup
+from arches_modular_reports.app.utils.get_report_config import get_report_config
 from arches_modular_reports.models import ReportConfig
 
 from arches_modular_reports.app.utils.update_report_configuration_for_nodegroup_permissions import (
@@ -50,22 +51,6 @@ class GraphSlugFromIdView(APIBase):
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
 
         return JSONResponse({"graph_slug": graph})
-
-
-def get_report_config(resourceid, slug="default"):
-    filters = Q(graph__resourceinstance=resourceid)
-    filters &= Q(slug__iexact=slug)
-
-    if arches_version >= (8, 0):
-        filters &= Q(graph__source_identifier=None)
-
-    config_instance = (
-        ReportConfig.objects.select_related("graph")
-        .prefetch_related("graph__node_set", "graph__node_set__nodegroup")
-        .get(filters)
-    )
-
-    return config_instance
 
 
 @method_decorator(can_read_resource_instance, name="dispatch")
