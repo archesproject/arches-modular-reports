@@ -526,8 +526,8 @@ function removeValueAtPath(
 }
 
 function buildPayloadForSave() {
-    const resourceDataClone = structuredClone(toRaw(resourceData));
-    const widgetDirtyStatesClone = structuredClone(toRaw(widgetDirtyStates));
+    const resourceDataClone = toRaw(resourceData);
+    const widgetDirtyStatesClone = toRaw(widgetDirtyStates);
 
     const pathsToRemove = sortPathsForSafeRemoval(
         Array.from(softDeletedValuePaths.value.values()),
