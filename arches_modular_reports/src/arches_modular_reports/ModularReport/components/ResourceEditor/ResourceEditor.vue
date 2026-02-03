@@ -12,7 +12,7 @@ import {
     toRaw,
 } from "vue";
 
-import { isEqual } from "es-toolkit";
+import { isEqual, cloneDeep } from "es-toolkit";
 import { useGettext } from "vue3-gettext";
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
@@ -171,7 +171,7 @@ watchEffect(async () => {
         });
 
         originalResourceData.value = readonly(
-            structuredClone({ ...modularReportResource }),
+            cloneDeep(toRaw({ ...modularReportResource })),
         );
 
         Object.assign(resourceData, modularReportResource);
@@ -297,7 +297,7 @@ watch(createTileRequestId, async () => {
         unsavedTileKeys.value.add(createdTileKey);
         newTileBaselineSnapshots.value.set(
             createdTileKey,
-            structuredClone(blankTile),
+            cloneDeep(toRaw(blankTile)),
         );
 
         const newTileDirtyStates = buildDirtyStatesForNewTile(blankTile);
@@ -526,8 +526,8 @@ function removeValueAtPath(
 }
 
 function buildPayloadForSave() {
-    const resourceDataClone = structuredClone(toRaw(resourceData));
-    const widgetDirtyStatesClone = structuredClone(toRaw(widgetDirtyStates));
+    const resourceDataClone = cloneDeep(toRaw(resourceData));
+    const widgetDirtyStatesClone = cloneDeep(toRaw(widgetDirtyStates));
 
     const pathsToRemove = sortPathsForSafeRemoval(
         Array.from(softDeletedValuePaths.value.values()),
@@ -730,7 +730,7 @@ function onRequestUndoAllChanges() {
 function onUndoAllChanges() {
     apiError.value = null;
 
-    const snapshotResourceData = structuredClone(originalResourceData.value);
+    const snapshotResourceData = cloneDeep(toRaw(originalResourceData.value));
 
     replaceReactiveRecord(resourceData, snapshotResourceData);
 
@@ -764,7 +764,7 @@ function onSave() {
             emit("save");
 
             originalResourceData.value = readonly(
-                structuredClone({ ...updatedResource }),
+                cloneDeep(toRaw({ ...updatedResource })),
             );
 
             Object.assign(resourceData, updatedResource);
