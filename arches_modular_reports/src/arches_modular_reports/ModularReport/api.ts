@@ -2,7 +2,7 @@ import arches from "arches";
 
 import Cookies from "js-cookie";
 
-import { extractFileEntriesFromPayload } from "@/arches_component_lab/generics/GenericCard/utils.ts";
+import { extractFileEntriesFromAliasedData } from "@/arches_component_lab/generics/GenericCard/utils.ts";
 
 import type { ResourceData } from "@/arches_modular_reports/ModularReport/types.ts";
 
@@ -47,7 +47,7 @@ export const updateModularReportResource = async (
     const formData = new FormData();
     formData.append("json", JSON.stringify(data));
 
-    const fileEntries = extractFileEntriesFromPayload(data);
+    const fileEntries = extractFileEntriesFromAliasedData(data.aliased_data);
     for (const { file, nodeId } of fileEntries) {
         formData.append(`file-list_${nodeId}`, file, file.name);
     }
