@@ -1,19 +1,23 @@
 [build-system]
-requires = ["setuptools>=77", "setuptools-scm"]
+requires = [ "setuptools>=77", "setuptools-scm",]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "arches-modular-reports"
-version = "1.0.0b3-dev"
-readme = "README.md"
-authors = [
-    {name = "Arches Project"}
-]
-license = "AGPL-3.0-or-later"
-license-files = ["LICENSE"]
+version = "1.0.0b3"
 description = "Fast, configurable reports for Arches models in Vue.js"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "AGPL-3.0-or-later"
+license-files = [ "LICENSE",]
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Framework :: Django",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.2",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -21,18 +25,12 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Framework :: Django",
-    "Framework :: Django :: 4.2",
-    "Framework :: Django :: 5.2",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
-    "Intended Audience :: Information Technology",
 ]
-requires-python = ">=3.10"
-dependencies = [
-    "arches>=7.6.19,<8.2.0",
-    "arches-component-lab>=0.0.1a7",
-]
+dependencies = [ "arches<8.2.0,>=7.6.19", "arches-component-lab>=0.0.1a7",]
+dynamic = []
+
+[[project.authors]]
+name = "Arches Project"
 
 [project.urls]
 Homepage = "https://archesproject.org/"
@@ -40,15 +38,8 @@ Documentation = "https://arches.readthedocs.io"
 Repository = "https://github.com/archesproject/arches-modular-reports.git"
 Issues = "https://github.com/archesproject/arches-modular-reports/issues"
 
-[dependency-groups]
-dev = [
-    "black==24.4.2",
-    "coverage",
-    "django-silk==5.1.0",
-    "livereload",
-    "pre-commit==4.1.0",
-    "sst",
-]
-
 [tool.setuptools]
-packages = ["arches_modular_reports"]
+packages = [ "arches_modular_reports",]
+
+[dependency-groups]
+dev = [ "black==24.4.2", "coverage", "django-silk==5.1.0", "livereload", "pre-commit==4.1.0", "sst",]
