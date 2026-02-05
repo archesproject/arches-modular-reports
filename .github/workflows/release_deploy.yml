@@ -15,4 +15,4 @@ jobs:
   increment_version_and_pr:
     uses: archesproject/reusable-github-workflows/.github/workflows/release_deploy.yml@main
     secrets:
-      pypi-token: ${{ secrets.PYPI_RELEASE_TOKEN }}
+      pypi-token: ${{ secrets.PYPI_TOKEN }}
