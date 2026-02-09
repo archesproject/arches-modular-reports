@@ -148,6 +148,7 @@ onMounted(fetchData);
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
     gap: 2rem;
+    margin: 0 4.5rem 3rem;
 }
 
 .image-container {

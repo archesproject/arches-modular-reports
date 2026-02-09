@@ -92,6 +92,10 @@ function formatValue(value: string): string {
     max-height: 18rem;
 }
 
+.node-container strong {
+    font-size: 1.5rem;
+}
+
 .node-values-container {
     height: 100%;
     overflow: auto;
