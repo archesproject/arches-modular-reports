@@ -1,6 +1,42 @@
 import { definePreset } from "@primeuix/themes";
 import Aura from "@primeuix/themes/aura";
 
+import { compileGlobalCss } from "@/arches_modular_reports/utils.ts";
+
+const cssOverrides = {
+    // examples of how to override styles in modular report components
+    // ".section-table-header h4": {
+    //     padding: "0 2rem !important",
+    //     "font-size": "1.5rem !important",
+    // },
+    // ".linked-section-container": {
+    //     margin: "0 1.5rem !important",
+    // },
+    // ".linked-section-container .p-panel-header h3": {
+    //     "font-size": "2.5rem !important",
+    // },
+    // ".linked-section-button-container .p-button-label": {
+    //     color: "#1857e5",
+    // },
+    // ".p-card-content h2": {
+    //     "font-size": "3rem !important",
+    // },
+    // ".node-container strong": {
+    //     "font-size": "1.7rem !important",
+    // },
+    // "button.p-tab": {
+    //     "font-size": "1.6rem !important",
+    // },
+    // ".p-tabpanels": {
+    //     "background-color": "#e9ebed",
+    // },
+    // ".data-container": {
+    //     border: "0",
+    //     margin: "0 4.5rem 3rem !important",
+    //     "grid-template-columns": "repeat(4, 1fr) !important",
+    // },
+};
+
 // TODO: when dropping support for 7.6, just import from arches 8.
 const DEFAULT_THEME = {
     theme: {
@@ -60,6 +96,7 @@ const ModularReportPreset = definePreset(Aura, {
             },
         },
     },
+    css: compileGlobalCss(cssOverrides),
     components: {
         datatable: {
             rowToggleButton: {
