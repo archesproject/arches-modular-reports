@@ -47,13 +47,13 @@ class Command(BaseCommand):
             elif os.path.exists(os.path.join(settings.APP_ROOT, "report_configs")):
                 source = os.path.join(settings.APP_ROOT, "report_configs/**")
                 self.load_report_configs(source)
-        
+
         elif options["operation"] == "write":
             if options["dest"]:
                 self.write_report_configs(options["dest"])
             elif os.path.exists(os.path.join(settings.APP_ROOT, "report_configs")):
                 dest = os.path.join(settings.APP_ROOT, "report_configs")
-                self.write_report_configs(dest=dest) 
+                self.write_report_configs(dest=dest)
 
     def write_report_configs(self, dest, slug=None):
         if slug:
@@ -72,9 +72,11 @@ class Command(BaseCommand):
             name="Modular Report Template"
         )
         if not reports_dir:
-            reports_dir = os.path.join(settings.APP_ROOT, "report_configs/**")    
+            reports_dir = os.path.join(settings.APP_ROOT, "report_configs/**")
         config_dirs = glob.glob(reports_dir)
-        import pdb; pdb.set_trace()
+        import pdb
+
+        pdb.set_trace()
         for config_dir in config_dirs:
             for file in glob.glob(os.path.join(config_dir, "*.json")):
                 with open(file) as f:
@@ -86,9 +88,9 @@ class Command(BaseCommand):
                             graph.template = editable_report_template
                             graph.save()
                             config, created = ReportConfig.objects.update_or_create(
-                                graph=graph, slug=Path(file).stem, defaults={
-                                    "config": data
-                                }
+                                graph=graph,
+                                slug=Path(file).stem,
+                                defaults={"config": data},
                             )
                             config.clean()
                         except models.Graph.DoesNotExist:

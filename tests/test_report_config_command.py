@@ -26,7 +26,9 @@ class ReportConfigCommandTests(TestCase):
         management.call_command(
             "report_configs",
             operation="load",
-            source=os.path.join(os.getcwd(), "tests", "fixtures", "report_configs", self.graph.slug),
+            source=os.path.join(
+                os.getcwd(), "tests", "fixtures", "report_configs", self.graph.slug
+            ),
         )
         with self.subTest():
             self.assertTrue(ReportConfig.objects.all().exists())
