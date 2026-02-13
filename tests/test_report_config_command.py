@@ -22,7 +22,7 @@ class ReportConfigCommandTests(TestCase):
                 source_identifier=None
             ).delete()  # delete draft graph
 
-    def test_header(self):
+    def test_config_import_export(self):
         management.call_command(
             "report_configs",
             operation="load",
