@@ -74,9 +74,6 @@ class Command(BaseCommand):
         if not reports_dir:
             reports_dir = os.path.join(settings.APP_ROOT, "report_configs/**")
         config_dirs = glob.glob(reports_dir)
-        import pdb
-
-        pdb.set_trace()
         for config_dir in config_dirs:
             for file in glob.glob(os.path.join(config_dir, "*.json")):
                 with open(file) as f:
