@@ -1,0 +1,75 @@
+{
+    "name": "Example Report",
+    "theme": "",
+    "components": [
+        {
+            "component": "arches_modular_reports/ModularReport/components/ReportHeader",
+            "config": {
+                "descriptor": " descriptor template",
+                "node_alias_options": {}
+            }
+        },
+        {
+            "component": "arches_modular_reports/ModularReport/components/ReportToolbar",
+            "config": {
+                "lists": true,
+                "export_formats": [
+                    "csv",
+                    "json-ld",
+                    "json"
+                ]
+            }
+        },
+        {
+            "component": "arches_modular_reports/ModularReport/components/ReportTombstone",
+            "config": {
+                "node_aliases": [],
+                "image_node_alias": null,
+                "custom_labels": {}
+            }
+        },
+        {
+            "component": "arches_modular_reports/ModularReport/components/ReportTabs",
+            "config": {
+                "tabs": [
+                    {
+                        "name": "Data",
+                        "components": [
+                            {
+                                "component": "arches_modular_reports/ModularReport/components/LinkedSections",
+                                "config": {
+                                    "sections": []
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Related Resources",
+                        "components": [
+                            {
+                                "component": "arches_modular_reports/ModularReport/components/LinkedSections",
+                                "config": {
+                                    "sections": [
+                                        {
+                                            "name": "",
+                                            "components": [
+                                                {
+                                                    "component": "arches_modular_reports/ModularReport/components/RelatedResourcesSection",
+                                                    "config": {
+                                                        "graph_slug": "test_graph",
+                                                        "node_aliases": [],
+                                                        "custom_labels": {}
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

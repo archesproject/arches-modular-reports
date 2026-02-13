@@ -10,6 +10,7 @@ arches_modular_reports/media/packages
 arches_modular_reports/media/build/
 arches_modular_reports/uploadedfiles/*
 arches_modular_reports/settings_local.py
+tests/fixtures/report_configs/tmp/test_graph/report-config.json
 webpack-stats.json
 .vscode/
 *.egg-info
