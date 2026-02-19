@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arches-modular-reports"
-version = "1.0.0b3"
+version = "1.0.0b4"
 description = "Fast, configurable reports for Arches models in Vue.js"
 readme = "README.md"
 requires-python = ">=3.10"
