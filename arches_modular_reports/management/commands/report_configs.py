@@ -16,6 +16,9 @@ class Command(BaseCommand):
     """
 
     def add_arguments(self, parser):
+        
+        parser.add_argument('operation', type=str, help='Either "load" or "write"')
+        
         parser.add_argument(
             "-s",
             "--source",
