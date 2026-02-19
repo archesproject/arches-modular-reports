@@ -62,7 +62,7 @@ class Command(BaseCommand):
             configs = ReportConfig.objects.all()
         for config in configs:
             if not os.path.exists(os.path.join(dest, config.graph.slug)):
-                os.path.mkdir(os.path.join(dest, config.graph.slug))
+                os.makedirs(os.path.join(dest, config.graph.slug))
             file_path = os.path.join(dest, config.graph.slug, f"{config.slug}.json")
             with open(file_path, "w") as f:
                 json.dump(config.config, f, indent=2)
