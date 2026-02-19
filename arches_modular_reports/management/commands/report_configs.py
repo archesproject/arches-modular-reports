@@ -74,8 +74,6 @@ class Command(BaseCommand):
         editable_report_template = models.ReportTemplate.objects.get(
             name="Modular Report Template"
         )
-        if not reports_dir:
-            reports_dir = os.path.join(settings.APP_ROOT, "report_configs/**")
         config_dirs = glob.glob(reports_dir)
         for config_dir in config_dirs:
             for file in glob.glob(os.path.join(config_dir, "*.json")):
