@@ -296,7 +296,7 @@ class ReportConfig(models.Model):
         try:
             graph = GraphModel.objects.get(filters)
         except (GraphModel.DoesNotExist, GraphModel.MultipleObjectsReturned):
-            msg = "Related Resources section contains invalid graph slug"
+            msg = f"Related Resources section contains invalid graph slug, {slug}"
             raise ValidationError(msg)
 
         usable_related_nodes = graph.node_set.exclude(
