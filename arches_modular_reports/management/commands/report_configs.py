@@ -17,7 +17,11 @@ class Command(BaseCommand):
     """
 
     def add_arguments(self, parser):
-        parser.add_argument("operation", type=str, help='Either "load" or "write"')
+        parser.add_argument(
+            "operation",
+            choices=["load", "write"],
+            help='Either "load" or "write".',
+        )
 
         parser.add_argument(
             "-s",
@@ -33,14 +37,6 @@ class Command(BaseCommand):
             action="store",
             dest="dest",
             help="Destination location of report configs",
-        )
-
-        parser.add_argument(
-            "-o",
-            "--operation",
-            action="store",
-            dest="operation",
-            help="Operation",
         )
 
     def handle(self, *args, **options):
@@ -91,8 +87,9 @@ class Command(BaseCommand):
                                 defaults={"config": data},
                             )
                             config.clean()
+
                             print(
-                                f'\n\n\tReport config for graph "{graph_slug}" was successfully created'
+                                f'\n\n\tReport {Path(file).name} for graph "{graph_slug}" was successfully loaded'
                             )
                         except ValidationError as e:
                             print(
