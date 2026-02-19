@@ -25,7 +25,7 @@ class ReportConfigCommandTests(TestCase):
     def test_config_import_export(self):
         management.call_command(
             "report_configs",
-            operation="load",
+            "load",
             source=os.path.join(
                 os.getcwd(), "tests", "fixtures", "report_configs", self.graph.slug
             ),
@@ -43,7 +43,7 @@ class ReportConfigCommandTests(TestCase):
             file_path = os.path.join(
                 dir_path, self.graph.slug, f"{report_config.slug}.json"
             )
-            management.call_command("report_configs", operation="write", dest=dir_path)
+            management.call_command("report_configs", "write", dest=dir_path)
             with open(file_path) as f:
                 d = json.load(f)
                 self.assertTrue(d["name"] == report_config.config["name"])
