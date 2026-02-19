@@ -91,15 +91,10 @@ class Command(BaseCommand):
                                 defaults={"config": data},
                             )
                             config.clean()
-                            print(f'\n\n     Report config for graph "{graph_slug}" was successfully created')
-                            message = (
-                                f'\n\n     Graph with slug "{graph_slug}" not found. The report config found at '
-                                f"\n     {config_dir} was skipped."
-                                f"\n     Either update the graph slug reference in this migration or update the graph slug itself."
+                            print(
+                                f'\n\n\tReport config for graph "{graph_slug}" was successfully created'
                             )
                         except ValidationError as e:
-                            message = (
-                                f'\n\n     Report config at {file} failed to save and was not loaded.'
-                                f"\n     Errors: {e}"
+                            print(
+                                f"\n\n\tReport config at {file} failed to save and was not loaded.\n\tErrors: {e}"
                             )
-                            print(message)
