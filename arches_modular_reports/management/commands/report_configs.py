@@ -93,7 +93,7 @@ class Command(BaseCommand):
                                 defaults={"config": data},
                             )
                             config.clean()
-                        except models.Graph.DoesNotExist:
+                            print(f'\n\n     Report config for graph "{graph_slug}" was successfully created')
                             message = (
                                 f'\n\n     Graph with slug "{graph_slug}" not found. The report config found at '
                                 f"\n     {config_dir} was skipped."
