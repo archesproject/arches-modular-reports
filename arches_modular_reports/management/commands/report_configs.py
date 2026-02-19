@@ -96,4 +96,9 @@ class Command(BaseCommand):
                                 f"\n     {config_dir} was skipped."
                                 f"\n     Either update the graph slug reference in this migration or update the graph slug itself."
                             )
+                        except ValidationError as e:
+                            message = (
+                                f'\n\n     Report config at {file} failed to save and was not loaded.'
+                                f"\n     Errors: {e}"
+                            )
                             print(message)
