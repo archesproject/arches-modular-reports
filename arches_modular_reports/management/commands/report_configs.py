@@ -3,6 +3,7 @@ import json
 import glob
 from arches.app.models.system_settings import settings
 from arches.app.models import models
+from arches_modular_reports.models import ReportConfig
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.utils.translation import gettext as _
