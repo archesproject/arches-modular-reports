@@ -386,6 +386,7 @@ function initiateSoftDelete(tileId: string) {
                     />
                     <template v-else-if="columnDatum.is_rich_text">
                         <span
+                            class="rich-text-container"
                             v-html="data[field as string]?.display_value"
                         ></span>
                     </template>
@@ -485,6 +486,13 @@ function initiateSoftDelete(tileId: string) {
     border-color: var(--p-datatable-body-cell-border-color);
     border-style: solid;
     border-width: 0px 0 1px 0;
+}
+
+.rich-text-container {
+    max-height: 12rem;
+    overflow: scroll;
+    display: block;
+    max-width: 75vw;
 }
 
 :deep(.p-datatable-column-sorted) {
