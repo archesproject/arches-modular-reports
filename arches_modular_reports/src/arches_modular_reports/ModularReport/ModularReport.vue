@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import arches from "arches";
+
 import { computed, watchEffect, provide, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
@@ -34,6 +36,7 @@ const componentLookup: ComponentLookup = {};
 
 const EDITOR = $gettext("Editor");
 const CLOSE_EDITOR = $gettext("Close editor");
+const EDIT_HISTORY = $gettext("Edit history");
 
 const { graphSlug, resourceInstanceId, reportConfigSlug } = defineProps<{
     graphSlug: string;
@@ -219,7 +222,22 @@ function closeEditor() {
                         "
                     >
                         <div style="font-weight: 600; font-size: large">
-                            {{ EDITOR }}
+                            <span>{{ EDITOR }}</span>
+                            <Button
+                                icon="pi pi-history"
+                                as="a"
+                                variant="link"
+                                :href="
+                                    `${arches.urls.resource_edit_log}`.replace(
+                                        '//',
+                                        `/${resourceInstanceId}/`,
+                                    )
+                                "
+                                target="_blank"
+                                rel="noopener"
+                                rounded
+                                :aria-label="EDIT_HISTORY"
+                            />
                         </div>
 
                         <Button
