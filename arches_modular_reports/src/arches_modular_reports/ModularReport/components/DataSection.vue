@@ -492,7 +492,7 @@ function initiateSoftDelete(tileId: string) {
     max-height: 12rem;
     overflow: scroll;
     display: block;
-    width: 75vw;
+    max-width: 75vw;
 }
 
 :deep(.p-datatable-column-sorted) {
