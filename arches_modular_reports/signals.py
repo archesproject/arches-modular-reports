@@ -1,3 +1,4 @@
+from arches import VERSION as arches_version
 from arches_modular_reports.config_generators import get_all
 
 
@@ -8,6 +9,9 @@ def handle_graph_post_save(sender, instance, created, **kwargs):
     for each slug that doesn't already exist for this graph.
     """
     if not created or not instance.isresource or not instance.slug:
+        return
+
+    if arches_version >= (8, 0) and instance.source_identifier is not None:
         return
 
     from arches.app.models.system_settings import settings

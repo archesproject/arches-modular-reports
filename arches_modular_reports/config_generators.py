@@ -11,7 +11,9 @@ Usage (e.g. in another package's AppConfig.ready()):
     register("my_slug", lambda graph: {"name": "My Config", "theme": "", "components": []})
 """
 
-_registry: dict[str, callable] = {}
+from collections.abc import Callable
+
+_registry: dict[str, Callable] = {}
 
 
 def register(slug: str, factory) -> None:

@@ -74,7 +74,7 @@ class Command(BaseCommand):
     def generate_registered_configs(self):
         generators = get_all()
         if not generators:
-            print("No config generators registered.")
+            self.stdout.write("No config generators registered.")
             return
 
         eligible_graphs = models.GraphModel.objects.filter(
@@ -92,7 +92,7 @@ class Command(BaseCommand):
                     defaults={"config": factory(graph)},
                 )
                 status = "Created" if created else "Skipped"
-                print(f"\t{status} [{slug}]: {graph.name}")
+                self.stdout.write(f"\t{status} [{slug}]: {graph.name}")
 
     def load_report_configs(self, reports_dir):
         editable_report_template = models.ReportTemplate.objects.get(
