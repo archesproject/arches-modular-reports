@@ -1,18 +1,21 @@
 import json
 import os
 import uuid
-from arches import VERSION as arches_version
+from arches import __version__ as _arches_version_str
 from arches.app.models.graph import Graph
 from arches.app.models.models import Node, NodeGroup
 from arches_modular_reports.models import ReportConfig
 from django.core import management
 from django.test import TestCase
+from packaging.version import Version
+
+arches_version = Version(_arches_version_str)
 
 
 class ReportConfigCommandTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        if arches_version < (8, 0):
+        if arches_version < Version("8.0"):
             cls.graph = Graph.new(is_resource=True)
             cls.graph.slug = "test_graph"
             cls.graph.save()

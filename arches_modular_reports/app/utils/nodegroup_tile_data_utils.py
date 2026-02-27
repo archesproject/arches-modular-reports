@@ -23,9 +23,12 @@ from django.db.models.functions import Cast, Concat, JSONObject
 from django.urls import get_script_prefix, reverse
 from django.utils.translation import gettext as _
 
-from arches import VERSION as arches_version
+from arches import __version__ as _arches_version_str
 from arches.app.models import models
 
+from packaging.version import Version
+
+arches_version = Version(_arches_version_str)
 
 class ArchesGetNodeDisplayValueV2(Func):
     function = "__arches_get_node_display_value_v2"
@@ -233,7 +236,7 @@ def get_sorted_filtered_tiles(
     ).exclude(
         datatype__in={"semantic", "annotation", "geojson-feature-collection"},
     )
-    if arches_version >= (8, 0):
+    if arches_version >= Version("8.0"):
         nodes = nodes.filter(source_identifier=None)
 
     if not nodes:
@@ -344,7 +347,7 @@ def get_sorted_filtered_relations(
     query,
     request_language,
 ):
-    if arches_version < (8, 0):
+    if arches_version < Version("8.0"):
         resource_from_field = "resourceinstanceidfrom"
         resource_from_graph_field = "resourceinstancefrom_graphid"
         resource_to_field = "resourceinstanceidto"

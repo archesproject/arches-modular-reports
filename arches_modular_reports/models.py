@@ -4,16 +4,19 @@ from pathlib import Path
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from arches import VERSION as arches_version
+from arches import __version__ as _arches_version_str
 from arches.app.models.models import GraphModel, Node, NodeGroup
 from arches.app.models.system_settings import settings
 from arches_modular_reports.utils import PrettyJSONEncoder
+from packaging.version import Version
+
+arches_version = Version(_arches_version_str)
 
 
 def get_graph_choices():
     choices = models.Q(isresource=True)
     choices &= ~models.Q(pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID)
-    if arches_version >= (8, 0):
+    if arches_version >= Version("8.0"):
         choices &= models.Q(source_identifier=None)
     return choices
 
@@ -127,7 +130,7 @@ class ReportConfig(models.Model):
         ordered_top_cards = (
             self.graph.cardmodel_set.filter(nodegroup__parentnodegroup__isnull=True)
             .select_related(
-                "nodegroup__grouping_node" if arches_version >= (8, 0) else "nodegroup"
+                "nodegroup__grouping_node" if arches_version >= Version("8.0") else "nodegroup"
             )
             .prefetch_related(
                 models.Prefetch(
@@ -140,7 +143,7 @@ class ReportConfig(models.Model):
         )
 
         def get_grouping_node(nodegroup):
-            if arches_version >= (8, 0):
+            if arches_version >= Version("8.0"):
                 return nodegroup.grouping_node
             return nodegroup.node_set.filter(pk=nodegroup.pk).first()
 
@@ -173,7 +176,7 @@ class ReportConfig(models.Model):
             slug__isnull=False,
             isresource=True,
         )
-        if arches_version >= (8, 0):
+        if arches_version >= Version("8.0"):
             other_graphs = other_graphs.filter(source_identifier=None)
         return [
             {
@@ -291,7 +294,7 @@ class ReportConfig(models.Model):
     def validate_relatedresourcessection(self, rr_config):
         slug = self.get_or_raise(rr_config, "graph_slug", "Related Resources")
         filters = models.Q(slug=slug)
-        if arches_version >= (8, 0):
+        if arches_version >= Version("8.0"):
             filters &= models.Q(source_identifier=None)
         try:
             graph = GraphModel.objects.get(filters)
