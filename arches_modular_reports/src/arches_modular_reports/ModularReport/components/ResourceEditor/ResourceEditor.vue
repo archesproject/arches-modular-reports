@@ -3,6 +3,8 @@ import {
     computed,
     inject,
     nextTick,
+    onBeforeUnmount,
+    onMounted,
     reactive,
     readonly,
     ref,
@@ -36,7 +38,10 @@ import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_modular_reports/constants.ts"
 
 import { generateWidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/generate-widget-dirty-states.ts";
 import { getValueFromPath } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/get-value-from-path.ts";
-import { pruneResourceData } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/prune-resource-data.ts";
+import {
+    hasDirtyDescendant,
+    pruneResourceData,
+} from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/prune-resource-data.ts";
 
 import { EDIT } from "@/arches_component_lab/widgets/constants.ts";
 
@@ -138,6 +143,14 @@ const selectedTileKey = computed<string>(() => {
         return selectedTileId.value;
     }
     return JSON.stringify(selectedTilePath.value ?? []);
+});
+
+const hasUnsavedChanges = computed<boolean>(() => {
+    return (
+        unsavedTileKeys.value.size > 0 ||
+        softDeletedTileKeys.value.size > 0 ||
+        hasDirtyDescendant(widgetDirtyStates)
+    );
 });
 
 const isSelectedTileSoftDeleted = computed<boolean>(() => {
@@ -748,6 +761,87 @@ function onUndoAllChanges() {
     setSelectedTileId(null);
     setSelectedTilePath(null);
 }
+
+// Flag set when the user confirms navigation via the PrimeVue dialog, so that
+// the subsequent beforeunload (triggered by window.location.href assignment)
+// does not show a second native dialog.
+let navigationApproved = false;
+
+function onBeforeUnload(event: BeforeUnloadEvent) {
+    if (hasUnsavedChanges.value && !navigationApproved) {
+        event.preventDefault();
+        // If the user cancels the dialog and stays on the page, the Arches
+        // loading mask may have been activated by the Knockout click handler
+        // that triggered navigation. Schedule a hide for after the dialog is
+        // dismissed — if the user clicks "Leave" instead, the page unloads
+        // and this callback never runs.
+        setTimeout(() => {
+            // Arches's page-view.js registers its own beforeunload handler
+            // that calls viewModel.loading(true) on every navigation. When
+            // navigation is cancelled, loading() is never reset. Reset it
+            // via the Knockout viewModel directly if ko is available as a
+            // global; fall back to a CSS override if not.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const ko = (window as any).ko;
+            if (ko) {
+                const vm = ko.dataFor(document.body);
+                if (vm && typeof vm.loading === "function") {
+                    vm.loading(false);
+                    return;
+                }
+            }
+            const loadingMask =
+                document.querySelector<HTMLElement>(".loading-mask");
+            if (loadingMask) {
+                loadingMask.style.visibility = "hidden";
+            }
+        }, 0);
+    }
+}
+
+function onDocumentLinkClick(event: MouseEvent) {
+    if (!hasUnsavedChanges.value) return;
+
+    const anchor = (event.target as Element).closest("a");
+    if (!anchor) return;
+
+    const href = anchor.getAttribute("href");
+    if (!href || href.startsWith("#") || href.startsWith("javascript:")) return;
+    if (anchor.target === "_blank") return;
+
+    // Stop propagation in the capture phase so that element-level handlers
+    // (e.g. Knockout click bindings) never fire. Without this, Arches can
+    // enter a loading/spinner state before we have a chance to intercept.
+    event.stopPropagation();
+    event.preventDefault();
+
+    confirm.require({
+        message: $gettext(
+            "You have unsaved changes that will be lost if you leave this page.",
+        ),
+        header: $gettext("Unsaved changes"),
+        icon: "pi pi-exclamation-triangle",
+        acceptLabel: $gettext("Leave"),
+        rejectLabel: $gettext("Stay"),
+        accept: () => {
+            navigationApproved = true;
+            window.location.href = anchor.href;
+        },
+    });
+}
+
+onMounted(() => {
+    window.addEventListener("beforeunload", onBeforeUnload);
+    // Use capture phase (true) so we intercept clicks before they reach
+    // element-level handlers. Bubbling-phase registration misses events
+    // where a handler lower in the tree calls stopPropagation().
+    document.addEventListener("click", onDocumentLinkClick, true);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener("beforeunload", onBeforeUnload);
+    document.removeEventListener("click", onDocumentLinkClick, true);
+});
 
 function onSave() {
     isLoading.value = true;
