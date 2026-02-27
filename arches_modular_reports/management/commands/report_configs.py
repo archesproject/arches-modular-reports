@@ -1,8 +1,10 @@
 import os
 import json
 import glob
+from arches import VERSION as arches_version
 from arches.app.models.system_settings import settings
 from arches.app.models import models
+from arches_modular_reports.config_generators import get_all
 from arches_modular_reports.models import ReportConfig
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
@@ -19,8 +21,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "operation",
-            choices=["load", "write"],
-            help='Either "load" or "write".',
+            choices=["load", "write", "generate"],
+            help='"load", "write", or "generate" (create configs for all registered generators).',
         )
 
         parser.add_argument(
@@ -54,6 +56,9 @@ class Command(BaseCommand):
                 dest = os.path.join(settings.APP_ROOT, "report_configs")
                 self.write_report_configs(dest=dest)
 
+        elif options["operation"] == "generate":
+            self.generate_registered_configs()
+
     def write_report_configs(self, dest, slug=None):
         if slug:
             configs = ReportConfig.objects.filter(slug=slug)
@@ -65,6 +70,29 @@ class Command(BaseCommand):
             file_path = os.path.join(dest, config.graph.slug, f"{config.slug}.json")
             with open(file_path, "w") as f:
                 json.dump(config.config, f, indent=2)
+
+    def generate_registered_configs(self):
+        generators = get_all()
+        if not generators:
+            print("No config generators registered.")
+            return
+
+        eligible_graphs = models.GraphModel.objects.filter(
+            isresource=True,
+            slug__isnull=False,
+        ).exclude(pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID)
+        if arches_version >= (8, 0):
+            eligible_graphs = eligible_graphs.filter(source_identifier=None)
+
+        for graph in eligible_graphs:
+            for slug, factory in generators.items():
+                _, created = ReportConfig.objects.get_or_create(
+                    graph=graph,
+                    slug=slug,
+                    defaults={"config": factory(graph)},
+                )
+                status = "Created" if created else "Skipped"
+                print(f"\t{status} [{slug}]: {graph.name}")
 
     def load_report_configs(self, reports_dir):
         editable_report_template = models.ReportTemplate.objects.get(
