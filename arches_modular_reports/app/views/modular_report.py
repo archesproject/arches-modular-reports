@@ -11,7 +11,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, get_language_info, gettext as _
 from django.views.generic import View
 
-from arches import VERSION as arches_version
+from arches import __version__ as _arches_version_str
 from arches.app.datatypes.concept_types import BaseConceptDataType
 from arches.app.models import models
 from arches.app.utils.betterJSONSerializer import JSONSerializer, JSONDeserializer
@@ -25,6 +25,9 @@ from arches.app.views.resource import ResourceReportView
 from arches_modular_reports.app.utils.decorators import can_read_nodegroup
 from arches_modular_reports.app.utils.get_report_config import get_report_config
 from arches_modular_reports.models import ReportConfig
+from packaging.version import Version
+
+arches_version = Version(_arches_version_str)
 
 from arches_modular_reports.app.utils.update_report_configuration_for_nodegroup_permissions import (
     update_report_configuration_for_nodegroup_permissions,
@@ -147,7 +150,7 @@ class RelatedResourceView(APIBase):
         try:
             resource = models.ResourceInstance.objects.get(pk=resourceid)
             filters = Q(slug=related_graph_slug)
-            if arches_version >= (8, 0):
+            if arches_version >= Version("8.0"):
                 filters &= Q(source_identifier=None)
             related_graph = models.GraphModel.objects.get(filters)
         except (models.ResourceInstance.DoesNotExist, models.GraphModel.DoesNotExist):
@@ -185,7 +188,7 @@ class RelatedResourceView(APIBase):
         def make_resource_report_link(relation):
             nonlocal resourceid
             # Both sides are UUID python types (from ORM, or from route)
-            if arches_version < (8, 0):
+            if arches_version < Version("8.0"):
                 if relation.resourceinstanceidfrom_id == resourceid:
                     target = relation.resourceinstanceidto_id
                 else:
