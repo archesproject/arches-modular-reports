@@ -1,8 +1,8 @@
-
 from arches import __version__ as _arches_version_str
 from django.db.models import Q
 from arches_modular_reports.models import ReportConfig
 from packaging.version import Version
+
 arches_version = Version(_arches_version_str)
 
 

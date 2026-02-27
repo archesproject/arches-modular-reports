@@ -130,7 +130,9 @@ class ReportConfig(models.Model):
         ordered_top_cards = (
             self.graph.cardmodel_set.filter(nodegroup__parentnodegroup__isnull=True)
             .select_related(
-                "nodegroup__grouping_node" if arches_version >= Version("8.0") else "nodegroup"
+                "nodegroup__grouping_node"
+                if arches_version >= Version("8.0")
+                else "nodegroup"
             )
             .prefetch_related(
                 models.Prefetch(

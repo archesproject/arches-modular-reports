@@ -30,6 +30,7 @@ from packaging.version import Version
 
 arches_version = Version(_arches_version_str)
 
+
 class ArchesGetNodeDisplayValueV2(Func):
     function = "__arches_get_node_display_value_v2"
     output_field = TextField()
