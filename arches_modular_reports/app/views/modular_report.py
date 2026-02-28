@@ -61,7 +61,9 @@ class ModularReportConfigView(View):
     def get(self, request):
         try:
             resourceid = request.GET.get("resourceId")
-            report_config_slug = request.GET.get("report_config_slug", "default")
+            report_config_slug = request.GET.get("slug") or request.GET.get(
+                "report_config_slug", "default"
+            )
             config_instance = get_report_config(resourceid, report_config_slug)
         except ReportConfig.DoesNotExist:
             return JSONErrorResponse(
