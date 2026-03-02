@@ -1,7 +1,7 @@
 import os
 import json
 import glob
-from arches import VERSION as arches_version
+from arches import __version__ as _arches_version
 from arches.app.models.system_settings import settings
 from arches.app.models import models
 from arches_modular_reports.config_generators import get_all
@@ -9,8 +9,10 @@ from arches_modular_reports.models import ReportConfig
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.utils.translation import gettext as _
+from packaging.version import Version
 from pathlib import Path
 
+arches_version = Version(_arches_version)
 
 class Command(BaseCommand):
     """
@@ -81,7 +83,7 @@ class Command(BaseCommand):
             isresource=True,
             slug__isnull=False,
         ).exclude(pk=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID)
-        if arches_version >= (8, 0):
+        if arches_version >= Version("8.0"):
             eligible_graphs = eligible_graphs.filter(source_identifier=None)
 
         for graph in eligible_graphs:

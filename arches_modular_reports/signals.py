@@ -1,6 +1,8 @@
-from arches import VERSION as arches_version
+from arches import __version__ as _arches_version
 from arches_modular_reports.config_generators import get_all
+from packaging.version import Version
 
+arches_version = Version(_arches_version)
 
 def handle_graph_post_save(sender, instance, created, **kwargs):
     """Auto-create ReportConfig objects for newly created resource graphs.
@@ -11,7 +13,7 @@ def handle_graph_post_save(sender, instance, created, **kwargs):
     if not created or not instance.isresource or not instance.slug:
         return
 
-    if arches_version >= (8, 0) and instance.source_identifier is not None:
+    if arches_version >= Version("8.0") and instance.source_identifier is not None:
         return
 
     from arches.app.models.system_settings import settings
