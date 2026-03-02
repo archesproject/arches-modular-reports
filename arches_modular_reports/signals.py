@@ -1,5 +1,7 @@
 from arches import __version__ as _arches_version
+from arches.app.models.system_settings import settings
 from arches_modular_reports.config_generators import get_all
+from arches_modular_reports.models import ReportConfig
 from packaging.version import Version
 
 arches_version = Version(_arches_version)
@@ -16,12 +18,8 @@ def handle_graph_post_save(sender, instance, created, **kwargs):
     if arches_version >= Version("8.0") and instance.source_identifier is not None:
         return
 
-    from arches.app.models.system_settings import settings
-
     if str(instance.pk) == str(settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID):
         return
-
-    from arches_modular_reports.models import ReportConfig
 
     for slug, factory in get_all().items():
         ReportConfig.objects.get_or_create(
