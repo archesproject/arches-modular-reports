@@ -6,6 +6,7 @@ from packaging.version import Version
 
 arches_version = Version(_arches_version)
 
+
 def handle_graph_post_save(sender, instance, created, **kwargs):
     """Auto-create ReportConfig objects for newly created resource graphs.
 

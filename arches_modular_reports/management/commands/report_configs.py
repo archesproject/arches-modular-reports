@@ -14,6 +14,7 @@ from pathlib import Path
 
 arches_version = Version(_arches_version)
 
+
 class Command(BaseCommand):
     """
     Commands for managing report configurations
