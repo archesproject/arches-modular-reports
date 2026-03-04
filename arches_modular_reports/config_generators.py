@@ -1,7 +1,7 @@
 """
 Registry for ReportConfig generators.
 
-External packages can register config factory functions here by slug.
+External Arches Applications can register config factory functions here by slug.
 When a new resource graph is created, arches-modular-reports will call all
 registered generators to auto-create ReportConfig objects for that graph.
 
