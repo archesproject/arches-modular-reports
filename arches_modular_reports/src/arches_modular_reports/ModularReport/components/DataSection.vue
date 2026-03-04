@@ -350,7 +350,7 @@ function initiateSoftDelete(tileId: string) {
 
         <Column
             expander
-            style="width: 25px"
+            class="expander-column"
         />
         <Column
             v-for="columnDatum of columnData"
@@ -410,6 +410,7 @@ function initiateSoftDelete(tileId: string) {
                 userCanEditResourceInstance &&
                 props.component.config.has_write_permission
             "
+            class="edit-button-column"
         >
             <template #body="{ data }">
                 <div
@@ -457,6 +458,10 @@ function initiateSoftDelete(tileId: string) {
 </template>
 
 <style scoped>
+:deep(.p-datatable-table) {
+    table-layout: fixed;
+}
+
 .panel-content .section-table:not(:first-child) {
     padding-top: 18px;
 }
@@ -479,6 +484,14 @@ function initiateSoftDelete(tileId: string) {
     display: flex;
     justify-content: flex-end;
     flex-grow: 1;
+}
+
+:deep(.expander-column) {
+    width: 3rem;
+}
+
+:deep(.edit-button-column) {
+    width: 8rem;
 }
 
 .no-data-found {
