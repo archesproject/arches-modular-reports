@@ -61,6 +61,10 @@ class ReportConfigTests(TestCase):
             datatype="resource-instance",
         )
 
+        # Clear any configs auto-created by the post_save signal so
+        # individual tests can construct their own without unique conflicts.
+        ReportConfig.objects.filter(graph=cls.graph).delete()
+
     def test_header(self):
         header = ReportConfig(graph=self.graph)
         # Default config passes validation.
