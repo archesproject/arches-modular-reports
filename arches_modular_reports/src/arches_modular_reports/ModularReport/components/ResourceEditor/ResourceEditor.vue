@@ -42,6 +42,8 @@ import {
     hasDirtyDescendant,
     pruneResourceData,
 } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/prune-resource-data.ts";
+import { hideKoLoadingMask } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/hide-ko-loading-mask.ts";
+import { getUnloadPageLink } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/get-unload-page-link.ts";
 
 import { EDIT } from "@/arches_component_lab/widgets/constants.ts";
 
@@ -775,39 +777,15 @@ function onBeforeUnload(event: BeforeUnloadEvent) {
         // that triggered navigation. Schedule a hide for after the dialog is
         // dismissed — if the user clicks "Leave" instead, the page unloads
         // and this callback never runs.
-        setTimeout(() => {
-            // Arches's page-view.js registers its own beforeunload handler
-            // that calls viewModel.loading(true) on every navigation. When
-            // navigation is cancelled, loading() is never reset. Reset it
-            // via the Knockout viewModel directly if ko is available as a
-            // global; fall back to a CSS override if not.
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const ko = (window as any).ko;
-            if (ko) {
-                const vm = ko.dataFor(document.body);
-                if (vm && typeof vm.loading === "function") {
-                    vm.loading(false);
-                    return;
-                }
-            }
-            const loadingMask =
-                document.querySelector<HTMLElement>(".loading-mask");
-            if (loadingMask) {
-                loadingMask.style.visibility = "hidden";
-            }
-        }, 0);
+        hideKoLoadingMask();
     }
 }
 
 function onDocumentLinkClick(event: MouseEvent) {
     if (!hasUnsavedChanges.value) return;
 
-    const anchor = (event.target as Element).closest("a");
+    const anchor = getUnloadPageLink(event);
     if (!anchor) return;
-
-    const href = anchor.getAttribute("href");
-    if (!href || href.startsWith("#") || href.startsWith("javascript:")) return;
-    if (anchor.target === "_blank") return;
 
     // Stop propagation in the capture phase so that element-level handlers
     // (e.g. Knockout click bindings) never fire. Without this, Arches can
