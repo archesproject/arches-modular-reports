@@ -35,6 +35,13 @@ const cssOverrides = {
     //     margin: "0 4.5rem 3rem !important",
     //     "grid-template-columns": "repeat(4, 1fr) !important",
     // },
+    ".p-button, .p-inputtext, .p-select-options, .p-select-label, .p-select-overlay, .p-toast-summary":
+        {
+            "font-size": "1.4rem !important",
+        },
+    ".p-toast-detail, .p-toast-icon-size": {
+        "font-size": "1.2rem !important",
+    },
 };
 
 // TODO: when dropping support for 7.6, just import from arches 8.
@@ -130,13 +137,6 @@ const ModularReportPreset = definePreset(Aura, {
                     },
                 },
             },
-        },
-        button: {
-            css: ({ dt }) => `
-                .p-button {
-                    font-size: ${dt("base.button.font.size")};
-                }
-            `,
         },
     },
 });

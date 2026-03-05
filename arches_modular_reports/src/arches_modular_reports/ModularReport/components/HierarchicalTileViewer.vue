@@ -3,6 +3,7 @@ import { inject, onMounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Message from "primevue/message";
+import Skeleton from "primevue/skeleton";
 
 import {
     fetchModularReportTile,
@@ -74,11 +75,35 @@ onMounted(fetchData);
     >
         {{ $gettext("No further data found") }}
     </p>
+    <p
+        v-else-if="isLoading"
+        style="padding: 0 4.25rem; margin-bottom: 0"
+    >
+        <details open="true">
+            <summary class="p-datatable-column-title">
+                <Skeleton
+                    width="25rem"
+                    height="1rem"
+                ></Skeleton>
+            </summary>
+        </details>
+    </p>
 </template>
 
 <style scoped>
 .p-message-error {
     margin-left: 4rem;
     display: inline-flex;
+}
+
+summary {
+    /* https://github.com/twbs/bootstrap/issues/21060 */
+    display: list-item;
+    margin-bottom: 10px;
+    font-size: 1.4rem;
+}
+
+summary div {
+    display: inline-block;
 }
 </style>
