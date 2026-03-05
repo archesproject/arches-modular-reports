@@ -4,7 +4,7 @@ import glob
 from arches import __version__ as _arches_version
 from arches.app.models.system_settings import settings
 from arches.app.models import models
-from arches_modular_reports.config_generators import get_all
+from arches_modular_reports.config_generator_registry import get_all
 from arches_modular_reports.models import ReportConfig
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand

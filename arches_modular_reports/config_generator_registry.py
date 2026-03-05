@@ -7,7 +7,7 @@ registered generators to auto-create ReportConfig objects for that graph.
 
 Usage (e.g. in another package's AppConfig.ready()):
 
-    from arches_modular_reports.config_generators import register
+    from arches_modular_reports.config_generator_registry import register
     register("my_slug", lambda graph: {"name": "My Config", "theme": "", "components": []})
 """
 
