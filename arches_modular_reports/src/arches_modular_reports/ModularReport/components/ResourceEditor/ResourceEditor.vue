@@ -3,6 +3,8 @@ import {
     computed,
     inject,
     nextTick,
+    onBeforeUnmount,
+    onMounted,
     reactive,
     readonly,
     ref,
@@ -36,7 +38,12 @@ import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_modular_reports/constants.ts"
 
 import { generateWidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/generate-widget-dirty-states.ts";
 import { getValueFromPath } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/get-value-from-path.ts";
-import { pruneResourceData } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/prune-resource-data.ts";
+import {
+    hasDirtyDescendant,
+    pruneResourceData,
+} from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/prune-resource-data.ts";
+import { hideKoLoadingMask } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/hide-ko-loading-mask.ts";
+import { getUnloadPageLink } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/get-unload-page-link.ts";
 
 import { EDIT } from "@/arches_component_lab/widgets/constants.ts";
 
@@ -138,6 +145,14 @@ const selectedTileKey = computed<string>(() => {
         return selectedTileId.value;
     }
     return JSON.stringify(selectedTilePath.value ?? []);
+});
+
+const hasUnsavedChanges = computed<boolean>(() => {
+    return (
+        unsavedTileKeys.value.size > 0 ||
+        softDeletedTileKeys.value.size > 0 ||
+        hasDirtyDescendant(widgetDirtyStates)
+    );
 });
 
 const isSelectedTileSoftDeleted = computed<boolean>(() => {
@@ -748,6 +763,63 @@ function onUndoAllChanges() {
     setSelectedTileId(null);
     setSelectedTilePath(null);
 }
+
+// Flag set when the user confirms navigation via the PrimeVue dialog, so that
+// the subsequent beforeunload (triggered by window.location.href assignment)
+// does not show a second native dialog.
+let navigationApproved = false;
+
+function onBeforeUnload(event: BeforeUnloadEvent) {
+    if (hasUnsavedChanges.value && !navigationApproved) {
+        event.preventDefault();
+        // If the user cancels the dialog and stays on the page, the Arches
+        // loading mask may have been activated by the Knockout click handler
+        // that triggered navigation. Schedule a hide for after the dialog is
+        // dismissed — if the user clicks "Leave" instead, the page unloads
+        // and this callback never runs.
+        hideKoLoadingMask();
+    }
+}
+
+function onDocumentLinkClick(event: MouseEvent) {
+    if (!hasUnsavedChanges.value) return;
+
+    const anchor = getUnloadPageLink(event);
+    if (!anchor) return;
+
+    // Stop propagation in the capture phase so that element-level handlers
+    // (e.g. Knockout click bindings) never fire. Without this, Arches can
+    // enter a loading/spinner state before we have a chance to intercept.
+    event.stopPropagation();
+    event.preventDefault();
+
+    confirm.require({
+        message: $gettext(
+            "You have unsaved changes that will be lost if you leave this page.",
+        ),
+        header: $gettext("Unsaved changes"),
+        icon: "pi pi-exclamation-triangle",
+        acceptLabel: $gettext("Leave"),
+        rejectLabel: $gettext("Stay"),
+        accept: () => {
+            navigationApproved = true;
+            window.location.href = anchor.href;
+        },
+    });
+}
+
+onMounted(() => {
+    window.addEventListener("beforeunload", onBeforeUnload);
+    // Use capture phase (true) so we intercept clicks before they reach
+    // element-level handlers. Bubbling-phase registration misses events
+    // where a handler lower in the tree calls stopPropagation().
+    document.addEventListener("click", onDocumentLinkClick, true);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener("beforeunload", onBeforeUnload);
+    document.removeEventListener("click", onDocumentLinkClick, true);
+});
 
 function onSave() {
     isLoading.value = true;
