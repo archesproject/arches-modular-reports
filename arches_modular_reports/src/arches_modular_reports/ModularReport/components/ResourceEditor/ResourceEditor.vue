@@ -957,7 +957,7 @@ function onSave() {
                         severity="danger"
                         variant="outlined"
                         icon="pi pi-undo"
-                        label="Undo all changes"
+                        label="Cancel all edits"
                         @click="onRequestUndoAllChanges"
                     />
 

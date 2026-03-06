@@ -69,24 +69,23 @@ onMounted(fetchData);
     >
         {{ $gettext("Unable to fetch resource") }}
     </Message>
+    <details
+        v-if="isLoading"
+        open="true"
+        class="loading-skeleton"
+    >
+        <summary class="p-datatable-column-title">
+            <Skeleton
+                width="25rem"
+                height="1rem"
+            ></Skeleton>
+        </summary>
+    </details>
     <p
         v-else-if="!isLoading && !tileData"
         style="padding: 0 4.25rem; margin-bottom: 0"
     >
         {{ $gettext("No further data found") }}
-    </p>
-    <p
-        v-else-if="isLoading"
-        style="padding: 0 4.25rem; margin-bottom: 0"
-    >
-        <details open="true">
-            <summary class="p-datatable-column-title">
-                <Skeleton
-                    width="25rem"
-                    height="1rem"
-                ></Skeleton>
-            </summary>
-        </details>
     </p>
 </template>
 
@@ -94,6 +93,10 @@ onMounted(fetchData);
 .p-message-error {
     margin-left: 4rem;
     display: inline-flex;
+}
+
+.loading-skeleton {
+    margin-left: 4rem;
 }
 
 summary {
