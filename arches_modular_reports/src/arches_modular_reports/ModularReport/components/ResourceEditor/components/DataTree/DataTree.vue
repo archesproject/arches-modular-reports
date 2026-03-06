@@ -29,8 +29,17 @@ type SoftDeletePayload = {
     nextIsSoftDeleted: boolean;
 };
 
+type MoveTileToTopPayload = {
+    sortorderUpdates: Array<{
+        path: Array<string | number>;
+        sortorder: number;
+        softDeleteKey: string;
+    }>;
+};
+
 const emit = defineEmits<{
     (eventName: "toggle-soft-delete", payload: SoftDeletePayload): void;
+    (eventName: "move-tile-to-top", payload: MoveTileToTopPayload): void;
 }>();
 
 const { $gettext } = useGettext();
@@ -71,11 +80,13 @@ const {
     widgetDirtyStates,
     softDeletedTileKeys,
     unsavedTileKeys,
+    sortorderDirtyTileKeys,
 } = defineProps<{
     resourceData: ResourceData;
     widgetDirtyStates: WidgetDirtyStates;
     softDeletedTileKeys: Set<string>;
     unsavedTileKeys: Set<string>;
+    sortorderDirtyTileKeys: Set<string>;
 }>();
 
 const treeContainerElement = useTemplateRef("treeContainerElement");
@@ -317,6 +328,17 @@ function processTileData(
     );
 
     return tileValues.sort((firstNode, secondNode) => {
+        // Sort nodes with children (i.e. nodegroups) after nodes without children
+        const firstHasChildren =
+            Array.isArray(firstNode.children) && firstNode.children.length > 0;
+        const secondHasChildren =
+            Array.isArray(secondNode.children) &&
+            secondNode.children.length > 0;
+
+        if (firstHasChildren && !secondHasChildren) return 1;
+        if (!firstHasChildren && secondHasChildren) return -1;
+
+        // If both have or both don't have children, sort by widget_order
         return (
             nodePresentationLookup.value[firstNode.data.alias].widget_order -
             nodePresentationLookup.value[secondNode.data.alias].widget_order
@@ -464,8 +486,10 @@ function createCardinalityNWrapper(
             children.some((childNode) =>
                 childNode.styleClass?.includes("is-soft-deleted"),
             );
+        const hasDirtySortorder = sortorderDirtyTileKeys.has(tileSoftDeleteKey);
 
-        const isDirty = hasDirtyChildren || hasSoftDeletedChildren;
+        const isDirty =
+            hasDirtyChildren || hasSoftDeletedChildren || hasDirtySortorder;
         if (isDirty) {
             styleClassParts.push("is-dirty");
         }
@@ -488,6 +512,7 @@ function createCardinalityNWrapper(
                 isSoftDeleted: isTileSoftDeleted,
                 isNew: isTileNew,
                 isNodegroupWrapper: false,
+                sortorder: tile.sortorder,
             },
             children,
             styleClass:
@@ -495,6 +520,10 @@ function createCardinalityNWrapper(
                     ? styleClassParts.join(" ")
                     : undefined,
         } as TreeNode;
+    });
+
+    childNodes.sort((firstTile, secondTile) => {
+        return firstTile.data.sortorder - secondTile.data.sortorder;
     });
 
     const styleClassParts = [];
@@ -610,6 +639,41 @@ function onNodeUnselect() {
     setSelectedTilePath(null);
 }
 
+function moveTileToTop(treeNode: TreeNode) {
+    const nodegroupValuePath = treeNode.data.nodegroupValuePath as Array<
+        string | number
+    >;
+    const tileIndex = nodegroupValuePath.at(-1) as number;
+    const parentArrayPath = nodegroupValuePath.slice(0, -1);
+
+    const siblingTiles = parentArrayPath.reduce<unknown>(
+        (current, segment) =>
+            (current as Record<string | number, unknown>)[segment],
+        resourceData,
+    ) as TileData[];
+
+    // Build desired order: selected tile first, others follow in current order
+    const newOrder = [
+        tileIndex,
+        ...siblingTiles
+            .map((_tile, siblingIndex) => siblingIndex)
+            .filter((siblingIndex) => siblingIndex !== tileIndex),
+    ];
+
+    const sortorderUpdates = newOrder.map((originalIndex, newPosition) => {
+        const siblingTile = siblingTiles[originalIndex];
+        const tilePath = [...parentArrayPath, originalIndex];
+        const softDeleteKey = siblingTile.tileid ?? JSON.stringify(tilePath);
+        return {
+            path: tilePath,
+            sortorder: newPosition,
+            softDeleteKey,
+        };
+    });
+
+    emit("move-tile-to-top", { sortorderUpdates });
+}
+
 function onAddNewTile(treeNode: TreeNode) {
     const treeNodeData = treeNode.data;
 
@@ -703,6 +767,20 @@ function onRestore(treeNode: TreeNode) {
                         :disabled="Boolean(slotProps.node.data.isSoftDeleted)"
                         :aria-label="$gettext('Add new tile')"
                         @click.stop="onAddNewTile(slotProps.node)"
+                    />
+                    <Button
+                        v-if="
+                            slotProps.node.data.cardinality === CARDINALITY_N &&
+                            slotProps.node.data.isNodegroupWrapper === false &&
+                            slotProps.node.data.nodegroupValuePath.at(-1) !== 0
+                        "
+                        icon="pi pi-angle-double-up"
+                        size="small"
+                        rounded
+                        variant="outlined"
+                        :disabled="Boolean(slotProps.node.data.isSoftDeleted)"
+                        :aria-label="$gettext('Move to top')"
+                        @click.stop="moveTileToTop(slotProps.node)"
                     />
 
                     <template v-if="slotProps.node.data.nodegroupAlias == null">

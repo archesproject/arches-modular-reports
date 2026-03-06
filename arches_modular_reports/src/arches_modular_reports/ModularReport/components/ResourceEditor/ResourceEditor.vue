@@ -64,6 +64,14 @@ type SoftDeletePayload = {
     nextIsSoftDeleted: boolean;
 };
 
+type MoveTileToTopPayload = {
+    sortorderUpdates: Array<{
+        path: Array<string | number>;
+        sortorder: number;
+        softDeleteKey: string;
+    }>;
+};
+
 const toast = useToast();
 const confirm = useConfirm();
 const { $gettext } = useGettext();
@@ -140,6 +148,8 @@ const softDeletedValuePaths = shallowRef<Map<string, Array<string | number>>>(
     new Map<string, Array<string | number>>(),
 );
 
+const sortorderDirtyTileKeys = shallowRef<Set<string>>(new Set<string>());
+
 const selectedTileKey = computed<string>(() => {
     if (selectedTileId.value) {
         return selectedTileId.value;
@@ -151,6 +161,7 @@ const hasUnsavedChanges = computed<boolean>(() => {
     return (
         unsavedTileKeys.value.size > 0 ||
         softDeletedTileKeys.value.size > 0 ||
+        sortorderDirtyTileKeys.value.size > 0 ||
         hasDirtyDescendant(widgetDirtyStates)
     );
 });
@@ -729,6 +740,17 @@ function onToggleSoftDelete(payload: SoftDeletePayload) {
     softDeletedValuePaths.value = nextSoftDeletedValuePaths;
 }
 
+function onMoveTileToTop(payload: MoveTileToTopPayload) {
+    const nextSortorderDirtyTileKeys = new Set<string>(
+        sortorderDirtyTileKeys.value,
+    );
+    for (const { path, sortorder, softDeleteKey } of payload.sortorderUpdates) {
+        setValueAtPath(resourceData, [...path, "sortorder"], sortorder);
+        nextSortorderDirtyTileKeys.add(softDeleteKey);
+    }
+    sortorderDirtyTileKeys.value = nextSortorderDirtyTileKeys;
+}
+
 function onRequestUndoAllChanges() {
     confirm.require({
         message: $gettext(
@@ -758,6 +780,7 @@ function onUndoAllChanges() {
     newTileBaselineSnapshots.value.clear();
     softDeletedTileKeys.value = new Set<string>();
     softDeletedValuePaths.value = new Map<string, Array<string | number>>();
+    sortorderDirtyTileKeys.value = new Set<string>();
 
     setSelectedNodeAlias(null);
     setSelectedTileId(null);
@@ -853,6 +876,7 @@ function onSave() {
                 string,
                 Array<string | number>
             >();
+            sortorderDirtyTileKeys.value = new Set<string>();
         })
         .catch((error: Error) => {
             if (error.message.includes("This card requires")) {
@@ -924,7 +948,9 @@ function onSave() {
                             :widget-dirty-states="widgetDirtyStates"
                             :soft-deleted-tile-keys="softDeletedTileKeys"
                             :unsaved-tile-keys="unsavedTileKeys"
+                            :sortorder-dirty-tile-keys="sortorderDirtyTileKeys"
                             @toggle-soft-delete="onToggleSoftDelete($event)"
+                            @move-tile-to-top="onMoveTileToTop($event)"
                         />
                     </div>
                 </SplitterPanel>
