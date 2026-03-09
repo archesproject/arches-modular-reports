@@ -151,7 +151,7 @@ class Command(BaseCommand):
                         defaults={"config": factory(graph)},
                     )
                     status = "Created" if created else "Skipped"
-                self.stdout.write(f"\t{status} [{slug}]: {graph.name}")
+                self.stdout.write(f"\t{status} [{slug}]: {graph.slug}")
 
     def load_report_configs(self, reports_dir, graph_slug=None):
         editable_report_template = models.ReportTemplate.objects.get(
