@@ -1,5 +1,3 @@
-import type { ResourceData } from "@/arches_modular_reports/ModularReport/types.ts";
-
 /**
  * Recursively searches resourceData for a tile belonging to a given
  * nodegroupAlias (and optionally matching a specific tileId) and returns
