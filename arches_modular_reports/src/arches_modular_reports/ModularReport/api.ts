@@ -109,7 +109,7 @@ export const fetchReportConfig = async (
     const params = new URLSearchParams();
 
     if (slug) {
-        params.append("slug", slug);
+        params.append("report_config_slug", slug);
     }
     params.append("resourceId", resourceId);
     const url = `${arches.urls.modular_report_config}?${params.toString()}`;
