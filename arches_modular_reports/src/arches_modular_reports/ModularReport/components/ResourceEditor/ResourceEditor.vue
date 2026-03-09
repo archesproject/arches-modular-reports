@@ -38,6 +38,7 @@ import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_modular_reports/constants.ts"
 
 import { generateWidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/generate-widget-dirty-states.ts";
 import { getValueFromPath } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/get-value-from-path.ts";
+import { findTilePathInResourceData } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/find-tile-path-in-resource-data.ts";
 import {
     hasDirtyDescendant,
     pruneResourceData,
@@ -49,8 +50,6 @@ import { EDIT } from "@/arches_component_lab/widgets/constants.ts";
 
 import type { Ref } from "vue";
 import type {
-    NodeData,
-    NodegroupData,
     NodePresentationLookup,
     ResourceData,
     TileData,
@@ -239,25 +238,15 @@ watch(
         }
 
         if (!selectedTilePath.value && selectedNodegroupAlias.value) {
-            const aliasedTileData: NodeData | NodegroupData =
-                resourceData.aliased_data[selectedNodegroupAlias.value];
-
-            const pathSegments: Array<string | number> = [
-                "aliased_data",
+            const resolvedPath = findTilePathInResourceData(
+                resourceData,
                 selectedNodegroupAlias.value,
-            ];
+                selectedTileId.value,
+            );
 
-            if (Array.isArray(aliasedTileData) && selectedTileId.value) {
-                const tileIndex = aliasedTileData.findIndex(
-                    (tile) => tile.tileid === selectedTileId.value,
-                );
-
-                if (tileIndex >= 0) {
-                    pathSegments.push(tileIndex);
-                }
+            if (resolvedPath) {
+                setSelectedTilePath(resolvedPath);
             }
-
-            setSelectedTilePath(pathSegments);
         }
     },
 );
@@ -276,10 +265,11 @@ watch(createTileRequestId, async () => {
     const requestedNodegroupValuePath =
         createTileRequestedTilePath?.value ?? null;
 
-    let nodegroupValuePath: Array<string | number> = [
-        "aliased_data",
+    let nodegroupValuePath: Array<string | number> = findTilePathInResourceData(
+        resourceData,
         requestedNodegroupAlias,
-    ];
+        null,
+    ) ?? ["aliased_data", requestedNodegroupAlias];
 
     if (requestedNodegroupValuePath && requestedNodegroupValuePath.length > 0) {
         nodegroupValuePath = requestedNodegroupValuePath;
