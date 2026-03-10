@@ -1,3 +1,5 @@
+import type { TileData } from "@/arches_modular_reports/ModularReport/types.ts";
+
 /**
  * Recursively searches resourceData for a tile belonging to a given
  * nodegroupAlias (and optionally matching a specific tileId) and returns
@@ -9,72 +11,56 @@
  * be located by a simple top-level lookup.
  */
 export function findTilePathInResourceData(
-    data: Record<string, unknown>,
+    data: TileData,
     nodegroupAlias: string,
     tileId: string | null | undefined,
     currentPath: Array<string | number> = [],
 ): Array<string | number> | null {
-    const aliasedData = data["aliased_data"] as
-        | Record<string, unknown>
-        | undefined;
-    if (!aliasedData) return null;
+    for (const [alias, value] of Object.entries(data.aliased_data)) {
+        const aliasPath = [...currentPath, "aliased_data", alias];
 
-    const aliasedDataPath = [...currentPath, "aliased_data"];
-
-    // Check whether the target nodegroup alias exists at this level.
-    if (nodegroupAlias in aliasedData) {
-        const nodegroupValue = aliasedData[nodegroupAlias];
-        const nodegroupPath = [...aliasedDataPath, nodegroupAlias];
-
-        if (Array.isArray(nodegroupValue)) {
-            if (tileId) {
-                const tileIndex = (
-                    nodegroupValue as Array<{ tileid?: string | null }>
-                ).findIndex((tile) => tile.tileid === tileId);
-                if (tileIndex >= 0) {
-                    return [...nodegroupPath, tileIndex];
-                }
-            } else {
-                return nodegroupPath;
+        if (alias === nodegroupAlias) {
+            if (!Array.isArray(value) || !tileId) {
+                return aliasPath;
             }
-        } else {
-            // cardinality-1: value may be a tile object or null (empty slot).
-            // Either way the path to this slot is what the caller needs.
-            return nodegroupPath;
-        }
-    }
 
-    // Recurse into any nested tiles at this level.
-    for (const [key, value] of Object.entries(aliasedData)) {
+            const matchIndex = value.findIndex(
+                (tile) => tile.tileid === tileId,
+            );
+            if (matchIndex >= 0) {
+                return [...aliasPath, matchIndex];
+            }
+        }
+
+        let childNodes: [TileData, Array<string | number>][];
         if (Array.isArray(value)) {
-            for (let i = 0; i < value.length; i++) {
-                const tile = value[i];
-                if (
-                    tile !== null &&
-                    typeof tile === "object" &&
-                    "aliased_data" in tile
-                ) {
-                    const result = findTilePathInResourceData(
-                        tile as Record<string, unknown>,
+            childNodes = value.map((tile, index) => [
+                tile,
+                [...aliasPath, index],
+            ]);
+        } else {
+            childNodes = [[value as TileData, aliasPath]];
+        }
+
+        const found = childNodes
+            .filter(([tile]) => tile?.aliased_data != null)
+            .reduce<Array<string | number> | null>(function (
+                result,
+                [tile, tilePath],
+            ) {
+                return (
+                    result ??
+                    findTilePathInResourceData(
+                        tile,
                         nodegroupAlias,
                         tileId,
-                        [...aliasedDataPath, key, i],
-                    );
-                    if (result) return result;
-                }
-            }
-        } else if (
-            value !== null &&
-            typeof value === "object" &&
-            "aliased_data" in value
-        ) {
-            const result = findTilePathInResourceData(
-                value as Record<string, unknown>,
-                nodegroupAlias,
-                tileId,
-                [...aliasedDataPath, key],
-            );
-            if (result) return result;
+                        tilePath,
+                    )
+                );
+            }, null);
+
+        if (found) {
+            return found;
         }
     }
 
