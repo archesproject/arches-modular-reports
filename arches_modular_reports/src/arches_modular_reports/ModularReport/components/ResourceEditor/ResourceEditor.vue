@@ -129,6 +129,7 @@ const { selectedTilePath, setSelectedTilePath } = inject(
 const emit = defineEmits(["save"]);
 
 const isLoading = ref(true);
+const isCreatingTile = ref(false);
 const apiError = ref<Error | null>(null);
 
 const resourceData = reactive<ResourceData>({} as ResourceData);
@@ -252,7 +253,7 @@ watch(
 );
 
 watch(createTileRequestId, async () => {
-    if (isLoading.value) {
+    if (isLoading.value || isCreatingTile.value) {
         return;
     }
 
@@ -278,7 +279,7 @@ watch(createTileRequestId, async () => {
     apiError.value = null;
 
     try {
-        isLoading.value = true;
+        isCreatingTile.value = true;
 
         const blankTile = await fetchModularReportBlankTile(
             graphSlug,
@@ -335,7 +336,7 @@ watch(createTileRequestId, async () => {
     } catch (error) {
         apiError.value = error as Error;
     } finally {
-        isLoading.value = false;
+        isCreatingTile.value = false;
     }
 });
 

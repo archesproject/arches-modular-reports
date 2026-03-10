@@ -571,7 +571,7 @@ function createCardinalityNWrapper(
     }
 
     return {
-        key: generateStableKey([...tiles, parentTileId, nodegroupAlias]),
+        key: generateStableKey(nodegroupValuePath),
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
         data: {
             tileid: parentTileId,
