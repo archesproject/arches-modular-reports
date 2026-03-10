@@ -11,7 +11,7 @@ import type { TileData } from "@/arches_modular_reports/ModularReport/types.ts";
  * be located by a simple top-level lookup.
  */
 export function findTilePathInResourceData(
-    data: TileData,
+    data: Pick<TileData, "aliased_data">,
     nodegroupAlias: string,
     tileId: string | null | undefined,
     currentPath: Array<string | number> = [],
@@ -32,14 +32,17 @@ export function findTilePathInResourceData(
             }
         }
 
-        let childNodes: [TileData, Array<string | number>][];
+        let childNodes: [
+            Pick<TileData, "aliased_data">,
+            Array<string | number>,
+        ][];
         if (Array.isArray(value)) {
             childNodes = value.map((tile, index) => [
                 tile,
                 [...aliasPath, index],
             ]);
         } else {
-            childNodes = [[value as TileData, aliasPath]];
+            childNodes = [[value as Pick<TileData, "aliased_data">, aliasPath]];
         }
 
         const found = childNodes
