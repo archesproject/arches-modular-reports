@@ -477,7 +477,11 @@ function insertAtNodegroupPath(options: {
         return [...options.nodegroupValuePath, 0];
     }
 
-    if (existingNodegroupValue == null) {
+    const isEmptyCardinalityOneSlot =
+        existingNodegroupValue == null ||
+        (isTileData(existingNodegroupValue) && !existingNodegroupValue.tileid);
+
+    if (isEmptyCardinalityOneSlot) {
         setValueAtPath(
             options.targetRoot,
             options.nodegroupValuePath,

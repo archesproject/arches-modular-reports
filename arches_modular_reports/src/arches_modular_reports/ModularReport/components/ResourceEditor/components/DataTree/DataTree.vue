@@ -101,7 +101,7 @@ const tree = computed(() => {
     ]) {
         return processNodegroup(
             nodegroupAlias,
-            tileOrTiles as TileData | TileData[],
+            tileOrTiles as TileData | TileData[] | null,
             null,
             widgetDirtyStates.aliased_data as WidgetDirtyStates,
             ["aliased_data", nodegroupAlias],
@@ -192,7 +192,7 @@ function isCardinalityNWrapperNode(treeNode: TreeNode): boolean {
 
 function processNodegroup(
     nodegroupAlias: string,
-    tileOrTiles: TileData | TileData[],
+    tileOrTiles: TileData | TileData[] | null,
     parentTileId: string | null,
     widgetDirtyStates: WidgetDirtyStates,
     nodegroupValuePath: Array<string | number>,
@@ -209,6 +209,26 @@ function processNodegroup(
             isSoftDeletedAncestor,
             isNewAncestor,
         );
+    }
+
+    if (tileOrTiles === null) {
+        return {
+            key: generateStableKey(nodegroupValuePath),
+            label: nodePresentationLookup.value[nodegroupAlias].card_name,
+            data: {
+                tileid: null,
+                alias: nodegroupAlias,
+                cardinality:
+                    nodePresentationLookup.value[nodegroupAlias].nodegroup
+                        .cardinality,
+                nodegroupValuePath,
+                softDeleteKey: JSON.stringify(nodegroupValuePath),
+                isSoftDeleted: isSoftDeletedAncestor,
+                isNew: false,
+                isNodegroupWrapper: true,
+            },
+            children: [],
+        } as TreeNode;
     }
 
     const softDeleteKey =
