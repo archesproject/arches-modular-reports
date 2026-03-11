@@ -910,6 +910,7 @@ function onRestore(treeNode: TreeNode) {
 }
 
 :deep(.p-tree-node-content.p-tree-node-selected) {
+    background: #d1dde8;
     border: 0.125rem solid var(--p-form-field-border-color);
     color: var(--p-tree-node-color);
 }

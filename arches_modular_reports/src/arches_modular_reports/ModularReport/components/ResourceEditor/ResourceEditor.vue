@@ -998,6 +998,7 @@ function onSave() {
     flex-direction: column;
     min-height: 0;
     overflow: auto;
+    background-color: #fcfcfc;
 }
 
 .bottom-panel {
