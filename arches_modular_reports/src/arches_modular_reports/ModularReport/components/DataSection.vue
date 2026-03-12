@@ -471,7 +471,7 @@ function initiateSoftDelete(tileId: string) {
     </DataTable>
     <Dialog
         v-model:visible="displayDialog"
-        modal
+        :modal="true"
         :header="selectedRichText?.header"
         :style="{ width: '50vw' }"
         :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
