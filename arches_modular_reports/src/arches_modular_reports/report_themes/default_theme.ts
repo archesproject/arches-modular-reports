@@ -131,6 +131,9 @@ const ModularReportPreset = definePreset(Aura, {
                 },
             },
         },
+        dialog: {
+            title: { fontSize: "1.8rem" },
+        },
         button: {
             css: ({ dt }) => `
                 .p-button {

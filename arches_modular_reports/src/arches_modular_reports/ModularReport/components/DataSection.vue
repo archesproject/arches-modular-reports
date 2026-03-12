@@ -9,6 +9,7 @@ import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
 import InputText from "primevue/inputtext";
 import Message from "primevue/message";
+import Dialog from "primevue/dialog";
 
 import {
     ASC,
@@ -69,6 +70,13 @@ const isLoading = ref(false);
 const hasLoadingError = ref(false);
 const resettingToFirstPage = ref(false);
 const pageNumberToNodegroupTileData = ref<Record<number, unknown[]>>({});
+const displayDialog = ref(false);
+const selectedRichText = ref<{ header: string; data: string } | null>(null);
+
+const showRichTextDialog = (header: string, data: string) => {
+    selectedRichText.value = { header, data };
+    displayDialog.value = true;
+};
 
 const userCanEditResourceInstance = inject(
     "userCanEditResourceInstance",
@@ -387,6 +395,12 @@ function initiateSoftDelete(tileId: string) {
                     <template v-else-if="columnDatum.is_rich_text">
                         <span
                             class="rich-text-container"
+                            @click="
+                                showRichTextDialog(
+                                    columnDatum.widgetLabel,
+                                    data[field as string]?.display_value,
+                                )
+                            "
                             v-html="data[field as string]?.display_value"
                         ></span>
                     </template>
@@ -455,6 +469,18 @@ function initiateSoftDelete(tileId: string) {
             />
         </template>
     </DataTable>
+    <Dialog
+        v-model:visible="displayDialog"
+        :modal="true"
+        :header="selectedRichText?.header"
+        :style="{ width: '50vw' }"
+        :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+    >
+        <span
+            class="rich-text-container"
+            v-html="selectedRichText?.data"
+        ></span>
+    </Dialog>
 </template>
 
 <style scoped>
@@ -502,10 +528,8 @@ function initiateSoftDelete(tileId: string) {
 }
 
 .rich-text-container {
-    max-height: 12rem;
-    overflow: scroll;
-    display: block;
-    max-width: 75vw;
+    overflow-wrap: anywhere;
+    cursor: pointer;
 }
 
 :deep(.p-datatable-column-sorted) {
