@@ -756,24 +756,22 @@ function onRestore(treeNode: TreeNode) {
             @node-collapse="onCaretCollapse"
         >
             <template #default="slotProps">
-                <div style="display: flex; align-items: center; gap: 0.5rem">
-                    <div style="margin-inline-end: 0.5rem">
+                <div class="tree-node">
+                    <span
+                        :class="{
+                            'is-soft-deleted-text': Boolean(
+                                slotProps.node.data.isSoftDeleted,
+                            ),
+                        }"
+                    >
+                        <span>{{ slotProps.node.label }}</span>
                         <span
-                            :class="{
-                                'is-soft-deleted-text': Boolean(
-                                    slotProps.node.data.isSoftDeleted,
-                                ),
-                            }"
+                            v-if="slotProps.node.data.isRequired"
+                            class="is-required"
+                            >*</span
                         >
-                            <span>{{ slotProps.node.label }}</span>
-                            <span
-                                v-if="slotProps.node.data.isRequired"
-                                class="is-required"
-                                >*</span
-                            >
-                            <span>:</span>
-                        </span>
-                    </div>
+                        <span>:</span>
+                    </span>
 
                     <Button
                         v-if="
@@ -825,6 +823,17 @@ function onRestore(treeNode: TreeNode) {
                         />
                     </template>
 
+                    <!-- promotes the child tile label up to the grouping node -->
+                    <span
+                        v-if="
+                            slotProps.node?.children?.[0]?.data?.nodeValue &&
+                            !slotProps.expanded
+                        "
+                        :class="slotProps.node.children[0].data.nodeValueClass"
+                    >
+                        {{ slotProps.node.children[0].data.nodeValue }}
+                    </span>
+
                     <span
                         v-if="slotProps.node.data.nodegroupAlias != null"
                         :class="[
@@ -845,6 +854,12 @@ function onRestore(treeNode: TreeNode) {
 </template>
 
 <style scoped>
+.tree-node {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .is-soft-deleted-text {
     text-decoration: line-through;
 }
