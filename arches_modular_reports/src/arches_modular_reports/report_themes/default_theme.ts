@@ -49,6 +49,9 @@ const cssOverrides = {
         width: "1.2rem !important",
         height: "1.2rem !important",
     },
+    ".p-dialog-title": {
+        "font-size": "1.8rem !important",
+    },
 };
 
 // TODO: when dropping support for 7.6, just import from arches 8.
@@ -144,17 +147,7 @@ const ModularReportPreset = definePreset(Aura, {
                     },
                 },
             },
-        },
-        dialog: {
-            title: { fontSize: "1.8rem" },
-        },
-        button: {
-            css: ({ dt }) => `
-                .p-button {
-                    font-size: ${dt("base.button.font.size")};
-                }
-            `,
-        },
+        }
     },
 });
 
