@@ -102,7 +102,7 @@ onMounted(fetchData);
 summary {
     /* https://github.com/twbs/bootstrap/issues/21060 */
     display: list-item;
-    margin-bottom: 10px;
+    margin-bottom: 1rem;
     font-size: 1.4rem;
 }
 

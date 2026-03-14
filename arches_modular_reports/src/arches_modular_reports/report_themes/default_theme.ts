@@ -147,7 +147,7 @@ const ModularReportPreset = definePreset(Aura, {
                     },
                 },
             },
-        }
+        },
     },
 });
 
