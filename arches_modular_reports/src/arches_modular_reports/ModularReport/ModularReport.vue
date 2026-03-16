@@ -293,7 +293,7 @@ function closeEditor() {
 }
 
 :deep(.editor-panel > .p-panel-header) {
-    background-color: #f1f5f9;
+    background-color: var(--p-editor-panel-header-background);
     border-bottom: 0.125rem solid var(--p-content-border-color) !important;
 }
 

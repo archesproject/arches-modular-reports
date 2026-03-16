@@ -998,7 +998,7 @@ function onSave() {
     flex-direction: column;
     min-height: 0;
     overflow: auto;
-    background-color: #fcfcfc;
+    background-color: var(--p-editor-panel-background);
 }
 
 .bottom-panel {

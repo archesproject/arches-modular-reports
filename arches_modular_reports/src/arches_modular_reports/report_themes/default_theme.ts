@@ -90,6 +90,12 @@ const ModularReportPreset = definePreset(Aura, {
                     hoverColor: "{sky.900}",
                     activeColor: "{sky.800}",
                 },
+                editor: {
+                    panel: {
+                        background: "{surface-50}",
+                        headerBackground: "{surface-200}",
+                    },
+                },
                 highlight: {
                     background: "{sky.300}",
                     focusBackground: "{sky.700}",
@@ -103,6 +109,12 @@ const ModularReportPreset = definePreset(Aura, {
                     inverseColor: "{sky.950}",
                     hoverColor: "{sky.100}",
                     activeColor: "{sky.200}",
+                },
+                editor: {
+                    panel: {
+                        background: "#00000000",
+                        headerBackground: "#00000000",
+                    },
                 },
                 highlight: {
                     background: "rgba(250, 250, 250, .16)",
@@ -144,6 +156,22 @@ const ModularReportPreset = definePreset(Aura, {
                 dark: {
                     tabpanel: {
                         background: "{surface-800}",
+                    },
+                },
+            },
+        },
+        tree: {
+            colorScheme: {
+                light: {
+                    node: {
+                        hoverBackground: "{surface-200}",
+                        selectedBackground: "{surface-200}",
+                    },
+                },
+                dark: {
+                    node: {
+                        hoverBackground: "{surface-600}",
+                        selectedBackground: "{surface-600}",
                     },
                 },
             },
