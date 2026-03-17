@@ -112,8 +112,8 @@ const ModularReportPreset = definePreset(Aura, {
                 },
                 editor: {
                     panel: {
-                        background: "#00000000",
-                        headerBackground: "#00000000",
+                        background: "transparent",
+                        headerBackground: "transparent",
                     },
                 },
                 highlight: {
