@@ -532,6 +532,10 @@ function initiateSoftDelete(tileId: string) {
     cursor: pointer;
 }
 
+:deep(.rich-text-container > p) {
+    margin: unset !important;
+}
+
 :deep(.p-datatable-column-sorted) {
     background: var(--p-datatable-header-cell-background);
 }
