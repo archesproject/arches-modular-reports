@@ -652,11 +652,10 @@ function onNodeSelect(treeNode: TreeNode) {
     setSelectedTilePath(pathToSelectedTile);
 }
 
-function onNodeUnselect() {
-    setSelectedNodegroupAlias(null);
-    setSelectedNodeAlias(null);
-    setSelectedTileId(null);
-    setSelectedTilePath(null);
+function onNodeUnselect(treeNode: TreeNode) {
+    if (treeNode.key != null) {
+        selectedKeys.value = { [treeNode.key]: true };
+    }
 }
 
 function moveTileToTop(treeNode: TreeNode) {
