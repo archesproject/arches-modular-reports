@@ -295,7 +295,7 @@ watch(createTileRequestId, async () => {
             );
             if (Array.isArray(existingTiles) && existingTiles.length > 0) {
                 const maxSortorder = Math.max(
-                    ...existingTiles.map((t) => t.sortorder ?? 0),
+                    ...existingTiles.map((tile) => tile.sortorder ?? 0),
                 );
                 blankTile.sortorder = maxSortorder + 1;
             } else {
