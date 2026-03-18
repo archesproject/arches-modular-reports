@@ -169,7 +169,7 @@ watch(
         let selectedNodeKey;
         if (foundNodeAlias?.key != null) {
             selectedNodeKey = foundNodeAlias.key;
-        } else if (!currentSelectedKey && foundNode.key != null) {
+        } else if (foundNode.key != null) {
             selectedNodeKey = foundNode.key;
         } else {
             selectedNodeKey = currentSelectedKey;
@@ -790,7 +790,7 @@ function onRestore(treeNode: TreeNode) {
                         v-if="
                             slotProps.node.data.cardinality === CARDINALITY_N &&
                             slotProps.node.data.isNodegroupWrapper === false &&
-                            slotProps.node.data.nodegroupValuePath.at(-1) !== 0
+                            slotProps.node.data.sortorder !== 0
                         "
                         icon="pi pi-angle-double-up"
                         size="small"
