@@ -167,7 +167,7 @@ class Command(BaseCommand):
                     data = json.load(f)
                     if dir_graph_slug:
                         try:
-                            graph = models.Graph.objects.get(slug=dir_graph_slug)
+                            graph = models.GraphModel.objects.get(slug=dir_graph_slug)
                             graph.template = editable_report_template
                             graph.save()
                             config, created = ReportConfig.objects.update_or_create(
