@@ -30,6 +30,7 @@ export interface NodePresentation {
     name: string;
     card_name: string;
     card_order: number;
+    card_visible: boolean;
     widget_label: string;
     widget_order: number;
     visible: boolean;

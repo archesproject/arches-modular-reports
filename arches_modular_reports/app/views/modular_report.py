@@ -314,6 +314,11 @@ class NodePresentationView(APIBase):
                         "sortorder",
                         0,
                     ),
+                    "card_visible": getattr_from_queryset(
+                        node.nodegroup.cardmodel_set.all(),
+                        "visible",
+                        True,
+                    ),
                     "widget_label": getattr_from_queryset(
                         node.cardxnodexwidget_set.all(),
                         "label",
