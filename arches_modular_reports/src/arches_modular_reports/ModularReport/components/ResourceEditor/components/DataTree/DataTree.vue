@@ -655,6 +655,7 @@ function onNodeSelect(treeNode: TreeNode) {
 function onNodeUnselect(treeNode: TreeNode) {
     if (treeNode.key != null) {
         selectedKeys.value = { [treeNode.key]: true };
+        onNodeSelect(treeNode);
     }
 }
 
