@@ -288,6 +288,21 @@ watch(createTileRequestId, async () => {
 
         const isCardinalityN = isCardinalityNNodegroup(requestedNodegroupAlias);
 
+        if (isCardinalityN) {
+            const existingTiles = getValueFromPath(
+                resourceData,
+                nodegroupValuePath,
+            );
+            if (Array.isArray(existingTiles) && existingTiles.length > 0) {
+                const maxSortorder = Math.max(
+                    ...existingTiles.map((tile) => tile.sortorder ?? 0),
+                );
+                blankTile.sortorder = maxSortorder + 1;
+            } else {
+                blankTile.sortorder = 0;
+            }
+        }
+
         const createdTilePath = insertAtNodegroupPath({
             targetRoot: resourceData,
             nodegroupValuePath,
@@ -957,7 +972,7 @@ function onSave() {
                         severity="danger"
                         variant="outlined"
                         icon="pi pi-undo"
-                        label="Undo all changes"
+                        label="Cancel all edits"
                         @click="onRequestUndoAllChanges"
                     />
 
@@ -998,6 +1013,7 @@ function onSave() {
     flex-direction: column;
     min-height: 0;
     overflow: auto;
+    background-color: var(--p-editor-panel-background);
 }
 
 .bottom-panel {

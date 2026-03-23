@@ -169,7 +169,7 @@ watch(
         let selectedNodeKey;
         if (foundNodeAlias?.key != null) {
             selectedNodeKey = foundNodeAlias.key;
-        } else if (!currentSelectedKey && foundNode.key != null) {
+        } else if (foundNode.key != null) {
             selectedNodeKey = foundNode.key;
         } else {
             selectedNodeKey = currentSelectedKey;
@@ -279,6 +279,7 @@ function processNodegroup(
     return {
         key: generateStableKey(tileOrTiles),
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
+        selectable: nodePresentationLookup.value[nodegroupAlias].card_visible,
         data: {
             tileid: tileOrTiles.tileid,
             alias: nodegroupAlias,
@@ -435,6 +436,7 @@ function processNode(
     return {
         key: generateStableKey(data),
         label: label,
+        selectable: nodePresentationLookup.value[nodegroupAlias].card_visible,
         data: {
             alias: alias,
             tileid: tileId,
@@ -521,6 +523,8 @@ function createCardinalityNWrapper(
         return {
             key: generateStableKey([tile, index]),
             label: children[0]?.label || $gettext("Empty"),
+            selectable:
+                nodePresentationLookup.value[nodegroupAlias].card_visible,
             data: {
                 tileid: tile.tileid,
                 alias: nodegroupAlias,
@@ -573,6 +577,7 @@ function createCardinalityNWrapper(
     return {
         key: generateStableKey(nodegroupValuePath),
         label: nodePresentationLookup.value[nodegroupAlias].card_name,
+        selectable: nodePresentationLookup.value[nodegroupAlias].card_visible,
         data: {
             tileid: parentTileId,
             alias: nodegroupAlias,
@@ -593,7 +598,7 @@ function createCardinalityNWrapper(
 
 function onCaretExpand(node: TreeNode) {
     const currentSelectedKey = Object.keys(selectedKeys.value)[0];
-    if (node.key && node.key !== currentSelectedKey) {
+    if (node.key && node.key !== currentSelectedKey && node.selectable) {
         selectedKeys.value = { [node.key]: true };
         onNodeSelect(node);
     }
@@ -601,7 +606,7 @@ function onCaretExpand(node: TreeNode) {
 
 function onCaretCollapse(node: TreeNode) {
     const currentSelectedKey = Object.keys(selectedKeys.value)[0];
-    if (node.key && node.key !== currentSelectedKey) {
+    if (node.key && node.key !== currentSelectedKey && node.selectable) {
         selectedKeys.value = { [node.key]: true };
     }
 }
@@ -756,24 +761,34 @@ function onRestore(treeNode: TreeNode) {
             @node-collapse="onCaretCollapse"
         >
             <template #default="slotProps">
-                <div style="display: flex; align-items: center; gap: 0.5rem">
-                    <div style="margin-inline-end: 0.5rem">
+                <div
+                    v-if="
+                        nodePresentationLookup[slotProps.node.data.alias]
+                            ?.card_visible === false
+                    "
+                    class="tree-node uneditable"
+                >
+                    <span>{{ slotProps.node.label }}</span>
+                </div>
+                <div
+                    v-else
+                    class="tree-node"
+                >
+                    <span
+                        :class="{
+                            'is-soft-deleted-text': Boolean(
+                                slotProps.node.data.isSoftDeleted,
+                            ),
+                        }"
+                    >
+                        <span>{{ slotProps.node.label }}</span>
                         <span
-                            :class="{
-                                'is-soft-deleted-text': Boolean(
-                                    slotProps.node.data.isSoftDeleted,
-                                ),
-                            }"
+                            v-if="slotProps.node.data.isRequired"
+                            class="is-required"
+                            >*</span
                         >
-                            <span>{{ slotProps.node.label }}</span>
-                            <span
-                                v-if="slotProps.node.data.isRequired"
-                                class="is-required"
-                                >*</span
-                            >
-                            <span>:</span>
-                        </span>
-                    </div>
+                        <span>:</span>
+                    </span>
 
                     <Button
                         v-if="
@@ -792,7 +807,7 @@ function onRestore(treeNode: TreeNode) {
                         v-if="
                             slotProps.node.data.cardinality === CARDINALITY_N &&
                             slotProps.node.data.isNodegroupWrapper === false &&
-                            slotProps.node.data.nodegroupValuePath.at(-1) !== 0
+                            slotProps.node.data.sortorder !== 0
                         "
                         icon="pi pi-angle-double-up"
                         size="small"
@@ -825,6 +840,17 @@ function onRestore(treeNode: TreeNode) {
                         />
                     </template>
 
+                    <!-- promotes the child tile label up to the grouping node -->
+                    <span
+                        v-if="
+                            slotProps.node?.children?.[0]?.data?.nodeValue &&
+                            !slotProps.expanded
+                        "
+                        :class="slotProps.node.children[0].data.nodeValueClass"
+                    >
+                        {{ slotProps.node.children[0].data.nodeValue }}
+                    </span>
+
                     <span
                         v-if="slotProps.node.data.nodegroupAlias != null"
                         :class="[
@@ -845,6 +871,16 @@ function onRestore(treeNode: TreeNode) {
 </template>
 
 <style scoped>
+.tree-node {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tree-node.uneditable {
+    color: var(--p-text-muted-color);
+}
+
 .is-soft-deleted-text {
     text-decoration: line-through;
 }

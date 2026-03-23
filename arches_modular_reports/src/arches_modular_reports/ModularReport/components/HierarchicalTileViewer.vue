@@ -3,6 +3,7 @@ import { inject, onMounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Message from "primevue/message";
+import Skeleton from "primevue/skeleton";
 
 import {
     fetchModularReportTile,
@@ -68,6 +69,18 @@ onMounted(fetchData);
     >
         {{ $gettext("Unable to fetch resource") }}
     </Message>
+    <details
+        v-if="isLoading"
+        open="true"
+        class="loading-skeleton"
+    >
+        <summary class="p-datatable-column-title">
+            <Skeleton
+                width="25rem"
+                height="1rem"
+            ></Skeleton>
+        </summary>
+    </details>
     <p
         v-else-if="!isLoading && !tileData"
         style="padding: 0 4.25rem; margin-bottom: 0"
@@ -80,5 +93,20 @@ onMounted(fetchData);
 .p-message-error {
     margin-left: 4rem;
     display: inline-flex;
+}
+
+.loading-skeleton {
+    margin-left: 4rem;
+}
+
+summary {
+    /* https://github.com/twbs/bootstrap/issues/21060 */
+    display: list-item;
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+}
+
+summary div {
+    display: inline-block;
 }
 </style>

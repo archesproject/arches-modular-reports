@@ -35,6 +35,23 @@ const cssOverrides = {
     //     margin: "0 4.5rem 3rem !important",
     //     "grid-template-columns": "repeat(4, 1fr) !important",
     // },
+    ".p-button, .p-inputtext, .p-select-options, .p-select-label, .p-select-overlay, .p-toast-detail":
+        {
+            "font-size": "1.4rem !important",
+        },
+    ".p-toast-summary": {
+        "font-size": "1.6rem !important",
+    },
+    ".p-toast-message-icon": {
+        "margin-top": "0.6rem !important",
+    },
+    ".p-icon": {
+        width: "1.2rem !important",
+        height: "1.2rem !important",
+    },
+    ".p-dialog-title": {
+        "font-size": "1.8rem !important",
+    },
 };
 
 // TODO: when dropping support for 7.6, just import from arches 8.
@@ -73,6 +90,12 @@ const ModularReportPreset = definePreset(Aura, {
                     hoverColor: "{sky.900}",
                     activeColor: "{sky.800}",
                 },
+                editor: {
+                    panel: {
+                        background: "{surface-50}",
+                        headerBackground: "{surface-200}",
+                    },
+                },
                 highlight: {
                     background: "{sky.300}",
                     focusBackground: "{sky.700}",
@@ -86,6 +109,12 @@ const ModularReportPreset = definePreset(Aura, {
                     inverseColor: "{sky.950}",
                     hoverColor: "{sky.100}",
                     activeColor: "{sky.200}",
+                },
+                editor: {
+                    panel: {
+                        background: "transparent",
+                        headerBackground: "transparent",
+                    },
                 },
                 highlight: {
                     background: "rgba(250, 250, 250, .16)",
@@ -131,15 +160,21 @@ const ModularReportPreset = definePreset(Aura, {
                 },
             },
         },
-        dialog: {
-            title: { fontSize: "1.8rem" },
-        },
-        button: {
-            css: ({ dt }) => `
-                .p-button {
-                    font-size: ${dt("base.button.font.size")};
-                }
-            `,
+        tree: {
+            colorScheme: {
+                light: {
+                    node: {
+                        hoverBackground: "{surface-200}",
+                        selectedBackground: "{surface-200}",
+                    },
+                },
+                dark: {
+                    node: {
+                        hoverBackground: "{surface-600}",
+                        selectedBackground: "{surface-600}",
+                    },
+                },
+            },
         },
     },
 });

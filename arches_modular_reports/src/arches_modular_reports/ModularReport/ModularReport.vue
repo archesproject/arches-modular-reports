@@ -221,7 +221,7 @@ function closeEditor() {
                             justify-content: space-between;
                         "
                     >
-                        <div style="font-weight: 600; font-size: large">
+                        <div class="editor-panel-header">
                             <span>{{ EDITOR }}</span>
                             <Button
                                 icon="pi pi-history"
@@ -271,6 +271,15 @@ function closeEditor() {
     border: none;
 }
 
+.editor-panel-header {
+    font-size: 2.2rem;
+    font-weight: 600;
+}
+
+:deep(.editor-panel-header .p-button-icon) {
+    font-size: 1.4rem;
+}
+
 .p-splitter {
     height: 100%;
     width: 100%;
@@ -284,6 +293,7 @@ function closeEditor() {
 }
 
 :deep(.editor-panel > .p-panel-header) {
+    background-color: var(--p-editor-panel-header-background);
     border-bottom: 0.125rem solid var(--p-content-border-color) !important;
 }
 
