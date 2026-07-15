@@ -26,7 +26,7 @@ import SplitterPanel from "primevue/splitterpanel";
 import ConfirmDialog from "primevue/confirmdialog";
 
 import DataTree from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree/DataTree.vue";
-import GenericCard from "@/arches_component_lab/generics/GenericCard/GenericCard.vue";
+import GenericCard from "@/arches_vue_components/generics/GenericCard/GenericCard.vue";
 
 import {
     fetchModularReportBlankTile,
@@ -46,7 +46,7 @@ import {
 import { hideKoLoadingMask } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/hide-ko-loading-mask.ts";
 import { getUnloadPageLink } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/get-unload-page-link.ts";
 
-import { EDIT } from "@/arches_component_lab/widgets/constants.ts";
+import { EDIT } from "@/arches_vue_components/widgets/constants.ts";
 
 import type { Ref } from "vue";
 import type {
@@ -55,7 +55,7 @@ import type {
     TileData,
 } from "@/arches_modular_reports/ModularReport/types.ts";
 import type { WidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/types.ts";
-import type { AliasedTileData } from "@/arches_component_lab/types";
+import type { AliasedTileData } from "@/arches_vue_components/types";
 
 type SoftDeletePayload = {
     softDeleteKey: string;

@@ -1,6 +1,6 @@
 import type { ResourceData } from "@/arches_modular_reports/ModularReport/types.ts";
 import type { WidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/types.ts";
-import type { AliasedTileData } from "@/arches_component_lab/types.ts";
+import type { AliasedTileData } from "@/arches_vue_components/types.ts";
 
 export function hasDirtyDescendant(
     branch: WidgetDirtyStates | WidgetDirtyStates[],

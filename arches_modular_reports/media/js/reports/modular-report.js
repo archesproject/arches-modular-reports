@@ -1,6 +1,6 @@
 import ko from 'knockout';
 import ModularReport from '@/arches_modular_reports/ModularReport/ModularReport.vue';
-import createVueApplication from 'utils/create-vue-application';
+import { createVueApplication } from '@/arches_vue_components/application/create-vue-application.ts';
 import ModularReportTemplate from 'templates/views/report-templates/modular-report.htm';
 import { fetchGraphSlugFromId } from '@/arches_modular_reports/ModularReport/api.ts';
 import ModularReportTheme from '@/arches_modular_reports/report_themes/default_theme.ts';
@@ -34,7 +34,7 @@ ko.components.register('modular-report', {
             graphSlug = data.graph_slug;
         }
 
-        createVueApplication(ModularReport, ModularReportTheme, { graphSlug, resourceInstanceId, reportConfigSlug }).then(vueApp => {
+        createVueApplication({ component: ModularReport, themeConfiguration: ModularReportTheme, initialProps: { graphSlug, resourceInstanceId, reportConfigSlug } }).then(vueApp => {
             // handles the Graph Designer case of multiple mounting points on the same page
             const mountingPoints = document.querySelectorAll('.modular-report-mounting-point');
             const mountingPoint = mountingPoints[mountingPoints.length - 1];

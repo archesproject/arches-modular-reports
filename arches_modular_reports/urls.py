@@ -70,5 +70,5 @@ urlpatterns = [
         name="api_client_language_settings",
     ),
     path("", include("arches_querysets.urls")),
-    path("", include("arches_component_lab.urls")),
+    path("", include("arches_vue_components.urls")),
 ]

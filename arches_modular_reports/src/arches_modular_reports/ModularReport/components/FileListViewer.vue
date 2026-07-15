@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import { Image, Galleria } from "primevue";
 
-import type { FileReference } from "@/arches_component_lab/datatypes/file-list/types";
+import type { FileReference } from "@/arches_vue_components/datatypes/file-list/types";
 
 const props = defineProps<{
     fileData: FileReference[];
