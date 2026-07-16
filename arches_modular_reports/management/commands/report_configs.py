@@ -6,7 +6,7 @@ from arches.app.models.system_settings import settings
 from arches.app.models import models
 from arches_modular_reports.config_generator_registry import get_all
 from arches_modular_reports.models import ReportConfig
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 from django.utils.translation import gettext as _
 from packaging.version import Version
@@ -180,7 +180,7 @@ class Command(BaseCommand):
                             print(
                                 f'\n\n\tReport {Path(file).name} for graph "{dir_graph_slug}" was successfully loaded'
                             )
-                        except ValidationError as e:
+                        except (ValidationError, ObjectDoesNotExist) as e:
                             print(
                                 f"\n\n\tReport config at {file} failed to save and was not loaded.\n\tErrors: {e}"
                             )
