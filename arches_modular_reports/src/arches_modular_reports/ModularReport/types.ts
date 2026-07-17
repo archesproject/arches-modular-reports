@@ -3,7 +3,7 @@ import type { Component } from "vue";
 import type {
     AliasedNodeData,
     AliasedNodegroupData,
-} from "@/arches_component_lab/types.ts";
+} from "@/arches_vue_components/types.ts";
 
 export interface LanguageSettings {
     ACTIVE_LANGUAGE: string;
