@@ -23,7 +23,7 @@ function generateConfig(): Promise<UserConfig> {
             '**/staticfiles/**',
         ];
 
-        const rawData = fs.readFileSync(path.join(__dirname, 'frontend_configuration', 'webpack-metadata.json'), 'utf-8');
+        const rawData = fs.readFileSync(path.join(__dirname, '.frontend-configuration-settings.json'), 'utf-8');
         const parsedData = JSON.parse(rawData);
 
         const alias: { [key: string]: string } = {
@@ -45,7 +45,7 @@ function generateConfig(): Promise<UserConfig> {
             test: {
                 alias: alias,
                 coverage: {
-                    include: [path.join(parsedData['APP_RELATIVE_PATH'], 'src', path.sep)],
+                    include: [path.join('arches_modular_reports', 'src', path.sep)],
                     exclude: exclude,
                     reporter: [
                         ['clover', { 'file': 'coverage.xml' }],

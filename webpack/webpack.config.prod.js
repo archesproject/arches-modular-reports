@@ -14,19 +14,20 @@ module.exports = () => {
                 mode: 'production',
                 devtool: false,
                 bail: true,
+                parallelism: 1,
                 optimization: {
-                    minimize: true,
                     minimizer: [
                         new TerserPlugin({
-                            parallel: true,
+                            parallel: 3,
                             terserOptions: {
-                                compress: {
-                                    drop_console: true,
-                                },
-                                mangle: true,
+                                mangle: { keep_fnames: true },
                             },
                         }),
                     ],
+                },
+                output: {
+                    filename: Path.join('js', '[name].[chunkhash:8].js'),
+                    chunkFilename: Path.join('js', '[name].[chunkhash:8].chunk.js'),
                 },
                 plugins: [
                     new Webpack.DefinePlugin({
