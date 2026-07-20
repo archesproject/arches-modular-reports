@@ -1,6 +1,6 @@
 # Welcome to Arches Modular Reports!
 
-Arches Modular Reports is an Arches Application that provides an alternate and more modular way to present and configure reports in Arches.
+Arches Modular Reports is an Arches Application that provides an alternate and more modular way to present and configure reports for Arches version 7.6. 
 
 Please see the [project page](http://archesproject.org/) for more information on the Arches project.
 

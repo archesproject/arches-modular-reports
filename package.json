@@ -20,14 +20,14 @@
         "vitest": "vitest --run --coverage"
     },
     "dependencies": {
-        "arches": "archesproject/arches#dev/7.6.x",
-        "arches-vue-components": "archesproject/arches-vue-components#dev/1.1.x",
+        "arches": "archesproject/arches#stable/7.6.24",
+        "arches-vue-components": "archesproject/arches-vue-components#stable/1.1.0",
         "es-toolkit": "^1.39.10",
         "numeral": "^2.0.6"
     },
     "devDependencies": {
         "@types/numeral": "^2.0.5",
-        "arches-dev-dependencies": "archesproject/arches-dev-dependencies#dev/7.6.x"
+        "arches-dev-dependencies": "archesproject/arches-dev-dependencies#stable/7.6.24"
     },
     "nodeModulesPaths": {},
     "overrides": {}
