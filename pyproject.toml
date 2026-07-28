@@ -26,7 +26,11 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-dependencies = [ "arches<8.0.0,>=7.6.22", "arches_vue_components<2.0.0,>=1.1.0",]
+dependencies = [ 
+    "arches<8.0.0,>=7.6.22", 
+    "arches_vue_components<2.0.0,>=1.1.0",
+    "packaging==26.2",
+]
 dynamic = []
 
 [[project.authors]]
