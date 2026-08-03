@@ -2,6 +2,8 @@ import arches from "arches";
 
 import Cookies from "js-cookie";
 
+import { extractFileEntriesFromAliasedData } from "@/arches_component_lab/generics/GenericCard/utils.ts";
+
 import type { ResourceData } from "@/arches_modular_reports/ModularReport/types.ts";
 
 export const fetchGraphSlugFromId = async (graphId: string) => {
@@ -42,6 +44,13 @@ export const updateModularReportResource = async (
 ) => {
     const params = new URLSearchParams();
     params.append("fill_blanks", fillBlanks.toString());
+    const formData = new FormData();
+    formData.append("json", JSON.stringify(data));
+
+    const fileEntries = extractFileEntriesFromAliasedData(data.aliased_data);
+    for (const { file, nodeId } of fileEntries) {
+        formData.append(`file-list_${nodeId}`, file, file.name);
+    }
     const response = await fetch(
         `${arches.urls.api_modular_reports_resource(
             graphSlug,
@@ -50,10 +59,11 @@ export const updateModularReportResource = async (
         {
             method: "PUT",
             headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": Cookies.get("csrftoken"),
+                // It's important to not set 'Content-Type' here, as the browser will set it automatically
+                // with the correct boundary for multipart/form-data.
+                "X-CSRFToken": Cookies.get("csrftoken") || "",
             },
-            body: JSON.stringify(data),
+            body: formData,
         },
     );
     const parsed = await response.json();
