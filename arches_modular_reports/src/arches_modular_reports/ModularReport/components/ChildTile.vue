@@ -15,7 +15,7 @@ const {
     data,
     depth,
     divider = false,
-    customLabels,
+    customLabels = undefined,
     showEmptyNodes = true,
     userIsRdmAdmin = false,
 } = defineProps<{

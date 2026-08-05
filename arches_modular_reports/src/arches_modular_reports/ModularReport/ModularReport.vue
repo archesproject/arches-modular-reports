@@ -38,7 +38,7 @@ const EDITOR = $gettext("Editor");
 const CLOSE_EDITOR = $gettext("Close editor");
 const EDIT_HISTORY = $gettext("Edit history");
 
-const { graphSlug, resourceInstanceId, reportConfigSlug } = defineProps<{
+const { graphSlug, resourceInstanceId, reportConfigSlug = undefined } = defineProps<{
     graphSlug: string;
     resourceInstanceId: string;
     reportConfigSlug?: string;

@@ -393,6 +393,7 @@ function initiateSoftDelete(tileId: string) {
                         :file-data="data[field as string].file_data"
                     />
                     <template v-else-if="columnDatum.is_rich_text">
+                        <!-- eslint-disable-next-line vue/no-v-html -->
                         <span
                             class="rich-text-container"
                             @click="
@@ -476,6 +477,7 @@ function initiateSoftDelete(tileId: string) {
         :style="{ width: '50vw' }"
         :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
     >
+        <!-- eslint-disable-next-line vue/no-v-html -->
         <span
             class="rich-text-container"
             v-html="selectedRichText?.data"
