@@ -34,7 +34,7 @@ const props = defineProps<{
 const { $gettext } = useGettext();
 
 const queryTimeoutValue = 500;
-let timeout: ReturnType<typeof setTimeout> | null = null;
+let timeout: number | null = null;
 
 const rowsPerPage = ref(ROWS_PER_PAGE_OPTIONS[0]);
 const currentPage = ref(1);
@@ -103,10 +103,10 @@ const columnData = computed(() => {
 
 watch(query, () => {
     if (timeout) {
-        clearTimeout(timeout);
+        window.clearTimeout(timeout);
     }
 
-    timeout = setTimeout(() => {
+    timeout = window.setTimeout(() => {
         pageNumberToNodegroupTileData.value = {};
         resettingToFirstPage.value = true;
         fetchData(1);

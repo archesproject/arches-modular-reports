@@ -802,7 +802,7 @@ function onUndoAllChanges() {
 // does not show a second native dialog.
 let navigationApproved = false;
 
-function onBeforeUnload(event: BeforeUnloadEvent) {
+function onBeforeUnload(event: globalThis.BeforeUnloadEvent) {
     if (hasUnsavedChanges.value && !navigationApproved) {
         event.preventDefault();
         // If the user cancels the dialog and stays on the page, the Arches
@@ -814,7 +814,7 @@ function onBeforeUnload(event: BeforeUnloadEvent) {
     }
 }
 
-function onDocumentLinkClick(event: MouseEvent) {
+function onDocumentLinkClick(event: globalThis.MouseEvent) {
     if (!hasUnsavedChanges.value) return;
 
     const anchor = getUnloadPageLink(event);
@@ -846,12 +846,12 @@ onMounted(() => {
     // Use capture phase (true) so we intercept clicks before they reach
     // element-level handlers. Bubbling-phase registration misses events
     // where a handler lower in the tree calls stopPropagation().
-    document.addEventListener("click", onDocumentLinkClick, true);
+    window.document.addEventListener("click", onDocumentLinkClick, true);
 });
 
 onBeforeUnmount(() => {
     window.removeEventListener("beforeunload", onBeforeUnload);
-    document.removeEventListener("click", onDocumentLinkClick, true);
+    window.document.removeEventListener("click", onDocumentLinkClick, true);
 });
 
 function onSave() {
