@@ -4,17 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arches-modular-reports"
-version = "2.0.0"
+version = "2.1.0a0"
 description = "Fast, configurable reports for Arches models in Vue.js"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "AGPL-3.0-or-later"
 license-files = [ "LICENSE",]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Framework :: Django",
-    "Framework :: Django :: 4.2",
-    "Framework :: Django :: 5.2",
+    "Framework :: Django :: 6.1",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
     "Intended Audience :: Science/Research",
@@ -23,6 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [ 
     "arches<9.0.0,>=8.0.0", 
@@ -44,4 +44,4 @@ Issues = "https://github.com/archesproject/arches-modular-reports/issues"
 packages = [ "arches_modular_reports",]
 
 [dependency-groups]
-dev = [ "black==24.4.2", "coverage", "django-silk==5.1.0", "livereload", "pre-commit==4.1.0", "sst",]
+dev = [ "black==26.3.1", "coverage", "django-silk==5.5.0", "livereload", "pre-commit==4.6.1", "sst",]
