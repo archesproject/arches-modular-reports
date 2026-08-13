@@ -65,7 +65,7 @@ const descriptor = computed(() => {
             ? returnVal.split(" ").slice(0, 30).join(" ") + "..."
             : returnVal;
 
-    document.title = returnVal;
+    window.document.title = returnVal;
     return returnVal;
 });
 

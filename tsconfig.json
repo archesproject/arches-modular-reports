@@ -16,8 +16,7 @@
         "resolveJsonModule": true,
         "skipLibCheck": true,
         "types": [
-            "vitest/globals",
-            "numeral"
+            "vitest/globals"
         ],
         "allowImportingTsExtensions": true
     },
