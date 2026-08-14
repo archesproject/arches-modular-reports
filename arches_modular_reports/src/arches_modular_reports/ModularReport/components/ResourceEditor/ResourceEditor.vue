@@ -280,6 +280,19 @@ watch(createTileRequestId, async () => {
 
     apiError.value = null;
 
+    const isCardinalityN = isCardinalityNNodegroup(requestedNodegroupAlias);
+
+    if (!isCardinalityN) {
+        const existingTile = getValueFromPath(resourceData, nodegroupValuePath);
+
+        if (isTileData(existingTile) && existingTile.tileid) {
+            setSelectedTileId(existingTile.tileid);
+            setSelectedTilePath(nodegroupValuePath);
+
+            return;
+        }
+    }
+
     try {
         isCreatingTile.value = true;
 
@@ -287,8 +300,6 @@ watch(createTileRequestId, async () => {
             graphSlug,
             requestedNodegroupAlias,
         );
-
-        const isCardinalityN = isCardinalityNNodegroup(requestedNodegroupAlias);
 
         if (isCardinalityN) {
             // Assigned up front so file uploads can key off a tile-scoped
