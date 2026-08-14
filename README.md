@@ -48,8 +48,8 @@ pip install arches-modular-reports
 
     ```
     "dependencies": {
-        "arches": "archesproject/arches#stable/8.1.2",
-        "arches-modular-reports": "archesproject/arches-modular-reports#stable/2.0.0"
+        "arches": "archesproject/arches#dev/8.2.0",
+        "arches-modular-reports": "archesproject/arches-modular-reports#dev/2.1.0"
     }
     ```
 
