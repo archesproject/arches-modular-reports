@@ -2,6 +2,11 @@ import arches from "arches";
 
 import Cookies from "js-cookie";
 
+import {
+    buildFileUploadFormData,
+    extractFileEntriesFromAliasedData,
+} from "@/arches_vue_components/generics/GenericCard/utils.ts";
+
 import type { ResourceData } from "@/arches_modular_reports/ModularReport/types.ts";
 
 export const fetchGraphSlugFromId = async (graphId: string) => {
@@ -42,21 +47,29 @@ export const updateModularReportResource = async (
 ) => {
     const params = new URLSearchParams();
     params.append("fill_blanks", fillBlanks.toString());
-    const response = await fetch(
-        `${arches.urls.api_modular_reports_resource(
-            graphSlug,
-            resourceId,
-        )}?${params}`,
-        {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": Cookies.get("csrftoken"),
-            },
-            body: JSON.stringify(data),
-        },
-    );
+
+    const endpointUrl = `${arches.urls.api_modular_reports_resource(
+        graphSlug,
+        resourceId,
+    )}?${params}`;
+
+    const fileEntries = extractFileEntriesFromAliasedData(data.aliased_data);
+
+    const headers: Record<string, string> = {
+        "X-CSRFToken": Cookies.get("csrftoken") ?? "",
+    };
+
+    let body: BodyInit;
+    if (fileEntries.length > 0) {
+        body = buildFileUploadFormData(data, fileEntries);
+    } else {
+        headers["Content-Type"] = "application/json";
+        body = JSON.stringify(data);
+    }
+
+    const response = await fetch(endpointUrl, { method: "PUT", headers, body });
     const parsed = await response.json();
+
     if (!response.ok)
         throw new Error(
             parsed.message || JSON.stringify(parsed) || response.statusText,
