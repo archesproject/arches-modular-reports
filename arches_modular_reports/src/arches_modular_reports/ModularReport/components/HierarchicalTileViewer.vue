@@ -16,13 +16,13 @@ import type { TileData } from "@/arches_modular_reports/ModularReport/types";
 const {
     nodegroupAlias,
     tileId,
-    customLabels = undefined,
+    customLabels,
     showEmptyNodes = true,
 } = defineProps<{
     nodegroupAlias: string;
     tileId: string;
     customLabels?: Record<string, string>;
-    showEmptyNodes?: boolean;
+    showEmptyNodes: boolean;
 }>();
 
 const { $gettext } = useGettext();
@@ -59,8 +59,8 @@ onMounted(fetchData);
         v-if="tileData"
         :data="tileData"
         :depth="1"
-        :custom-labels="customLabels"
-        :show-empty-nodes="showEmptyNodes"
+        :custom-labels
+        :show-empty-nodes
         :user-is-rdm-admin="userIsRdmAdmin"
     />
     <Message
