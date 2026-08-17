@@ -392,7 +392,6 @@ function initiateSoftDelete(tileId: string) {
                         v-else-if="data[field as string]?.is_file"
                         :file-data="data[field as string].file_data"
                     />
-                    <!-- eslint-disable vue/no-v-html -->
                     <template v-else-if="columnDatum.is_rich_text">
                         <span
                             class="rich-text-container"
@@ -405,7 +404,6 @@ function initiateSoftDelete(tileId: string) {
                             v-html="data[field as string]?.display_value"
                         ></span>
                     </template>
-                    <!-- eslint-enable vue/no-v-html -->
                     <template v-else-if="columnDatum.is_numeric">
                         {{
                             formatNumber(
@@ -478,12 +476,10 @@ function initiateSoftDelete(tileId: string) {
         :style="{ width: '50vw' }"
         :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
     >
-        <!-- eslint-disable vue/no-v-html -->
         <span
             class="rich-text-container"
             v-html="selectedRichText?.data"
         ></span>
-        <!-- eslint-enable vue/no-v-html -->
     </Dialog>
 </template>
 
