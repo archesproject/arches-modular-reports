@@ -122,7 +122,7 @@ watch(
     selectedKeys,
     (newValue, oldValue) => {
         if (newValue !== oldValue) {
-            window.requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
                 const selectedTreeNode =
                     treeContainerElement.value!.querySelector(
                         ".p-tree-node-content.p-tree-node-selected",
@@ -389,7 +389,7 @@ function convertRichHtmlToPlainText(htmlInput: string): string {
         return "";
     }
 
-    const parser = new window.DOMParser();
+    const parser = new DOMParser();
     const documentResult = parser.parseFromString(htmlInput, "text/html");
 
     const rawTextContent = documentResult.body.textContent ?? "";
@@ -618,7 +618,7 @@ function onNodeSelect(treeNode: TreeNode) {
         if (firstChildNode?.key != null) {
             selectedKeys.value = {};
 
-            window.requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
                 selectedKeys.value = { [firstChildNode.key as string]: true };
                 onNodeSelect(firstChildNode);
             });

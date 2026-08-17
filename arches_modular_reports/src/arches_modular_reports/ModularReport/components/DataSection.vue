@@ -57,7 +57,7 @@ const { requestSoftDeleteTile } = inject("softDeleteTile") as {
 const { $gettext } = useGettext();
 const CARDINALITY_N = "n";
 const queryTimeoutValue = 500;
-let timeout: number | null = null;
+let timeout: ReturnType<typeof setTimeout> | null = null;
 
 const rowsPerPage = ref(ROWS_PER_PAGE_OPTIONS[0]);
 const currentPage = ref(1);
@@ -166,10 +166,10 @@ const cardName = computed(() => {
 
 watch(query, () => {
     if (timeout) {
-        window.clearTimeout(timeout);
+        clearTimeout(timeout);
     }
 
-    timeout = window.setTimeout(() => {
+    timeout = setTimeout(() => {
         pageNumberToNodegroupTileData.value = {};
         resettingToFirstPage.value = true;
         fetchData(1);
@@ -392,7 +392,6 @@ function initiateSoftDelete(tileId: string) {
                         v-else-if="data[field as string]?.is_file"
                         :file-data="data[field as string].file_data"
                     />
-                    <!-- eslint-disable vue/no-v-html -->
                     <template v-else-if="columnDatum.is_rich_text">
                         <span
                             class="rich-text-container"
@@ -405,7 +404,6 @@ function initiateSoftDelete(tileId: string) {
                             v-html="data[field as string]?.display_value"
                         ></span>
                     </template>
-                    <!-- eslint-enable vue/no-v-html -->
                     <template v-else-if="columnDatum.is_numeric">
                         {{
                             formatNumber(
@@ -478,12 +476,10 @@ function initiateSoftDelete(tileId: string) {
         :style="{ width: '50vw' }"
         :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
     >
-        <!-- eslint-disable vue/no-v-html -->
         <span
             class="rich-text-container"
             v-html="selectedRichText?.data"
         ></span>
-        <!-- eslint-enable vue/no-v-html -->
     </Dialog>
 </template>
 
