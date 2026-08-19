@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arches-modular-reports"
-version = "2.0.0"
+version = "2.1.0b0"
 description = "Fast, configurable reports for Arches models in Vue.js"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -24,11 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-dependencies = [ 
-    "arches<9.0.0,>=8.0.0", 
-    "arches_vue_components<3.0.0,>=2.0.0",
-    "packaging==26.2",
-]
+dependencies = [ "arches<9.0.0,>=8.0.0", "arches-vue-components<3.0.0,>=2.0.0", "packaging==26.2",]
 dynamic = []
 
 [[project.authors]]
