@@ -952,7 +952,7 @@ function onSave() {
                 style="overflow: hidden"
             >
                 <SplitterPanel class="top-panel">
-                    <div style="margin: 1rem">
+                    <div class="top-panel-content">
                         <GenericCard
                             v-if="
                                 selectedTileData && !isSelectedTileSoftDeleted
@@ -1036,6 +1036,40 @@ function onSave() {
     min-height: 0;
     overflow: auto;
     background-color: var(--p-editor-panel-background);
+}
+
+.top-panel-content {
+    margin: 1rem;
+}
+
+.top-panel-content:has(.map-component) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+:deep(.card:has(.map-component)) {
+    flex: 1;
+    min-height: 0;
+}
+
+:deep(.form:has(.map-component)) {
+    flex: 1;
+    min-height: 0;
+}
+
+:deep(.widget:has(.map-component)) {
+    flex: 1;
+    min-height: 0;
+}
+
+:deep(.map-component) {
+    max-height: 100%;
+}
+
+:deep(.map-container) {
+    max-height: 100%;
 }
 
 .bottom-panel {
