@@ -2,6 +2,12 @@ import arches from "arches";
 
 import Cookies from "js-cookie";
 
+import {
+    buildFileUploadFormData,
+    extractFileEntriesFromAliasedData,
+} from "@/arches_vue_components/generics/GenericCard/utils.ts";
+
+import type { AliasedData } from "@/arches_vue_components/types.ts";
 import type { ResourceData } from "@/arches_modular_reports/ModularReport/types.ts";
 
 export const fetchGraphSlugFromId = async (graphId: string) => {
@@ -42,19 +48,37 @@ export const updateModularReportResource = async (
 ) => {
     const params = new URLSearchParams();
     params.append("fill_blanks", fillBlanks.toString());
+    const url = `${arches.urls.api_modular_reports_resource(
+        graphSlug,
+        resourceId,
+    )}?${params}`;
+
+    // Newly-selected files live in aliased_data as raw File objects, which
+    // JSON.stringify silently drops. When any are present, submit as
+    // multipart/form-data (matching arches_vue_components' upsertTile) so
+    // the binary content actually reaches the server.
+    const fileEntries = extractFileEntriesFromAliasedData(
+        data.aliased_data as unknown as AliasedData,
+    );
+
     const response = await fetch(
-        `${arches.urls.api_modular_reports_resource(
-            graphSlug,
-            resourceId,
-        )}?${params}`,
-        {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": Cookies.get("csrftoken"),
-            },
-            body: JSON.stringify(data),
-        },
+        url,
+        fileEntries.length
+            ? {
+                  method: "PUT",
+                  headers: {
+                      "X-CSRFToken": Cookies.get("csrftoken"),
+                  },
+                  body: buildFileUploadFormData(data, fileEntries),
+              }
+            : {
+                  method: "PUT",
+                  headers: {
+                      "Content-Type": "application/json",
+                      "X-CSRFToken": Cookies.get("csrftoken"),
+                  },
+                  body: JSON.stringify(data),
+              },
     );
     const parsed = await response.json();
     if (!response.ok)
