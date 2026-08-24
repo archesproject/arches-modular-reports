@@ -36,6 +36,7 @@ import {
 
 import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_modular_reports/constants.ts";
 
+import { assignMissingTileIds } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/assign-missing-tile-ids.ts";
 import { generateWidgetDirtyStates } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/generate-widget-dirty-states.ts";
 import { getValueFromPath } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/get-value-from-path.ts";
 import { findTilePathInResourceData } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/utils/find-tile-path-in-resource-data.ts";
@@ -195,6 +196,7 @@ watchEffect(async () => {
             resourceId: resourceInstanceId,
             fillBlanks: true,
         });
+        assignMissingTileIds(modularReportResource.aliased_data);
 
         originalResourceData.value = readonly(
             cloneDeep(toRaw({ ...modularReportResource })),
@@ -278,6 +280,19 @@ watch(createTileRequestId, async () => {
 
     apiError.value = null;
 
+    const isCardinalityN = isCardinalityNNodegroup(requestedNodegroupAlias);
+
+    if (!isCardinalityN) {
+        const existingTile = getValueFromPath(resourceData, nodegroupValuePath);
+
+        if (isTileData(existingTile) && existingTile.tileid) {
+            setSelectedTileId(existingTile.tileid);
+            setSelectedTilePath(nodegroupValuePath);
+
+            return;
+        }
+    }
+
     try {
         isCreatingTile.value = true;
 
@@ -286,9 +301,11 @@ watch(createTileRequestId, async () => {
             requestedNodegroupAlias,
         );
 
-        const isCardinalityN = isCardinalityNNodegroup(requestedNodegroupAlias);
-
         if (isCardinalityN) {
+            // Assigned up front so file uploads can key off a tile-scoped
+            // form field name (file-list_<tileid>-<nodeid>) at save time.
+            blankTile.tileid = crypto.randomUUID();
+
             const existingTiles = getValueFromPath(
                 resourceData,
                 nodegroupValuePath,
@@ -604,8 +621,12 @@ function onUpdateTileData(updatedTileData: TileData) {
         return;
     }
 
-    // Apply the incoming edits directly onto the selected tile object.
-    Object.assign(currentTileValue, updatedTileData);
+    Object.assign(currentTileValue, updatedTileData, {
+        aliased_data: {
+            ...currentTileValue.aliased_data,
+            ...updatedTileData.aliased_data,
+        },
+    });
 
     const currentAliasedData =
         currentTileValue.aliased_data as AliasedTileData["aliased_data"];
@@ -867,6 +888,7 @@ function onSave() {
     )
         .then(async (updatedResource) => {
             emit("save");
+            assignMissingTileIds(updatedResource.aliased_data);
 
             originalResourceData.value = readonly(
                 cloneDeep(toRaw({ ...updatedResource })),
