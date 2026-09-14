@@ -4,12 +4,12 @@ import arches from "arches";
 import { computed, watchEffect, provide, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
-import Panel from "primevue/panel";
-import Splitter from "primevue/splitter";
-import SplitterPanel from "primevue/splitterpanel";
-import Toast from "primevue/toast";
-import Button from "primevue/button";
-import { useToast } from "primevue/usetoast";
+import Panel from "openvue/panel";
+import Splitter from "openvue/splitter";
+import SplitterPanel from "openvue/splitterpanel";
+import Toast from "openvue/toast";
+import Button from "openvue/button";
+import { useToast } from "openvue/usetoast";
 
 import {
     fetchNodePresentation,

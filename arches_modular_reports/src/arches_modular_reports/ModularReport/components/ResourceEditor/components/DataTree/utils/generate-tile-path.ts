@@ -1,4 +1,4 @@
-import type { TreeNode } from "primevue/treenode";
+import type { TreeNode } from "openvue/treenode";
 import type { ResourceData } from "@/arches_modular_reports/ModularReport/types";
 
 function findTreePathByKey(
