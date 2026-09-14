@@ -16,14 +16,14 @@ import {
 
 import { isEqual, cloneDeep } from "es-toolkit";
 import { useGettext } from "vue3-gettext";
-import { useConfirm } from "primevue/useconfirm";
-import { useToast } from "primevue/usetoast";
+import { useConfirm } from "openvue/useconfirm";
+import { useToast } from "openvue/usetoast";
 
-import Button from "primevue/button";
-import Skeleton from "primevue/skeleton";
-import Splitter from "primevue/splitter";
-import SplitterPanel from "primevue/splitterpanel";
-import ConfirmDialog from "primevue/confirmdialog";
+import Button from "openvue/button";
+import Skeleton from "openvue/skeleton";
+import Splitter from "openvue/splitter";
+import SplitterPanel from "openvue/splitterpanel";
+import ConfirmDialog from "openvue/confirmdialog";
 
 import DataTree from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree/DataTree.vue";
 import GenericCard from "@/arches_vue_components/generics/GenericCard/GenericCard.vue";
@@ -818,7 +818,7 @@ function onUndoAllChanges() {
     setSelectedTilePath(null);
 }
 
-// Flag set when the user confirms navigation via the PrimeVue dialog, so that
+// Flag set when the user confirms navigation via the OpenVue dialog, so that
 // the subsequent beforeunload (triggered by window.location.href assignment)
 // does not show a second native dialog.
 let navigationApproved = false;

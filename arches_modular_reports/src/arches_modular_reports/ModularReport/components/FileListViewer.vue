@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Image, Galleria } from "primevue";
+import { Image, Galleria } from "openvue";
 
 import type { FileReference } from "@/arches_vue_components/datatypes/file-list/types";
 

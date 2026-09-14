@@ -1,5 +1,5 @@
-import { definePreset } from "@primeuix/themes";
-import Aura from "@primeuix/themes/aura";
+import { definePreset } from "@openvue/themes";
+import Aura from "@openvue/themes/aura";
 
 import { compileGlobalCss } from "@/arches_modular_reports/utils.ts";
 

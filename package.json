@@ -20,8 +20,8 @@
         "vitest": "vitest --run --coverage"
     },
     "dependencies": {
-        "arches": "archesproject/arches#dev/8.2.x",
-        "arches-vue-components": "archesproject/arches-vue-components#dev/2.1.x",
+        "arches": "archesproject/arches#cbyrd/12934-migrate-to-openvue",
+        "arches-vue-components": "archesproject/arches-vue-components#cbyrd/migrate-to-openvue",
         "es-toolkit": "^1.39.10",
         "numeral": "^2.0.6"
     },
