@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref, useTemplateRef } from "vue";
 import { useGettext } from "vue3-gettext";
-import Panel from "primevue/panel";
-import Button from "primevue/button";
+import Panel from "openvue/panel";
+import Button from "openvue/button";
 
 import {
     importComponents,

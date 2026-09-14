@@ -2,8 +2,8 @@
 import { computed, inject, onMounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
-import Message from "primevue/message";
-import Card from "primevue/card";
+import Message from "openvue/message";
+import Card from "openvue/card";
 
 import { fetchNodeTileData } from "@/arches_modular_reports/ModularReport/api.ts";
 import { truncateDisplayData } from "@/arches_modular_reports/ModularReport/utils.ts";

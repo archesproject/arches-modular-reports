@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, watch, watchEffect } from "vue";
 
-import Tab from "primevue/tab";
-import Tabs from "primevue/tabs";
-import TabList from "primevue/tablist";
-import TabPanel from "primevue/tabpanel";
-import TabPanels from "primevue/tabpanels";
+import Tab from "openvue/tab";
+import Tabs from "openvue/tabs";
+import TabList from "openvue/tablist";
+import TabPanel from "openvue/tabpanel";
+import TabPanels from "openvue/tabpanels";
 
 import {
     importComponents,
