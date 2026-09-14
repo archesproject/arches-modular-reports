@@ -2,8 +2,8 @@
 import { inject, onMounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
-import Message from "primevue/message";
-import Skeleton from "primevue/skeleton";
+import Message from "openvue/message";
+import Skeleton from "openvue/skeleton";
 
 import {
     fetchModularReportTile,

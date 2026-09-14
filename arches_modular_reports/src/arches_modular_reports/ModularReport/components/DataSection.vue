@@ -2,14 +2,14 @@
 import { computed, inject, onMounted, ref, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
-import Button from "primevue/button";
-import Column from "primevue/column";
-import DataTable from "primevue/datatable";
-import IconField from "primevue/iconfield";
-import InputIcon from "primevue/inputicon";
-import InputText from "primevue/inputtext";
-import Message from "primevue/message";
-import Dialog from "primevue/dialog";
+import Button from "openvue/button";
+import Column from "openvue/column";
+import DataTable from "openvue/datatable";
+import IconField from "openvue/iconfield";
+import InputIcon from "openvue/inputicon";
+import InputText from "openvue/inputtext";
+import Message from "openvue/message";
+import Dialog from "openvue/dialog";
 
 import {
     ASC,
@@ -21,7 +21,7 @@ import FileListViewer from "@/arches_modular_reports/ModularReport/components/Fi
 import HierarchicalTileViewer from "@/arches_modular_reports/ModularReport/components/HierarchicalTileViewer.vue";
 
 import type { Ref } from "vue";
-import type { DataTablePageEvent } from "primevue/datatable";
+import type { DataTablePageEvent } from "openvue/datatable";
 import type {
     LabelBasedCard,
     NodePresentationLookup,

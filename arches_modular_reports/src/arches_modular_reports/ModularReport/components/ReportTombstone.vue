@@ -3,8 +3,8 @@ import arches from "arches";
 import { computed, inject, onMounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
-import Message from "primevue/message";
-import Panel from "primevue/panel";
+import Message from "openvue/message";
+import Panel from "openvue/panel";
 
 import { fetchNodeTileData } from "@/arches_modular_reports/ModularReport/api.ts";
 import { RESOURCE_LIMIT_FOR_HEADER } from "@/arches_modular_reports/constants.ts";

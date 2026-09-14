@@ -2,16 +2,16 @@
 import { computed, inject, ref, useTemplateRef, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
-import Tree from "primevue/tree";
-import Button from "primevue/button";
+import Tree from "openvue/tree";
+import Button from "openvue/button";
 
 import { findNodeInTree } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree/utils/find-node-in-tree.ts";
 import { generateTilePath } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree/utils/generate-tile-path.ts";
 import { generateStableKey } from "@/arches_modular_reports/ModularReport/components/ResourceEditor/components/DataTree/utils/generate-stable-key.ts";
 
 import type { Ref } from "vue";
-import type { TreeExpandedKeys, TreeSelectionKeys } from "primevue/tree";
-import type { TreeNode } from "primevue/treenode";
+import type { TreeExpandedKeys, TreeSelectionKeys } from "openvue/tree";
+import type { TreeNode } from "openvue/treenode";
 import type { NodePresentationLookup } from "@/arches_modular_reports/ModularReport/types";
 
 import type {
