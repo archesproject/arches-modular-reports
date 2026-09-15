@@ -25,6 +25,7 @@ export function hasDirtyDescendant(
 function prune(
     resourceData: AliasedTileData | AliasedTileData[],
     widgetDirtyStates: WidgetDirtyStates | WidgetDirtyStates[],
+    clientGeneratedTileIds: Set<string>,
 ): AliasedTileData | AliasedTileData[] | undefined {
     if (Array.isArray(resourceData)) {
         const prunedArray = resourceData.reduce(function (
@@ -41,9 +42,11 @@ function prune(
                 typeof currentItem === "object" &&
                 "tileid" in currentItem
             ) {
-                const prunedItem = prune(currentItem, dirtyItem) as
-                    | AliasedTileData
-                    | undefined;
+                const prunedItem = prune(
+                    currentItem,
+                    dirtyItem,
+                    clientGeneratedTileIds,
+                ) as AliasedTileData | undefined;
 
                 if (prunedItem) {
                     accumulatedItems.push(prunedItem);
@@ -66,7 +69,11 @@ function prune(
         typeof resourceData === "object" &&
         "tileid" in resourceData
     ) {
-        if (!resourceData.tileid && !hasDirtyDescendant(widgetDirtyStates)) {
+        const isUnsavedTile =
+            !resourceData.tileid ||
+            clientGeneratedTileIds.has(resourceData.tileid);
+
+        if (isUnsavedTile && !hasDirtyDescendant(widgetDirtyStates)) {
             return undefined;
         }
 
@@ -83,6 +90,7 @@ function prune(
                 (dirtyStates as WidgetDirtyStates)[
                     nodeAlias
                 ] as WidgetDirtyStates,
+                clientGeneratedTileIds,
             );
 
             if (prunedChild !== undefined) {
@@ -102,6 +110,7 @@ function prune(
 export function pruneResourceData(
     resourceData: ResourceData,
     widgetDirtyStates: WidgetDirtyStates,
+    clientGeneratedTileIds: Set<string>,
 ): ResourceData {
     const prunedAliasedData = Object.entries(resourceData.aliased_data).reduce<
         ResourceData["aliased_data"]
@@ -112,6 +121,7 @@ export function pruneResourceData(
         const prunedData = prune(
             aliasedDatum as AliasedTileData,
             dirtyStates as WidgetDirtyStates,
+            clientGeneratedTileIds,
         );
 
         if (prunedData !== undefined) {
