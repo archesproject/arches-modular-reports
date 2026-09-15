@@ -140,6 +140,7 @@ const originalResourceData = shallowRef<Readonly<ResourceData>>(
 const widgetDirtyStates = reactive<WidgetDirtyStates>({} as WidgetDirtyStates);
 
 const unsavedTileKeys = shallowRef<Set<string>>(new Set<string>());
+const clientGeneratedTileIds = shallowRef<Set<string>>(new Set<string>());
 const newTileBaselineSnapshots = shallowRef<Map<string, TileData>>(
     new Map<string, TileData>(),
 );
@@ -196,7 +197,9 @@ watchEffect(async () => {
             resourceId: resourceInstanceId,
             fillBlanks: true,
         });
-        assignMissingTileIds(modularReportResource.aliased_data);
+        clientGeneratedTileIds.value = assignMissingTileIds(
+            modularReportResource.aliased_data,
+        );
 
         originalResourceData.value = readonly(
             cloneDeep(toRaw({ ...modularReportResource })),
@@ -305,6 +308,7 @@ watch(createTileRequestId, async () => {
             // Assigned up front so file uploads can key off a tile-scoped
             // form field name (file-list_<tileid>-<nodeid>) at save time.
             blankTile.tileid = crypto.randomUUID();
+            clientGeneratedTileIds.value.add(blankTile.tileid);
 
             const existingTiles = getValueFromPath(
                 resourceData,
@@ -594,6 +598,7 @@ function buildPayloadForSave() {
     return pruneResourceData(
         resourceDataClone as ResourceData,
         widgetDirtyStatesClone as WidgetDirtyStates,
+        clientGeneratedTileIds.value,
     );
 }
 
@@ -888,7 +893,9 @@ function onSave() {
     )
         .then(async (updatedResource) => {
             emit("save");
-            assignMissingTileIds(updatedResource.aliased_data);
+            clientGeneratedTileIds.value = assignMissingTileIds(
+                updatedResource.aliased_data,
+            );
 
             originalResourceData.value = readonly(
                 cloneDeep(toRaw({ ...updatedResource })),
@@ -952,7 +959,7 @@ function onSave() {
                 style="overflow: hidden"
             >
                 <SplitterPanel class="top-panel">
-                    <div style="margin: 1rem">
+                    <div class="top-panel-content">
                         <GenericCard
                             v-if="
                                 selectedTileData && !isSelectedTileSoftDeleted
@@ -1036,6 +1043,40 @@ function onSave() {
     min-height: 0;
     overflow: auto;
     background-color: var(--p-editor-panel-background);
+}
+
+.top-panel-content {
+    margin: 1rem;
+}
+
+.top-panel-content:has(.map-component) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+:deep(.card:has(.map-component)) {
+    flex: 1;
+    min-height: 0;
+}
+
+:deep(.form:has(.map-component)) {
+    flex: 1;
+    min-height: 0;
+}
+
+:deep(.widget:has(.map-component)) {
+    flex: 1;
+    min-height: 0;
+}
+
+:deep(.map-component) {
+    max-height: 100%;
+}
+
+:deep(.map-container) {
+    max-height: 100%;
 }
 
 .bottom-panel {

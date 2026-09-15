@@ -297,28 +297,28 @@ function closeEditor() {
     border-bottom: 0.125rem solid var(--p-content-border-color) !important;
 }
 
-:deep(.p-panel) {
+:deep(.editor-panel) {
     display: flex;
     flex-direction: column;
     flex: 1;
     min-height: 0;
 }
 
-:deep(.p-toggleable-content) {
+:deep(.editor-panel .p-toggleable-content:not(:where(.map-component *))) {
     display: flex;
     flex-direction: column;
     flex: 1;
     min-height: 0;
 }
 
-:deep(.p-panel-content-container) {
+:deep(.editor-panel .p-panel-content-container:not(:where(.map-component *))) {
     display: flex;
     flex-direction: column;
     flex: 1;
     min-height: 0;
 }
 
-:deep(.p-panel-content) {
+:deep(.editor-panel .p-panel-content:not(:where(.map-component *))) {
     flex: 1;
     min-height: 0;
     padding: 0;
