@@ -2,7 +2,10 @@ import { isAliasedNodeData } from "@/arches_vue_components/generics/GenericCard/
 
 import type { AliasedData } from "@/arches_modular_reports/ModularReport/types.ts";
 
-export function assignMissingTileIds(aliasedData: AliasedData): void {
+export function assignMissingTileIds(
+    aliasedData: AliasedData,
+    generatedTileIds: Set<string> = new Set<string>(),
+): Set<string> {
     for (const value of Object.values(aliasedData)) {
         const tiles = Array.isArray(value) ? value : [value];
 
@@ -16,9 +19,12 @@ export function assignMissingTileIds(aliasedData: AliasedData): void {
 
             if (!tile.tileid) {
                 tile.tileid = crypto.randomUUID();
+                generatedTileIds.add(tile.tileid);
             }
 
-            assignMissingTileIds(tile.aliased_data);
+            assignMissingTileIds(tile.aliased_data, generatedTileIds);
         }
     }
+
+    return generatedTileIds;
 }
