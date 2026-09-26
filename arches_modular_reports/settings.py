@@ -147,8 +147,8 @@ INSTALLED_APPS = (
     # "silk",
     "rest_framework",
     "arches_modular_reports",  # Ensure the project is listed before any other arches applications
-    "arches_querysets",
-    "arches_vue_components",
+    "arches.extensions.querysets",
+    "arches.extensions.vue_components",
 )
 
 # Placing this last ensures any templates provided by Arches Applications
@@ -249,7 +249,7 @@ LOGGING = {
             "level": "WARNING",
             "propagate": True,
         },
-        "arches_querysets": {
+        "arches.extensions.querysets": {
             "handlers": ["file", "console"],
             "level": "WARNING",
             "propagate": True,
@@ -281,6 +281,18 @@ CACHES = {
     "user_permission": {
         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
         "LOCATION": "user_permission_cache",
+    },
+    "querysets_concepts": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "querysets_concepts_cache",
+        "TIMEOUT": 86400,  # one day in seconds
+        "OPTIONS": {"MAX_ENTRIES": 1000},
+    },
+    "querysets_resource_instances": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "querysets_resource_instances_cache",
+        "TIMEOUT": 86400,  # one day in seconds
+        "OPTIONS": {"MAX_ENTRIES": 1000},
     },
 }
 

@@ -31,7 +31,7 @@ pip install arches-modular-reports
 
 1. If you don't already have an Arches project, you'll need to create one by following the instructions in the Arches [documentation](http://archesproject.org/documentation/).
 
-2. When your project is ready add "rest_framework", "arches_modular_reports", "arches_querysets", and "arches_vue_components" to INSTALLED_APPS **below** the name of your project:
+2. When your project is ready add "rest_framework", "arches_modular_reports", "arches.extensions.querysets", and "arches.extensions.vue_components" to INSTALLED_APPS **below** the name of your project. The querysets and vue_components applications ship inside arches as of 8.2.0, so there is nothing extra to install:
 
     ```
     INSTALLED_APPS = (
@@ -39,8 +39,8 @@ pip install arches-modular-reports
         "my_project_name",
         "rest_framework",
         "arches_modular_reports",
-        "arches_querysets",
-        "arches_vue_components",
+        "arches.extensions.querysets",
+        "arches.extensions.vue_components",
     )
     ```
 

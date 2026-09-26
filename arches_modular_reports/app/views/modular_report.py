@@ -114,7 +114,6 @@ class ModularReportAwareResourceReportView(ResourceReportView):
                 card_components=models.CardComponent.objects.none(),
                 widgets=models.Widget.objects.none(),
                 map_markers=models.MapMarker.objects.none(),
-                geocoding_providers=models.Geocoder.objects.none(),
             )
         else:
             name_resource = (
@@ -130,7 +129,6 @@ class ModularReportAwareResourceReportView(ResourceReportView):
                 card_components=models.CardComponent.objects.all(),
                 widgets=models.Widget.objects.all(),
                 map_markers=models.MapMarker.objects.all(),
-                geocoding_providers=models.Geocoder.objects.all(),
                 graph_name=graph.name,
                 name_resource=name_resource,
             )

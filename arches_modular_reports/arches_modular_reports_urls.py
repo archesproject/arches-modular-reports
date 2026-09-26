@@ -8,8 +8,8 @@ uuid_regex = settings.UUID_REGEX
 
 urlpatterns = [
     path("", include("arches_modular_reports.urls")),
-    path("", include("arches_querysets.urls")),
-    path("", include("arches_vue_components.urls")),
+    path("", include("arches.extensions.querysets.urls")),
+    path("", include("arches.extensions.vue_components.urls")),
 ]
 
 # handler400 = "arches.app.views.main.custom_400"
