@@ -69,6 +69,6 @@ urlpatterns = [
         LanguageSettingsView.as_view(),
         name="api_client_language_settings",
     ),
-    path("", include("arches_querysets.urls")),
-    path("", include("arches_vue_components.urls")),
+    path("", include("arches.extensions.querysets.urls")),
+    path("", include("arches.extensions.vue_components.urls")),
 ]
