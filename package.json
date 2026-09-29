@@ -20,7 +20,7 @@
         "vitest": "vitest --run --coverage"
     },
     "dependencies": {
-        "arches": "archesproject/arches#semver:^v8.2.0-alpha.12",
+        "arches": "archesproject/arches#semver:^v2024.09.27",
         "es-toolkit": "^1.39.10",
         "numeral": "^2.0.6"
     },
