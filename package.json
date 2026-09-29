@@ -20,7 +20,7 @@
         "vitest": "vitest --run --coverage"
     },
     "dependencies": {
-        "arches": "archesproject/arches#cbyrd/12934-migrate-to-openvue",
+        "arches": "archesproject/arches#semver:^v8.2.0-alpha.12",
         "es-toolkit": "^1.39.10",
         "numeral": "^2.0.6"
     },
