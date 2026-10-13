@@ -28,6 +28,7 @@ export interface SectionContent {
 export interface NodePresentation {
     nodeid: string;
     name: string;
+    datatype: string;
     card_name: string;
     card_order: number;
     card_visible: boolean;
@@ -37,6 +38,9 @@ export interface NodePresentation {
     nodegroup: {
         nodegroup_id: string;
         cardinality: string;
+        alias: string | null;
+        parent_nodegroup_id: string | null;
+        writable: boolean;
     };
     is_rich_text: boolean;
     is_numeric: boolean;
@@ -79,18 +83,6 @@ export interface ReferenceDetails {
     uri: string;
     display_value: string;
     list_item_id: string;
-}
-
-export interface NodeValueDisplayData {
-    display_values: string[];
-    links: {
-        label: string;
-        link: string;
-    }[];
-}
-
-export interface NodeValueDisplayDataLookup {
-    [key: string]: NodeValueDisplayData[];
 }
 
 export interface NodeData {
