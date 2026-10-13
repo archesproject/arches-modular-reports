@@ -10,7 +10,9 @@ from arches_modular_reports.app.utils.update_report_configuration_for_nodegroup_
     update_report_configuration_with_nodegroup_permissions,
 )
 from arches_modular_reports.models import ReportConfig
-from arches_modular_reports.resource_report import RESOURCE_REPORT_COMPONENT
+from arches_modular_reports.app.utils.resource_report_config import (
+    RESOURCE_REPORT_COMPONENT,
+)
 
 
 def make_nodegroup(graph, alias, parent_nodegroup=None):

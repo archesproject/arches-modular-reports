@@ -5,7 +5,7 @@ from arches.app.permissions.arches_permission_base import (
     get_nodegroups_by_perm_for_user_or_group,
 )
 
-from arches_modular_reports.resource_report import (
+from arches_modular_reports.app.utils.resource_report_config import (
     is_resource_report_component,
     prune_resource_report_config,
 )

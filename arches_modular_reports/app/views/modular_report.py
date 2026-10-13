@@ -39,7 +39,7 @@ from arches_modular_reports.app.utils.update_report_configuration_for_nodegroup_
     update_report_configuration_for_nodegroup_permissions,
 )
 from arches_modular_reports.models import ReportConfig
-from arches_modular_reports.resource_report import GEOMETRY_DATATYPE
+from arches_modular_reports.app.utils.resource_report_config import GEOMETRY_DATATYPE
 
 
 def localized_text(i18n_value):

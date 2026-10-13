@@ -6,7 +6,7 @@ from django.db import models
 from arches import __version__ as _arches_version_str
 from arches.app.models.models import GraphModel, Node, NodeGroup
 from arches.app.models.system_settings import settings
-from arches_modular_reports.resource_report import (
+from arches_modular_reports.app.utils.resource_report_config import (
     ResourceReportConfigValidator,
     generate_resource_report_config,
 )
