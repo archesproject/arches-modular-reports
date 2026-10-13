@@ -227,6 +227,46 @@ class GenerateReportConfigCommandTests(TestCase):
         self.assertFalse(ReportConfig.objects.filter(slug="test_gen").exists())
         self.assertIn("totally_nonexistent_slug", stderr.getvalue())
 
+    # --- generator slug targeting ---
+
+    def test_generate_with_slug_only_runs_that_generator(self):
+        register(
+            "other_gen",
+            lambda graph: {"name": "Other", "components": []},
+        )
+        management.call_command(
+            "report_configs", "generate", graph="gen_test_graph", slug="test_gen"
+        )
+        self.assertTrue(
+            ReportConfig.objects.filter(graph=self.graph, slug="test_gen").exists()
+        )
+        self.assertFalse(
+            ReportConfig.objects.filter(graph=self.graph, slug="other_gen").exists()
+        )
+
+    def test_generate_with_unknown_slug_writes_error_and_creates_nothing(self):
+        stderr = StringIO()
+        management.call_command(
+            "report_configs", "generate", slug="not_registered", stderr=stderr
+        )
+        self.assertFalse(ReportConfig.objects.filter(graph=self.graph).exists())
+        self.assertIn("not_registered", stderr.getvalue())
+
+    def test_generate_skips_invalid_generated_config(self):
+        register("broken_gen", lambda graph: {"name": "Broken", "bogus": True})
+        stderr = StringIO()
+        management.call_command(
+            "report_configs",
+            "generate",
+            graph="gen_test_graph",
+            slug="broken_gen",
+            stderr=stderr,
+        )
+        self.assertFalse(
+            ReportConfig.objects.filter(graph=self.graph, slug="broken_gen").exists()
+        )
+        self.assertIn("Invalid [broken_gen]", stderr.getvalue())
+
     # --- no generators registered ---
 
     def test_generate_with_empty_registry_writes_message_and_creates_nothing(self):
