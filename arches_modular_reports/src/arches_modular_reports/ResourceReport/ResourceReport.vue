@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, provide } from "vue";
+import { computed, inject } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Message from "openvue/message";
@@ -25,11 +25,6 @@ import {
     GRAPH_VIEW,
     REPORT_VIEW,
 } from "@/arches_modular_reports/ResourceReport/constants.ts";
-import {
-    REPORT_CONTEXT_KEY,
-    REPORT_SCHEMA_KEY,
-    RESOURCE_DATA_KEY,
-} from "@/arches_modular_reports/ResourceReport/injection-keys.ts";
 import { findNodeValues } from "@/arches_modular_reports/ResourceReport/utils/find-node-values.ts";
 import { lifecycleSeverity } from "@/arches_modular_reports/ResourceReport/utils/lifecycle-severity.ts";
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
@@ -69,10 +64,6 @@ const { views, activeView, selectView } = useReportViews(
     () => context.value?.permissions.can_edit === true,
     () => context.value?.language ?? "",
 );
-
-provide(REPORT_CONTEXT_KEY, reportContext);
-provide(REPORT_SCHEMA_KEY, reportSchema);
-provide(RESOURCE_DATA_KEY, resourceData);
 
 const fetchError = computed(
     () =>

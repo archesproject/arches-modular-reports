@@ -14,7 +14,6 @@ export interface ReportContextState {
     fetchError: Ref<Error | null>;
     isTransitioning: Ref<boolean>;
     transitionError: Ref<Error | null>;
-    reloadContext: () => Promise<void>;
     transitionLifecycle: (lifecycleStateId: string) => Promise<void>;
 }
 
@@ -57,7 +56,6 @@ export function useReportContext(
         fetchError,
         isTransitioning,
         transitionError,
-        reloadContext,
         transitionLifecycle,
     };
 }

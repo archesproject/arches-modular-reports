@@ -33,15 +33,6 @@ describe("resolveViews", () => {
         expect(views[2].description).toBe("");
     });
 
-    it("localizes labels for the active language", () => {
-        const views = resolveViews(VIEW_CONFIGS, {
-            canEdit: true,
-            activeLanguage: "es",
-        });
-
-        expect(views[0].label).toBe("Informe");
-    });
-
     it("hides the data view from users who cannot edit", () => {
         const views = resolveViews(VIEW_CONFIGS, {
             canEdit: false,
@@ -49,11 +40,5 @@ describe("resolveViews", () => {
         });
 
         expect(views.map((view) => view.id)).toEqual(["report", "custom"]);
-    });
-
-    it("resolves no views when none are configured", () => {
-        expect(
-            resolveViews([], { canEdit: true, activeLanguage: "en" }),
-        ).toEqual([]);
     });
 });

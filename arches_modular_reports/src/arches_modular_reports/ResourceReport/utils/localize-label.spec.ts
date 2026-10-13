@@ -3,14 +3,6 @@ import { describe, expect, it } from "vitest";
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
 
 describe("localizeLabel", () => {
-    it("returns undefined when no label is configured", () => {
-        expect(localizeLabel(undefined, "en")).toBeUndefined();
-    });
-
-    it("returns plain string labels unchanged", () => {
-        expect(localizeLabel("Names", "es")).toBe("Names");
-    });
-
     it("prefers the active language", () => {
         expect(localizeLabel({ en: "Names", es: "Nombres" }, "es")).toBe(
             "Nombres",

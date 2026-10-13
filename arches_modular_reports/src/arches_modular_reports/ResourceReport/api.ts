@@ -41,7 +41,7 @@ export async function updateLifecycleState(
             body: JSON.stringify(lifecycleStateId),
         },
     );
-    await parseResponse<object>(response);
+    await parseResponse<unknown>(response);
 }
 
 export function buildExportUrl(

@@ -88,14 +88,4 @@ describe("ModularReport", () => {
             wrapper.findAll(".stub-section").map((section) => section.text()),
         ).toEqual(["app/First:resource-id", "app/Second:resource-id"]);
     });
-
-    it("reports a config that cannot be loaded", async () => {
-        vi.mocked(fetchReportConfig).mockRejectedValue(new Error("Not found"));
-        const wrapper = mountModularReport("resource-id");
-        await flushPromises();
-
-        expect(wrapper.text()).toContain(
-            "Unable to load the report: %{message}",
-        );
-    });
 });

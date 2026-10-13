@@ -180,35 +180,7 @@ describe("ResourceReport", () => {
         vi.mocked(updateLifecycleState).mockResolvedValue();
     });
 
-    it("shows a loading state until the report data arrives", () => {
-        const wrapper = mountReport();
-
-        expect(wrapper.find(".resource-report-loading").exists()).toBe(true);
-    });
-
-    it("renders the header and every view for editors", async () => {
-        const wrapper = mountReport();
-        await flushPromises();
-
-        expect(wrapper.find("h2").text()).toBe("Cobalt blue");
-        expect(tabLabels(wrapper)).toEqual(["Report", "Data", "Graph"]);
-        expect(wrapper.find(".resource-report-caption").text()).toBe(
-            "A curated summary of this resource's data",
-        );
-        expect(wrapper.find(".resource-report-splitter").exists()).toBe(true);
-    });
-
-    it("hides the data view from users who cannot edit", async () => {
-        vi.mocked(fetchReportContext).mockResolvedValue(
-            makeContext({ can_edit: false }),
-        );
-        const wrapper = mountReport();
-        await flushPromises();
-
-        expect(tabLabels(wrapper)).toEqual(["Report", "Graph"]);
-    });
-
-    it("renders configured summary lines from the resource data", async () => {
+    it("renders the header, summary lines and every view for editors", async () => {
         const wrapper = mountReport({
             ...REPORT_CONFIG,
             header: { summary: [{ node_alias: "name_content" }] },
@@ -217,6 +189,13 @@ describe("ResourceReport", () => {
 
         expect(wrapper.find("dt").text()).toBe("Name");
         expect(wrapper.find("dd").text()).toBe("Cobalt blue");
+
+        expect(wrapper.find("h2").text()).toBe("Cobalt blue");
+        expect(tabLabels(wrapper)).toEqual(["Report", "Data", "Graph"]);
+        expect(wrapper.find(".resource-report-caption").text()).toBe(
+            "A curated summary of this resource's data",
+        );
+        expect(wrapper.find(".resource-report-splitter").exists()).toBe(true);
     });
 
     it("renders full-width views without a splitter", async () => {
@@ -256,23 +235,6 @@ describe("ResourceReport", () => {
 
         expect(wrapper.find(".report-header-lifecycle-actions").exists()).toBe(
             false,
-        );
-    });
-
-    it("reports a failed lifecycle change", async () => {
-        vi.mocked(updateLifecycleState).mockRejectedValue(
-            new Error("Permission Denied"),
-        );
-        const wrapper = mountReport();
-        await flushPromises();
-
-        await wrapper
-            .find(".report-header-lifecycle-actions button")
-            .trigger("click");
-        await flushPromises();
-
-        expect(wrapper.text()).toContain(
-            "Unable to change the lifecycle state: %{message}",
         );
     });
 

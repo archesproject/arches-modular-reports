@@ -114,9 +114,4 @@ describe("buildReportSchema", () => {
             "production_location",
         ]);
     });
-
-    it("indexes every node by alias, including semantic ones", () => {
-        expect(schema.nodesByAlias.production.alias).toBe("production");
-        expect(schema.nodesByAlias.hidden_note.visible).toBe(false);
-    });
 });

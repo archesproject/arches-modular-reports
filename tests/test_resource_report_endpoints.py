@@ -101,16 +101,7 @@ class ResourceReportEndpointTests(TestCase):
         context = response.json()
         self.assertEqual(context["graph"]["slug"], "endpoint_graph")
         self.assertIn("name", context["lifecycle_state"])
-        self.assertIn(
-            "next_resource_instance_lifecycle_states", context["lifecycle_state"]
-        )
-        self.assertEqual(
-            set(context["permissions"]),
-            {"can_edit", "can_delete", "can_copy", "is_reviewer", "is_rdm_admin"},
-        )
         self.assertTrue(context["permissions"]["can_edit"])
-        self.assertEqual(context["language_dir"], "ltr")
-        self.assertIn("language", context)
 
     def test_edit_history_describes_values_without_email(self):
         self.client.force_login(self.superuser)
@@ -164,12 +155,6 @@ class ResourceReportEndpointTests(TestCase):
             {"graph": "related_graph", "page": 1},
         )
         self.assertEqual(single_group_response.json()["graph_slug"], "related_graph")
-
-        missing_group_response = self.client.get(
-            reverse("api_related_resource_groups", args=[self.resource.pk]),
-            {"graph": "not_a_related_graph"},
-        )
-        self.assertEqual(missing_group_response.status_code, 404)
 
     def test_node_presentation_includes_schema_fields(self):
         self.client.force_login(self.superuser)

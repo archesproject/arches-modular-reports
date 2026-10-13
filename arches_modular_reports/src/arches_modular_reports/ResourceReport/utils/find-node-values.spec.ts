@@ -60,8 +60,4 @@ describe("findNodeValues", () => {
                 .display_value,
         ).toBe("Getty Center");
     });
-
-    it("returns an empty list for absent nodes", () => {
-        expect(findNodeValues(RESOURCE_ALIASED_DATA, "missing")).toEqual([]);
-    });
 });

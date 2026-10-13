@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from django.core.exceptions import ValidationError
 from django.utils import translation
 from django.utils.translation import gettext, gettext_noop
@@ -9,18 +11,14 @@ RESOURCE_REPORT_COMPONENT = "arches_modular_reports/ResourceReport/ResourceRepor
 
 
 def is_resource_report_component(component_path):
-    return (
-        component_path.rsplit("/", 1)[-1]
-        == RESOURCE_REPORT_COMPONENT.rsplit("/", 1)[-1]
-    )
+    return Path(component_path).stem == Path(RESOURCE_REPORT_COMPONENT).stem
 
 
 def translated_labels(message):
     labels = {}
     for language in settings.LANGUAGES:
-        language_code = language[0]
-        with translation.override(language_code):
-            labels[language_code] = gettext(message)
+        with translation.override(language[0]):
+            labels[language[0]] = gettext(message)
     return labels
 
 
@@ -37,15 +35,13 @@ class ResourceReportGraph:
             )
         )
         self.nodes_by_alias = {node.alias: node for node in graph_nodes if node.alias}
-        self.grouping_nodes_by_alias = {
-            node.alias: node
-            for node in graph_nodes
-            if node.alias and node.nodegroup_id == node.pk
-        }
         self.grouping_nodes_by_nodegroup_id = {
             node.nodegroup_id: node
             for node in graph_nodes
             if node.nodegroup_id == node.pk
+        }
+        self.grouping_nodes_by_alias = {
+            node.alias: node for node in self.grouping_nodes_by_nodegroup_id.values()
         }
         self.parent_nodegroup_ids_by_nodegroup_id = {
             node.nodegroup_id: node.nodegroup.parentnodegroup_id
@@ -63,56 +59,21 @@ class ResourceReportGraph:
             key=lambda card: card.sortorder or 0,
         )
 
-    def top_level_nodegroup_ids(self):
-        return [
-            card.nodegroup_id
-            for card in self.visible_cards
-            if not self.parent_nodegroup_ids_by_nodegroup_id.get(card.nodegroup_id)
-        ]
-
-    def child_nodegroup_ids(self, nodegroup_id):
+    def child_nodegroup_ids(self, parent_nodegroup_id):
         return [
             card.nodegroup_id
             for card in self.visible_cards
             if self.parent_nodegroup_ids_by_nodegroup_id.get(card.nodegroup_id)
-            == nodegroup_id
+            == parent_nodegroup_id
         ]
 
     def visible_data_nodes(self, nodegroup_id):
-        visible_data_nodes = []
-        for node in self.nodes_by_nodegroup_id.get(nodegroup_id, []):
-            if node.datatype == "semantic":
-                continue
-            widgets = node.cardxnodexwidget_set.all()
-            if widgets and not widgets[0].visible:
-                continue
-            visible_data_nodes.append(node)
-        return visible_data_nodes
-
-    def card_entry(self, nodegroup_id):
-        grouping_node = self.grouping_nodes_by_nodegroup_id[nodegroup_id]
-        child_nodegroup_ids = self.child_nodegroup_ids(nodegroup_id)
-        data_nodes = self.visible_data_nodes(nodegroup_id)
-        geometry_nodes = [
-            node for node in data_nodes if node.datatype in self.geometric_datatypes
+        return [
+            node
+            for node in self.nodes_by_nodegroup_id.get(nodegroup_id, [])
+            if node.datatype != "semantic"
+            and all(widget.visible for widget in node.cardxnodexwidget_set.all())
         ]
-
-        card_entry = {"nodegroup_alias": grouping_node.alias}
-        if geometry_nodes:
-            card_entry["component"] = "MapCard"
-            card_entry["geometry_alias"] = geometry_nodes[0].alias
-        elif child_nodegroup_ids:
-            card_entry["component"] = "NestedCard"
-        elif grouping_node.nodegroup.cardinality == "1" and len(data_nodes) == 1:
-            card_entry["component"] = "SimpleFieldCard"
-        else:
-            card_entry["component"] = "MultiValueCard"
-        if child_nodegroup_ids:
-            card_entry["children"] = [
-                self.card_entry(child_nodegroup_id)
-                for child_nodegroup_id in child_nodegroup_ids
-            ]
-        return card_entry
 
     def is_descendant_nodegroup(self, nodegroup_id, ancestor_nodegroup_id):
         current_parent_id = self.parent_nodegroup_ids_by_nodegroup_id.get(nodegroup_id)
@@ -124,65 +85,121 @@ class ResourceReportGraph:
             )
         return False
 
-    def validate_card(self, card, parent_card):
-        nodegroup_alias = card.get("nodegroup_alias")
-        grouping_node = self.grouping_nodes_by_alias.get(nodegroup_alias)
-        if not grouping_node:
-            raise ValidationError(
-                f"Card refers to an unknown nodegroup: {nodegroup_alias}"
-            )
-        nodegroup_id = grouping_node.nodegroup_id
 
-        if parent_card is None:
-            if self.parent_nodegroup_ids_by_nodegroup_id.get(nodegroup_id):
-                raise ValidationError(
-                    f"Card {nodegroup_alias} is not a top-level nodegroup; nest it under its parent card's children"
-                )
-        else:
-            parent_nodegroup_id = self.grouping_nodes_by_alias[
-                parent_card["nodegroup_alias"]
-            ].nodegroup_id
-            if not self.is_descendant_nodegroup(nodegroup_id, parent_nodegroup_id):
-                raise ValidationError(
-                    f"Card {nodegroup_alias} is not nested under its parent card's nodegroup"
-                )
+def build_card_entry(report_graph, nodegroup_id):
+    grouping_node = report_graph.grouping_nodes_by_nodegroup_id[nodegroup_id]
+    child_nodegroup_ids = report_graph.child_nodegroup_ids(nodegroup_id)
+    data_nodes = report_graph.visible_data_nodes(nodegroup_id)
+    geometry_nodes = [
+        node for node in data_nodes if node.datatype in report_graph.geometric_datatypes
+    ]
 
-        nodegroup_node_aliases = {
-            node.alias for node in self.nodes_by_nodegroup_id[nodegroup_id]
-        }
-        referenced_node_aliases = [
-            card.get("primary_field"),
-            card.get("badge_field"),
-            *card.get("row_fields", []),
-            *card.get("labels", {}),
+    card_entry = {"nodegroup_alias": grouping_node.alias}
+    if geometry_nodes:
+        card_entry["component"] = "MapCard"
+        card_entry["geometry_alias"] = geometry_nodes[0].alias
+    elif child_nodegroup_ids:
+        card_entry["component"] = "NestedCard"
+    elif grouping_node.nodegroup.cardinality == "1" and len(data_nodes) == 1:
+        card_entry["component"] = "SimpleFieldCard"
+    else:
+        card_entry["component"] = "MultiValueCard"
+    if child_nodegroup_ids:
+        card_entry["children"] = [
+            build_card_entry(report_graph, child_nodegroup_id)
+            for child_nodegroup_id in child_nodegroup_ids
         ]
-        for node_alias in referenced_node_aliases:
-            if node_alias is not None and node_alias not in nodegroup_node_aliases:
-                raise ValidationError(
-                    f"Card {nodegroup_alias} refers to a node outside its nodegroup: {node_alias}"
-                )
+    return card_entry
 
-        geometry_alias = card.get("geometry_alias")
-        if geometry_alias is not None:
-            geometry_node = self.nodes_by_alias.get(geometry_alias)
-            if (
-                not geometry_node
-                or geometry_node.datatype not in self.geometric_datatypes
-                or not (
-                    geometry_node.nodegroup_id == nodegroup_id
-                    or self.is_descendant_nodegroup(
-                        geometry_node.nodegroup_id, nodegroup_id
-                    )
-                )
-            ):
-                raise ValidationError(
-                    f"Card {nodegroup_alias} geometry_alias is not a geometry node within this card: {geometry_alias}"
-                )
 
-    def validate_summary_entry(self, summary_entry):
-        node_alias = summary_entry.get("node_alias")
-        if node_alias not in self.nodes_by_alias:
-            raise ValidationError(f"Summary refers to an unknown node: {node_alias}")
+def view_entry(view_id, component, label, description):
+    return {
+        "id": view_id,
+        "component": component,
+        "label": translated_labels(label),
+        "description": translated_labels(description),
+    }
+
+
+def drawer_entry(component, label, icon):
+    return {"component": component, "label": translated_labels(label), "icon": icon}
+
+
+def generate_resource_report_config(graph):
+    report_graph = ResourceReportGraph(graph)
+    report_view = {
+        **view_entry(
+            "report",
+            "ReportView",
+            gettext_noop("Report"),
+            gettext_noop("A curated summary of this resource's data"),
+        ),
+        "config": {
+            "tabs": [
+                {
+                    "label": translated_labels(gettext_noop("Overview")),
+                    "sections": [
+                        {
+                            "cards": [
+                                build_card_entry(report_graph, nodegroup_id)
+                                for nodegroup_id in report_graph.child_nodegroup_ids(
+                                    None
+                                )
+                            ]
+                        }
+                    ],
+                }
+            ],
+            "home": {
+                "summary": [],
+                "drawer": [
+                    drawer_entry(
+                        "EditHistoryPanel", gettext_noop("Edit History"), "pi pi-clock"
+                    ),
+                    drawer_entry("ImagesPanel", gettext_noop("Images"), "pi pi-image"),
+                    drawer_entry(
+                        "RelatedResourcesPanel",
+                        gettext_noop("Related Resources"),
+                        "pi pi-link",
+                    ),
+                    drawer_entry("ManagePanel", gettext_noop("Manage"), "pi pi-cog"),
+                ],
+            },
+        },
+    }
+    return {
+        "name": "Default",
+        "components": [
+            {
+                "component": RESOURCE_REPORT_COMPONENT,
+                "config": {
+                    "header": {
+                        "summary": [],
+                        "export_formats": ["json-ld", "json", "csv"],
+                    },
+                    "views": [
+                        report_view,
+                        view_entry(
+                            "data",
+                            "DataView",
+                            gettext_noop("Data"),
+                            gettext_noop(
+                                "Browse and edit every field recorded on this resource"
+                            ),
+                        ),
+                        view_entry(
+                            "graph",
+                            "GraphView",
+                            gettext_noop("Graph"),
+                            gettext_noop(
+                                "A visual overview of how this resource connects to its data"
+                            ),
+                        ),
+                    ],
+                },
+            }
+        ],
+    }
 
 
 def iterate_card_tree(cards, parent_card):
@@ -204,114 +221,68 @@ def iterate_summary_entries(resource_report_config):
         yield from view.get("config", {}).get("home", {}).get("summary", [])
 
 
+def validate_card(report_graph, card, parent_card):
+    nodegroup_alias = card.get("nodegroup_alias")
+    grouping_node = report_graph.grouping_nodes_by_alias.get(nodegroup_alias)
+    if not grouping_node:
+        raise ValidationError(f"Card refers to an unknown nodegroup: {nodegroup_alias}")
+    nodegroup_id = grouping_node.nodegroup_id
+
+    if parent_card is None:
+        if report_graph.parent_nodegroup_ids_by_nodegroup_id.get(nodegroup_id):
+            raise ValidationError(
+                f"Card {nodegroup_alias} is not a top-level nodegroup; nest it under its parent card's children"
+            )
+    else:
+        parent_nodegroup_id = report_graph.grouping_nodes_by_alias[
+            parent_card["nodegroup_alias"]
+        ].nodegroup_id
+        if not report_graph.is_descendant_nodegroup(nodegroup_id, parent_nodegroup_id):
+            raise ValidationError(
+                f"Card {nodegroup_alias} is not nested under its parent card's nodegroup"
+            )
+
+    nodegroup_node_aliases = {
+        node.alias for node in report_graph.nodes_by_nodegroup_id[nodegroup_id]
+    }
+    referenced_node_aliases = [
+        card.get("primary_field"),
+        card.get("badge_field"),
+        *card.get("row_fields", []),
+        *card.get("labels", {}),
+    ]
+    for node_alias in referenced_node_aliases:
+        if node_alias is not None and node_alias not in nodegroup_node_aliases:
+            raise ValidationError(
+                f"Card {nodegroup_alias} refers to a node outside its nodegroup: {node_alias}"
+            )
+
+    geometry_alias = card.get("geometry_alias")
+    if geometry_alias is not None:
+        geometry_node = report_graph.nodes_by_alias.get(geometry_alias)
+        if (
+            not geometry_node
+            or geometry_node.datatype not in report_graph.geometric_datatypes
+            or not (
+                geometry_node.nodegroup_id == nodegroup_id
+                or report_graph.is_descendant_nodegroup(
+                    geometry_node.nodegroup_id, nodegroup_id
+                )
+            )
+        ):
+            raise ValidationError(
+                f"Card {nodegroup_alias} geometry_alias is not a geometry node within this card: {geometry_alias}"
+            )
+
+
 def validate_resource_report_config(resource_report_config, graph):
     report_graph = ResourceReportGraph(graph)
     for card, parent_card in iterate_cards(resource_report_config):
-        report_graph.validate_card(card, parent_card)
+        validate_card(report_graph, card, parent_card)
     for summary_entry in iterate_summary_entries(resource_report_config):
-        report_graph.validate_summary_entry(summary_entry)
-
-
-def generate_resource_report_config(graph):
-    report_graph = ResourceReportGraph(graph)
-    return {
-        "name": "Default",
-        "components": [
-            {
-                "component": RESOURCE_REPORT_COMPONENT,
-                "config": {
-                    "header": {
-                        "summary": [],
-                        "export_formats": ["json-ld", "json", "csv"],
-                    },
-                    "views": [
-                        {
-                            "id": "report",
-                            "component": "ReportView",
-                            "label": translated_labels(gettext_noop("Report")),
-                            "description": translated_labels(
-                                gettext_noop(
-                                    "A curated summary of this resource's data"
-                                )
-                            ),
-                            "config": {
-                                "tabs": [
-                                    {
-                                        "label": translated_labels(
-                                            gettext_noop("Overview")
-                                        ),
-                                        "sections": [
-                                            {
-                                                "cards": [
-                                                    report_graph.card_entry(
-                                                        nodegroup_id
-                                                    )
-                                                    for nodegroup_id in report_graph.top_level_nodegroup_ids()
-                                                ]
-                                            }
-                                        ],
-                                    }
-                                ],
-                                "home": {
-                                    "summary": [],
-                                    "drawer": [
-                                        {
-                                            "component": "EditHistoryPanel",
-                                            "label": translated_labels(
-                                                gettext_noop("Edit History")
-                                            ),
-                                            "icon": "pi pi-clock",
-                                        },
-                                        {
-                                            "component": "ImagesPanel",
-                                            "label": translated_labels(
-                                                gettext_noop("Images")
-                                            ),
-                                            "icon": "pi pi-image",
-                                        },
-                                        {
-                                            "component": "RelatedResourcesPanel",
-                                            "label": translated_labels(
-                                                gettext_noop("Related Resources")
-                                            ),
-                                            "icon": "pi pi-link",
-                                        },
-                                        {
-                                            "component": "ManagePanel",
-                                            "label": translated_labels(
-                                                gettext_noop("Manage")
-                                            ),
-                                            "icon": "pi pi-cog",
-                                        },
-                                    ],
-                                },
-                            },
-                        },
-                        {
-                            "id": "data",
-                            "component": "DataView",
-                            "label": translated_labels(gettext_noop("Data")),
-                            "description": translated_labels(
-                                gettext_noop(
-                                    "Browse and edit every field recorded on this resource"
-                                )
-                            ),
-                        },
-                        {
-                            "id": "graph",
-                            "component": "GraphView",
-                            "label": translated_labels(gettext_noop("Graph")),
-                            "description": translated_labels(
-                                gettext_noop(
-                                    "A visual overview of how this resource connects to its data"
-                                )
-                            ),
-                        },
-                    ],
-                },
-            }
-        ],
-    }
+        node_alias = summary_entry.get("node_alias")
+        if node_alias not in report_graph.nodes_by_alias:
+            raise ValidationError(f"Summary refers to an unknown node: {node_alias}")
 
 
 def prune_resource_report_config(

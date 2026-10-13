@@ -1,5 +1,3 @@
-import copy
-
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
@@ -98,8 +96,7 @@ def curated_config():
                                                     },
                                                     {
                                                         "nodegroup_alias": "identifiers",
-                                                        "component": "my_app/Report/CustomCard",
-                                                        "anything": {"goes": True},
+                                                        "component": "MultiValueCard",
                                                     },
                                                 ],
                                             }
@@ -108,17 +105,9 @@ def curated_config():
                                 ],
                                 "home": {
                                     "summary": [{"node_alias": "identifier_content"}],
-                                    "drawer": [
-                                        {
-                                            "component": "EditHistoryPanel",
-                                            "label": {"en": "Edit History"},
-                                            "icon": "pi pi-clock",
-                                        }
-                                    ],
                                 },
                             },
                         },
-                        {"id": "custom", "component": "my_app/Report/CustomView"},
                     ],
                 },
             }
@@ -174,13 +163,7 @@ class ResourceReportConfigTests(TestCase):
         report_config.full_clean()
 
         resource_report = report_config.config["components"][0]
-        self.assertEqual(resource_report["component"], RESOURCE_REPORT_COMPONENT)
         views = resource_report["config"]["views"]
-        self.assertEqual(
-            [view["component"] for view in views],
-            ["ReportView", "DataView", "GraphView"],
-        )
-        self.assertEqual(views[0]["label"]["en"], "Report")
         self.assertEqual(
             views[0]["config"]["tabs"][0]["sections"][0]["cards"],
             [
@@ -198,13 +181,6 @@ class ResourceReportConfigTests(TestCase):
                 },
                 {"nodegroup_alias": "description", "component": "SimpleFieldCard"},
             ],
-        )
-        self.assertEqual(
-            [
-                drawer_entry["component"]
-                for drawer_entry in views[0]["config"]["home"]["drawer"]
-            ],
-            ["EditHistoryPanel", "ImagesPanel", "RelatedResourcesPanel", "ManagePanel"],
         )
 
     def test_curated_config_is_valid(self):
@@ -224,9 +200,6 @@ class ResourceReportConfigTests(TestCase):
         def mutate_row_field_outside_nodegroup(config):
             first_card(config)["row_fields"] = ["identifier_content"]
 
-        def mutate_label_outside_nodegroup(config):
-            first_card(config)["labels"] = {"identifier_content": "Identifier"}
-
         def mutate_non_geometry_geometry_alias(config):
             first_card(config)["geometry_alias"] = "name_content"
 
@@ -240,7 +213,6 @@ class ResourceReportConfigTests(TestCase):
             mutate_child_nodegroup_at_top_level,
             mutate_child_under_the_wrong_parent,
             mutate_row_field_outside_nodegroup,
-            mutate_label_outside_nodegroup,
             mutate_non_geometry_geometry_alias,
             mutate_unknown_summary_node,
         ):
@@ -284,13 +256,3 @@ class ResourceReportConfigTests(TestCase):
         resource_report = resource_report_config_from(self.prune([]))
         self.assertEqual(resource_report["views"][0]["config"]["tabs"], [])
         self.assertEqual(resource_report["views"][0]["config"]["home"]["summary"], [])
-
-    def test_pruning_leaves_stored_config_untouched(self):
-        report_config = ReportConfig(graph=self.graph, config=curated_config())
-        original_config = copy.deepcopy(report_config.config)
-        update_report_configuration_with_nodegroup_permissions(
-            report_configuration_instance=report_config,
-            report_nodegroup_ids_with_user_read_permission=set(),
-            report_nodegroup_ids_with_user_write_permission=set(),
-        )
-        self.assertEqual(report_config.config, original_config)

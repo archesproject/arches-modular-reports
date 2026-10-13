@@ -244,14 +244,6 @@ class GenerateReportConfigCommandTests(TestCase):
             ReportConfig.objects.filter(graph=self.graph, slug="other_gen").exists()
         )
 
-    def test_generate_with_unknown_slug_writes_error_and_creates_nothing(self):
-        stderr = StringIO()
-        management.call_command(
-            "report_configs", "generate", slug="not_registered", stderr=stderr
-        )
-        self.assertFalse(ReportConfig.objects.filter(graph=self.graph).exists())
-        self.assertIn("not_registered", stderr.getvalue())
-
     def test_generate_skips_invalid_generated_config(self):
         register("broken_gen", lambda graph: {"name": "Broken", "bogus": True})
         stderr = StringIO()

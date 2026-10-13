@@ -9,7 +9,6 @@ import type { ResourceData } from "@/arches_modular_reports/ModularReport/types.
 export interface ResourceDataState {
     resource: Ref<ResourceData | null>;
     fetchError: Ref<Error | null>;
-    reloadResource: () => Promise<void>;
 }
 
 export function useResourceData(
@@ -34,5 +33,5 @@ export function useResourceData(
 
     watchEffect(reloadResource);
 
-    return { resource, fetchError, reloadResource };
+    return { resource, fetchError };
 }

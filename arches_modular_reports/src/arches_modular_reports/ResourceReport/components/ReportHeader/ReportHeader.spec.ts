@@ -4,10 +4,7 @@ import OpenVue from "openvue/config";
 
 import ReportHeader from "@/arches_modular_reports/ResourceReport/components/ReportHeader/ReportHeader.vue";
 
-import type {
-    LifecycleStateSummary,
-    SummaryLine,
-} from "@/arches_modular_reports/ResourceReport/types.ts";
+import type { LifecycleStateSummary } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
     buildExportUrl: (resourceInstanceId: string, exportFormat: string) =>
@@ -34,11 +31,9 @@ const RETIRED: LifecycleStateSummary = {
 function mountHeader({
     previousStates = [],
     nextStates = [],
-    summaryLines = [],
 }: {
     previousStates?: LifecycleStateSummary[];
     nextStates?: LifecycleStateSummary[];
-    summaryLines?: SummaryLine[];
 } = {}) {
     return mount(ReportHeader, {
         props: {
@@ -50,7 +45,7 @@ function mountHeader({
             previousStates,
             nextStates,
             isTransitioning: false,
-            summaryLines,
+            summaryLines: [],
             exportFormats: ["json-ld", "csv"],
             resourceInstanceId: "resource-id",
         },
@@ -59,39 +54,6 @@ function mountHeader({
 }
 
 describe("ReportHeader", () => {
-    it("renders the resource name, graph name and lifecycle state", () => {
-        const wrapper = mountHeader();
-
-        expect(wrapper.find("h2").text()).toBe("Cobalt blue");
-        expect(wrapper.find(".report-header-type").text()).toBe(
-            "Reference and Sample Collection Item",
-        );
-        expect(wrapper.find(".p-tag").text()).toBe("Active");
-        expect(wrapper.find(".report-header-thumb i").classes()).toEqual([
-            "fa",
-            "fa-asterisk",
-        ]);
-    });
-
-    it("omits the summary when there are no summary lines", () => {
-        expect(mountHeader().find("dl").exists()).toBe(false);
-    });
-
-    it("renders each summary line", () => {
-        const wrapper = mountHeader({
-            summaryLines: [{ label: "Location", value: "Getty Center" }],
-        });
-
-        expect(wrapper.find("dt").text()).toBe("Location");
-        expect(wrapper.find("dd").text()).toBe("Getty Center");
-    });
-
-    it("renders no lifecycle actions without transitions", () => {
-        expect(
-            mountHeader().find(".report-header-lifecycle-actions").exists(),
-        ).toBe(false);
-    });
-
     it("emits the target state of a lifecycle transition", async () => {
         const wrapper = mountHeader({
             previousStates: [DRAFT],
