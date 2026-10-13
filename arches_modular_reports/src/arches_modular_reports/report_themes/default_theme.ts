@@ -146,23 +146,27 @@ const ModularReportPreset = definePreset(Aura, {
     css: compileGlobalCss(cssOverrides),
     components: {
         button: {
-            paddingX: "1.2rem",
-            paddingY: "0.8rem",
-            sm: {
-                fontSize: "1.3rem",
-                paddingX: "1rem",
-                paddingY: "0.5rem",
-            },
-            lg: {
-                fontSize: "1.8rem",
-                paddingX: "1.4rem",
-                paddingY: "1rem",
+            root: {
+                paddingX: "1.2rem",
+                paddingY: "0.8rem",
+                sm: {
+                    fontSize: "1.3rem",
+                    paddingX: "1rem",
+                    paddingY: "0.5rem",
+                },
+                lg: {
+                    fontSize: "1.8rem",
+                    paddingX: "1.4rem",
+                    paddingY: "1rem",
+                },
             },
         },
         tag: {
-            fontSize: "1.2rem",
-            padding: "0.3rem 0.8rem",
-            gap: "0.4rem",
+            root: {
+                fontSize: "1.2rem",
+                padding: "0.3rem 0.8rem",
+                gap: "0.4rem",
+            },
         },
         datatable: {
             rowToggleButton: {

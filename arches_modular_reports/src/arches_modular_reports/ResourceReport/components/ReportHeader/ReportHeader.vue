@@ -83,41 +83,13 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
             />
         </div>
         <div class="report-header-content">
-            <div class="report-header-name-row">
-                <div class="report-header-title">
-                    <h2 class="report-header-name">{{ displayName }}</h2>
-                    <Tag
-                        :value="lifecycleStateName"
-                        :severity="lifecycleSeverity"
-                        :rounded="true"
-                    />
-                </div>
-                <div
-                    v-if="hasTransitions"
-                    class="report-header-lifecycle-actions"
-                >
-                    <Button
-                        v-for="lifecycleState in previousStates"
-                        :key="lifecycleState.id"
-                        icon="pi pi-arrow-left"
-                        size="small"
-                        :label="lifecycleState.action_label"
-                        :severity="transitionSeverity(lifecycleState)"
-                        :loading="isTransitioning"
-                        @click="emit(TRANSITION_LIFECYCLE, lifecycleState.id)"
-                    />
-                    <Button
-                        v-for="lifecycleState in nextStates"
-                        :key="lifecycleState.id"
-                        icon="pi pi-arrow-right"
-                        icon-pos="right"
-                        size="small"
-                        :label="lifecycleState.action_label"
-                        :severity="transitionSeverity(lifecycleState)"
-                        :loading="isTransitioning"
-                        @click="emit(TRANSITION_LIFECYCLE, lifecycleState.id)"
-                    />
-                </div>
+            <div class="report-header-title">
+                <h2 class="report-header-name">{{ displayName }}</h2>
+                <Tag
+                    :value="lifecycleStateName"
+                    :severity="lifecycleSeverity"
+                    :rounded="true"
+                />
             </div>
             <span class="report-header-type">{{ graphName }}</span>
             <dl
@@ -134,24 +106,55 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                 </div>
             </dl>
         </div>
-        <nav
-            v-if="exportFormats.length > 0"
-            class="report-header-exports"
-            :aria-label="$gettext('Export')"
+        <div
+            v-if="hasTransitions || exportFormats.length > 0"
+            class="report-header-actions"
         >
-            <Button
-                v-for="exportFormat in exportFormats"
-                :key="exportFormat"
-                as="a"
-                variant="link"
-                size="small"
-                target="_blank"
-                rel="noopener"
-                :href="buildExportUrl(resourceInstanceId, exportFormat)"
-                :label="exportFormatLabels[exportFormat]"
-                :aria-label="exportAriaLabel(exportFormat)"
-            />
-        </nav>
+            <div
+                v-if="hasTransitions"
+                class="report-header-lifecycle-actions"
+            >
+                <Button
+                    v-for="lifecycleState in previousStates"
+                    :key="lifecycleState.id"
+                    icon="pi pi-arrow-left"
+                    size="small"
+                    :label="lifecycleState.action_label"
+                    :severity="transitionSeverity(lifecycleState)"
+                    :loading="isTransitioning"
+                    @click="emit(TRANSITION_LIFECYCLE, lifecycleState.id)"
+                />
+                <Button
+                    v-for="lifecycleState in nextStates"
+                    :key="lifecycleState.id"
+                    icon="pi pi-arrow-right"
+                    icon-pos="right"
+                    size="small"
+                    :label="lifecycleState.action_label"
+                    :severity="transitionSeverity(lifecycleState)"
+                    :loading="isTransitioning"
+                    @click="emit(TRANSITION_LIFECYCLE, lifecycleState.id)"
+                />
+            </div>
+            <nav
+                v-if="exportFormats.length > 0"
+                class="report-header-exports"
+                :aria-label="$gettext('Export')"
+            >
+                <Button
+                    v-for="exportFormat in exportFormats"
+                    :key="exportFormat"
+                    as="a"
+                    variant="link"
+                    size="small"
+                    target="_blank"
+                    rel="noopener"
+                    :href="buildExportUrl(resourceInstanceId, exportFormat)"
+                    :label="exportFormatLabels[exportFormat]"
+                    :aria-label="exportAriaLabel(exportFormat)"
+                />
+            </nav>
+        </div>
     </header>
 </template>
 
@@ -187,13 +190,6 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     padding-inline: 1.6rem;
 }
 
-.report-header-name-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-}
-
 .report-header-title {
     display: flex;
     align-items: center;
@@ -211,9 +207,19 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     white-space: nowrap;
 }
 
+.report-header-actions {
+    display: grid;
+    flex-shrink: 0;
+    grid-template-rows: 1fr auto;
+    justify-items: end;
+    gap: 0.8rem;
+    padding-block: 1.2rem;
+    padding-inline: 1.6rem;
+}
+
 .report-header-lifecycle-actions {
     display: flex;
-    flex-shrink: 0;
+    align-self: start;
     gap: 0.8rem;
 }
 
@@ -246,9 +252,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
 
 .report-header-exports {
     display: flex;
-    align-items: flex-end;
+    grid-row: 2;
     gap: 0.4rem;
-    padding-block: 1.2rem;
-    padding-inline: 1.6rem;
 }
 </style>
