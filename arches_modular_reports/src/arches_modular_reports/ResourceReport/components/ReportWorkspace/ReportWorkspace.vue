@@ -1,0 +1,263 @@
+<script setup lang="ts">
+import { computed, nextTick, ref, useTemplateRef } from "vue";
+
+import Splitter from "openvue/splitter";
+import SplitterPanel from "openvue/splitterpanel";
+import Tab from "openvue/tab";
+import TabList from "openvue/tablist";
+import TabPanel from "openvue/tabpanel";
+import TabPanels from "openvue/tabpanels";
+import Tabs from "openvue/tabs";
+
+import GenericFolio from "@/arches_vue_components/generics/GenericFolio/GenericFolio.vue";
+import KeyDataSummary from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/KeyDataSummary.vue";
+
+import { nodegroupTiles } from "@/arches_vue_components/generics/GenericFolio/utils.ts";
+import { VIEW } from "@/arches_vue_components/widgets/constants.ts";
+import { nodegroupLineage } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
+import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
+
+import type {
+    ReportData,
+    ReportWorkspaceConfig,
+} from "@/arches_modular_reports/ResourceReport/types.ts";
+
+const SPLITTER_STATE_KEY = "arches-modular-reports-report-workspace";
+const MINIMUM_PANE_SIZE = 20;
+const MAIN_PANE_SIZE = 60;
+const HOME_PANE_SIZE = 40;
+const FULL_PANE_SIZE = 100;
+
+const { workspaceConfig, reportData } = defineProps<{
+    workspaceConfig: ReportWorkspaceConfig;
+    reportData: ReportData;
+}>();
+
+const folioAnchors = useTemplateRef<HTMLElement[]>("folioAnchors");
+const activeTabIndex = ref(0);
+const flashedNodegroupAlias = ref<string | null>(null);
+
+const mainPaneSize = computed(() => {
+    if (workspaceConfig.home) {
+        return MAIN_PANE_SIZE;
+    }
+    return FULL_PANE_SIZE;
+});
+
+const tabs = computed(() =>
+    (workspaceConfig.tabs ?? []).map((tabConfig) => ({
+        label:
+            localizeLabel(tabConfig.label, reportData.context.language) ?? "",
+        sections: (tabConfig.sections ?? []).map((sectionConfig) => ({
+            label:
+                localizeLabel(
+                    sectionConfig.label,
+                    reportData.context.language,
+                ) ?? "",
+            icon: sectionConfig.icon ?? "",
+            folios: (sectionConfig.folios ?? []).map((folioConfig) => ({
+                nodegroupAlias: folioConfig.nodegroup_alias,
+                tiles: nodegroupTiles(
+                    reportData.resource.aliased_data[
+                        folioConfig.nodegroup_alias
+                    ],
+                ),
+            })),
+        })),
+    })),
+);
+
+const tabIndexesByNodegroupAlias = computed(() => {
+    const tabIndexes: Record<string, number> = {};
+    tabs.value.forEach((tab, tabIndex) => {
+        for (const section of tab.sections) {
+            for (const folio of section.folios) {
+                tabIndexes[folio.nodegroupAlias] ??= tabIndex;
+            }
+        }
+    });
+    return tabIndexes;
+});
+
+async function jumpToNode(nodeAlias: string): Promise<void> {
+    const targetNodegroupAlias = nodegroupLineage(
+        reportData.nodegroupWidgetConfigs,
+        reportData.graphNodesByAlias[nodeAlias].nodegroupAlias,
+    ).find(
+        (nodegroupAlias) => nodegroupAlias in tabIndexesByNodegroupAlias.value,
+    );
+    if (targetNodegroupAlias === undefined) {
+        return;
+    }
+
+    flashedNodegroupAlias.value = null;
+    activeTabIndex.value =
+        tabIndexesByNodegroupAlias.value[targetNodegroupAlias];
+    await nextTick();
+
+    const folioAnchor = folioAnchors.value?.find(
+        (anchor) => anchor.dataset.nodegroupAlias === targetNodegroupAlias,
+    );
+    folioAnchor?.scrollIntoView({ block: "center" });
+    flashedNodegroupAlias.value = targetNodegroupAlias;
+}
+
+function clearFlash(): void {
+    flashedNodegroupAlias.value = null;
+}
+</script>
+
+<template>
+    <Splitter
+        class="report-workspace"
+        state-storage="local"
+        :state-key="SPLITTER_STATE_KEY"
+    >
+        <SplitterPanel
+            class="report-workspace-pane"
+            :size="mainPaneSize"
+            :min-size="MINIMUM_PANE_SIZE"
+        >
+            <Tabs
+                v-model:value="activeTabIndex"
+                :lazy="true"
+            >
+                <TabList v-if="tabs.length > 1">
+                    <Tab
+                        v-for="(tab, tabIndex) in tabs"
+                        :key="tabIndex"
+                        :value="tabIndex"
+                    >
+                        <span>{{ tab.label }}</span>
+                    </Tab>
+                </TabList>
+                <TabPanels>
+                    <TabPanel
+                        v-for="(tab, tabIndex) in tabs"
+                        :key="tabIndex"
+                        class="report-workspace-tab"
+                        :value="tabIndex"
+                    >
+                        <section
+                            v-for="(section, sectionIndex) in tab.sections"
+                            :key="sectionIndex"
+                            class="report-workspace-section"
+                        >
+                            <h3
+                                v-if="section.label"
+                                class="report-workspace-section-label"
+                            >
+                                <i
+                                    v-if="section.icon"
+                                    :class="section.icon"
+                                    aria-hidden="true"
+                                />
+                                <span>{{ section.label }}</span>
+                            </h3>
+                            <div
+                                v-for="folio in section.folios"
+                                :key="folio.nodegroupAlias"
+                                ref="folioAnchors"
+                                class="report-workspace-folio"
+                                :class="{
+                                    'report-workspace-folio-flash':
+                                        flashedNodegroupAlias ===
+                                        folio.nodegroupAlias,
+                                }"
+                                :data-nodegroup-alias="folio.nodegroupAlias"
+                                @animationend.self="clearFlash"
+                            >
+                                <GenericFolio
+                                    :mode="VIEW"
+                                    :nodegroup-alias="folio.nodegroupAlias"
+                                    :graph-slug="reportData.context.graph.slug"
+                                    :aliased-nodegroup-data="folio.tiles"
+                                />
+                            </div>
+                        </section>
+                    </TabPanel>
+                </TabPanels>
+            </Tabs>
+        </SplitterPanel>
+        <SplitterPanel
+            v-if="workspaceConfig.home"
+            class="report-workspace-pane report-workspace-home"
+            :size="HOME_PANE_SIZE"
+            :min-size="MINIMUM_PANE_SIZE"
+        >
+            <KeyDataSummary
+                :summary="workspaceConfig.home.summary ?? []"
+                :report-data="reportData"
+                @jump-to-node="jumpToNode"
+            />
+        </SplitterPanel>
+    </Splitter>
+</template>
+
+<style scoped>
+.report-workspace {
+    border: none;
+    border-radius: 0;
+}
+
+.report-workspace-pane {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow-y: auto;
+}
+
+.report-workspace-home {
+    padding: 1.6rem;
+    background: var(
+        --p-resource-report-aside-background,
+        var(--p-content-hover-background)
+    );
+}
+
+.report-workspace-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 2.4rem;
+    max-width: 120rem;
+}
+
+.report-workspace-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+}
+
+.report-workspace-section-label {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin: 0;
+    padding-block-end: 0.8rem;
+    border-block-end: 0.1rem solid var(--p-content-border-color);
+    color: var(--p-text-color);
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.report-workspace-folio {
+    border-radius: var(--p-content-border-radius);
+}
+
+.report-workspace-folio-flash {
+    animation: report-workspace-folio-flash 1.6s ease-out;
+}
+
+@keyframes report-workspace-folio-flash {
+    from {
+        background: var(--p-highlight-background);
+        box-shadow: 0 0 0 0.8rem var(--p-highlight-background);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .report-workspace-pane {
+        scroll-behavior: smooth;
+    }
+}
+</style>

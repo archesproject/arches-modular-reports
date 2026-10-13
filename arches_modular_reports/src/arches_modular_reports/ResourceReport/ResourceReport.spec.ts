@@ -4,16 +4,16 @@ import OpenVue from "openvue/config";
 
 import ResourceReport from "@/arches_modular_reports/ResourceReport/ResourceReport.vue";
 
-import {
-    fetchModularReportResource,
-    fetchNodePresentation,
-} from "@/arches_modular_reports/ModularReport/api.ts";
+import { fetchModularReportResource } from "@/arches_modular_reports/ModularReport/api.ts";
 import {
     fetchReportContext,
     updateLifecycleState,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 
-import type { NodePresentation } from "@/arches_modular_reports/ModularReport/types.ts";
+import type {
+    CardXNodeXWidgetData,
+    NodegroupWidgetConfig,
+} from "@/arches_vue_components/types.ts";
 import type {
     LifecycleStateSummary,
     ReportContext,
@@ -23,7 +23,6 @@ import type {
 
 vi.mock("@/arches_modular_reports/ModularReport/api.ts", () => ({
     fetchModularReportResource: vi.fn(),
-    fetchNodePresentation: vi.fn(),
 }));
 
 vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
@@ -31,6 +30,22 @@ vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
     updateLifecycleState: vi.fn(),
     buildExportUrl: () => "/export",
 }));
+
+vi.mock(
+    "@/arches_vue_components/stores/useNodegroupWidgetConfigStore.ts",
+    () => ({
+        useNodegroupWidgetConfigStore: () => ({
+            fetchGraphWidgetConfigs: () =>
+                Promise.resolve(NODEGROUP_WIDGET_CONFIGS),
+        }),
+    }),
+);
+
+const GenericFolioStub = {
+    name: "GenericFolio",
+    props: ["mode", "nodegroupAlias", "graphSlug", "aliasedNodegroupData"],
+    template: "<div class='folio-stub' />",
+};
 
 const DRAFT: LifecycleStateSummary = {
     id: "draft",
@@ -77,37 +92,40 @@ function makeContext(
     };
 }
 
-function makeNodePresentation(
-    datatype: string,
-    widgetLabel: string,
-): NodePresentation {
+function makeWidget(nodeAlias: string, label: string): CardXNodeXWidgetData {
     return {
-        nodeid: `${widgetLabel}-node`,
-        name: widgetLabel,
-        datatype,
-        card_name: "Names",
-        card_order: 0,
-        card_visible: true,
-        widget_label: widgetLabel,
-        widget_order: 0,
-        visible: true,
-        nodegroup: {
+        card: {
+            name: "Names",
+            sortorder: 0,
+            cardid: "names-card",
             nodegroup_id: "names-nodegroup",
-            cardinality: "n",
-            alias: "names",
-            parent_nodegroup_id: null,
-            writable: true,
+            nodes: [],
+            visible: true,
         },
-        is_rich_text: false,
-        is_numeric: false,
-        is_required: false,
-        number_format: { format: "", prefix: {}, suffix: {} },
+        config: {},
+        id: `${nodeAlias}-widget`,
+        label,
+        node: {
+            alias: nodeAlias,
+            isrequired: false,
+            nodeid: `${nodeAlias}-node`,
+            datatype: "string",
+            config: {},
+        },
+        sortorder: 0,
+        visible: true,
+        widget: { widgetid: "text-widget", component: "TextWidget" },
     };
 }
 
-const NODE_PRESENTATION = {
-    names: makeNodePresentation("semantic", "Names"),
-    name_content: makeNodePresentation("string", "Name"),
+const NODEGROUP_WIDGET_CONFIGS: Record<string, NodegroupWidgetConfig> = {
+    names: {
+        parent_nodegroup_alias: null,
+        cardinality: "n",
+        is_writable: true,
+        card: null,
+        card_x_node_x_widgets: [makeWidget("name_content", "Name")],
+    },
 };
 
 const RESOURCE = {
@@ -137,16 +155,16 @@ const RESOURCE = {
 
 const REPORT_CONFIG: ResourceReportConfig = {
     header: { export_formats: ["json-ld"] },
-    views: [
+    workspaces: [
         {
             id: "report",
-            component: "ReportView",
+            component: "ReportWorkspace",
             label: { en: "Report" },
             description: { en: "A curated summary of this resource's data" },
             config: { tabs: [], home: { summary: [], drawer: [] } },
         },
-        { id: "data", component: "DataView", label: { en: "Data" } },
-        { id: "graph", component: "GraphView", label: { en: "Graph" } },
+        { id: "data", component: "DataWorkspace", label: { en: "Data" } },
+        { id: "graph", component: "GraphWorkspace", label: { en: "Graph" } },
     ],
 };
 
@@ -163,6 +181,7 @@ function mountReport(config: ResourceReportConfig = REPORT_CONFIG) {
         global: {
             plugins: [[OpenVue, { theme: "none" }]],
             provide: { graphSlug: "reference_and_sample_collection_item" },
+            stubs: { GenericFolio: GenericFolioStub },
         },
     });
 }
@@ -174,8 +193,8 @@ function tabLabels(wrapper: ReturnType<typeof mountReport>): string[] {
 describe("ResourceReport", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        Element.prototype.scrollIntoView = vi.fn();
         vi.mocked(fetchReportContext).mockResolvedValue(makeContext());
-        vi.mocked(fetchNodePresentation).mockResolvedValue(NODE_PRESENTATION);
         vi.mocked(fetchModularReportResource).mockResolvedValue(RESOURCE);
         vi.mocked(updateLifecycleState).mockResolvedValue();
     });
@@ -195,19 +214,61 @@ describe("ResourceReport", () => {
         expect(wrapper.find(".resource-report-caption").text()).toBe(
             "A curated summary of this resource's data",
         );
-        expect(wrapper.find(".resource-report-splitter").exists()).toBe(true);
+        expect(wrapper.find(".report-workspace").exists()).toBe(true);
     });
 
-    it("renders full-width views without a splitter", async () => {
+    it("switches between workspaces", async () => {
         const wrapper = mountReport();
         await flushPromises();
 
         await wrapper.findAll('[role="tab"]')[2].trigger("click");
 
-        expect(wrapper.find(".resource-report-splitter").exists()).toBe(false);
-        expect(wrapper.find(".resource-report-full-pane").text()).toBe(
+        expect(wrapper.find(".report-workspace").exists()).toBe(false);
+        expect(wrapper.find(".resource-report-workspace").text()).toBe(
             "A graph view of this resource is coming soon.",
         );
+    });
+
+    it("renders configured folios and jumps to them from the key data summary", async () => {
+        const wrapper = mountReport({
+            workspaces: [
+                {
+                    id: "report",
+                    component: "ReportWorkspace",
+                    config: {
+                        tabs: [
+                            {
+                                sections: [
+                                    {
+                                        folios: [{ nodegroup_alias: "names" }],
+                                    },
+                                ],
+                            },
+                        ],
+                        home: { summary: [{ node_alias: "name_content" }] },
+                    },
+                },
+            ],
+        });
+        await flushPromises();
+
+        const folio = wrapper.findComponent(GenericFolioStub);
+        expect(folio.props()).toMatchObject({
+            mode: "view",
+            nodegroupAlias: "names",
+            graphSlug: "reference_and_sample_collection_item",
+        });
+        expect(folio.props("aliasedNodegroupData")).toHaveLength(1);
+
+        await wrapper.find(".key-data-summary button").trigger("click");
+        await flushPromises();
+
+        expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
+            block: "center",
+        });
+        expect(
+            wrapper.find('[data-nodegroup-alias="names"]').classes(),
+        ).toContain("report-workspace-folio-flash");
     });
 
     it("lets reviewers change the lifecycle state", async () => {
@@ -238,11 +299,13 @@ describe("ResourceReport", () => {
         );
     });
 
-    it("reports a configuration without views", async () => {
+    it("reports a configuration without workspaces", async () => {
         const wrapper = mountReport({});
         await flushPromises();
 
-        expect(wrapper.text()).toBe("This report configuration has no views.");
+        expect(wrapper.text()).toBe(
+            "This report configuration has no workspaces.",
+        );
     });
 
     it("reports report data that cannot be loaded", async () => {

@@ -1,0 +1,127 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import { useGettext } from "vue3-gettext";
+
+import Button from "openvue/button";
+
+import { EMPTY_VALUE } from "@/arches_modular_reports/ResourceReport/constants.ts";
+import { findNodeValues } from "@/arches_modular_reports/ResourceReport/utils/find-node-values.ts";
+import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
+
+import type {
+    ReportData,
+    SummaryEntryConfig,
+} from "@/arches_modular_reports/ResourceReport/types.ts";
+
+const JUMP_TO_NODE = "jump-to-node" as const;
+
+const { summary, reportData } = defineProps<{
+    summary: SummaryEntryConfig[];
+    reportData: ReportData;
+}>();
+
+const emit = defineEmits<{
+    (event: typeof JUMP_TO_NODE, nodeAlias: string): void;
+}>();
+
+const { $gettext } = useGettext();
+
+const summaryRows = computed(() =>
+    summary.map((summaryEntry) => {
+        const values = findNodeValues(
+            reportData.resource.aliased_data,
+            summaryEntry.node_alias,
+        )
+            .map((nodeData) => nodeData.display_value)
+            .filter((displayValue) => displayValue !== "");
+        return {
+            nodeAlias: summaryEntry.node_alias,
+            label:
+                localizeLabel(
+                    summaryEntry.label,
+                    reportData.context.language,
+                ) ??
+                reportData.graphNodesByAlias[summaryEntry.node_alias].label,
+            value: values.join("; ") || EMPTY_VALUE,
+        };
+    }),
+);
+</script>
+
+<template>
+    <section class="key-data-summary">
+        <h3 class="key-data-summary-title">
+            {{ $gettext("Key Data Summary") }}
+        </h3>
+        <p
+            v-if="summaryRows.length === 0"
+            class="key-data-summary-empty"
+        >
+            {{ $gettext("No key data is configured for this report.") }}
+        </p>
+        <dl
+            v-else
+            class="key-data-summary-rows"
+        >
+            <div
+                v-for="summaryRow in summaryRows"
+                :key="summaryRow.nodeAlias"
+                class="key-data-summary-row"
+            >
+                <dt>
+                    <Button
+                        variant="link"
+                        :label="summaryRow.label"
+                        @click="emit(JUMP_TO_NODE, summaryRow.nodeAlias)"
+                    />
+                </dt>
+                <dd>{{ summaryRow.value }}</dd>
+            </div>
+        </dl>
+    </section>
+</template>
+
+<style scoped>
+.key-data-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 1.6rem;
+    border: 0.1rem solid var(--p-content-border-color);
+    border-radius: var(--p-content-border-radius);
+    background: var(--p-content-background);
+}
+
+.key-data-summary-title {
+    margin: 0;
+    color: var(--p-text-muted-color);
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.08rem;
+    text-transform: uppercase;
+}
+
+.key-data-summary-empty {
+    margin: 0;
+    color: var(--p-text-muted-color);
+    font-size: 1.3rem;
+}
+
+.key-data-summary-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin: 0;
+}
+
+.key-data-summary-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+    font-size: 1.3rem;
+}
+
+.key-data-summary-row dd {
+    margin: 0;
+}
+</style>

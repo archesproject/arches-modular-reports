@@ -4,47 +4,42 @@ import { useGettext } from "vue3-gettext";
 
 import Message from "openvue/message";
 import Skeleton from "openvue/skeleton";
-import Splitter from "openvue/splitter";
-import SplitterPanel from "openvue/splitterpanel";
 
-import DataView from "@/arches_modular_reports/ResourceReport/components/DataView.vue";
-import GraphView from "@/arches_modular_reports/ResourceReport/components/GraphView.vue";
+import DataWorkspace from "@/arches_modular_reports/ResourceReport/components/DataWorkspace.vue";
+import GraphWorkspace from "@/arches_modular_reports/ResourceReport/components/GraphWorkspace.vue";
 import ReportHeader from "@/arches_modular_reports/ResourceReport/components/ReportHeader.vue";
-import ReportPlaceholder from "@/arches_modular_reports/ResourceReport/components/ReportPlaceholder.vue";
-import ReportView from "@/arches_modular_reports/ResourceReport/components/ReportView.vue";
-import ViewStrip from "@/arches_modular_reports/ResourceReport/components/ViewStrip.vue";
+import ReportWorkspace from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/ReportWorkspace.vue";
+import WorkspaceStrip from "@/arches_modular_reports/ResourceReport/components/WorkspaceStrip.vue";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
+import { useGraphWidgetConfigs } from "@/arches_modular_reports/ResourceReport/composables/useGraphWidgetConfigs.ts";
 import { useReportContext } from "@/arches_modular_reports/ResourceReport/composables/useReportContext.ts";
-import { useReportSchema } from "@/arches_modular_reports/ResourceReport/composables/useReportSchema.ts";
-import { useReportViews } from "@/arches_modular_reports/ResourceReport/composables/useReportViews.ts";
+import { useReportWorkspaces } from "@/arches_modular_reports/ResourceReport/composables/useReportWorkspaces.ts";
 import { useResourceData } from "@/arches_modular_reports/ResourceReport/composables/useResourceData.ts";
 import {
-    DATA_VIEW,
+    DATA_WORKSPACE,
     EMPTY_VALUE,
-    GRAPH_VIEW,
-    REPORT_VIEW,
+    GRAPH_WORKSPACE,
+    REPORT_WORKSPACE,
 } from "@/arches_modular_reports/ResourceReport/constants.ts";
 import { findNodeValues } from "@/arches_modular_reports/ResourceReport/utils/find-node-values.ts";
+import { indexGraphNodes } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import { lifecycleSeverity } from "@/arches_modular_reports/ResourceReport/utils/lifecycle-severity.ts";
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
 
 import type { Component } from "vue";
 import type {
+    ReportData,
     ResourceReportConfig,
     SummaryLine,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
-const BUILT_IN_VIEW_COMPONENTS: Record<string, Component> = {
-    [REPORT_VIEW]: ReportView,
-    [DATA_VIEW]: DataView,
-    [GRAPH_VIEW]: GraphView,
+const BUILT_IN_WORKSPACE_COMPONENTS: Record<string, Component> = {
+    [REPORT_WORKSPACE]: ReportWorkspace,
+    [DATA_WORKSPACE]: DataWorkspace,
+    [GRAPH_WORKSPACE]: GraphWorkspace,
 };
 const DEFAULT_GRAPH_ICON_CLASS = "pi pi-database";
-const REPORT_PANE_SIZES = { main: 60, aside: 40 };
-const DATA_PANE_SIZES = { main: 40, aside: 60 };
-const MINIMUM_PANE_SIZE = 20;
-const SPLITTER_STATE_KEY_PREFIX = "arches-modular-reports-resource-report-";
 
 const { component, resourceInstanceId } = defineProps<{
     component: { component: string; config: ResourceReportConfig };
@@ -55,12 +50,12 @@ const graphSlug = inject<string>("graphSlug", "");
 
 const { $gettext } = useGettext();
 const reportContext = useReportContext(resourceInstanceId);
-const reportSchema = useReportSchema(resourceInstanceId);
+const graphWidgetConfigs = useGraphWidgetConfigs(graphSlug);
 const resourceData = useResourceData(graphSlug, resourceInstanceId);
 const { context, isTransitioning, transitionError, transitionLifecycle } =
     reportContext;
-const { views, activeView, selectView } = useReportViews(
-    () => component.config.views ?? [],
+const { workspaces, activeWorkspace, selectWorkspace } = useReportWorkspaces(
+    () => component.config.workspaces ?? [],
     () => context.value?.permissions.can_edit === true,
     () => context.value?.language ?? "",
 );
@@ -68,16 +63,27 @@ const { views, activeView, selectView } = useReportViews(
 const fetchError = computed(
     () =>
         reportContext.fetchError.value ??
-        reportSchema.fetchError.value ??
+        graphWidgetConfigs.fetchError.value ??
         resourceData.fetchError.value,
 );
 
-const isLoaded = computed(
-    () =>
-        context.value !== null &&
-        reportSchema.schema.value !== null &&
-        resourceData.resource.value !== null,
-);
+const reportData = computed<ReportData | null>(() => {
+    if (
+        context.value === null ||
+        graphWidgetConfigs.nodegroupWidgetConfigs.value === null ||
+        resourceData.resource.value === null
+    ) {
+        return null;
+    }
+    return {
+        context: context.value,
+        nodegroupWidgetConfigs: graphWidgetConfigs.nodegroupWidgetConfigs.value,
+        graphNodesByAlias: indexGraphNodes(
+            graphWidgetConfigs.nodegroupWidgetConfigs.value,
+        ),
+        resource: resourceData.resource.value,
+    };
+});
 
 const graphName = computed(() => context.value?.graph.name ?? "");
 
@@ -137,33 +143,29 @@ const nextLifecycleStates = computed(() => {
 });
 
 const summaryLines = computed<SummaryLine[]>(() => {
-    const resource = resourceData.resource.value;
-    const schema = reportSchema.schema.value;
-    const activeLanguage = context.value?.language ?? "";
-    if (resource === null || schema === null) {
+    if (reportData.value === null) {
         return [];
     }
+    const { graphNodesByAlias, resource } = reportData.value;
+    const activeLanguage = reportData.value.context.language;
     return (component.config.header?.summary ?? []).map((summaryEntry) => ({
         label:
             localizeLabel(summaryEntry.label, activeLanguage) ??
-            schema.nodesByAlias[summaryEntry.node_alias].widget_label,
+            graphNodesByAlias[summaryEntry.node_alias].label,
         value:
             findNodeValues(resource.aliased_data, summaryEntry.node_alias)[0]
                 ?.display_value || EMPTY_VALUE,
     }));
 });
 
-const paneSizes = computed(() => {
-    if (activeView.value?.layout === "data") {
-        return DATA_PANE_SIZES;
+const activeWorkspaceComponent = computed(() => {
+    if (activeWorkspace.value === undefined) {
+        return null;
     }
-    return REPORT_PANE_SIZES;
-});
-
-const activeViewComponent = computed(() => {
-    const componentName = activeView.value?.component ?? REPORT_VIEW;
+    const componentName = activeWorkspace.value.component;
     return (
-        BUILT_IN_VIEW_COMPONENTS[componentName] ?? loadComponent(componentName)
+        BUILT_IN_WORKSPACE_COMPONENTS[componentName] ??
+        loadComponent(componentName)
     );
 });
 </script>
@@ -182,27 +184,29 @@ const activeViewComponent = computed(() => {
         </span>
     </Message>
     <Message
-        v-else-if="isLoaded && views.length === 0"
+        v-else-if="reportData && workspaces.length === 0"
         severity="error"
     >
-        <span>{{ $gettext("This report configuration has no views.") }}</span>
+        <span>
+            {{ $gettext("This report configuration has no workspaces.") }}
+        </span>
     </Message>
     <div
-        v-else-if="isLoaded && activeView && lifecycleState"
+        v-else-if="reportData && activeWorkspace && lifecycleState"
         class="resource-report"
         :dir="context?.language_dir"
     >
-        <ViewStrip
-            v-if="views.length > 1"
-            :views="views"
-            :active-view-id="activeView.id"
-            @select-view="selectView"
+        <WorkspaceStrip
+            v-if="workspaces.length > 1"
+            :workspaces="workspaces"
+            :active-workspace-id="activeWorkspace.id"
+            @select-workspace="selectWorkspace"
         />
         <p
-            v-if="activeView.description"
+            v-if="activeWorkspace.description"
             class="resource-report-caption"
         >
-            {{ activeView.description }}
+            {{ activeWorkspace.description }}
         </p>
         <ReportHeader
             :display-name="displayName"
@@ -224,49 +228,12 @@ const activeViewComponent = computed(() => {
         >
             <span>{{ transitionErrorMessage }}</span>
         </Message>
-        <Splitter
-            v-if="activeView.layout !== 'full'"
-            :key="activeView.layout"
-            class="resource-report-splitter"
-            state-storage="local"
-            :state-key="`${SPLITTER_STATE_KEY_PREFIX}${activeView.layout}`"
-        >
-            <SplitterPanel
-                class="resource-report-pane"
-                :size="paneSizes.main"
-                :min-size="MINIMUM_PANE_SIZE"
-            >
-                <component :is="activeViewComponent" />
-            </SplitterPanel>
-            <SplitterPanel
-                class="resource-report-pane resource-report-aside"
-                :size="paneSizes.aside"
-                :min-size="MINIMUM_PANE_SIZE"
-            >
-                <ReportPlaceholder
-                    v-if="activeView.layout === 'data'"
-                    icon="pi pi-pencil"
-                    :message="
-                        $gettext(
-                            'Select a branch from the browser to begin editing.',
-                        )
-                    "
-                />
-                <ReportPlaceholder
-                    v-else
-                    icon="pi pi-list"
-                    :message="
-                        $gettext('The key data summary is not available yet.')
-                    "
-                />
-            </SplitterPanel>
-        </Splitter>
-        <div
-            v-else
-            class="resource-report-pane resource-report-full-pane"
-        >
-            <component :is="activeViewComponent" />
-        </div>
+        <component
+            :is="activeWorkspaceComponent"
+            class="resource-report-workspace"
+            :workspace-config="activeWorkspace.config"
+            :report-data="reportData"
+        />
     </div>
     <div
         v-else
@@ -298,30 +265,9 @@ const activeViewComponent = computed(() => {
     font-size: 1.15rem;
 }
 
-.resource-report-splitter {
+.resource-report-workspace {
     flex: 1;
     min-height: 0;
-    border: none;
-    border-radius: 0;
-}
-
-.resource-report-pane {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    overflow-y: auto;
-}
-
-.resource-report-full-pane {
-    flex: 1;
-    min-height: 0;
-}
-
-.resource-report-aside {
-    background: var(
-        --p-resource-report-aside-background,
-        var(--p-content-hover-background)
-    );
 }
 
 .resource-report-loading {

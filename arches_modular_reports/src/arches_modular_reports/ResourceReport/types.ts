@@ -1,4 +1,5 @@
-import type { NodePresentation } from "@/arches_modular_reports/ModularReport/types.ts";
+import type { NodegroupWidgetConfig } from "@/arches_vue_components/types.ts";
+import type { ResourceData } from "@/arches_modular_reports/ModularReport/types.ts";
 
 export type LocalizedLabel = string | Record<string, string>;
 
@@ -12,11 +13,9 @@ export type TagSeverity =
     | "secondary"
     | "contrast";
 
-export type DisplayMode = "cards" | "accordion" | "table";
-
 export interface SummaryEntryConfig {
     node_alias: string;
-    label?: LocalizedLabel;
+    label?: LocalizedLabel | null;
 }
 
 export interface HeaderConfig {
@@ -25,26 +24,14 @@ export interface HeaderConfig {
     lifecycle_severities?: Record<string, TagSeverity>;
 }
 
-export interface CardConfig {
+export interface FolioConfig {
     nodegroup_alias: string;
-    component: string;
-    label?: LocalizedLabel;
-    labels?: Record<string, LocalizedLabel>;
-    display?: DisplayMode;
-    page_size?: number;
-    primary_field?: string;
-    row_fields?: string[];
-    hide_row_field_labels?: boolean;
-    single_line_fields?: boolean;
-    badge_field?: string;
-    geometry_alias?: string;
-    children?: CardConfig[];
 }
 
 export interface SectionConfig {
     label?: LocalizedLabel;
     icon?: string;
-    cards?: CardConfig[];
+    folios?: FolioConfig[];
 }
 
 export interface TabConfig {
@@ -64,33 +51,30 @@ export interface HomeConfig {
     drawer?: DrawerPanelConfig[];
 }
 
-export interface ReportViewConfig {
+export interface ReportWorkspaceConfig {
     tabs?: TabConfig[];
     home?: HomeConfig;
 }
 
-export interface ViewConfig {
+export interface WorkspaceConfig {
     id: string;
     label?: LocalizedLabel;
     description?: LocalizedLabel;
     component: string;
-    config?: ReportViewConfig;
+    config?: ReportWorkspaceConfig;
 }
 
 export interface ResourceReportConfig {
     header?: HeaderConfig;
-    views?: ViewConfig[];
+    workspaces?: WorkspaceConfig[];
 }
 
-export type ViewLayout = "report" | "data" | "full";
-
-export interface ResolvedView {
+export interface ResolvedWorkspace {
     id: string;
     label: string;
     description: string;
     component: string;
-    config: ReportViewConfig;
-    layout: ViewLayout;
+    config: ReportWorkspaceConfig;
 }
 
 export interface LifecycleStateSummary {
@@ -130,30 +114,19 @@ export interface ReportContext {
     permissions: ReportPermissions;
 }
 
-export interface SchemaNode extends NodePresentation {
-    alias: string;
-}
-
-export interface SchemaNodegroup {
-    alias: string;
-    nodegroupId: string;
-    parentNodegroupId: string | null;
-    cardinality: string;
-    cardName: string;
-    cardOrder: number;
-    cardVisible: boolean;
-    writable: boolean;
-    nodes: SchemaNode[];
-    childAliases: string[];
-}
-
-export interface ReportSchema {
-    nodesByAlias: Record<string, SchemaNode>;
-    nodegroupsByAlias: Record<string, SchemaNodegroup>;
-    topLevelNodegroupAliases: string[];
+export interface GraphNode {
+    label: string;
+    nodegroupAlias: string;
 }
 
 export interface SummaryLine {
     label: string;
     value: string;
+}
+
+export interface ReportData {
+    resource: ResourceData;
+    nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>;
+    graphNodesByAlias: Record<string, GraphNode>;
+    context: ReportContext;
 }

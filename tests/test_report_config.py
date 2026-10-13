@@ -2,7 +2,13 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from arches.app.models.graph import Graph
-from arches.app.models.models import CardModel, Node, NodeGroup
+from arches.app.models.models import (
+    CardModel,
+    Function,
+    FunctionXGraph,
+    Node,
+    NodeGroup,
+)
 
 from arches_modular_reports.app.utils.resource_report_config import (
     RESOURCE_REPORT_COMPONENT,
@@ -63,10 +69,10 @@ def curated_config():
                         "summary": [{"node_alias": "name_content", "label": "Name"}],
                         "export_formats": ["json-ld", "csv"],
                     },
-                    "views": [
+                    "workspaces": [
                         {
                             "id": "report",
-                            "component": "ReportView",
+                            "component": "ReportWorkspace",
                             "label": {"en": "Report"},
                             "config": {
                                 "tabs": [
@@ -74,30 +80,9 @@ def curated_config():
                                         "label": {"en": "Overview"},
                                         "sections": [
                                             {
-                                                "cards": [
-                                                    {
-                                                        "nodegroup_alias": "production",
-                                                        "component": "MapCard",
-                                                        "row_fields": [
-                                                            "name_content",
-                                                            "type",
-                                                        ],
-                                                        "badge_field": "type",
-                                                        "labels": {
-                                                            "name_content": "Name"
-                                                        },
-                                                        "geometry_alias": "location_geometry",
-                                                        "children": [
-                                                            {
-                                                                "nodegroup_alias": "production_location",
-                                                                "component": "MultiValueCard",
-                                                            }
-                                                        ],
-                                                    },
-                                                    {
-                                                        "nodegroup_alias": "identifiers",
-                                                        "component": "MultiValueCard",
-                                                    },
+                                                "folios": [
+                                                    {"nodegroup_alias": "production"},
+                                                    {"nodegroup_alias": "identifiers"},
                                                 ],
                                             }
                                         ],
@@ -115,14 +100,18 @@ def curated_config():
     }
 
 
+def generated_folio(nodegroup_alias):
+    return {"nodegroup_alias": nodegroup_alias}
+
+
 def resource_report_config_from(config):
     return config["components"][0]["config"]
 
 
-def first_card(config):
-    return resource_report_config_from(config)["views"][0]["config"]["tabs"][0][
+def first_folio(config):
+    return resource_report_config_from(config)["workspaces"][0]["config"]["tabs"][0][
         "sections"
-    ][0]["cards"][0]
+    ][0]["folios"][0]
 
 
 class ResourceReportConfigTests(TestCase):
@@ -158,28 +147,45 @@ class ResourceReportConfigTests(TestCase):
         make_node(cls.graph, cls.description, "description_content", "string")
         make_card(cls.graph, cls.description, sortorder=3)
 
+        FunctionXGraph.objects.create(
+            graph=cls.graph,
+            function=Function.objects.filter(functiontype="primarydescriptors").first(),
+            config={
+                "descriptor_types": {
+                    "name": {"string_template": "<name_content> #<identifier_content>"},
+                    "description": {
+                        "nodegroup_id": str(cls.description.pk),
+                        "string_template": "<Description Content>",
+                    },
+                    "map_popup": {"string_template": "<retired_alias>"},
+                }
+            },
+        )
+
     def test_default_config_is_explicit_and_derived_from_the_graph(self):
         report_config = ReportConfig(graph=self.graph)
         report_config.full_clean()
 
         resource_report = report_config.config["components"][0]
-        views = resource_report["config"]["views"]
         self.assertEqual(
-            views[0]["config"]["tabs"][0]["sections"][0]["cards"],
+            resource_report["config"]["header"]["summary"],
+            [{"node_alias": "description_content", "label": None}],
+        )
+        workspaces = resource_report["config"]["workspaces"]
+        self.assertEqual(
+            workspaces[0]["config"]["home"]["summary"],
             [
-                {"nodegroup_alias": "identifiers", "component": "MultiValueCard"},
-                {
-                    "nodegroup_alias": "production",
-                    "component": "NestedCard",
-                    "children": [
-                        {
-                            "nodegroup_alias": "production_location",
-                            "component": "MapCard",
-                            "geometry_alias": "location_geometry",
-                        }
-                    ],
-                },
-                {"nodegroup_alias": "description", "component": "SimpleFieldCard"},
+                {"node_alias": "name_content", "label": None},
+                {"node_alias": "identifier_content", "label": None},
+                {"node_alias": "description_content", "label": None},
+            ],
+        )
+        self.assertEqual(
+            workspaces[0]["config"]["tabs"][0]["sections"][0]["folios"],
+            [
+                generated_folio("identifiers"),
+                generated_folio("production"),
+                generated_folio("description"),
             ],
         )
 
@@ -188,20 +194,10 @@ class ResourceReportConfigTests(TestCase):
 
     def test_configs_that_contradict_the_graph_are_rejected(self):
         def mutate_unknown_nodegroup(config):
-            first_card(config)["nodegroup_alias"] = "missing"
+            first_folio(config)["nodegroup_alias"] = "missing"
 
         def mutate_child_nodegroup_at_top_level(config):
-            first_card(config)["nodegroup_alias"] = "production_location"
-            del first_card(config)["children"]
-
-        def mutate_child_under_the_wrong_parent(config):
-            first_card(config)["children"][0]["nodegroup_alias"] = "identifiers"
-
-        def mutate_row_field_outside_nodegroup(config):
-            first_card(config)["row_fields"] = ["identifier_content"]
-
-        def mutate_non_geometry_geometry_alias(config):
-            first_card(config)["geometry_alias"] = "name_content"
+            first_folio(config)["nodegroup_alias"] = "production_location"
 
         def mutate_unknown_summary_node(config):
             resource_report_config_from(config)["header"]["summary"] = [
@@ -211,9 +207,6 @@ class ResourceReportConfigTests(TestCase):
         for mutation in (
             mutate_unknown_nodegroup,
             mutate_child_nodegroup_at_top_level,
-            mutate_child_under_the_wrong_parent,
-            mutate_row_field_outside_nodegroup,
-            mutate_non_geometry_geometry_alias,
             mutate_unknown_summary_node,
         ):
             with self.subTest(mutation=mutation.__name__):
@@ -232,27 +225,24 @@ class ResourceReportConfigTests(TestCase):
             report_nodegroup_ids_with_user_write_permission=set(),
         )
 
-    def test_pruning_removes_unreadable_child_cards(self):
-        production_card = first_card(self.prune([self.production, self.identifiers]))
-        self.assertEqual(production_card["nodegroup_alias"], "production")
-        self.assertEqual(production_card["children"], [])
-
-    def test_pruning_removes_unreadable_cards_summaries_and_empty_tabs(self):
+    def test_pruning_removes_unreadable_folios_summaries_and_empty_tabs(self):
         resource_report = resource_report_config_from(self.prune([self.identifiers]))
         self.assertEqual(resource_report["header"]["summary"], [])
-        report_view_config = resource_report["views"][0]["config"]
+        report_workspace_config = resource_report["workspaces"][0]["config"]
         self.assertEqual(
             [
-                card["nodegroup_alias"]
-                for card in report_view_config["tabs"][0]["sections"][0]["cards"]
+                folio["nodegroup_alias"]
+                for folio in report_workspace_config["tabs"][0]["sections"][0]["folios"]
             ],
             ["identifiers"],
         )
         self.assertEqual(
-            report_view_config["home"]["summary"],
+            report_workspace_config["home"]["summary"],
             [{"node_alias": "identifier_content"}],
         )
 
         resource_report = resource_report_config_from(self.prune([]))
-        self.assertEqual(resource_report["views"][0]["config"]["tabs"], [])
-        self.assertEqual(resource_report["views"][0]["config"]["home"]["summary"], [])
+        self.assertEqual(resource_report["workspaces"][0]["config"]["tabs"], [])
+        self.assertEqual(
+            resource_report["workspaces"][0]["config"]["home"]["summary"], []
+        )
