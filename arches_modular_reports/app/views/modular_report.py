@@ -2,7 +2,8 @@ import json
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Case, F, OuterRef, Q, Subquery, When
+from django.db.models.fields.json import KT
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
@@ -11,12 +12,18 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, get_language_info, gettext as _
 from django.views.generic import View
 
-from arches import __version__ as _arches_version_str
-from arches.app.datatypes.concept_types import BaseConceptDataType
+from arches.app.datatypes.datatypes import DataTypeFactory
 from arches.app.models import models
-from arches.app.utils.betterJSONSerializer import JSONSerializer, JSONDeserializer
+from arches.app.utils.betterJSONSerializer import JSONDeserializer
 from arches.app.utils.decorators import can_read_resource_instance
-from arches.app.utils.permission_backend import get_nodegroups_by_perm, group_required
+from arches.app.utils.permission_backend import (
+    get_nodegroups_by_perm,
+    group_required,
+    user_can_delete_resource,
+    user_can_edit_resource,
+    user_can_read_resource,
+    user_is_resource_reviewer,
+)
 from arches.app.utils.response import JSONErrorResponse, JSONResponse
 from arches.app.views.api import APIBase
 from arches.app.views.base import MapBaseManagerView
@@ -24,24 +31,29 @@ from arches.app.views.resource import ResourceReportView
 
 from arches_modular_reports.app.utils.decorators import can_read_nodegroup
 from arches_modular_reports.app.utils.get_report_config import get_report_config
-from arches_modular_reports.models import ReportConfig
-from packaging.version import Version
-
-arches_version = Version(_arches_version_str)
-
+from arches_modular_reports.app.utils.nodegroup_tile_data_utils import (
+    build_valueid_annotation,
+    get_sorted_filtered_tiles,
+)
 from arches_modular_reports.app.utils.update_report_configuration_for_nodegroup_permissions import (
     update_report_configuration_for_nodegroup_permissions,
 )
+from arches_modular_reports.models import ReportConfig
+from arches_modular_reports.resource_report import GEOMETRY_DATATYPE
 
-from arches_modular_reports.app.utils.nodegroup_tile_data_utils import (
-    annotate_node_values,
-    annotate_related_graph_nodes_with_widget_labels,
-    array_from_string,
-    build_valueid_annotation,
-    get_sorted_filtered_relations,
-    get_sorted_filtered_tiles,
-    prepare_links,
-)
+
+def localized_text(i18n_value):
+    if isinstance(i18n_value, dict):
+        active_language_text = i18n_value.get(get_language())
+        if active_language_text:
+            return active_language_text
+        populated_texts = [text for text in i18n_value.values() if text]
+        if populated_texts:
+            return populated_texts[0]
+        return ""
+    if i18n_value is None:
+        return ""
+    return str(i18n_value)
 
 
 class GraphSlugFromIdView(APIBase):
@@ -143,105 +155,270 @@ class ModularReportAwareResourceReportView(ResourceReportView):
 
 
 @method_decorator(can_read_resource_instance, name="dispatch")
-class RelatedResourceView(APIBase):
-    def get(self, request, resourceid, related_graph_slug):
+class ReportContextView(APIBase):
+    def get(self, request, resourceid):
         try:
-            resource = models.ResourceInstance.objects.get(pk=resourceid)
-            filters = Q(slug=related_graph_slug)
-            if arches_version >= Version("8.0"):
-                filters &= Q(source_identifier=None)
-            related_graph = models.GraphModel.objects.get(filters)
-        except (models.ResourceInstance.DoesNotExist, models.GraphModel.DoesNotExist):
+            resource = models.ResourceInstance.objects.select_related(
+                "graph", "resource_instance_lifecycle_state"
+            ).get(pk=resourceid)
+        except models.ResourceInstance.DoesNotExist:
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
 
-        additional_nodes = request.GET.get("node_aliases", "").split(",")
-        page_number = request.GET.get("page", 1)
-        rows_per_page = request.GET.get("rows_per_page", 10)
-        sort_field = request.GET.get("sort_field", "@relation_name")
-        direction = request.GET.get("direction", "asc")
-        query = request.GET.get("query", "")
-        request_language = translation.get_language()
+        user_can_edit = user_can_edit_resource(request.user, resourceid=resourceid)
 
-        permitted_nodegroups = get_nodegroups_by_perm(
+        return JSONResponse(
+            {
+                "graph": {
+                    "name": str(resource.graph.name),
+                    "slug": resource.graph.slug,
+                    "iconclass": resource.graph.iconclass,
+                    "color": resource.graph.color,
+                },
+                "lifecycle_state": resource.resource_instance_lifecycle_state.serialize(),
+                "language": get_language(),
+                "language_dir": (
+                    "rtl" if get_language_info(get_language())["bidi"] else "ltr"
+                ),
+                "permissions": {
+                    "can_edit": user_can_edit,
+                    "can_delete": user_can_delete_resource(
+                        request.user, resourceid=resourceid
+                    ),
+                    "can_copy": user_can_edit
+                    and group_required(request.user, "Resource Editor"),
+                    "is_reviewer": user_is_resource_reviewer(request.user),
+                    "is_rdm_admin": group_required(request.user, "RDM Administrator"),
+                },
+            }
+        )
+
+
+class EditValueDescriber:
+    def __init__(self):
+        self.datatype_factory = DataTypeFactory()
+        self.nodes_by_nodegroup_id = {}
+        self.card_names_by_nodegroup_id = {}
+
+    def card_name(self, nodegroup_id):
+        if nodegroup_id not in self.card_names_by_nodegroup_id:
+            card_name = (
+                models.CardModel.objects.filter(nodegroup_id=nodegroup_id)
+                .values_list("name", flat=True)
+                .first()
+            )
+            self.card_names_by_nodegroup_id[nodegroup_id] = localized_text(card_name)
+        return self.card_names_by_nodegroup_id[nodegroup_id]
+
+    def nodes(self, nodegroup_id):
+        if nodegroup_id not in self.nodes_by_nodegroup_id:
+            nodegroup_nodes = list(
+                models.Node.objects.filter(nodegroup_id=nodegroup_id)
+                .exclude(datatype__in={"semantic", GEOMETRY_DATATYPE})
+                .prefetch_related("cardxnodexwidget_set")
+                .order_by("cardxnodexwidget__sortorder")
+            )
+            for node in nodegroup_nodes:
+                widgets = node.cardxnodexwidget_set.all()
+                widget_label = localized_text(widgets[0].label) if widgets else ""
+                node.report_label = widget_label or node.name
+            self.nodes_by_nodegroup_id[nodegroup_id] = nodegroup_nodes
+        return self.nodes_by_nodegroup_id[nodegroup_id]
+
+    def display_value(self, tile_data, nodegroup_id, node):
+        raw_value = tile_data.get(str(node.pk))
+        if raw_value in (None, "", [], {}):
+            return ""
+        tile = models.TileModel(nodegroup_id=nodegroup_id, data=tile_data)
+        datatype = self.datatype_factory.get_instance(node.datatype)
+        try:
+            return datatype.get_display_value(tile, node)
+        except (AttributeError, KeyError, TypeError, ValueError):
+            return str(raw_value)
+
+    def describe(self, edit):
+        old_tile_data = edit.oldvalue if isinstance(edit.oldvalue, dict) else None
+        new_tile_data = edit.newvalue if isinstance(edit.newvalue, dict) else None
+        described_values = []
+        for node in self.nodes(edit.nodegroupid):
+            before = None
+            after = None
+            if old_tile_data is not None:
+                before = self.display_value(old_tile_data, edit.nodegroupid, node)
+            if new_tile_data is not None:
+                after = self.display_value(new_tile_data, edit.nodegroupid, node)
+            old_raw_value = (old_tile_data or {}).get(str(node.pk))
+            new_raw_value = (new_tile_data or {}).get(str(node.pk))
+            described_values.append(
+                {
+                    "node_alias": node.alias,
+                    "label": node.report_label,
+                    "before": before,
+                    "after": after,
+                    "changed": old_raw_value != new_raw_value,
+                }
+            )
+        return described_values
+
+
+@method_decorator(can_read_resource_instance, name="dispatch")
+class EditHistoryView(APIBase):
+    page_size = 25
+
+    def get(self, request, resourceid):
+        if not user_can_edit_resource(request.user, resourceid=resourceid):
+            return JSONErrorResponse(
+                _("Permission Denied"), status=HTTPStatus.FORBIDDEN
+            )
+
+        readable_nodegroup_ids = {
+            str(nodegroup_id)
+            for nodegroup_id in get_nodegroups_by_perm(
+                request.user, "models.read_nodegroup"
+            )
+        }
+        edits = (
+            models.EditLog.objects.filter(resourceinstanceid=str(resourceid))
+            .filter(
+                Q(nodegroupid__isnull=True) | Q(nodegroupid__in=readable_nodegroup_ids)
+            )
+            .order_by("-timestamp")
+        )
+        paginator = Paginator(edits, self.page_size)
+        edit_page = paginator.get_page(request.GET.get("page", 1))
+        value_describer = EditValueDescriber()
+
+        return JSONResponse(
+            {
+                "results": [
+                    self.serialize_edit(edit, value_describer) for edit in edit_page
+                ],
+                "page": edit_page.number,
+                "total_count": paginator.count,
+                "has_next": edit_page.has_next(),
+            }
+        )
+
+    @staticmethod
+    def serialize_edit(edit, value_describer):
+        user_full_name = " ".join(
+            name_part
+            for name_part in (edit.user_firstname, edit.user_lastname)
+            if name_part
+        )
+        serialized_edit = {
+            "editlogid": edit.editlogid,
+            "transactionid": edit.transactionid,
+            "edit_type": edit.edittype,
+            "timestamp": edit.timestamp,
+            "user": user_full_name or edit.user_username,
+            "note": edit.note,
+            "nodegroup_id": edit.nodegroupid,
+            "tileid": edit.tileinstanceid,
+            "card_name": None,
+            "values": [],
+        }
+        if edit.nodegroupid:
+            serialized_edit["card_name"] = value_describer.card_name(edit.nodegroupid)
+            serialized_edit["values"] = value_describer.describe(edit)
+        return serialized_edit
+
+
+@method_decorator(can_read_resource_instance, name="dispatch")
+class RelatedResourceGroupsView(APIBase):
+    page_size = 25
+
+    def get(self, request, resourceid):
+        permitted_nodegroup_ids = get_nodegroups_by_perm(
             request.user, "models.read_nodegroup"
         )
-        is_user_rdm_admin = group_required(request.user, "RDM Administrator")
-
-        nodes = annotate_related_graph_nodes_with_widget_labels(
-            additional_nodes, related_graph, request_language
+        relates_from_this_resource = Q(from_resource_id=resourceid)
+        relations = (
+            models.ResourceXResource.objects.filter(
+                Q(from_resource_id=resourceid) | Q(to_resource_id=resourceid),
+                node__nodegroup_id__in=permitted_nodegroup_ids,
+            )
+            .annotate(
+                related_resource_id=Case(
+                    When(relates_from_this_resource, then=F("to_resource_id")),
+                    default=F("from_resource_id"),
+                ),
+                related_graph_id=Case(
+                    When(relates_from_this_resource, then=F("to_resource_graph_id")),
+                    default=F("from_resource_graph_id"),
+                ),
+                related_resource_name=Case(
+                    When(relates_from_this_resource, then=F("to_resource__name")),
+                    default=F("from_resource__name"),
+                ),
+                relationship_label=Subquery(
+                    models.CardXNodeXWidget.objects.filter(
+                        node=OuterRef("node")
+                    ).values("label")[:1]
+                ),
+            )
+            .annotate(
+                related_resource_sort_name=KT(
+                    f"related_resource_name__{get_language()}"
+                )
+            )
         )
-        relations = get_sorted_filtered_relations(
-            resource=resource,
-            related_graph=related_graph,
-            nodes=nodes,
-            permitted_nodegroups=permitted_nodegroups,
-            sort_field=sort_field,
-            direction=direction,
-            query=query,
-            request_language=request_language,
+        related_graphs = models.GraphModel.objects.filter(
+            pk__in=relations.values("related_graph_id")
         )
-        paginator = Paginator(relations, rows_per_page)
-        result_page = paginator.get_page(page_number)
 
-        def make_resource_report_link(relation):
-            nonlocal resourceid
-            # Both sides are UUID python types (from ORM, or from route)
-            if arches_version < Version("8.0"):
-                if relation.resourceinstanceidfrom_id == resourceid:
-                    target = relation.resourceinstanceidto_id
-                else:
-                    target = relation.resourceinstanceidfrom_id
-            else:
-                if relation.from_resource_id == resourceid:
-                    target = relation.to_resource_id
-                else:
-                    target = relation.from_resource_id
-            return reverse("resource_report", args=[target])
+        if requested_graph_slug := request.GET.get("graph"):
+            requested_graph = related_graphs.filter(slug=requested_graph_slug).first()
+            if not requested_graph:
+                return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
+            return JSONResponse(
+                self.serialize_group(
+                    request,
+                    relations,
+                    requested_graph,
+                    page_number=request.GET.get("page", 1),
+                )
+            )
 
-        value_finder = BaseConceptDataType()  # fetches serially, but caches.
+        return JSONResponse(
+            {
+                "groups": [
+                    self.serialize_group(request, relations, graph, page_number=1)
+                    for graph in sorted(
+                        related_graphs, key=lambda graph: str(graph.name)
+                    )
+                ]
+            }
+        )
 
-        response_data = {
-            "results": [
-                {
-                    "@relation_name": {
-                        "display_value": getattr(relation, "@relation_name"),
-                        "links": [],
-                    },
-                    "@display_name": {
-                        "display_value": getattr(relation, "@display_name"),
-                        "links": [
-                            {
-                                "label": getattr(relation, "@display_name"),
-                                "link": make_resource_report_link(relation),
-                            }
-                        ],
-                    },
-                    **{
-                        node.alias: {
-                            "display_value": getattr(relation, node.alias),
-                            "links": prepare_links(
-                                node=node,
-                                tile_values=getattr(
-                                    relation, node.alias + "_instance_details", []
-                                ),
-                                node_display_value=getattr(relation, node.alias),
-                                request_language=request_language,
-                                value_finder=value_finder,
-                                is_user_rdm_admin=is_user_rdm_admin,
-                            ),
-                        }
-                        for node in nodes
-                    },
-                }
-                for relation in result_page
-            ],
-            "graph_name": related_graph.name,
-            "widget_labels": {node.alias: node.widget_label for node in nodes},
+    def serialize_group(self, request, relations, graph, page_number):
+        group_relations = relations.filter(related_graph_id=graph.pk).order_by(
+            F("related_resource_sort_name").asc(nulls_last=True)
+        )
+        paginator = Paginator(group_relations, self.page_size)
+        relation_page = paginator.get_page(page_number)
+        return {
+            "graph_slug": graph.slug,
+            "graph_name": str(graph.name),
+            "iconclass": graph.iconclass,
+            "color": graph.color,
             "total_count": paginator.count,
-            "page": result_page.number,
+            "page": relation_page.number,
+            "has_next": relation_page.has_next(),
+            "items": [
+                {
+                    "resourceinstanceid": relation.related_resource_id,
+                    "display_name": localized_text(relation.related_resource_name),
+                    "relationship": localized_text(relation.relationship_label),
+                    "report_url": reverse(
+                        "resource_report", args=[relation.related_resource_id]
+                    ),
+                }
+                for relation in relation_page
+                if user_can_read_resource(
+                    request.user, resourceid=relation.related_resource_id
+                )
+            ],
         }
-
-        return JSONResponse(response_data)
 
 
 class NodePresentationView(APIBase):
@@ -254,7 +431,10 @@ class NodePresentationView(APIBase):
         permitted_nodegroups = get_nodegroups_by_perm(
             request.user, "models.read_nodegroup"
         )
-        nodes = (
+        writable_nodegroup_ids = set(
+            get_nodegroups_by_perm(request.user, "models.write_nodegroup")
+        )
+        nodes = list(
             models.Node.objects.filter(graph=graph)
             .filter(nodegroup__in=permitted_nodegroups)
             .select_related("nodegroup")
@@ -263,6 +443,11 @@ class NodePresentationView(APIBase):
                 "cardxnodexwidget_set__widget",
             )
         )
+        grouping_node_aliases_by_nodegroup_id = {
+            node.nodegroup_id: node.alias
+            for node in nodes
+            if node.pk == node.nodegroup_id
+        }
 
         def getattr_from_queryset(queryset, attr, fallback):
             if queryset:
@@ -302,6 +487,7 @@ class NodePresentationView(APIBase):
                 node.alias: {
                     "nodeid": node.nodeid,
                     "name": node.name,
+                    "datatype": node.datatype,
                     "card_name": getattr_from_queryset(
                         node.nodegroup.cardmodel_set.all(),
                         "name",
@@ -331,6 +517,11 @@ class NodePresentationView(APIBase):
                     "nodegroup": {
                         "nodegroup_id": node.nodegroup.pk,
                         "cardinality": node.nodegroup.cardinality,
+                        "alias": grouping_node_aliases_by_nodegroup_id.get(
+                            node.nodegroup_id
+                        ),
+                        "parent_nodegroup_id": node.nodegroup.parentnodegroup_id,
+                        "writable": node.nodegroup_id in writable_nodegroup_ids,
                     },
                     "is_rich_text": get_widget_name(
                         node.cardxnodexwidget_set.all(), None
@@ -396,44 +587,6 @@ class NodegroupTileDataView(APIBase):
         }
 
         return JSONResponse(response_data)
-
-
-@method_decorator(can_read_resource_instance, name="dispatch")
-class NodeTileDataView(APIBase):
-    def get(self, request, resourceid):
-        permitted_nodegroups = get_nodegroups_by_perm(request.user, "read_nodegroup")
-        node_aliases = request.GET.getlist("node_alias", [])
-        user_lang = translation.get_language()
-        tile_limit = int(request.GET.get("tile_limit", 0))
-
-        is_user_rdm_admin = group_required(request.user, "RDM Administrator")
-
-        nodes_with_display_data = annotate_node_values(
-            node_aliases, resourceid, permitted_nodegroups, user_lang, tile_limit
-        )
-        value_finder = BaseConceptDataType()
-
-        return JSONResponse(
-            {
-                node.alias: [
-                    {
-                        "display_values": array_from_string(
-                            display_object["display_value"]
-                        ),
-                        "links": prepare_links(
-                            node,
-                            [display_object["tile_value"]],
-                            display_object["display_value"],
-                            user_lang,
-                            value_finder,
-                            is_user_rdm_admin,
-                        ),
-                    }
-                    for display_object in node.display_data
-                ]
-                for node in nodes_with_display_data
-            }
-        )
 
 
 class UserPermissionsView(APIBase):
