@@ -23,27 +23,72 @@
                                         {
                                             "cards": []
                                         }
-                                    ]
+                                    ],
+                                    "label": {
+                                        "en": "Overview"
+                                    }
                                 }
                             ],
                             "home": {
                                 "summary": [],
                                 "drawer": [
-                                    "edit_history",
-                                    "images",
-                                    "related_resources",
-                                    "manage"
+                                    {
+                                        "component": "EditHistoryPanel",
+                                        "label": {
+                                            "en": "Edit History"
+                                        },
+                                        "icon": "pi pi-clock"
+                                    },
+                                    {
+                                        "component": "ImagesPanel",
+                                        "label": {
+                                            "en": "Images"
+                                        },
+                                        "icon": "pi pi-image"
+                                    },
+                                    {
+                                        "component": "RelatedResourcesPanel",
+                                        "label": {
+                                            "en": "Related Resources"
+                                        },
+                                        "icon": "pi pi-link"
+                                    },
+                                    {
+                                        "component": "ManagePanel",
+                                        "label": {
+                                            "en": "Manage"
+                                        },
+                                        "icon": "pi pi-cog"
+                                    }
                                 ]
                             }
+                        },
+                        "label": {
+                            "en": "Report"
+                        },
+                        "description": {
+                            "en": "A curated summary of this resource's data"
                         }
                     },
                     {
                         "id": "data",
-                        "component": "DataView"
+                        "component": "DataView",
+                        "label": {
+                            "en": "Data"
+                        },
+                        "description": {
+                            "en": "Browse and edit every field recorded on this resource"
+                        }
                     },
                     {
                         "id": "graph",
-                        "component": "GraphView"
+                        "component": "GraphView",
+                        "label": {
+                            "en": "Graph"
+                        },
+                        "description": {
+                            "en": "A visual overview of how this resource connects to its data"
+                        }
                     }
                 ]
             }

@@ -7,8 +7,8 @@ from arches import __version__ as _arches_version_str
 from arches.app.models.models import GraphModel, Node, NodeGroup
 from arches.app.models.system_settings import settings
 from arches_modular_reports.app.utils.resource_report_config import (
-    ResourceReportConfigValidator,
     generate_resource_report_config,
+    validate_resource_report_config,
 )
 from arches_modular_reports.utils import PrettyJSONEncoder
 from packaging.version import Version
@@ -167,7 +167,7 @@ class ReportConfig(models.Model):
         validate_dict(self.config)
 
     def validate_resourcereport(self, resource_report_config):
-        ResourceReportConfigValidator(self.graph).validate(resource_report_config)
+        validate_resource_report_config(resource_report_config, self.graph)
 
     def validate_datasection(self, card_config):
         nodegroup_alias = self.get_or_raise(card_config, "nodegroup_alias", "Data")

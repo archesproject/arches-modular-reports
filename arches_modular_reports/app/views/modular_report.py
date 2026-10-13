@@ -39,7 +39,6 @@ from arches_modular_reports.app.utils.update_report_configuration_for_nodegroup_
     update_report_configuration_for_nodegroup_permissions,
 )
 from arches_modular_reports.models import ReportConfig
-from arches_modular_reports.app.utils.resource_report_config import GEOMETRY_DATATYPE
 
 
 def localized_text(i18n_value):
@@ -196,6 +195,12 @@ class ReportContextView(APIBase):
 class EditValueDescriber:
     def __init__(self):
         self.datatype_factory = DataTypeFactory()
+        self.excluded_datatypes = {
+            "semantic",
+            *models.DDataType.objects.filter(isgeometric=True).values_list(
+                "datatype", flat=True
+            ),
+        }
         self.nodes_by_nodegroup_id = {}
         self.card_names_by_nodegroup_id = {}
 
@@ -213,7 +218,7 @@ class EditValueDescriber:
         if nodegroup_id not in self.nodes_by_nodegroup_id:
             nodegroup_nodes = list(
                 models.Node.objects.filter(nodegroup_id=nodegroup_id)
-                .exclude(datatype__in={"semantic", GEOMETRY_DATATYPE})
+                .exclude(datatype__in=self.excluded_datatypes)
                 .prefetch_related("cardxnodexwidget_set")
                 .order_by("cardxnodexwidget__sortorder")
             )
