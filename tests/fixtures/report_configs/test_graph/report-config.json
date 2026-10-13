@@ -1,72 +1,49 @@
 {
     "name": "Example Report",
-    "theme": "",
     "components": [
         {
-            "component": "arches_modular_reports/ModularReport/components/ReportHeader",
+            "component": "arches_modular_reports/ResourceReport/ResourceReport",
             "config": {
-                "descriptor": " descriptor template",
-                "node_alias_options": {}
-            }
-        },
-        {
-            "component": "arches_modular_reports/ModularReport/components/ReportToolbar",
-            "config": {
-                "lists": true,
-                "export_formats": [
-                    "csv",
-                    "json-ld",
-                    "json"
-                ]
-            }
-        },
-        {
-            "component": "arches_modular_reports/ModularReport/components/ReportTombstone",
-            "config": {
-                "node_aliases": [],
-                "image_node_alias": null,
-                "custom_labels": {}
-            }
-        },
-        {
-            "component": "arches_modular_reports/ModularReport/components/ReportTabs",
-            "config": {
-                "tabs": [
+                "header": {
+                    "summary": [],
+                    "export_formats": [
+                        "json-ld",
+                        "json",
+                        "csv"
+                    ]
+                },
+                "views": [
                     {
-                        "name": "Data",
-                        "components": [
-                            {
-                                "component": "arches_modular_reports/ModularReport/components/LinkedSections",
-                                "config": {
-                                    "sections": []
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "Related Resources",
-                        "components": [
-                            {
-                                "component": "arches_modular_reports/ModularReport/components/LinkedSections",
-                                "config": {
+                        "id": "report",
+                        "component": "ReportView",
+                        "config": {
+                            "tabs": [
+                                {
                                     "sections": [
                                         {
-                                            "name": "",
-                                            "components": [
-                                                {
-                                                    "component": "arches_modular_reports/ModularReport/components/RelatedResourcesSection",
-                                                    "config": {
-                                                        "graph_slug": "test_graph",
-                                                        "node_aliases": [],
-                                                        "custom_labels": {}
-                                                    }
-                                                }
-                                            ]
+                                            "cards": []
                                         }
                                     ]
                                 }
+                            ],
+                            "home": {
+                                "summary": [],
+                                "drawer": [
+                                    "edit_history",
+                                    "images",
+                                    "related_resources",
+                                    "manage"
+                                ]
                             }
-                        ]
+                        }
+                    },
+                    {
+                        "id": "data",
+                        "component": "DataView"
+                    },
+                    {
+                        "id": "graph",
+                        "component": "GraphView"
                     }
                 ]
             }

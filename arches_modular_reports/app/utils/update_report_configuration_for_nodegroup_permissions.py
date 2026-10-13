@@ -5,6 +5,11 @@ from arches.app.permissions.arches_permission_base import (
     get_nodegroups_by_perm_for_user_or_group,
 )
 
+from arches_modular_reports.resource_report import (
+    is_resource_report_component,
+    prune_resource_report_config,
+)
+
 
 def update_report_configuration_with_nodegroup_permissions(
     report_configuration_instance,
@@ -21,6 +26,14 @@ def update_report_configuration_with_nodegroup_permissions(
 
     def filter_node(node):
         if isinstance(node, dict):
+            if is_resource_report_component(node.get("component", "")):
+                prune_resource_report_config(
+                    node.get("config", {}),
+                    report_nodegroup_ids_with_user_read_permission,
+                    nodegroup_uuids_by_node_alias,
+                )
+                return node
+
             config = node.get("config", {})
 
             if isinstance(config, dict):
