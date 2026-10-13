@@ -7,12 +7,12 @@ import Skeleton from "openvue/skeleton";
 import Splitter from "openvue/splitter";
 import SplitterPanel from "openvue/splitterpanel";
 
-import DataView from "@/arches_modular_reports/ResourceReport/components/DataView/DataView.vue";
-import GraphView from "@/arches_modular_reports/ResourceReport/components/GraphView/GraphView.vue";
-import ReportHeader from "@/arches_modular_reports/ResourceReport/components/ReportHeader/ReportHeader.vue";
-import ReportPlaceholder from "@/arches_modular_reports/ResourceReport/components/ReportPlaceholder/ReportPlaceholder.vue";
-import ReportView from "@/arches_modular_reports/ResourceReport/components/ReportView/ReportView.vue";
-import ViewStrip from "@/arches_modular_reports/ResourceReport/components/ViewStrip/ViewStrip.vue";
+import DataView from "@/arches_modular_reports/ResourceReport/components/DataView.vue";
+import GraphView from "@/arches_modular_reports/ResourceReport/components/GraphView.vue";
+import ReportHeader from "@/arches_modular_reports/ResourceReport/components/ReportHeader.vue";
+import ReportPlaceholder from "@/arches_modular_reports/ResourceReport/components/ReportPlaceholder.vue";
+import ReportView from "@/arches_modular_reports/ResourceReport/components/ReportView.vue";
+import ViewStrip from "@/arches_modular_reports/ResourceReport/components/ViewStrip.vue";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
 import { useReportContext } from "@/arches_modular_reports/ResourceReport/composables/useReportContext.ts";
