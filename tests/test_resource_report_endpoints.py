@@ -155,15 +155,3 @@ class ResourceReportEndpointTests(TestCase):
             {"graph": "related_graph", "page": 1},
         )
         self.assertEqual(single_group_response.json()["graph_slug"], "related_graph")
-
-    def test_node_presentation_includes_schema_fields(self):
-        self.client.force_login(self.superuser)
-        response = self.client.get(
-            reverse("api_node_presentation", args=[self.resource.pk])
-        )
-        self.assertEqual(response.status_code, 200)
-        name_content = response.json()["name_content"]
-        self.assertEqual(name_content["datatype"], "string")
-        self.assertEqual(name_content["nodegroup"]["alias"], "names")
-        self.assertIsNone(name_content["nodegroup"]["parent_nodegroup_id"])
-        self.assertTrue(name_content["nodegroup"]["writable"])

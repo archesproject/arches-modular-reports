@@ -352,10 +352,7 @@ class NodePresentationView(APIBase):
         permitted_nodegroups = get_nodegroups_by_perm(
             request.user, "models.read_nodegroup"
         )
-        writable_nodegroup_ids = set(
-            get_nodegroups_by_perm(request.user, "models.write_nodegroup")
-        )
-        nodes = list(
+        nodes = (
             models.Node.objects.filter(graph=graph)
             .filter(nodegroup__in=permitted_nodegroups)
             .select_related("nodegroup")
@@ -364,11 +361,6 @@ class NodePresentationView(APIBase):
                 "cardxnodexwidget_set__widget",
             )
         )
-        grouping_node_aliases_by_nodegroup_id = {
-            node.nodegroup_id: node.alias
-            for node in nodes
-            if node.pk == node.nodegroup_id
-        }
 
         def getattr_from_queryset(queryset, attr, fallback):
             if queryset:
@@ -408,7 +400,6 @@ class NodePresentationView(APIBase):
                 node.alias: {
                     "nodeid": node.nodeid,
                     "name": node.name,
-                    "datatype": node.datatype,
                     "card_name": getattr_from_queryset(
                         node.nodegroup.cardmodel_set.all(),
                         "name",
@@ -438,11 +429,6 @@ class NodePresentationView(APIBase):
                     "nodegroup": {
                         "nodegroup_id": node.nodegroup.pk,
                         "cardinality": node.nodegroup.cardinality,
-                        "alias": grouping_node_aliases_by_nodegroup_id.get(
-                            node.nodegroup_id
-                        ),
-                        "parent_nodegroup_id": node.nodegroup.parentnodegroup_id,
-                        "writable": node.nodegroup_id in writable_nodegroup_ids,
                     },
                     "is_rich_text": get_widget_name(
                         node.cardxnodexwidget_set.all(), None
