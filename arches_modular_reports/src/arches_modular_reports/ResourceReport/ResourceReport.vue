@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, inject } from "vue";
+import { computed, inject, onMounted, onUnmounted, ref } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Message from "openvue/message";
 import Skeleton from "openvue/skeleton";
 
-import DataWorkspace from "@/arches_modular_reports/ResourceReport/components/DataWorkspace.vue";
+import DataWorkspace from "@/arches_modular_reports/ResourceReport/components/DataWorkspace/DataWorkspace.vue";
+import EditListTray from "@/arches_modular_reports/ResourceReport/components/EditListTray.vue";
 import GraphWorkspace from "@/arches_modular_reports/ResourceReport/components/GraphWorkspace.vue";
 import ReportHeader from "@/arches_modular_reports/ResourceReport/components/ReportHeader.vue";
 import ReportWorkspace from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/ReportWorkspace.vue";
@@ -14,8 +15,8 @@ import WorkspaceStrip from "@/arches_modular_reports/ResourceReport/components/W
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
 import { useGraphWidgetConfigs } from "@/arches_modular_reports/ResourceReport/composables/useGraphWidgetConfigs.ts";
 import { useReportContext } from "@/arches_modular_reports/ResourceReport/composables/useReportContext.ts";
+import { useResourceChangeSet } from "@/arches_modular_reports/ResourceReport/composables/useResourceChangeSet.ts";
 import { useReportWorkspaces } from "@/arches_modular_reports/ResourceReport/composables/useReportWorkspaces.ts";
-import { useResourceData } from "@/arches_modular_reports/ResourceReport/composables/useResourceData.ts";
 import {
     DATA_WORKSPACE,
     EMPTY_VALUE,
@@ -23,12 +24,14 @@ import {
     REPORT_WORKSPACE,
 } from "@/arches_modular_reports/ResourceReport/constants.ts";
 import { findNodeValues } from "@/arches_modular_reports/ResourceReport/utils/find-node-values.ts";
+import { folioLocations } from "@/arches_modular_reports/ResourceReport/utils/folio-locations.ts";
 import { indexGraphNodes } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import { lifecycleSeverity } from "@/arches_modular_reports/ResourceReport/utils/lifecycle-severity.ts";
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
 
 import type { Component } from "vue";
 import type {
+    EditTileRequest,
     ReportData,
     ResourceReportConfig,
     SummaryLine,
@@ -51,27 +54,39 @@ const graphSlug = inject<string>("graphSlug", "");
 const { $gettext } = useGettext();
 const reportContext = useReportContext(resourceInstanceId);
 const graphWidgetConfigs = useGraphWidgetConfigs(graphSlug);
-const resourceData = useResourceData(graphSlug, resourceInstanceId);
+const changeSet = useResourceChangeSet(graphSlug, resourceInstanceId);
 const { context, isTransitioning, transitionError, transitionLifecycle } =
     reportContext;
 const { workspaces, activeWorkspace, selectWorkspace } = useReportWorkspaces(
     () => component.config.workspaces ?? [],
-    () => context.value?.permissions.can_edit === true,
+    () => canEdit.value,
     () => context.value?.language ?? "",
 );
+
+const editorTarget = ref<EditTileRequest | null>(null);
 
 const fetchError = computed(
     () =>
         reportContext.fetchError.value ??
         graphWidgetConfigs.fetchError.value ??
-        resourceData.fetchError.value,
+        changeSet.fetchError.value,
+);
+
+const canEdit = computed(
+    () =>
+        context.value?.permissions.can_edit === true &&
+        context.value.lifecycle_state.can_edit_resource_instances,
+);
+
+const hasPendingChanges = computed(
+    () => changeSet.pendingChanges.value.length > 0,
 );
 
 const reportData = computed<ReportData | null>(() => {
     if (
         context.value === null ||
         graphWidgetConfigs.nodegroupWidgetConfigs.value === null ||
-        resourceData.resource.value === null
+        changeSet.workingResource.value === null
     ) {
         return null;
     }
@@ -81,7 +96,18 @@ const reportData = computed<ReportData | null>(() => {
         graphNodesByAlias: indexGraphNodes(
             graphWidgetConfigs.nodegroupWidgetConfigs.value,
         ),
-        resource: resourceData.resource.value,
+        folioLocations: folioLocations(
+            component.config.workspaces ?? [],
+            context.value.language,
+        ),
+        resource: changeSet.workingResource.value,
+        canEdit: canEdit.value,
+        changeSet,
+        editor: {
+            target: editorTarget.value,
+            open: openEditor,
+            close: closeEditor,
+        },
     };
 });
 
@@ -96,7 +122,7 @@ const exportFormats = computed(
 );
 
 const displayName = computed(() => {
-    const resourceName = resourceData.resource.value?.name?.trim();
+    const resourceName = changeSet.workingResource.value?.name?.trim();
     if (resourceName) {
         return resourceName;
     }
@@ -168,6 +194,28 @@ const activeWorkspaceComponent = computed(() => {
         loadComponent(componentName)
     );
 });
+
+onMounted(() => {
+    window.addEventListener("beforeunload", warnAboutPendingChanges);
+});
+
+onUnmounted(() => {
+    window.removeEventListener("beforeunload", warnAboutPendingChanges);
+});
+
+function openEditor(editTileRequest: EditTileRequest): void {
+    editorTarget.value = editTileRequest;
+}
+
+function closeEditor(): void {
+    editorTarget.value = null;
+}
+
+function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
+    if (hasPendingChanges.value) {
+        event.preventDefault();
+    }
+}
 </script>
 
 <template>
@@ -228,10 +276,20 @@ const activeWorkspaceComponent = computed(() => {
         >
             <span>{{ transitionErrorMessage }}</span>
         </Message>
+        <Message
+            v-if="changeSet.addError.value"
+            severity="error"
+        >
+            <span>{{ changeSet.addError.value.message }}</span>
+        </Message>
         <component
             :is="activeWorkspaceComponent"
             class="resource-report-workspace"
             :workspace-config="activeWorkspace.config"
+            :report-data="reportData"
+        />
+        <EditListTray
+            v-if="reportData.canEdit && hasPendingChanges"
             :report-data="reportData"
         />
     </div>

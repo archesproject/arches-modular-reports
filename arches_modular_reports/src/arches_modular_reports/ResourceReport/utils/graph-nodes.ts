@@ -31,3 +31,21 @@ export function nodegroupLineage(
     }
     return lineage;
 }
+
+export function childNodegroupAliases(
+    nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>,
+    nodegroupAlias: string | null,
+): string[] {
+    return Object.entries(nodegroupWidgetConfigs)
+        .filter(
+            ([, nodegroupWidgetConfig]) =>
+                nodegroupWidgetConfig.parent_nodegroup_alias ===
+                    nodegroupAlias && nodegroupWidgetConfig.card?.visible,
+        )
+        .sort(
+            ([, firstConfig], [, secondConfig]) =>
+                (firstConfig.card?.sortorder ?? 0) -
+                (secondConfig.card?.sortorder ?? 0),
+        )
+        .map(([childNodegroupAlias]) => childNodegroupAlias);
+}

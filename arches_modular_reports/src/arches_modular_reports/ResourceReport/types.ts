@@ -1,5 +1,10 @@
-import type { NodegroupWidgetConfig } from "@/arches_vue_components/types.ts";
-import type { ResourceData } from "@/arches_modular_reports/ModularReport/types.ts";
+import type { ComputedRef, Ref, ShallowRef } from "vue";
+import type {
+    AliasedData,
+    AliasedNodeData,
+    AliasedTileData,
+    NodegroupWidgetConfig,
+} from "@/arches_vue_components/types.ts";
 
 export type LocalizedLabel = string | Record<string, string>;
 
@@ -124,9 +129,103 @@ export interface SummaryLine {
     value: string;
 }
 
+export interface AliasedResourceData {
+    resourceinstanceid: string;
+    name?: string;
+    aliased_data: AliasedData;
+}
+
+export interface AddTileChange {
+    id: string;
+    type: "add";
+    nodegroupAlias: string;
+    parentTileId: string | null;
+    tile: AliasedTileData & { tileid: string };
+}
+
+export interface EditTileChange {
+    id: string;
+    type: "edit";
+    nodegroupAlias: string;
+    tileId: string;
+    aliasedData: Record<string, AliasedNodeData>;
+}
+
+export interface DeleteTileChange {
+    id: string;
+    type: "delete";
+    nodegroupAlias: string;
+    tileId: string;
+}
+
+export interface ReorderTilesChange {
+    id: string;
+    type: "reorder";
+    nodegroupAlias: string;
+    parentTileId: string | null;
+    tileIds: string[];
+}
+
+export type ResourceChange =
+    | AddTileChange
+    | EditTileChange
+    | DeleteTileChange
+    | ReorderTilesChange;
+
+export type TileChangeType = "add" | "edit" | "delete";
+
+export interface ResourceChangeSet {
+    resource: ShallowRef<AliasedResourceData | null>;
+    workingResource: ComputedRef<AliasedResourceData | null>;
+    pendingChanges: ShallowRef<ResourceChange[]>;
+    conflictingChangeIds: Ref<string[]>;
+    fetchError: Ref<Error | null>;
+    isSaving: Ref<boolean>;
+    saveError: Ref<Error | null>;
+    addError: Ref<Error | null>;
+    addTile: (
+        nodegroupAlias: string,
+        parentTileId: string | null,
+    ) => Promise<string | null>;
+    editTile: (
+        nodegroupAlias: string,
+        tileId: string,
+        aliasedData: AliasedData,
+    ) => void;
+    deleteTile: (nodegroupAlias: string, tileId: string) => void;
+    undoDelete: (tileId: string) => void;
+    reorderTiles: (
+        nodegroupAlias: string,
+        parentTileId: string | null,
+        orderedTileIds: string[],
+    ) => void;
+    discardChange: (changeId: string) => void;
+    discardAll: () => void;
+    hasChanges: (change: ResourceChange) => boolean;
+    changeTypeForTile: (tileId: string) => TileChangeType | null;
+    isPendingDelete: (tileId: string) => boolean;
+    save: () => Promise<boolean>;
+}
+
+export interface EditTileRequest {
+    nodegroupAlias: string;
+    tileId: string;
+    nodeAlias?: string | null;
+}
+
+export interface ReportEditor {
+    target: EditTileRequest | null;
+    open: (target: EditTileRequest) => void;
+    close: () => void;
+}
+
 export interface ReportData {
-    resource: ResourceData;
+    resource: AliasedResourceData;
     nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>;
     graphNodesByAlias: Record<string, GraphNode>;
+    folioLocations: Record<string, string>;
     context: ReportContext;
+    canEdit: boolean;
+    changeSet: ResourceChangeSet;
+    editor: ReportEditor;
 }

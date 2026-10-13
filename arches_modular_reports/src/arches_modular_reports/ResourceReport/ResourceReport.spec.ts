@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import OpenVue from "openvue/config";
+import ConfirmationService from "openvue/confirmationservice";
 
 import ResourceReport from "@/arches_modular_reports/ResourceReport/ResourceReport.vue";
 
-import { fetchModularReportResource } from "@/arches_modular_reports/ModularReport/api.ts";
 import {
     fetchReportContext,
     updateLifecycleState,
@@ -21,8 +21,8 @@ import type {
     ResourceReportConfig,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
-vi.mock("@/arches_modular_reports/ModularReport/api.ts", () => ({
-    fetchModularReportResource: vi.fn(),
+vi.mock("@/arches_vue_components/application/generate-arches-url.ts", () => ({
+    generateArchesURL: (urlName: string) => urlName,
 }));
 
 vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
@@ -41,10 +41,21 @@ vi.mock(
     }),
 );
 
-const GenericFolioStub = {
-    name: "GenericFolio",
-    props: ["mode", "nodegroupAlias", "graphSlug", "aliasedNodegroupData"],
-    template: "<div class='folio-stub' />",
+const GenericWidgetStub = {
+    name: "GenericWidget",
+    props: ["mode", "nodeAlias", "graphSlug", "aliasedNodeData"],
+    template: "<span class='widget-stub' />",
+};
+
+const focusWidgetInputForNodeAlias = vi.fn();
+
+const GenericCardStub = {
+    name: "GenericCard",
+    props: ["tileData", "mode"],
+    emits: ["update:tileData"],
+    methods: { focusWidgetInputForNodeAlias },
+    template:
+        "<button class='card-stub' @click=\"$emit('update:tileData', { ...tileData, aliased_data: { name_content: { display_value: 'Smalt', node_value: 'Smalt', details: [] } } })\" />",
 };
 
 const DRAFT: LifecycleStateSummary = {
@@ -129,6 +140,7 @@ const NODEGROUP_WIDGET_CONFIGS: Record<string, NodegroupWidgetConfig> = {
 };
 
 const RESOURCE = {
+    resourceinstanceid: "resource-id",
     name: "Cobalt blue",
     graph_publication: "publication",
     principaluser: 1,
@@ -179,11 +191,24 @@ function mountReport(config: ResourceReportConfig = REPORT_CONFIG) {
             resourceInstanceId: "resource-id",
         },
         global: {
-            plugins: [[OpenVue, { theme: "none" }]],
+            plugins: [[OpenVue, { theme: "none" }], ConfirmationService],
             provide: { graphSlug: "reference_and_sample_collection_item" },
-            stubs: { GenericFolio: GenericFolioStub },
+            stubs: {
+                GenericWidget: GenericWidgetStub,
+                GenericCard: GenericCardStub,
+            },
         },
     });
+}
+
+function folioButton(wrapper: ReturnType<typeof mountReport>, label: string) {
+    const button = wrapper
+        .findAll(".report-folio-field button")
+        .find((candidate) => candidate.text() === label);
+    if (button === undefined) {
+        throw new Error(`No ${label} button in the report folio`);
+    }
+    return button;
 }
 
 function tabLabels(wrapper: ReturnType<typeof mountReport>): string[] {
@@ -195,7 +220,14 @@ describe("ResourceReport", () => {
         vi.clearAllMocks();
         Element.prototype.scrollIntoView = vi.fn();
         vi.mocked(fetchReportContext).mockResolvedValue(makeContext());
-        vi.mocked(fetchModularReportResource).mockResolvedValue(RESOURCE);
+        vi.stubGlobal(
+            "fetch",
+            vi.fn(() =>
+                Promise.resolve(
+                    new Response(JSON.stringify(RESOURCE), { status: 200 }),
+                ),
+            ),
+        );
         vi.mocked(updateLifecycleState).mockResolvedValue();
     });
 
@@ -252,13 +284,13 @@ describe("ResourceReport", () => {
         });
         await flushPromises();
 
-        const folio = wrapper.findComponent(GenericFolioStub);
-        expect(folio.props()).toMatchObject({
+        const widgets = wrapper.findAllComponents(GenericWidgetStub);
+        expect(widgets).toHaveLength(1);
+        expect(widgets[0].props()).toMatchObject({
             mode: "view",
-            nodegroupAlias: "names",
+            nodeAlias: "name_content",
             graphSlug: "reference_and_sample_collection_item",
         });
-        expect(folio.props("aliasedNodegroupData")).toHaveLength(1);
 
         await wrapper.find(".key-data-summary button").trigger("click");
         await flushPromises();
@@ -269,6 +301,53 @@ describe("ResourceReport", () => {
         expect(
             wrapper.find('[data-nodegroup-alias="names"]').classes(),
         ).toContain("report-workspace-folio-flash");
+    });
+
+    it("edits a tile from a report folio and lists the change in the tray", async () => {
+        const wrapper = mountReport({
+            workspaces: [
+                {
+                    id: "report",
+                    component: "ReportWorkspace",
+                    config: {
+                        tabs: [
+                            {
+                                sections: [
+                                    { folios: [{ nodegroup_alias: "names" }] },
+                                ],
+                            },
+                        ],
+                        home: { summary: [] },
+                    },
+                },
+            ],
+        });
+        await flushPromises();
+
+        await folioButton(wrapper, "Edit").trigger("click");
+        expect(wrapper.find(".key-data-summary").exists()).toBe(false);
+
+        await folioButton(wrapper, "Edit").trigger("click");
+        await flushPromises();
+        expect(focusWidgetInputForNodeAlias).toHaveBeenCalledWith(
+            "name_content",
+        );
+
+        await folioButton(wrapper, "Delete").trigger("click");
+        expect(
+            wrapper.findComponent(GenericCardStub).props("tileData")
+                .aliased_data.name_content.display_value,
+        ).toBe("");
+
+        await wrapper.find(".card-stub").trigger("click");
+        expect(wrapper.find(".edit-list-tray-entry").text()).toContain(
+            "Edited",
+        );
+
+        await wrapper
+            .find('.edit-list-tray-entry [aria-label="Discard change"]')
+            .trigger("click");
+        expect(wrapper.find(".edit-list-tray").exists()).toBe(false);
     });
 
     it("lets reviewers change the lifecycle state", async () => {

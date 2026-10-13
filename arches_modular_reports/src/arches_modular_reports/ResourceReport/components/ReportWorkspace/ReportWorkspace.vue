@@ -9,13 +9,13 @@ import TabPanel from "openvue/tabpanel";
 import TabPanels from "openvue/tabpanels";
 import Tabs from "openvue/tabs";
 
-import GenericFolio from "@/arches_vue_components/generics/GenericFolio/GenericFolio.vue";
+import EditorPanel from "@/arches_modular_reports/ResourceReport/components/EditorPanel.vue";
 import KeyDataSummary from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/KeyDataSummary.vue";
+import ReportFolio from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/ReportFolio.vue";
 
-import { nodegroupTiles } from "@/arches_vue_components/generics/GenericFolio/utils.ts";
-import { VIEW } from "@/arches_vue_components/widgets/constants.ts";
 import { nodegroupLineage } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
+import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
 import type {
     ReportData,
@@ -37,8 +37,13 @@ const folioAnchors = useTemplateRef<HTMLElement[]>("folioAnchors");
 const activeTabIndex = ref(0);
 const flashedNodegroupAlias = ref<string | null>(null);
 
+const hasAside = computed(
+    () =>
+        workspaceConfig.home !== undefined || reportData.editor.target !== null,
+);
+
 const mainPaneSize = computed(() => {
-    if (workspaceConfig.home) {
+    if (hasAside.value) {
         return MAIN_PANE_SIZE;
     }
     return FULL_PANE_SIZE;
@@ -109,6 +114,7 @@ function clearFlash(): void {
 
 <template>
     <Splitter
+        :key="String(hasAside)"
         class="report-workspace"
         state-storage="local"
         :state-key="SPLITTER_STATE_KEY"
@@ -167,11 +173,11 @@ function clearFlash(): void {
                                 :data-nodegroup-alias="folio.nodegroupAlias"
                                 @animationend.self="clearFlash"
                             >
-                                <GenericFolio
-                                    :mode="VIEW"
+                                <ReportFolio
                                     :nodegroup-alias="folio.nodegroupAlias"
-                                    :graph-slug="reportData.context.graph.slug"
-                                    :aliased-nodegroup-data="folio.tiles"
+                                    :tiles="folio.tiles"
+                                    :parent-tile-id="null"
+                                    :report-data="reportData"
                                 />
                             </div>
                         </section>
@@ -180,16 +186,26 @@ function clearFlash(): void {
             </Tabs>
         </SplitterPanel>
         <SplitterPanel
-            v-if="workspaceConfig.home"
-            class="report-workspace-pane report-workspace-home"
+            v-if="hasAside"
+            class="report-workspace-pane report-workspace-aside"
             :size="HOME_PANE_SIZE"
             :min-size="MINIMUM_PANE_SIZE"
         >
-            <KeyDataSummary
-                :summary="workspaceConfig.home.summary ?? []"
+            <EditorPanel
+                v-if="reportData.editor.target"
+                :target="reportData.editor.target"
                 :report-data="reportData"
-                @jump-to-node="jumpToNode"
             />
+            <div
+                v-else-if="workspaceConfig.home"
+                class="report-workspace-home"
+            >
+                <KeyDataSummary
+                    :summary="workspaceConfig.home.summary ?? []"
+                    :report-data="reportData"
+                    @jump-to-node="jumpToNode"
+                />
+            </div>
         </SplitterPanel>
     </Splitter>
 </template>
@@ -209,6 +225,9 @@ function clearFlash(): void {
 
 .report-workspace-home {
     padding: 1.6rem;
+}
+
+.report-workspace-aside {
     background: var(
         --p-resource-report-aside-background,
         var(--p-content-hover-background)
