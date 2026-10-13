@@ -7,16 +7,25 @@ const { icon, message } = defineProps<{
 
 <template>
     <div class="report-placeholder">
-        <i
-            :class="icon"
-            aria-hidden="true"
-        />
-        <span>{{ message }}</span>
+        <div class="report-placeholder-message">
+            <i
+                :class="icon"
+                aria-hidden="true"
+            />
+            <span>{{ message }}</span>
+        </div>
     </div>
 </template>
 
 <style scoped>
 .report-placeholder {
+    display: flex;
+    justify-content: center;
+    padding-block: 3.2rem;
+    padding-inline: 1.6rem;
+}
+
+.report-placeholder-message {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -24,8 +33,6 @@ const { icon, message } = defineProps<{
     gap: 0.8rem;
     width: 100%;
     max-width: 48rem;
-    margin-block: 3.2rem;
-    margin-inline: auto;
     padding-block: 3.2rem;
     padding-inline: 2.4rem;
     border: 0.1rem solid var(--p-content-border-color);
@@ -36,7 +43,7 @@ const { icon, message } = defineProps<{
     text-align: center;
 }
 
-.report-placeholder i {
+.report-placeholder-message i {
     font-size: 2.8rem;
     opacity: 0.35;
 }

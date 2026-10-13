@@ -6,7 +6,6 @@ import Button from "openvue/button";
 import Tag from "openvue/tag";
 
 import { buildExportUrl } from "@/arches_modular_reports/ResourceReport/api.ts";
-import { EXPORT_FORMAT_LABELS } from "@/arches_modular_reports/ResourceReport/constants.ts";
 
 import type {
     ExportFormat,
@@ -49,6 +48,12 @@ const emit = defineEmits<{
 
 const { $gettext } = useGettext();
 
+const exportFormatLabels: Record<ExportFormat, string> = {
+    "json-ld": $gettext("JSON-LD"),
+    json: $gettext("JSON"),
+    csv: $gettext("CSV"),
+};
+
 const hasTransitions = computed(
     () => previousStates.length > 0 || nextStates.length > 0,
 );
@@ -64,7 +69,7 @@ function transitionSeverity(
 
 function exportAriaLabel(exportFormat: ExportFormat): string {
     return $gettext("Export as %{exportFormat}", {
-        exportFormat: EXPORT_FORMAT_LABELS[exportFormat],
+        exportFormat: exportFormatLabels[exportFormat],
     });
 }
 </script>
@@ -79,12 +84,14 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
         </div>
         <div class="report-header-content">
             <div class="report-header-name-row">
-                <h2 class="report-header-name">{{ displayName }}</h2>
-                <Tag
-                    :value="lifecycleStateName"
-                    :severity="lifecycleSeverity"
-                    :rounded="true"
-                />
+                <div class="report-header-title">
+                    <h2 class="report-header-name">{{ displayName }}</h2>
+                    <Tag
+                        :value="lifecycleStateName"
+                        :severity="lifecycleSeverity"
+                        :rounded="true"
+                    />
+                </div>
                 <div
                     v-if="hasTransitions"
                     class="report-header-lifecycle-actions"
@@ -141,7 +148,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                 target="_blank"
                 rel="noopener"
                 :href="buildExportUrl(resourceInstanceId, exportFormat)"
-                :label="EXPORT_FORMAT_LABELS[exportFormat]"
+                :label="exportFormatLabels[exportFormat]"
                 :aria-label="exportAriaLabel(exportFormat)"
             />
         </nav>
@@ -183,7 +190,15 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
 .report-header-name-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 1rem;
+}
+
+.report-header-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 0;
 }
 
 .report-header-name {
@@ -200,7 +215,6 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     display: flex;
     flex-shrink: 0;
     gap: 0.8rem;
-    margin-inline-start: auto;
 }
 
 .report-header-type {

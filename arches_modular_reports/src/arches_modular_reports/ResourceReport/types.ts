@@ -27,7 +27,7 @@ export interface HeaderConfig {
 
 export interface CardConfig {
     nodegroup_alias: string;
-    component?: string;
+    component: string;
     label?: LocalizedLabel;
     labels?: Record<string, LocalizedLabel>;
     display?: DisplayMode;
@@ -59,11 +59,9 @@ export interface DrawerPanelConfig {
     config?: Record<string, unknown>;
 }
 
-export type DrawerEntryConfig = string | DrawerPanelConfig;
-
 export interface HomeConfig {
     summary?: SummaryEntryConfig[];
-    drawer?: DrawerEntryConfig[];
+    drawer?: DrawerPanelConfig[];
 }
 
 export interface ReportViewConfig {

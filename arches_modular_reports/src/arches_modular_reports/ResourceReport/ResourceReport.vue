@@ -8,11 +8,11 @@ import Splitter from "openvue/splitter";
 import SplitterPanel from "openvue/splitterpanel";
 
 import DataView from "@/arches_modular_reports/ResourceReport/components/DataView/DataView.vue";
-import GraphView from "@/arches_modular_reports/ResourceReport/components/GraphView.vue";
-import ReportHeader from "@/arches_modular_reports/ResourceReport/components/ReportHeader.vue";
-import ReportPlaceholder from "@/arches_modular_reports/ResourceReport/components/ReportPlaceholder.vue";
+import GraphView from "@/arches_modular_reports/ResourceReport/components/GraphView/GraphView.vue";
+import ReportHeader from "@/arches_modular_reports/ResourceReport/components/ReportHeader/ReportHeader.vue";
+import ReportPlaceholder from "@/arches_modular_reports/ResourceReport/components/ReportPlaceholder/ReportPlaceholder.vue";
 import ReportView from "@/arches_modular_reports/ResourceReport/components/ReportView/ReportView.vue";
-import ViewStrip from "@/arches_modular_reports/ResourceReport/components/ViewStrip.vue";
+import ViewStrip from "@/arches_modular_reports/ResourceReport/components/ViewStrip/ViewStrip.vue";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
 import { useReportContext } from "@/arches_modular_reports/ResourceReport/composables/useReportContext.ts";
@@ -21,7 +21,6 @@ import { useReportViews } from "@/arches_modular_reports/ResourceReport/composab
 import { useResourceData } from "@/arches_modular_reports/ResourceReport/composables/useResourceData.ts";
 import {
     DATA_VIEW,
-    DEFAULT_EXPORT_FORMATS,
     EMPTY_VALUE,
     GRAPH_VIEW,
     REPORT_VIEW,
@@ -66,7 +65,7 @@ const resourceData = useResourceData(graphSlug, resourceInstanceId);
 const { context, isTransitioning, transitionError, transitionLifecycle } =
     reportContext;
 const { views, activeView, selectView } = useReportViews(
-    () => component.config.views,
+    () => component.config.views ?? [],
     () => context.value?.permissions.can_edit === true,
     () => context.value?.language ?? "",
 );
@@ -96,7 +95,7 @@ const graphIconClass = computed(
 );
 
 const exportFormats = computed(
-    () => component.config.header?.export_formats ?? DEFAULT_EXPORT_FORMATS,
+    () => component.config.header?.export_formats ?? [],
 );
 
 const displayName = computed(() => {
@@ -190,6 +189,12 @@ const activeViewComponent = computed(() => {
                 })
             }}
         </span>
+    </Message>
+    <Message
+        v-else-if="isLoaded && views.length === 0"
+        severity="error"
+    >
+        <span>{{ $gettext("This report configuration has no views.") }}</span>
     </Message>
     <div
         v-else-if="isLoaded && activeView && lifecycleState"
