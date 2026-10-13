@@ -15,9 +15,7 @@
     api_node_presentation = '(resourceid) => { return "{% url "api_node_presentation" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resourceid)}'
     api_nodegroup_tile_data = '(resourceinstanceid, nodegroupalias) => { return "{% url "api_nodegroup_tile_data" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" "alias" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", resourceinstanceid).replace("alias", nodegroupalias)}'
     api_instance_permissions = "{% url 'api_instance_permissions' %}"
-    api_modular_reports_resource = '(graphslug, resourceinstanceid) => { return "{% url "arches_querysets:api-resource" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", graphslug).replace("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", resourceinstanceid)}'
     api_modular_reports_tile = '(graphslug, nodegroupalias, tileid) => { return "{% url "arches_querysets:api-tile" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" "cccccccc-cccc-cccc-cccc-cccccccccccc" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", graphslug).replace("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", nodegroupalias).replace("cccccccc-cccc-cccc-cccc-cccccccccccc", tileid)}'
-    api_modular_reports_blank_tile = '(graphslug, nodegroupalias) => { return "{% url "arches_querysets:api-tile-blank" "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" %}".replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", graphslug).replace("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", nodegroupalias)}'
     api_has_permissions = "{% url 'api_has_permissions' %}"
     api_client_language_settings = "{% url 'api_client_language_settings' %}"
 ></div>

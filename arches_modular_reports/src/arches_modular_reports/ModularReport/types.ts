@@ -103,24 +103,6 @@ export interface TileData {
     tileid: string | null;
 }
 
-export interface ResourceData {
-    aliased_data: AliasedData;
-    resourceinstanceid?: string;
-    name?: string;
-    descriptors?: {
-        [key: string]: {
-            name: string;
-            map_popup: string;
-            description: string;
-        };
-    };
-    legacyid?: string | null;
-    createdtime?: string;
-    graph?: string;
-    graph_publication: string;
-    principaluser: number;
-}
-
 // NodegroupTileDataView produces this, not label-based graph.
 export interface LabelBasedCard {
     "@has_children": boolean;
