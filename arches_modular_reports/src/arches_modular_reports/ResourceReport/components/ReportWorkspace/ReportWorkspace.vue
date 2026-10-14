@@ -127,6 +127,7 @@ function clearFlash(): void {
             <Tabs
                 v-model:value="activeTabIndex"
                 :lazy="true"
+                :show-navigators="false"
             >
                 <TabList v-if="tabs.length > 1">
                     <Tab

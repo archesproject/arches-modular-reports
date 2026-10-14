@@ -25,6 +25,7 @@ function onTabChange(workspaceId: string | number): void {
     <Tabs
         class="workspace-strip"
         :value="activeWorkspaceId"
+        :show-navigators="false"
         @update:value="onTabChange"
     >
         <TabList>
