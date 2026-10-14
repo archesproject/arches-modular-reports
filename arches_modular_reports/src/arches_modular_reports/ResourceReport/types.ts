@@ -101,14 +101,12 @@ export interface ReportPermissions {
     can_delete: boolean;
     can_copy: boolean;
     is_reviewer: boolean;
-    is_rdm_admin: boolean;
 }
 
 export interface ReportGraph {
     name: string;
     slug: string;
     iconclass: string | null;
-    color: string | null;
 }
 
 export interface ReportContext {

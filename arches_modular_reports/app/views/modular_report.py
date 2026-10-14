@@ -160,7 +160,6 @@ class ReportContextView(APIBase):
                     "name": str(resource.graph.name),
                     "slug": resource.graph.slug,
                     "iconclass": resource.graph.iconclass,
-                    "color": resource.graph.color,
                 },
                 "lifecycle_state": resource.resource_instance_lifecycle_state.serialize(),
                 "language": get_language(),
@@ -175,7 +174,6 @@ class ReportContextView(APIBase):
                     "can_copy": user_can_edit
                     and group_required(request.user, "Resource Editor"),
                     "is_reviewer": user_is_resource_reviewer(request.user),
-                    "is_rdm_admin": group_required(request.user, "RDM Administrator"),
                 },
             }
         )

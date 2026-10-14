@@ -83,7 +83,6 @@ function makeContext(
             name: "Reference and Sample Collection Item",
             slug: "reference_and_sample_collection_item",
             iconclass: "fa fa-asterisk",
-            color: null,
         },
         lifecycle_state: {
             ...DRAFT,
@@ -97,7 +96,6 @@ function makeContext(
             can_delete: true,
             can_copy: true,
             is_reviewer: true,
-            is_rdm_admin: false,
             ...permissions,
         },
     };
