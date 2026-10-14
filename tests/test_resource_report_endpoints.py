@@ -120,6 +120,27 @@ class ResourceReportEndpointTests(TestCase):
         self.assertEqual(name_value["after"], "New")
         self.assertTrue(name_value["changed"])
 
+    def test_edit_history_filters_by_user_and_card_name(self):
+        EditLog.objects.create(
+            resourceinstanceid=str(self.resource.pk),
+            edittype="create",
+            timestamp=timezone.now(),
+            user_username="grace",
+            user_firstname="Grace",
+            user_lastname="Hopper",
+        )
+        self.client.force_login(self.superuser)
+        history_url = reverse("api_edit_history", args=[self.resource.pk])
+
+        def matching_users(query):
+            response = self.client.get(history_url, {"q": query})
+            return [edit["user"] for edit in response.json()["results"]]
+
+        self.assertEqual(matching_users("lovelace"), ["Ada Lovelace"])
+        self.assertEqual(matching_users("grace"), ["Grace Hopper"])
+        self.assertEqual(matching_users("NAMES"), ["Ada Lovelace"])
+        self.assertEqual(matching_users("nobody"), [])
+
     def test_reader_without_edit_permission(self):
         assign_perm("models.view_resourceinstance", self.reader_user, self.resource)
         assign_perm("models.read_nodegroup", self.reader_user, self.names)

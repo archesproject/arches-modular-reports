@@ -202,6 +202,15 @@ class EditHistoryView(APIBase):
             )
             .order_by("-timestamp")
         )
+        if query := request.GET.get("q", "").strip():
+            edits = edits.filter(
+                Q(user_firstname__icontains=query)
+                | Q(user_lastname__icontains=query)
+                | Q(user_username__icontains=query)
+                | Q(
+                    nodegroupid__in=self.nodegroup_ids_with_card_name(resourceid, query)
+                )
+            )
         paginator = Paginator(edits, self.page_size)
         edit_page = paginator.get_page(request.GET.get("page", 1))
         value_describer = EditValueDescriber()
@@ -216,6 +225,21 @@ class EditHistoryView(APIBase):
                 "has_next": edit_page.has_next(),
             }
         )
+
+    @staticmethod
+    def nodegroup_ids_with_card_name(resourceid, query):
+        graph_id = (
+            models.ResourceInstance.objects.filter(pk=resourceid)
+            .values_list("graph_id", flat=True)
+            .first()
+        )
+        return [
+            str(nodegroup_id)
+            for nodegroup_id, card_name in models.CardModel.objects.filter(
+                graph_id=graph_id
+            ).values_list("nodegroup_id", "name")
+            if query.casefold() in localized_text(card_name).casefold()
+        ]
 
     @staticmethod
     def serialize_edit(edit, value_describer):
