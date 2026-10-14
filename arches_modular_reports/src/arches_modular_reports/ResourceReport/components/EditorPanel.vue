@@ -83,6 +83,8 @@ const addableChildAliases = computed(() =>
         canAddTile(
             reportData.nodegroupWidgetConfigs[childAlias],
             nodegroupTiles(liveTile.value?.aliased_data[childAlias]).length,
+            target.tileId,
+            reportData.changeSet,
         ),
     ),
 );

@@ -7,16 +7,15 @@ import Button from "openvue/button";
 
 import GenericWidget from "@/arches_vue_components/generics/GenericWidget/GenericWidget.vue";
 
-import { isAliasedNodeData } from "@/arches_vue_components/generics/GenericCard/utils.ts";
 import { VIEW } from "@/arches_vue_components/widgets/constants.ts";
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import {
+    aliasedNodeDataOf,
     canAddTile,
     nodegroupTiles,
 } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
 import type {
-    AliasedNodeData,
     AliasedTileData,
     CardXNodeXWidgetData,
 } from "@/arches_vue_components/types.ts";
@@ -57,18 +56,16 @@ const emptyMessage = computed(() => {
     return $gettext("No %{name} have been recorded for this entry.", { name });
 });
 
-const isAddable = computed(() => {
-    if (!reportData.canEdit) {
-        return false;
-    }
-    if (
-        parentTileId !== null &&
-        reportData.changeSet.isPendingDelete(parentTileId)
-    ) {
-        return false;
-    }
-    return canAddTile(nodegroupWidgetConfig.value, tiles.length);
-});
+const isAddable = computed(
+    () =>
+        reportData.canEdit &&
+        canAddTile(
+            nodegroupWidgetConfig.value,
+            tiles.length,
+            parentTileId,
+            reportData.changeSet,
+        ),
+);
 
 watch(
     () => tiles,
@@ -93,17 +90,6 @@ watch(
         }
     },
 );
-
-function aliasedNodeDataOf(
-    tile: AliasedTileData,
-    nodeAlias: string,
-): AliasedNodeData | null {
-    const nodeData = tile.aliased_data[nodeAlias];
-    if (isAliasedNodeData(nodeData)) {
-        return nodeData;
-    }
-    return null;
-}
 
 function nodeValueOf(
     tile: AliasedTileData | undefined,

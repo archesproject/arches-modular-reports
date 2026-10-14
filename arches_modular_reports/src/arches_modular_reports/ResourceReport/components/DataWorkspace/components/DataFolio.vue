@@ -6,9 +6,9 @@ import Badge from "openvue/badge";
 import Button from "openvue/button";
 import Tag from "openvue/tag";
 
-import { isAliasedNodeData } from "@/arches_vue_components/generics/GenericCard/utils.ts";
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import {
+    aliasedNodeDataOf,
     canAddTile,
     nodegroupTiles,
     tileSearchText,
@@ -69,14 +69,13 @@ const childAliases = computed(() =>
     childNodegroupAliases(nodegroupWidgetConfigs, nodegroupAlias),
 );
 
-const isParentPendingDelete = computed(
-    () => parentTileId !== null && changeSet.isPendingDelete(parentTileId),
-);
-
-const isAddable = computed(
-    () =>
-        !isParentPendingDelete.value &&
-        canAddTile(nodegroupWidgetConfig.value, tiles.length),
+const isAddable = computed(() =>
+    canAddTile(
+        nodegroupWidgetConfig.value,
+        tiles.length,
+        parentTileId,
+        changeSet,
+    ),
 );
 
 const cardinalityLabel = computed(() => {
@@ -95,11 +94,7 @@ function tileIdOf(tile: AliasedTileData): string {
 }
 
 function displayValue(tile: AliasedTileData, nodeAlias: string): string {
-    const nodeData = tile.aliased_data[nodeAlias];
-    if (isAliasedNodeData(nodeData)) {
-        return nodeData.display_value;
-    }
-    return "";
+    return aliasedNodeDataOf(tile, nodeAlias)?.display_value ?? "";
 }
 
 function tileLabel(tile: AliasedTileData): string {

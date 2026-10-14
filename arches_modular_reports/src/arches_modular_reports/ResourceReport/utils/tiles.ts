@@ -6,8 +6,20 @@ import type {
     AliasedTileData,
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
+import type { ResourceChangeSet } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const SUMMARY_FIELD_COUNT = 2;
+
+export function aliasedNodeDataOf(
+    tile: AliasedTileData,
+    nodeAlias: string,
+): AliasedNodeData | null {
+    const nodeData = tile.aliased_data[nodeAlias];
+    if (isAliasedNodeData(nodeData)) {
+        return nodeData;
+    }
+    return null;
+}
 
 export function nodegroupTiles(
     nodegroupData: AliasedNodeData | AliasedNodegroupData | undefined,
@@ -44,7 +56,12 @@ export function tileSearchText(tile: AliasedTileData): string {
 export function canAddTile(
     nodegroupWidgetConfig: NodegroupWidgetConfig,
     existingTileCount: number,
+    parentTileId: string | null,
+    changeSet: ResourceChangeSet,
 ): boolean {
+    if (parentTileId !== null && changeSet.isPendingDelete(parentTileId)) {
+        return false;
+    }
     return (
         nodegroupWidgetConfig.is_writable &&
         (nodegroupWidgetConfig.cardinality === "n" || existingTileCount === 0)
@@ -60,9 +77,12 @@ export function tileSummary(
         .filter((widget) => widget.visible)
         .slice(0, SUMMARY_FIELD_COUNT);
     for (const widget of summaryWidgets) {
-        const nodeData = tile.aliased_data[widget.node.alias];
-        if (isAliasedNodeData(nodeData) && nodeData.display_value) {
-            summaryValues.push(nodeData.display_value);
+        const displayValue = aliasedNodeDataOf(
+            tile,
+            widget.node.alias,
+        )?.display_value;
+        if (displayValue) {
+            summaryValues.push(displayValue);
         }
     }
     return summaryValues.join(" · ");
