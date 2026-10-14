@@ -16,25 +16,20 @@ import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
 import { useGraphWidgetConfigs } from "@/arches_modular_reports/ResourceReport/composables/useGraphWidgetConfigs.ts";
 import { useReportContext } from "@/arches_modular_reports/ResourceReport/composables/useReportContext.ts";
 import { useResourceChangeSet } from "@/arches_modular_reports/ResourceReport/composables/useResourceChangeSet.ts";
-import { useReportWorkspaces } from "@/arches_modular_reports/ResourceReport/composables/useReportWorkspaces.ts";
 import {
     DATA_WORKSPACE,
-    EMPTY_VALUE,
     GRAPH_WORKSPACE,
     REPORT_WORKSPACE,
 } from "@/arches_modular_reports/ResourceReport/constants.ts";
-import { findNodeValues } from "@/arches_modular_reports/ResourceReport/utils/find-node-values.ts";
 import { folioLocations } from "@/arches_modular_reports/ResourceReport/utils/folio-locations.ts";
 import { indexGraphNodes } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
-import { lifecycleSeverity } from "@/arches_modular_reports/ResourceReport/utils/lifecycle-severity.ts";
-import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
+import { resolveWorkspaces } from "@/arches_modular_reports/ResourceReport/utils/resolve-workspaces.ts";
 
 import type { Component } from "vue";
 import type {
     EditTileRequest,
     ReportData,
     ResourceReportConfig,
-    SummaryLine,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const BUILT_IN_WORKSPACE_COMPONENTS: Record<string, Component> = {
@@ -42,7 +37,6 @@ const BUILT_IN_WORKSPACE_COMPONENTS: Record<string, Component> = {
     [DATA_WORKSPACE]: DataWorkspace,
     [GRAPH_WORKSPACE]: GraphWorkspace,
 };
-const DEFAULT_GRAPH_ICON_CLASS = "pi pi-database";
 
 const { component, resourceInstanceId } = defineProps<{
     component: { component: string; config: ResourceReportConfig };
@@ -57,12 +51,8 @@ const graphWidgetConfigs = useGraphWidgetConfigs(graphSlug);
 const changeSet = useResourceChangeSet(graphSlug, resourceInstanceId);
 const { context, isTransitioning, transitionError, transitionLifecycle } =
     reportContext;
-const { workspaces, activeWorkspace, selectWorkspace } = useReportWorkspaces(
-    () => component.config.workspaces ?? [],
-    () => canEdit.value,
-    () => context.value?.language ?? "",
-);
 
+const selectedWorkspaceId = ref<string | null>(null);
 const editorTarget = ref<EditTileRequest | null>(null);
 
 const fetchError = computed(
@@ -82,6 +72,31 @@ const hasPendingChanges = computed(
     () => changeSet.pendingChanges.value.length > 0,
 );
 
+const workspaces = computed(() =>
+    resolveWorkspaces(component.config.workspaces ?? [], {
+        canEdit: canEdit.value,
+        activeLanguage: context.value?.language ?? "",
+    }),
+);
+
+const activeWorkspace = computed(
+    () =>
+        workspaces.value.find(
+            (workspace) => workspace.id === selectedWorkspaceId.value,
+        ) ?? workspaces.value[0],
+);
+
+const graphNodesByAlias = computed(() =>
+    indexGraphNodes(graphWidgetConfigs.nodegroupWidgetConfigs.value ?? {}),
+);
+
+const folioLocationsByNodegroupAlias = computed(() =>
+    folioLocations(
+        component.config.workspaces ?? [],
+        context.value?.language ?? "",
+    ),
+);
+
 const reportData = computed<ReportData | null>(() => {
     if (
         context.value === null ||
@@ -93,13 +108,8 @@ const reportData = computed<ReportData | null>(() => {
     return {
         context: context.value,
         nodegroupWidgetConfigs: graphWidgetConfigs.nodegroupWidgetConfigs.value,
-        graphNodesByAlias: indexGraphNodes(
-            graphWidgetConfigs.nodegroupWidgetConfigs.value,
-        ),
-        folioLocations: folioLocations(
-            component.config.workspaces ?? [],
-            context.value.language,
-        ),
+        graphNodesByAlias: graphNodesByAlias.value,
+        folioLocations: folioLocationsByNodegroupAlias.value,
         resource: changeSet.workingResource.value,
         canEdit: canEdit.value,
         changeSet,
@@ -109,79 +119,6 @@ const reportData = computed<ReportData | null>(() => {
             close: closeEditor,
         },
     };
-});
-
-const graphName = computed(() => context.value?.graph.name ?? "");
-
-const graphIconClass = computed(
-    () => context.value?.graph.iconclass ?? DEFAULT_GRAPH_ICON_CLASS,
-);
-
-const exportFormats = computed(
-    () => component.config.header?.export_formats ?? [],
-);
-
-const displayName = computed(() => {
-    const resourceName = changeSet.workingResource.value?.name?.trim();
-    if (resourceName) {
-        return resourceName;
-    }
-    return $gettext("New %{graphName}", { graphName: graphName.value });
-});
-
-const lifecycleState = computed(() => context.value?.lifecycle_state);
-
-const currentLifecycleSeverity = computed(() => {
-    if (!lifecycleState.value) {
-        return "secondary";
-    }
-    return lifecycleSeverity(
-        lifecycleState.value,
-        component.config.header?.lifecycle_severities,
-    );
-});
-
-const canTransitionLifecycle = computed(
-    () => context.value?.permissions.is_reviewer === true,
-);
-
-const transitionErrorMessage = computed(() => {
-    if (!transitionError.value) {
-        return "";
-    }
-    return $gettext("Unable to change the lifecycle state: %{message}", {
-        message: transitionError.value.message,
-    });
-});
-
-const previousLifecycleStates = computed(() => {
-    if (!canTransitionLifecycle.value || !lifecycleState.value) {
-        return [];
-    }
-    return lifecycleState.value.previous_resource_instance_lifecycle_states;
-});
-
-const nextLifecycleStates = computed(() => {
-    if (!canTransitionLifecycle.value || !lifecycleState.value) {
-        return [];
-    }
-    return lifecycleState.value.next_resource_instance_lifecycle_states;
-});
-
-const summaryLines = computed<SummaryLine[]>(() => {
-    if (reportData.value === null) {
-        return [];
-    }
-    const { graphNodesByAlias, resource } = reportData.value;
-    const activeLanguage = reportData.value.context.language;
-    return (component.config.header?.summary ?? []).map((summaryEntry) => ({
-        label:
-            localizeLabel(summaryEntry.label, activeLanguage) ??
-            graphNodesByAlias[summaryEntry.node_alias].label,
-        value:
-            findNodeValues(resource.aliased_data, summaryEntry.node_alias)[0]
-                ?.display_value || EMPTY_VALUE,
-    }));
 });
 
 const activeWorkspaceComponent = computed(() => {
@@ -240,7 +177,7 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
         </span>
     </Message>
     <div
-        v-else-if="reportData && activeWorkspace && lifecycleState"
+        v-else-if="reportData && activeWorkspace"
         class="resource-report"
         :dir="context?.language_dir"
     >
@@ -248,7 +185,7 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
             v-if="workspaces.length > 1"
             :workspaces="workspaces"
             :active-workspace-id="activeWorkspace.id"
-            @select-workspace="selectWorkspace"
+            @select-workspace="selectedWorkspaceId = $event"
         />
         <p
             v-if="activeWorkspace.description"
@@ -257,24 +194,25 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
             {{ activeWorkspace.description }}
         </p>
         <ReportHeader
-            :display-name="displayName"
-            :graph-name="graphName"
-            :graph-icon-class="graphIconClass"
-            :lifecycle-state-name="lifecycleState.name"
-            :lifecycle-severity="currentLifecycleSeverity"
-            :previous-states="previousLifecycleStates"
-            :next-states="nextLifecycleStates"
+            :report-data="reportData"
+            :header-config="component.config.header ?? {}"
             :is-transitioning="isTransitioning"
-            :summary-lines="summaryLines"
-            :export-formats="exportFormats"
-            :resource-instance-id="resourceInstanceId"
             @transition-lifecycle="transitionLifecycle"
         />
         <Message
             v-if="transitionError"
             severity="error"
         >
-            <span>{{ transitionErrorMessage }}</span>
+            <span>
+                {{
+                    $gettext(
+                        "Unable to change the lifecycle state: %{message}",
+                        {
+                            message: transitionError.message,
+                        },
+                    )
+                }}
+            </span>
         </Message>
         <Message
             v-if="changeSet.addError.value"
@@ -289,7 +227,7 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
             :report-data="reportData"
         />
         <EditListTray
-            v-if="reportData.canEdit && hasPendingChanges"
+            v-if="hasPendingChanges"
             :report-data="reportData"
         />
     </div>

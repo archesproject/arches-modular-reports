@@ -5,8 +5,7 @@ import { useGettext } from "vue3-gettext";
 import Button from "openvue/button";
 
 import { EMPTY_VALUE } from "@/arches_modular_reports/ResourceReport/constants.ts";
-import { findNodeValues } from "@/arches_modular_reports/ResourceReport/utils/find-node-values.ts";
-import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
+import { summaryRows } from "@/arches_modular_reports/ResourceReport/utils/summary-rows.ts";
 
 import type {
     ReportData,
@@ -26,25 +25,17 @@ const emit = defineEmits<{
 
 const { $gettext } = useGettext();
 
-const summaryRows = computed(() =>
-    summary.map((summaryEntry) => {
-        const values = findNodeValues(
-            reportData.resource.aliased_data,
-            summaryEntry.node_alias,
-        )
-            .map((nodeData) => nodeData.display_value)
-            .filter((displayValue) => displayValue !== "");
-        return {
-            nodeAlias: summaryEntry.node_alias,
-            label:
-                localizeLabel(
-                    summaryEntry.label,
-                    reportData.context.language,
-                ) ??
-                reportData.graphNodesByAlias[summaryEntry.node_alias].label,
-            value: values.join("; ") || EMPTY_VALUE,
-        };
-    }),
+const rows = computed(() =>
+    summaryRows(
+        summary,
+        reportData.resource.aliased_data,
+        reportData.graphNodesByAlias,
+        reportData.context.language,
+    ).map((summaryRow) => ({
+        nodeAlias: summaryRow.nodeAlias,
+        label: summaryRow.label,
+        value: summaryRow.values.join("; ") || EMPTY_VALUE,
+    })),
 );
 </script>
 
@@ -54,7 +45,7 @@ const summaryRows = computed(() =>
             {{ $gettext("Key Data Summary") }}
         </h3>
         <p
-            v-if="summaryRows.length === 0"
+            v-if="rows.length === 0"
             class="key-data-summary-empty"
         >
             {{ $gettext("No key data is configured for this report.") }}
@@ -64,7 +55,7 @@ const summaryRows = computed(() =>
             class="key-data-summary-rows"
         >
             <div
-                v-for="summaryRow in summaryRows"
+                v-for="summaryRow in rows"
                 :key="summaryRow.nodeAlias"
                 class="key-data-summary-row"
             >

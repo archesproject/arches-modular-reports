@@ -122,9 +122,10 @@ export interface GraphNode {
     nodegroupAlias: string;
 }
 
-export interface SummaryLine {
+export interface SummaryRow {
+    nodeAlias: string;
     label: string;
-    value: string;
+    values: string[];
 }
 
 export interface AliasedResourceData {

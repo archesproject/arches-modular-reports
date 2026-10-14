@@ -6,40 +6,25 @@ import Button from "openvue/button";
 import Tag from "openvue/tag";
 
 import { buildExportUrl } from "@/arches_modular_reports/ResourceReport/api.ts";
+import { EMPTY_VALUE } from "@/arches_modular_reports/ResourceReport/constants.ts";
+import { lifecycleSeverity } from "@/arches_modular_reports/ResourceReport/utils/lifecycle-severity.ts";
+import { summaryRows } from "@/arches_modular_reports/ResourceReport/utils/summary-rows.ts";
 
 import type {
     ExportFormat,
+    HeaderConfig,
     LifecycleStateSummary,
-    SummaryLine,
+    ReportData,
     TagSeverity,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const TRANSITION_LIFECYCLE = "transition-lifecycle" as const;
+const DEFAULT_GRAPH_ICON_CLASS = "pi pi-database";
 
-const {
-    displayName,
-    graphName,
-    graphIconClass,
-    lifecycleStateName,
-    lifecycleSeverity,
-    previousStates,
-    nextStates,
-    isTransitioning,
-    summaryLines,
-    exportFormats,
-    resourceInstanceId,
-} = defineProps<{
-    displayName: string;
-    graphName: string;
-    graphIconClass: string;
-    lifecycleStateName: string;
-    lifecycleSeverity: TagSeverity;
-    previousStates: LifecycleStateSummary[];
-    nextStates: LifecycleStateSummary[];
+const { reportData, headerConfig, isTransitioning } = defineProps<{
+    reportData: ReportData;
+    headerConfig: HeaderConfig;
     isTransitioning: boolean;
-    summaryLines: SummaryLine[];
-    exportFormats: ExportFormat[];
-    resourceInstanceId: string;
 }>();
 
 const emit = defineEmits<{
@@ -54,9 +39,56 @@ const exportFormatLabels: Record<ExportFormat, string> = {
     csv: $gettext("CSV"),
 };
 
-const hasTransitions = computed(
-    () => previousStates.length > 0 || nextStates.length > 0,
+const currentLifecycleState = computed(
+    () => reportData.context.lifecycle_state,
 );
+
+const displayName = computed(() => {
+    const resourceName = reportData.resource.name?.trim();
+    if (resourceName) {
+        return resourceName;
+    }
+    return $gettext("New %{graphName}", {
+        graphName: reportData.context.graph.name,
+    });
+});
+
+const graphIconClass = computed(
+    () => reportData.context.graph.iconclass ?? DEFAULT_GRAPH_ICON_CLASS,
+);
+
+const lifecycleTagSeverity = computed(() =>
+    lifecycleSeverity(
+        currentLifecycleState.value,
+        headerConfig.lifecycle_severities,
+    ),
+);
+
+const previousStates = computed(
+    () =>
+        currentLifecycleState.value.previous_resource_instance_lifecycle_states,
+);
+
+const nextStates = computed(
+    () => currentLifecycleState.value.next_resource_instance_lifecycle_states,
+);
+
+const hasTransitions = computed(
+    () =>
+        reportData.context.permissions.is_reviewer &&
+        (previousStates.value.length > 0 || nextStates.value.length > 0),
+);
+
+const summaryLines = computed(() =>
+    summaryRows(
+        headerConfig.summary ?? [],
+        reportData.resource.aliased_data,
+        reportData.graphNodesByAlias,
+        reportData.context.language,
+    ),
+);
+
+const exportFormats = computed(() => headerConfig.export_formats ?? []);
 
 function transitionSeverity(
     lifecycleState: LifecycleStateSummary,
@@ -86,23 +118,25 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
             <div class="report-header-title">
                 <h2 class="report-header-name">{{ displayName }}</h2>
                 <Tag
-                    :value="lifecycleStateName"
-                    :severity="lifecycleSeverity"
+                    :value="currentLifecycleState.name"
+                    :severity="lifecycleTagSeverity"
                     :rounded="true"
                 />
             </div>
-            <span class="report-header-type">{{ graphName }}</span>
+            <span class="report-header-type">{{
+                reportData.context.graph.name
+            }}</span>
             <dl
                 v-if="summaryLines.length > 0"
                 class="report-header-summary"
             >
                 <div
                     v-for="summaryLine in summaryLines"
-                    :key="summaryLine.label"
+                    :key="summaryLine.nodeAlias"
                     class="report-header-summary-line"
                 >
                     <dt>{{ summaryLine.label }}</dt>
-                    <dd>{{ summaryLine.value }}</dd>
+                    <dd>{{ summaryLine.values[0] ?? EMPTY_VALUE }}</dd>
                 </div>
             </dl>
         </div>
@@ -149,7 +183,12 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                     size="small"
                     target="_blank"
                     rel="noopener"
-                    :href="buildExportUrl(resourceInstanceId, exportFormat)"
+                    :href="
+                        buildExportUrl(
+                            reportData.resource.resourceinstanceid,
+                            exportFormat,
+                        )
+                    "
                     :label="exportFormatLabels[exportFormat]"
                     :aria-label="exportAriaLabel(exportFormat)"
                 />
