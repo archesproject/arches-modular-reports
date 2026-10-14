@@ -16,6 +16,7 @@ import {
     replayResourceChanges,
 } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
 import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
+import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type { MaybeRefOrGetter } from "vue";
 import type {
@@ -29,13 +30,6 @@ import type {
     ResourceChangeSet,
     TileChangeType,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
-
-function toError(caughtValue: unknown): Error {
-    if (caughtValue instanceof Error) {
-        return caughtValue;
-    }
-    return new Error(String(caughtValue));
-}
 
 function withoutChildTiles(aliasedData: AliasedData): AliasedData {
     const ownAliasedData: AliasedData = {};
