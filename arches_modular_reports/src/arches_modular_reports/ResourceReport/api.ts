@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 import arches from "arches";
 
 import type {
+    EditHistoryPage,
     ExportFormat,
     ReportContext,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
@@ -24,6 +25,18 @@ export async function fetchReportContext(
         arches.urls.api_report_context(resourceInstanceId),
     );
     return parseResponse<ReportContext>(response);
+}
+
+export async function fetchEditHistory(
+    resourceInstanceId: string,
+    page: number,
+    query: string,
+): Promise<EditHistoryPage> {
+    const params = new URLSearchParams({ page: String(page), q: query });
+    const response = await fetch(
+        `${arches.urls.api_edit_history(resourceInstanceId)}?${params}`,
+    );
+    return parseResponse<EditHistoryPage>(response);
 }
 
 export async function updateLifecycleState(

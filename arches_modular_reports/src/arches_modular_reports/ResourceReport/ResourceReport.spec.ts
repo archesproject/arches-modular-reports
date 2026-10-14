@@ -6,6 +6,7 @@ import ConfirmationService from "openvue/confirmationservice";
 import ResourceReport from "@/arches_modular_reports/ResourceReport/ResourceReport.vue";
 
 import {
+    fetchEditHistory,
     fetchReportContext,
     updateLifecycleState,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
@@ -15,6 +16,7 @@ import type {
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
 import type {
+    EditHistoryPage,
     LifecycleStateSummary,
     ReportContext,
     ReportPermissions,
@@ -26,6 +28,7 @@ vi.mock("@/arches_vue_components/application/generate-arches-url.ts", () => ({
 }));
 
 vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
+    fetchEditHistory: vi.fn(),
     fetchReportContext: vi.fn(),
     updateLifecycleState: vi.fn(),
     buildExportUrl: () => "/export",
@@ -178,6 +181,59 @@ const REPORT_CONFIG: ResourceReportConfig = {
     ],
 };
 
+const HISTORY_PAGE: EditHistoryPage = {
+    results: [
+        {
+            editlogid: "edit-1",
+            edit_type: "tile edit",
+            timestamp: "2026-10-14T10:00:00Z",
+            user: "Ada Lovelace",
+            card_name: "Names",
+            values: [
+                {
+                    node_alias: "name_content",
+                    label: "Name",
+                    before: "Smalt",
+                    after: "Cobalt blue",
+                    changed: true,
+                },
+            ],
+        },
+    ],
+    page: 1,
+    total_count: 2,
+    has_next: true,
+};
+
+function drawerConfig(): ResourceReportConfig {
+    return {
+        workspaces: [
+            {
+                id: "report",
+                component: "ReportWorkspace",
+                config: {
+                    tabs: [],
+                    home: {
+                        summary: [],
+                        drawer: [
+                            {
+                                component: "EditHistoryPanel",
+                                label: "Edit History",
+                                icon: "pi pi-clock",
+                            },
+                            {
+                                component: "ManagePanel",
+                                label: "Manage",
+                                icon: "pi pi-cog",
+                            },
+                        ],
+                    },
+                },
+            },
+        ],
+    };
+}
+
 function mountReport(config: ResourceReportConfig = REPORT_CONFIG) {
     return mount(ResourceReport, {
         props: {
@@ -207,6 +263,16 @@ function folioButton(wrapper: ReturnType<typeof mountReport>, label: string) {
         throw new Error(`No ${label} button in the report folio`);
     }
     return button;
+}
+
+function drawerTrigger(wrapper: ReturnType<typeof mountReport>, label: string) {
+    const trigger = wrapper
+        .findAll(".home-drawer-triggers button")
+        .find((candidate) => candidate.text() === label);
+    if (trigger === undefined) {
+        throw new Error(`No ${label} drawer trigger`);
+    }
+    return trigger;
 }
 
 function tabLabels(wrapper: ReturnType<typeof mountReport>): string[] {
@@ -392,6 +458,72 @@ describe("ResourceReport", () => {
 
         expect(wrapper.text()).toContain(
             "Unable to load this report: %{message}",
+        );
+    });
+
+    it("opens edit history from the home drawer, filters it and loads more", async () => {
+        vi.mocked(fetchEditHistory).mockResolvedValue(HISTORY_PAGE);
+        const wrapper = mountReport(drawerConfig());
+        await flushPromises();
+
+        await drawerTrigger(wrapper, "Edit History").trigger("click");
+        await flushPromises();
+        expect(wrapper.find(".home-drawer-crumb").text()).toContain(
+            "Cobalt blue",
+        );
+        expect(wrapper.find(".home-drawer-crumb").text()).toContain(
+            "Edit History",
+        );
+        expect(wrapper.find(".edit-history-entry").text()).toContain(
+            "Ada Lovelace",
+        );
+        expect(
+            wrapper
+                .findAll(".edit-history-field-changed dd")
+                .map((value) => value.text()),
+        ).toEqual(["Smalt", "Cobalt blue"]);
+        expect(fetchEditHistory).toHaveBeenLastCalledWith("resource-id", 1, "");
+
+        vi.useFakeTimers();
+        await wrapper.find(".edit-history-filter").setValue("ada");
+        await vi.advanceTimersByTimeAsync(300);
+        vi.useRealTimers();
+        await flushPromises();
+        expect(fetchEditHistory).toHaveBeenLastCalledWith(
+            "resource-id",
+            1,
+            "ada",
+        );
+
+        await wrapper.find(".edit-history > button").trigger("click");
+        await flushPromises();
+        expect(fetchEditHistory).toHaveBeenLastCalledWith(
+            "resource-id",
+            2,
+            "ada",
+        );
+        expect(wrapper.findAll(".edit-history-entry")).toHaveLength(2);
+
+        await drawerTrigger(wrapper, "Edit History").trigger("click");
+        expect(wrapper.find(".home-drawer-panel").exists()).toBe(false);
+    });
+
+    it("hides edit history from users who cannot edit and flags unknown panels", async () => {
+        vi.mocked(fetchReportContext).mockResolvedValue(
+            makeContext({ can_edit: false }),
+        );
+        const wrapper = mountReport(drawerConfig());
+        await flushPromises();
+
+        expect(
+            wrapper
+                .findAll(".home-drawer-triggers button")
+                .map((trigger) => trigger.text()),
+        ).toEqual(["Manage"]);
+
+        await drawerTrigger(wrapper, "Manage").trigger("click");
+        expect(wrapper.find(".home-drawer-body").text()).toContain(
+            "This panel is not available",
         );
     });
 });

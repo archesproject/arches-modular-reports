@@ -10,6 +10,7 @@ import TabPanels from "openvue/tabpanels";
 import Tabs from "openvue/tabs";
 
 import EditorPanel from "@/arches_modular_reports/ResourceReport/components/EditorPanel.vue";
+import HomeDrawer from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/HomeDrawer/HomeDrawer.vue";
 import KeyDataSummary from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/KeyDataSummary.vue";
 import ReportFolio from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/ReportFolio.vue";
 
@@ -197,16 +198,19 @@ function clearFlash(): void {
                 :target="reportData.editor.target"
                 :report-data="reportData"
             />
-            <div
+            <HomeDrawer
                 v-else-if="workspaceConfig.home"
-                class="report-workspace-home"
+                :entries="workspaceConfig.home.drawer ?? []"
+                :report-data="reportData"
             >
-                <KeyDataSummary
-                    :summary="workspaceConfig.home.summary ?? []"
-                    :report-data="reportData"
-                    @jump-to-node="jumpToNode"
-                />
-            </div>
+                <div class="report-workspace-home">
+                    <KeyDataSummary
+                        :summary="workspaceConfig.home.summary ?? []"
+                        :report-data="reportData"
+                        @jump-to-node="jumpToNode"
+                    />
+                </div>
+            </HomeDrawer>
         </SplitterPanel>
     </Splitter>
 </template>

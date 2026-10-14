@@ -228,3 +228,27 @@ export interface ReportData {
     changeSet: ResourceChangeSet;
     editor: ReportEditor;
 }
+
+export interface EditHistoryValue {
+    node_alias: string;
+    label: string;
+    before: string | null;
+    after: string | null;
+    changed: boolean;
+}
+
+export interface EditHistoryEntry {
+    editlogid: string;
+    edit_type: string;
+    timestamp: string;
+    user: string;
+    card_name: string | null;
+    values: EditHistoryValue[];
+}
+
+export interface EditHistoryPage {
+    results: EditHistoryEntry[];
+    page: number;
+    total_count: number;
+    has_next: boolean;
+}
