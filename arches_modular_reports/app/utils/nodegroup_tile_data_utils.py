@@ -14,7 +14,6 @@ from django.db.models import (
 )
 from django.db.models.functions import Concat, JSONObject
 from django.urls import reverse
-from django.utils.translation import gettext as _
 
 from arches import __version__ as _arches_version_str
 from arches.app.models import models

@@ -526,15 +526,3 @@ class UserPermissionsView(APIBase):
             if permission == "RDM Administrator":
                 user_permissions[permission] = group_required(request.user, permission)
         return JSONResponse(user_permissions)
-
-
-class LanguageSettingsView(APIBase):
-    def get(self, request):
-        return JSONResponse(
-            {
-                "language": get_language(),
-                "language_dir": (
-                    "ltr" if not get_language_info(get_language())["bidi"] else "rtl"
-                ),
-            }
-        )
