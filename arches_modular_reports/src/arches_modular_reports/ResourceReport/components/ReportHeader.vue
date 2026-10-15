@@ -53,9 +53,12 @@ const displayName = computed(() => {
     });
 });
 
-const graphIconClass = computed(
-    () => reportData.context.graph.iconclass ?? DEFAULT_GRAPH_ICON_CLASS,
-);
+const graphIconClass = computed(() => {
+    if (reportData.context.graph.iconclass) {
+        return reportData.context.graph.iconclass;
+    }
+    return DEFAULT_GRAPH_ICON_CLASS;
+});
 
 const lifecycleTagSeverity = computed(() =>
     lifecycleSeverity(
