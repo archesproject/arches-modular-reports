@@ -1,27 +1,14 @@
 import { isAliasedNodeData } from "@/arches_vue_components/generics/GenericCard/utils.ts";
+import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
 import type {
     AliasedData,
-    AliasedNodeData,
-    AliasedNodegroupData,
     AliasedTileData,
 } from "@/arches_vue_components/types.ts";
 import type {
     AliasedResourceData,
     ResourceChange,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
-
-function tilesOf(
-    value: AliasedNodeData | AliasedNodegroupData | undefined,
-): AliasedTileData[] {
-    if (Array.isArray(value)) {
-        return value;
-    }
-    if (value && !isAliasedNodeData(value)) {
-        return [value];
-    }
-    return [];
-}
 
 function reorderTiles(
     tiles: AliasedTileData[],
@@ -110,7 +97,7 @@ function applyToAliasedData(
         if (isAliasedNodeData(value)) {
             continue;
         }
-        const tiles = tilesOf(value);
+        const tiles = nodegroupTiles(value);
         let keptTiles = tiles;
         if (shouldRemoveDeletedTiles) {
             keptTiles = tiles.filter(
@@ -164,7 +151,7 @@ export function parentTileIdsByTileId(
     parentTileIds: Map<string, string | null> = new Map(),
 ): Map<string, string | null> {
     for (const value of Object.values(aliasedData)) {
-        for (const tile of tilesOf(value)) {
+        for (const tile of nodegroupTiles(value)) {
             if (tile.tileid) {
                 parentTileIds.set(tile.tileid, parentTileId);
                 parentTileIdsByTileId(
@@ -183,7 +170,7 @@ export function findTile(
     tileId: string,
 ): AliasedTileData | null {
     for (const value of Object.values(aliasedData)) {
-        for (const tile of tilesOf(value)) {
+        for (const tile of nodegroupTiles(value)) {
             if (tile.tileid === tileId) {
                 return tile;
             }
