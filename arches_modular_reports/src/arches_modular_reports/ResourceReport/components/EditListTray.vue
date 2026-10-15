@@ -238,6 +238,6 @@ async function applyAll(): Promise<void> {
 }
 
 .edit-list-tray-entry-conflict {
-    border-color: var(--p-red-500);
+    border-color: var(--p-form-field-invalid-border-color);
 }
 </style>
