@@ -358,9 +358,9 @@ describe("ResourceReport", () => {
         expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
             block: "center",
         });
-        expect(
-            wrapper.find('[data-nodegroup-alias="names"]').classes(),
-        ).toContain("report-workspace-folio-flash");
+        expect(wrapper.find(".report-workspace-folio").classes()).toContain(
+            "report-workspace-folio-flash",
+        );
     });
 
     it("edits a tile from a report folio and lists the change in the tray", async () => {

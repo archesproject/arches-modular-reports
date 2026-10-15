@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, useTemplateRef } from "vue";
+import { computed, nextTick, ref } from "vue";
 
 import Splitter from "openvue/splitter";
 import SplitterPanel from "openvue/splitterpanel";
@@ -18,6 +18,7 @@ import { nodegroupLineage } from "@/arches_modular_reports/ResourceReport/utils/
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
 import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
+import type { ComponentPublicInstance } from "vue";
 import type {
     ReportData,
     ReportWorkspaceConfig,
@@ -34,7 +35,7 @@ const { workspaceConfig, reportData } = defineProps<{
     reportData: ReportData;
 }>();
 
-const folioAnchors = useTemplateRef<HTMLElement[]>("folioAnchors");
+const folioAnchors = new Map<string, HTMLElement>();
 const activeTabIndex = ref(0);
 const flashedNodegroupAlias = ref<string | null>(null);
 
@@ -101,11 +102,19 @@ async function jumpToNode(nodeAlias: string): Promise<void> {
         tabIndexesByNodegroupAlias.value[targetNodegroupAlias];
     await nextTick();
 
-    const folioAnchor = folioAnchors.value?.find(
-        (anchor) => anchor.dataset.nodegroupAlias === targetNodegroupAlias,
-    );
-    folioAnchor?.scrollIntoView({ block: "center" });
+    folioAnchors.get(targetNodegroupAlias)?.scrollIntoView({ block: "center" });
     flashedNodegroupAlias.value = targetNodegroupAlias;
+}
+
+function registerFolioAnchor(
+    nodegroupAlias: string,
+    folioAnchor: Element | ComponentPublicInstance | null,
+): void {
+    if (folioAnchor instanceof HTMLElement) {
+        folioAnchors.set(nodegroupAlias, folioAnchor);
+    } else {
+        folioAnchors.delete(nodegroupAlias);
+    }
 }
 
 function clearFlash(): void {
@@ -165,14 +174,19 @@ function clearFlash(): void {
                             <div
                                 v-for="folio in section.folios"
                                 :key="folio.nodegroupAlias"
-                                ref="folioAnchors"
+                                :ref="
+                                    (folioAnchor) =>
+                                        registerFolioAnchor(
+                                            folio.nodegroupAlias,
+                                            folioAnchor,
+                                        )
+                                "
                                 class="report-workspace-folio"
                                 :class="{
                                     'report-workspace-folio-flash':
                                         flashedNodegroupAlias ===
                                         folio.nodegroupAlias,
                                 }"
-                                :data-nodegroup-alias="folio.nodegroupAlias"
                                 @animationend.self="clearFlash"
                             >
                                 <ReportFolio
