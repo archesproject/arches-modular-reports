@@ -9,8 +9,8 @@ const { icon, message } = defineProps<{
     <div class="report-placeholder">
         <div class="report-placeholder-message">
             <i
-                :class="icon"
                 aria-hidden="true"
+                :class="icon"
             />
             <span>{{ message }}</span>
         </div>

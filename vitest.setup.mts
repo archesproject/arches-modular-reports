@@ -15,7 +15,10 @@ beforeAll(() => {
 
     vi.mock('vue3-gettext', () => ({
         useGettext: () => ({
-            $gettext: (text: string) => (text)
-        })
+            $gettext: (text: string, parameters: Record<string, unknown> = {}) =>
+                text.replace(/%\{\s*(\w+)\s*\}/g, (placeholder, name) =>
+                    name in parameters ? String(parameters[name]) : placeholder,
+                ),
+        }),
     }));
 });

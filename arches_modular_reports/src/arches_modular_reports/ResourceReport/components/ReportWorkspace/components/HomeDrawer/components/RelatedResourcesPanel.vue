@@ -32,6 +32,7 @@ const { filterText, query } = useFilterQuery();
 const groups = ref<RelatedResourceGroup[]>([]);
 const loadingGraphSlug = ref<string | null>(null);
 const loadError = ref<Error | null>(null);
+let latestGroupsRequestNumber = 0;
 
 const resourceInstanceId = computed(
     () => reportData.resource.resourceinstanceid,
@@ -42,6 +43,8 @@ watchEffect(() => {
 });
 
 async function loadGroups(searchText: string): Promise<void> {
+    latestGroupsRequestNumber += 1;
+    const groupsRequestNumber = latestGroupsRequestNumber;
     loadError.value = null;
     try {
         const loadedGroups = await fetchRelatedResourceGroups(
@@ -49,15 +52,18 @@ async function loadGroups(searchText: string): Promise<void> {
             panelConfig.graphs ?? [],
             searchText,
         );
-        if (searchText === query.value) {
+        if (groupsRequestNumber === latestGroupsRequestNumber) {
             groups.value = loadedGroups;
         }
     } catch (error) {
-        loadError.value = toError(error);
+        if (groupsRequestNumber === latestGroupsRequestNumber) {
+            loadError.value = toError(error);
+        }
     }
 }
 
 async function loadMore(group: RelatedResourceGroup): Promise<void> {
+    const groupsRequestNumber = latestGroupsRequestNumber;
     loadingGraphSlug.value = group.graph_slug;
     loadError.value = null;
     try {
@@ -67,6 +73,9 @@ async function loadMore(group: RelatedResourceGroup): Promise<void> {
             group.page + 1,
             query.value,
         );
+        if (groupsRequestNumber !== latestGroupsRequestNumber) {
+            return;
+        }
         groups.value = groups.value.map((candidate) => {
             if (candidate.graph_slug !== group.graph_slug) {
                 return candidate;
@@ -77,9 +86,13 @@ async function loadMore(group: RelatedResourceGroup): Promise<void> {
             };
         });
     } catch (error) {
-        loadError.value = toError(error);
+        if (groupsRequestNumber === latestGroupsRequestNumber) {
+            loadError.value = toError(error);
+        }
     } finally {
-        loadingGraphSlug.value = null;
+        if (loadingGraphSlug.value === group.graph_slug) {
+            loadingGraphSlug.value = null;
+        }
     }
 }
 </script>
@@ -110,9 +123,9 @@ async function loadMore(group: RelatedResourceGroup): Promise<void> {
         >
             <h4 class="related-resources-group-label">
                 <i
+                    aria-hidden="true"
                     :class="group.iconclass"
                     :style="{ color: group.color ?? undefined }"
-                    aria-hidden="true"
                 />
                 <span>{{ group.graph_name }}</span>
             </h4>

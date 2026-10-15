@@ -1,9 +1,12 @@
+import { defineComponent, h, onMounted } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import OpenVue from "openvue/config";
 import ConfirmationService from "openvue/confirmationservice";
 
 import ResourceReport from "@/arches_modular_reports/ResourceReport/ResourceReport.vue";
+
+import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
 
 import {
     copyResource,
@@ -33,6 +36,10 @@ import type {
 
 vi.mock("@/arches_vue_components/application/generate-arches-url.ts", () => ({
     generateArchesURL: (urlName: string) => urlName,
+}));
+
+vi.mock("@/arches_modular_reports/ModularReport/utils.ts", () => ({
+    loadComponent: vi.fn(),
 }));
 
 vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
@@ -578,6 +585,34 @@ describe("ResourceReport", () => {
         expect(wrapper.find(".editor-panel").exists()).toBe(false);
     });
 
+    it("keeps a custom workspace mounted when the context reloads", async () => {
+        vi.mocked(fetchReportContext)
+            .mockResolvedValueOnce(makeContext())
+            .mockResolvedValueOnce(makeContext());
+        let mountCount = 0;
+        vi.mocked(loadComponent).mockImplementation(() =>
+            defineComponent({
+                setup() {
+                    onMounted(() => {
+                        mountCount += 1;
+                    });
+                    return () => h("div", { class: "custom-workspace" });
+                },
+            }),
+        );
+        const wrapper = mountReport({
+            workspaces: [{ id: "custom", component: "my_app/CustomWorkspace" }],
+        });
+        await flushPromises();
+
+        await wrapper
+            .find(".report-header-lifecycle-actions button")
+            .trigger("click");
+        await flushPromises();
+
+        expect(mountCount).toBe(1);
+    });
+
     it("lets reviewers change the lifecycle state", async () => {
         const wrapper = mountReport();
         await flushPromises();
@@ -621,7 +656,7 @@ describe("ResourceReport", () => {
         await flushPromises();
 
         expect(wrapper.text()).toContain(
-            "Unable to load this report: %{message}",
+            "Unable to load this report: Not found",
         );
     });
 
@@ -753,6 +788,46 @@ describe("ResourceReport", () => {
                 .findAll(".related-resources-group")[0]
                 .findAll(".related-resources-item"),
         ).toHaveLength(2);
+    });
+
+    it("ignores a Load more page from a superseded filter", async () => {
+        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
+            PIGMENTS_GROUP,
+        ]);
+        let finishLoadMore: (group: RelatedResourceGroup) => void = () =>
+            undefined;
+        vi.mocked(fetchRelatedResourceGroup).mockReturnValueOnce(
+            new Promise((resolve) => {
+                finishLoadMore = resolve;
+            }),
+        );
+        const wrapper = mountReport(drawerConfig());
+        await flushPromises();
+        await drawerTrigger(wrapper, "Related Resources").trigger("click");
+        await flushPromises();
+
+        await wrapper.find(".related-resources-group button").trigger("click");
+        vi.useFakeTimers();
+        await wrapper.find(".related-resources-filter").setValue("sample");
+        await vi.advanceTimersByTimeAsync(300);
+        vi.useRealTimers();
+        await flushPromises();
+        finishLoadMore({
+            ...PIGMENTS_GROUP,
+            page: 2,
+            has_next: false,
+            items: [
+                {
+                    resourcexid: "cobalt-relation",
+                    display_name: "Cobalt sample",
+                    relationship: "Source",
+                    report_url: "/report/cobalt",
+                },
+            ],
+        });
+        await flushPromises();
+
+        expect(wrapper.findAll(".related-resources-item")).toHaveLength(1);
     });
 
     it("copies, prints and confirms deletion from the manage panel", async () => {

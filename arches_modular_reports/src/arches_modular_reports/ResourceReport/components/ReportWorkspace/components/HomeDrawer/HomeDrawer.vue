@@ -19,6 +19,7 @@ import type {
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const EDIT_HISTORY_PANEL = "EditHistoryPanel";
+const EMPTY_PANEL_CONFIG: Record<string, unknown> = {};
 const DRAWER_PANEL_COMPONENTS: Record<string, Component> = {
     EditHistoryPanel,
     ImagesPanel,
@@ -140,7 +141,9 @@ function closeDrawer(): void {
                             :is="openPanelComponent"
                             v-if="openPanelComponent"
                             :report-data="reportData"
-                            :panel-config="openEntry.config ?? {}"
+                            :panel-config="
+                                openEntry.config ?? EMPTY_PANEL_CONFIG
+                            "
                         />
                         <Message
                             v-else

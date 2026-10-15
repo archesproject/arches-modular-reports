@@ -238,9 +238,10 @@ describe("DataFolio", () => {
     it("locks a deleted tile's descendants until the delete is undone", async () => {
         const { changeSet, wrapper } = await mountEditor("names");
 
-        await rowButton(tileRow(wrapper, "Cobalt"), "Show details").trigger(
-            "click",
-        );
+        await rowButton(
+            tileRow(wrapper, "Cobalt"),
+            "Show details for Cobalt",
+        ).trigger("click");
         await rowButton(tileRow(wrapper, "Cobalt"), "Delete").trigger("click");
 
         const noteRow = tileRow(wrapper, "Glass");
@@ -256,7 +257,9 @@ describe("DataFolio", () => {
     it("reorders tiles with the move buttons and clears the reorder when dragged back", async () => {
         const { changeSet, wrapper } = await mountEditor("names");
 
-        await rowButton(tileRow(wrapper, "Cobalt"), "Move up").trigger("click");
+        await rowButton(tileRow(wrapper, "Cobalt"), "Move Cobalt up").trigger(
+            "click",
+        );
         expect(changeSet.pendingChanges.value).toMatchObject([
             { type: "reorder", tileIds: ["cobalt", "smalt"] },
         ]);
@@ -267,6 +270,21 @@ describe("DataFolio", () => {
             .trigger("dragstart");
         await tileRow(wrapper, "Cobalt").trigger("drop");
         expect(changeSet.pendingChanges.value).toEqual([]);
+    });
+
+    it("collapses a tile that the filter expanded", async () => {
+        const { wrapper } = await mountEditor("names", "glass");
+        expect(
+            tileRow(wrapper, "Cobalt").find(".data-folio-tile-body").exists(),
+        ).toBe(true);
+
+        await tileRow(wrapper, "Cobalt")
+            .find(".data-folio-tile-row [aria-expanded]")
+            .trigger("click");
+
+        expect(
+            tileRow(wrapper, "Cobalt").find(".data-folio-tile-body").exists(),
+        ).toBe(false);
     });
 
     it("expands to and highlights tiles matching the filter", async () => {

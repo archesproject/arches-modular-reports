@@ -119,8 +119,8 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     <header class="report-header">
         <div class="report-header-thumb">
             <i
-                :class="graphIconClass"
                 aria-hidden="true"
+                :class="graphIconClass"
             />
         </div>
         <div class="report-header-content">

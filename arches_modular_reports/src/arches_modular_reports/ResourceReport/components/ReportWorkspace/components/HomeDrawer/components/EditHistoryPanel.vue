@@ -36,6 +36,7 @@ const currentPage = ref(1);
 const hasNextPage = ref(false);
 const isLoading = ref(false);
 const loadError = ref<Error | null>(null);
+let latestHistoryRequestNumber = 0;
 
 const resourceInstanceId = computed(
     () => reportData.resource.resourceinstanceid,
@@ -46,6 +47,8 @@ watchEffect(() => {
 });
 
 async function loadHistory(searchText: string, page: number): Promise<void> {
+    latestHistoryRequestNumber += 1;
+    const historyRequestNumber = latestHistoryRequestNumber;
     isLoading.value = true;
     loadError.value = null;
     try {
@@ -54,7 +57,7 @@ async function loadHistory(searchText: string, page: number): Promise<void> {
             page,
             searchText,
         );
-        if (searchText !== query.value) {
+        if (historyRequestNumber !== latestHistoryRequestNumber) {
             return;
         }
         if (page === 1) {
@@ -65,9 +68,13 @@ async function loadHistory(searchText: string, page: number): Promise<void> {
         currentPage.value = historyPage.page;
         hasNextPage.value = historyPage.has_next;
     } catch (error) {
-        loadError.value = toError(error);
+        if (historyRequestNumber === latestHistoryRequestNumber) {
+            loadError.value = toError(error);
+        }
     } finally {
-        isLoading.value = false;
+        if (historyRequestNumber === latestHistoryRequestNumber) {
+            isLoading.value = false;
+        }
     }
 }
 

@@ -166,8 +166,8 @@ function clearFlash(): void {
                             >
                                 <i
                                     v-if="section.icon"
-                                    :class="section.icon"
                                     aria-hidden="true"
+                                    :class="section.icon"
                                 />
                                 <span>{{ section.label }}</span>
                             </h3>

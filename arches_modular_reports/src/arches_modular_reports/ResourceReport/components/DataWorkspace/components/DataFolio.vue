@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Badge from "openvue/badge";
@@ -51,6 +51,7 @@ const emit = defineEmits<{
 const { $gettext } = useGettext();
 
 const expandedTileIds = ref(new Set<string>());
+const collapsedTileIds = ref(new Set<string>());
 const draggedTileId = ref<string | null>(null);
 
 const nodegroupWidgetConfig = computed(
@@ -89,9 +90,32 @@ const normalizedFilterText = computed(() =>
     filterText.trim().toLocaleLowerCase(),
 );
 
-function tileIdOf(tile: AliasedTileData): string {
-    return tile.tileid ?? "";
-}
+const tileRows = computed(() =>
+    tiles.map((tile, tileIndex) => {
+        const tileId = tile.tileid ?? "";
+        const isMarkedForDeletion =
+            changeSet.changeTypeForTile(tileId) === "delete";
+        const isPendingDelete = changeSet.isPendingDelete(tileId);
+        return {
+            tile,
+            tileId,
+            tileIndex,
+            label: tileLabel(tile),
+            changeTag: changeTag(tileId),
+            isMarkedForDeletion,
+            isPendingDelete,
+            isLocked:
+                !nodegroupWidgetConfig.value.is_writable ||
+                (isPendingDelete && !isMarkedForDeletion),
+            isHighlighted: matchesFilter(tile),
+            isExpanded: isExpanded(tileId, tile),
+        };
+    }),
+);
+
+watch(normalizedFilterText, () => {
+    collapsedTileIds.value = new Set();
+});
 
 function displayValue(tile: AliasedTileData, nodeAlias: string): string {
     return aliasedNodeDataOf(tile, nodeAlias)?.display_value ?? "";
@@ -106,9 +130,9 @@ function tileLabel(tile: AliasedTileData): string {
 }
 
 function changeTag(
-    tile: AliasedTileData,
+    tileId: string,
 ): { label: string; severity: "success" | "info" | "danger" } | null {
-    const changeType = changeSet.changeTypeForTile(tileIdOf(tile));
+    const changeType = changeSet.changeTypeForTile(tileId);
     if (changeType === "add") {
         return { label: $gettext("New"), severity: "success" };
     }
@@ -119,18 +143,6 @@ function changeTag(
         return { label: $gettext("Deleted"), severity: "danger" };
     }
     return null;
-}
-
-function isMarkedForDeletion(tile: AliasedTileData): boolean {
-    return changeSet.changeTypeForTile(tileIdOf(tile)) === "delete";
-}
-
-function isLocked(tile: AliasedTileData): boolean {
-    return (
-        !nodegroupWidgetConfig.value.is_writable ||
-        (changeSet.isPendingDelete(tileIdOf(tile)) &&
-            !isMarkedForDeletion(tile))
-    );
 }
 
 function matchesFilter(tile: AliasedTileData): boolean {
@@ -144,8 +156,11 @@ function matchesFilter(tile: AliasedTileData): boolean {
     );
 }
 
-function isExpanded(tile: AliasedTileData): boolean {
-    if (expandedTileIds.value.has(tileIdOf(tile))) {
+function isExpanded(tileId: string, tile: AliasedTileData): boolean {
+    if (collapsedTileIds.value.has(tileId)) {
+        return false;
+    }
+    if (expandedTileIds.value.has(tileId)) {
         return true;
     }
     return (
@@ -154,18 +169,19 @@ function isExpanded(tile: AliasedTileData): boolean {
     );
 }
 
-function expandIcon(tile: AliasedTileData): string {
-    if (isExpanded(tile)) {
+function expandIcon(isTileExpanded: boolean): string {
+    if (isTileExpanded) {
         return "pi pi-chevron-down";
     }
     return "pi pi-chevron-right";
 }
 
-function toggleTile(tile: AliasedTileData): void {
-    const tileId = tileIdOf(tile);
-    if (expandedTileIds.value.has(tileId)) {
+function toggleTile(tileId: string, isTileExpanded: boolean): void {
+    if (isTileExpanded) {
         expandedTileIds.value.delete(tileId);
+        collapsedTileIds.value.add(tileId);
     } else {
+        collapsedTileIds.value.delete(tileId);
         expandedTileIds.value.add(tileId);
     }
 }
@@ -177,20 +193,20 @@ async function addTile(): Promise<void> {
     }
 }
 
-function editTile(tile: AliasedTileData): void {
-    emit(EDIT_TILE, { nodegroupAlias, tileId: tileIdOf(tile) });
+function editTile(tileId: string): void {
+    emit(EDIT_TILE, { nodegroupAlias, tileId });
 }
 
-function deleteTile(tile: AliasedTileData): void {
-    changeSet.deleteTile(nodegroupAlias, tileIdOf(tile));
+function deleteTile(tileId: string): void {
+    changeSet.deleteTile(nodegroupAlias, tileId);
 }
 
-function undoDelete(tile: AliasedTileData): void {
-    changeSet.undoDelete(tileIdOf(tile));
+function undoDelete(tileId: string): void {
+    changeSet.undoDelete(tileId);
 }
 
 function moveTileTo(tileId: string, targetIndex: number): void {
-    const orderedTileIds = tiles.map(tileIdOf);
+    const orderedTileIds = tileRows.value.map((tileRow) => tileRow.tileId);
     const currentIndex = orderedTileIds.indexOf(tileId);
     if (
         currentIndex === targetIndex ||
@@ -204,9 +220,9 @@ function moveTileTo(tileId: string, targetIndex: number): void {
     changeSet.reorderTiles(nodegroupAlias, parentTileId, orderedTileIds);
 }
 
-function onDragStart(event: DragEvent, tile: AliasedTileData): void {
-    draggedTileId.value = tileIdOf(tile);
-    event.dataTransfer?.setData("text/plain", tileIdOf(tile));
+function onDragStart(event: DragEvent, tileId: string): void {
+    draggedTileId.value = tileId;
+    event.dataTransfer?.setData("text/plain", tileId);
 }
 
 function onDragOver(event: DragEvent): void {
@@ -250,37 +266,39 @@ function onDragEnd(): void {
         </header>
         <ul class="data-folio-tiles">
             <li
-                v-for="(tile, tileIndex) in tiles"
-                :key="tile.tileid ?? tileIndex"
+                v-for="tileRow in tileRows"
+                :key="tileRow.tileId"
                 class="data-folio-tile"
                 :class="{
-                    'data-folio-tile-pending':
-                        changeSet.changeTypeForTile(tileIdOf(tile)) !== null,
-                    'data-folio-tile-deleted': changeSet.isPendingDelete(
-                        tileIdOf(tile),
-                    ),
-                    'data-folio-tile-selected': selectedTileId === tile.tileid,
-                    'data-folio-tile-match': matchesFilter(tile),
+                    'data-folio-tile-pending': tileRow.changeTag !== null,
+                    'data-folio-tile-deleted': tileRow.isPendingDelete,
+                    'data-folio-tile-selected':
+                        selectedTileId === tileRow.tileId,
+                    'data-folio-tile-match': tileRow.isHighlighted,
                 }"
                 @dragover="onDragOver"
-                @drop="onDrop(tileIndex)"
+                @drop="onDrop(tileRow.tileIndex)"
             >
                 <div
                     class="data-folio-tile-row"
-                    :draggable="!isLocked(tile) && !changeSet.isBusy.value"
-                    @dragstart="onDragStart($event, tile)"
+                    :draggable="!tileRow.isLocked && !changeSet.isBusy.value"
+                    @dragstart="onDragStart($event, tileRow.tileId)"
                     @dragend="onDragEnd"
                 >
                     <Button
-                        :icon="expandIcon(tile)"
                         variant="text"
                         size="small"
-                        :aria-expanded="isExpanded(tile)"
-                        :aria-label="$gettext('Show details')"
-                        @click="toggleTile(tile)"
+                        :icon="expandIcon(tileRow.isExpanded)"
+                        :aria-expanded="tileRow.isExpanded"
+                        :aria-label="
+                            $gettext('Show details for %{entry}', {
+                                entry: tileRow.label,
+                            })
+                        "
+                        @click="toggleTile(tileRow.tileId, tileRow.isExpanded)"
                     />
                     <div
-                        v-if="!isLocked(tile)"
+                        v-if="!tileRow.isLocked"
                         class="data-folio-reorder"
                     >
                         <i
@@ -291,44 +309,68 @@ function onDragEnd(): void {
                             icon="pi pi-arrow-up"
                             variant="text"
                             size="small"
-                            :aria-label="$gettext('Move up')"
-                            :disabled="
-                                tileIndex === 0 || changeSet.isBusy.value
+                            :aria-label="
+                                $gettext('Move %{entry} up', {
+                                    entry: tileRow.label,
+                                })
                             "
-                            @click="moveTileTo(tileIdOf(tile), tileIndex - 1)"
+                            :disabled="
+                                tileRow.tileIndex === 0 ||
+                                changeSet.isBusy.value
+                            "
+                            @click="
+                                moveTileTo(
+                                    tileRow.tileId,
+                                    tileRow.tileIndex - 1,
+                                )
+                            "
                         />
                         <Button
                             icon="pi pi-arrow-down"
                             variant="text"
                             size="small"
-                            :aria-label="$gettext('Move down')"
+                            :aria-label="
+                                $gettext('Move %{entry} down', {
+                                    entry: tileRow.label,
+                                })
+                            "
                             :disabled="
-                                tileIndex === tiles.length - 1 ||
+                                tileRow.tileIndex === tiles.length - 1 ||
                                 changeSet.isBusy.value
                             "
-                            @click="moveTileTo(tileIdOf(tile), tileIndex + 1)"
+                            @click="
+                                moveTileTo(
+                                    tileRow.tileId,
+                                    tileRow.tileIndex + 1,
+                                )
+                            "
                         />
                     </div>
                     <span class="data-folio-summary">
-                        {{ tileLabel(tile) }}
+                        {{ tileRow.label }}
                     </span>
                     <Tag
-                        v-if="changeTag(tile)"
-                        :value="changeTag(tile)?.label"
-                        :severity="changeTag(tile)?.severity"
+                        v-if="tileRow.changeTag"
+                        :value="tileRow.changeTag.label"
+                        :severity="tileRow.changeTag.severity"
                     />
                     <div
-                        v-if="!isLocked(tile)"
+                        v-if="!tileRow.isLocked"
                         class="data-folio-tile-actions"
                     >
                         <Button
-                            v-if="isMarkedForDeletion(tile)"
+                            v-if="tileRow.isMarkedForDeletion"
                             icon="pi pi-undo"
                             variant="text"
                             size="small"
                             :label="$gettext('Undo delete')"
+                            :aria-label="
+                                $gettext('Undo deleting %{entry}', {
+                                    entry: tileRow.label,
+                                })
+                            "
                             :disabled="changeSet.isBusy.value"
-                            @click="undoDelete(tile)"
+                            @click="undoDelete(tileRow.tileId)"
                         />
                         <template v-else>
                             <Button
@@ -336,7 +378,12 @@ function onDragEnd(): void {
                                 variant="text"
                                 size="small"
                                 :label="$gettext('Edit')"
-                                @click="editTile(tile)"
+                                :aria-label="
+                                    $gettext('Edit %{entry}', {
+                                        entry: tileRow.label,
+                                    })
+                                "
+                                @click="editTile(tileRow.tileId)"
                             />
                             <Button
                                 icon="pi pi-trash"
@@ -344,14 +391,19 @@ function onDragEnd(): void {
                                 size="small"
                                 severity="danger"
                                 :label="$gettext('Delete')"
+                                :aria-label="
+                                    $gettext('Delete %{entry}', {
+                                        entry: tileRow.label,
+                                    })
+                                "
                                 :disabled="changeSet.isBusy.value"
-                                @click="deleteTile(tile)"
+                                @click="deleteTile(tileRow.tileId)"
                             />
                         </template>
                     </div>
                 </div>
                 <div
-                    v-if="isExpanded(tile)"
+                    v-if="tileRow.isExpanded"
                     class="data-folio-tile-body"
                 >
                     <dl class="data-folio-fields">
@@ -361,7 +413,14 @@ function onDragEnd(): void {
                             class="data-folio-field"
                         >
                             <dt>{{ widget.label }}</dt>
-                            <dd>{{ displayValue(tile, widget.node.alias) }}</dd>
+                            <dd>
+                                {{
+                                    displayValue(
+                                        tileRow.tile,
+                                        widget.node.alias,
+                                    )
+                                }}
+                            </dd>
                         </div>
                     </dl>
                     <DataFolio
@@ -369,8 +428,12 @@ function onDragEnd(): void {
                         :key="childAlias"
                         :nodegroup-alias="childAlias"
                         :nodegroup-widget-configs="nodegroupWidgetConfigs"
-                        :tiles="nodegroupTiles(tile.aliased_data[childAlias])"
-                        :parent-tile-id="tile.tileid"
+                        :tiles="
+                            nodegroupTiles(
+                                tileRow.tile.aliased_data[childAlias],
+                            )
+                        "
+                        :parent-tile-id="tileRow.tileId"
                         :change-set="changeSet"
                         :filter-text="filterText"
                         :selected-tile-id="selectedTileId"

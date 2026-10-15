@@ -143,6 +143,11 @@ function clearNode(tileId: string, nodeAlias: string): void {
                             variant="link"
                             size="small"
                             :label="$gettext('Edit')"
+                            :aria-label="
+                                $gettext('Edit %{field}', {
+                                    field: widget.label,
+                                })
+                            "
                             @click="editNode(tile.tileid, widget.node.alias)"
                         />
                         <Button
@@ -151,6 +156,11 @@ function clearNode(tileId: string, nodeAlias: string): void {
                             variant="link"
                             size="small"
                             :label="$gettext('Delete')"
+                            :aria-label="
+                                $gettext('Delete %{field}', {
+                                    field: widget.label,
+                                })
+                            "
                             @click="clearNode(tile.tileid, widget.node.alias)"
                         />
                     </template>

@@ -121,11 +121,15 @@ const reportData = computed<ReportData | null>(() => {
     };
 });
 
+const activeWorkspaceComponentName = computed(
+    () => activeWorkspace.value?.component,
+);
+
 const activeWorkspaceComponent = computed(() => {
-    if (activeWorkspace.value === undefined) {
+    const componentName = activeWorkspaceComponentName.value;
+    if (componentName === undefined) {
         return null;
     }
-    const componentName = activeWorkspace.value.component;
     return (
         BUILT_IN_WORKSPACE_COMPONENTS[componentName] ??
         loadComponent(componentName)
