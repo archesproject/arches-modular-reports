@@ -134,7 +134,9 @@ function formatTimestamp(timestamp: string): string {
             v-else-if="!isLoading && entries.length === 0 && query"
             class="edit-history-empty"
         >
-            {{ $gettext('No history entries match "%{query}"', { query }) }}
+            {{
+                $gettext('No history entries match "%{query}"', { query }, true)
+            }}
         </p>
         <p
             v-else-if="!isLoading && entries.length === 0"
@@ -199,7 +201,15 @@ function formatTimestamp(timestamp: string): string {
                                     'edit-history-field-changed': value.changed,
                                 }"
                             >
-                                <dt>{{ value.label }}:</dt>
+                                <dt>
+                                    {{
+                                        $gettext(
+                                            "%{label}:",
+                                            { label: value.label },
+                                            true,
+                                        )
+                                    }}
+                                </dt>
                                 <dd>{{ value.before }}</dd>
                             </div>
                         </dl>
@@ -226,7 +236,15 @@ function formatTimestamp(timestamp: string): string {
                                     'edit-history-field-changed': value.changed,
                                 }"
                             >
-                                <dt>{{ value.label }}:</dt>
+                                <dt>
+                                    {{
+                                        $gettext(
+                                            "%{label}:",
+                                            { label: value.label },
+                                            true,
+                                        )
+                                    }}
+                                </dt>
                                 <dd>{{ value.after }}</dd>
                             </div>
                         </dl>

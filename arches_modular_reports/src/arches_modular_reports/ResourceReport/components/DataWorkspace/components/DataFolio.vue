@@ -291,9 +291,13 @@ function onDragEnd(): void {
                         :icon="expandIcon(tileRow.isExpanded)"
                         :aria-expanded="tileRow.isExpanded"
                         :aria-label="
-                            $gettext('Show details for %{entry}', {
-                                entry: tileRow.label,
-                            })
+                            $gettext(
+                                'Show details for %{entry}',
+                                {
+                                    entry: tileRow.label,
+                                },
+                                true,
+                            )
                         "
                         @click="toggleTile(tileRow.tileId, tileRow.isExpanded)"
                     />
@@ -310,9 +314,13 @@ function onDragEnd(): void {
                             variant="text"
                             size="small"
                             :aria-label="
-                                $gettext('Move %{entry} up', {
-                                    entry: tileRow.label,
-                                })
+                                $gettext(
+                                    'Move %{entry} up',
+                                    {
+                                        entry: tileRow.label,
+                                    },
+                                    true,
+                                )
                             "
                             :disabled="
                                 tileRow.tileIndex === 0 ||
@@ -330,9 +338,13 @@ function onDragEnd(): void {
                             variant="text"
                             size="small"
                             :aria-label="
-                                $gettext('Move %{entry} down', {
-                                    entry: tileRow.label,
-                                })
+                                $gettext(
+                                    'Move %{entry} down',
+                                    {
+                                        entry: tileRow.label,
+                                    },
+                                    true,
+                                )
                             "
                             :disabled="
                                 tileRow.tileIndex === tiles.length - 1 ||
@@ -365,9 +377,13 @@ function onDragEnd(): void {
                             size="small"
                             :label="$gettext('Undo delete')"
                             :aria-label="
-                                $gettext('Undo deleting %{entry}', {
-                                    entry: tileRow.label,
-                                })
+                                $gettext(
+                                    'Undo deleting %{entry}',
+                                    {
+                                        entry: tileRow.label,
+                                    },
+                                    true,
+                                )
                             "
                             :disabled="changeSet.isBusy.value"
                             @click="undoDelete(tileRow.tileId)"
@@ -379,9 +395,13 @@ function onDragEnd(): void {
                                 size="small"
                                 :label="$gettext('Edit')"
                                 :aria-label="
-                                    $gettext('Edit %{entry}', {
-                                        entry: tileRow.label,
-                                    })
+                                    $gettext(
+                                        'Edit %{entry}',
+                                        {
+                                            entry: tileRow.label,
+                                        },
+                                        true,
+                                    )
                                 "
                                 @click="editTile(tileRow.tileId)"
                             />
@@ -392,9 +412,13 @@ function onDragEnd(): void {
                                 severity="danger"
                                 :label="$gettext('Delete')"
                                 :aria-label="
-                                    $gettext('Delete %{entry}', {
-                                        entry: tileRow.label,
-                                    })
+                                    $gettext(
+                                        'Delete %{entry}',
+                                        {
+                                            entry: tileRow.label,
+                                        },
+                                        true,
+                                    )
                                 "
                                 :disabled="changeSet.isBusy.value"
                                 @click="deleteTile(tileRow.tileId)"

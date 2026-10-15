@@ -650,6 +650,18 @@ describe("ResourceReport", () => {
         );
     });
 
+    it("shows interpolated text unescaped once", async () => {
+        vi.mocked(fetchReportContext).mockRejectedValue(
+            new Error("Smalt & Cobalt's sample"),
+        );
+        const wrapper = mountReport();
+        await flushPromises();
+
+        expect(wrapper.text()).toContain(
+            "Unable to load this report: Smalt & Cobalt's sample",
+        );
+    });
+
     it("reports report data that cannot be loaded", async () => {
         vi.mocked(fetchReportContext).mockRejectedValue(new Error("Not found"));
         const wrapper = mountReport();

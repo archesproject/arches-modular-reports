@@ -134,9 +134,13 @@ async function loadMore(group: RelatedResourceGroup): Promise<void> {
                 class="related-resources-empty"
             >
                 {{
-                    $gettext("No related %{model}", {
-                        model: group.graph_name,
-                    })
+                    $gettext(
+                        "No related %{model}",
+                        {
+                            model: group.graph_name,
+                        },
+                        true,
+                    )
                 }}
             </p>
             <ul

@@ -45,9 +45,13 @@ const childAliases = computed(() =>
 const emptyMessage = computed(() => {
     const name = cardName.value.toLocaleLowerCase();
     if (parentTileId === null) {
-        return $gettext("No %{name} have been recorded.", { name });
+        return $gettext("No %{name} have been recorded.", { name }, true);
     }
-    return $gettext("No %{name} have been recorded for this entry.", { name });
+    return $gettext(
+        "No %{name} have been recorded for this entry.",
+        { name },
+        true,
+    );
 });
 
 const isAddable = computed(
@@ -144,9 +148,13 @@ function clearNode(tileId: string, nodeAlias: string): void {
                             size="small"
                             :label="$gettext('Edit')"
                             :aria-label="
-                                $gettext('Edit %{field}', {
-                                    field: widget.label,
-                                })
+                                $gettext(
+                                    'Edit %{field}',
+                                    {
+                                        field: widget.label,
+                                    },
+                                    true,
+                                )
                             "
                             @click="editNode(tile.tileid, widget.node.alias)"
                         />
@@ -157,9 +165,13 @@ function clearNode(tileId: string, nodeAlias: string): void {
                             size="small"
                             :label="$gettext('Delete')"
                             :aria-label="
-                                $gettext('Delete %{field}', {
-                                    field: widget.label,
-                                })
+                                $gettext(
+                                    'Delete %{field}',
+                                    {
+                                        field: widget.label,
+                                    },
+                                    true,
+                                )
                             "
                             @click="clearNode(tile.tileid, widget.node.alias)"
                         />

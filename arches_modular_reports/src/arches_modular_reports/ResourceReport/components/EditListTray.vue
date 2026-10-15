@@ -122,9 +122,13 @@ async function applyAll(): Promise<void> {
         <header class="edit-list-tray-header">
             <h3 class="edit-list-tray-title">
                 {{
-                    $gettext("Edit list (%{count})", {
-                        count: String(entries.length),
-                    })
+                    $gettext(
+                        "Edit list (%{count})",
+                        {
+                            count: String(entries.length),
+                        },
+                        true,
+                    )
                 }}
             </h3>
             <Button

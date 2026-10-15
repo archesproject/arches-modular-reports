@@ -49,9 +49,13 @@ const caption = computed(() => {
         target.nodegroupAlias,
     ).at(-1);
     if (topLevelAlias && reportData.folioLocations[topLevelAlias]) {
-        return $gettext("Editor · %{location}", {
-            location: reportData.folioLocations[topLevelAlias],
-        });
+        return $gettext(
+            "Editor · %{location}",
+            {
+                location: reportData.folioLocations[topLevelAlias],
+            },
+            true,
+        );
     }
     return $gettext("Editor");
 });
@@ -220,9 +224,13 @@ function undoDelete(): void {
                         variant="text"
                         size="small"
                         :label="
-                            $gettext('Add %{name}', {
-                                name: childCardName(childAlias),
-                            })
+                            $gettext(
+                                'Add %{name}',
+                                {
+                                    name: childCardName(childAlias),
+                                },
+                                true,
+                            )
                         "
                         :disabled="reportData.changeSet.isBusy.value"
                         @click="addChild(childAlias)"

@@ -172,9 +172,13 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
     >
         <span>
             {{
-                $gettext("Unable to load this report: %{message}", {
-                    message: fetchError.message,
-                })
+                $gettext(
+                    "Unable to load this report: %{message}",
+                    {
+                        message: fetchError.message,
+                    },
+                    true,
+                )
             }}
         </span>
     </Message>
@@ -215,9 +219,13 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
         >
             <span>
                 {{
-                    $gettext("Unable to refresh this report: %{message}", {
-                        message: fetchError.message,
-                    })
+                    $gettext(
+                        "Unable to refresh this report: %{message}",
+                        {
+                            message: fetchError.message,
+                        },
+                        true,
+                    )
                 }}
             </span>
         </Message>
@@ -232,6 +240,7 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
                         {
                             message: transitionError.message,
                         },
+                        true,
                     )
                 }}
             </span>

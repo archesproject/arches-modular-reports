@@ -154,6 +154,7 @@ function closeDrawer(): void {
                                     $gettext(
                                         "This panel is not available: %{component}",
                                         { component: openEntry.component },
+                                        true,
                                     )
                                 }}
                             </span>

@@ -48,9 +48,13 @@ const displayName = computed(() => {
     if (resourceName) {
         return resourceName;
     }
-    return $gettext("New %{graphName}", {
-        graphName: reportData.context.graph.name,
-    });
+    return $gettext(
+        "New %{graphName}",
+        {
+            graphName: reportData.context.graph.name,
+        },
+        true,
+    );
 });
 
 const graphIconClass = computed(() => {
@@ -109,9 +113,13 @@ function transitionSeverity(
 }
 
 function exportAriaLabel(exportFormat: ExportFormat): string {
-    return $gettext("Export as %{exportFormat}", {
-        exportFormat: exportFormatLabels[exportFormat],
-    });
+    return $gettext(
+        "Export as %{exportFormat}",
+        {
+            exportFormat: exportFormatLabels[exportFormat],
+        },
+        true,
+    );
 }
 </script>
 
