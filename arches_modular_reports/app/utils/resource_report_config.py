@@ -13,6 +13,7 @@ DESCRIPTOR_TOKEN_PATTERN = re.compile(r"<([^<>]+)>")
 RESOURCE_INSTANCE_DATATYPES = ["resource-instance", "resource-instance-list"]
 RELATED_RESOURCES_PANEL = "RelatedResourcesPanel"
 IMAGES_PANEL = "ImagesPanel"
+RESOURCE_REPORT_CONFIG_KEYS = {"header", "workspaces"}
 
 
 def is_resource_report_component(component_path):
@@ -55,7 +56,7 @@ class ResourceReportGraph:
         }
         self.node_aliases_by_nodegroup_id_and_name = {}
         for node in graph_nodes:
-            if node.nodegroup_id:
+            if node.nodegroup_id and node.datatype != "semantic":
                 self.node_aliases_by_nodegroup_id_and_name[
                     (str(node.nodegroup_id), node.name)
                 ] = node.alias
@@ -72,12 +73,11 @@ class ResourceReportGraph:
                 "descriptor_types", {}
             )
 
-    def child_nodegroup_ids(self, parent_nodegroup_id):
+    def top_level_nodegroup_aliases(self):
         return [
-            card.nodegroup_id
+            self.grouping_nodes_by_nodegroup_id[card.nodegroup_id].alias
             for card in self.visible_cards
-            if self.parent_nodegroup_ids_by_nodegroup_id.get(card.nodegroup_id)
-            == parent_nodegroup_id
+            if self.parent_nodegroup_ids_by_nodegroup_id.get(card.nodegroup_id) is None
         ]
 
     def related_graph_slugs(self):
@@ -138,23 +138,17 @@ class ResourceReportGraph:
         return node_aliases
 
     def descriptor_token_node_alias(self, token, nodegroup_id):
+        if nodegroup_id:
+            return self.node_aliases_by_nodegroup_id_and_name.get(
+                (str(nodegroup_id), token)
+            )
         if token in self.nodes_by_alias:
             return token
-        return self.node_aliases_by_nodegroup_id_and_name.get(
-            (str(nodegroup_id), token)
-        )
+        return None
 
 
 def summary_entries(node_aliases):
     return [{"node_alias": node_alias, "label": None} for node_alias in node_aliases]
-
-
-def build_folio_entry(report_graph, nodegroup_id):
-    return {
-        "nodegroup_alias": report_graph.grouping_nodes_by_nodegroup_id[
-            nodegroup_id
-        ].alias
-    }
 
 
 def workspace_entry(workspace_id, component, label, description):
@@ -190,10 +184,8 @@ def generate_resource_report_config(graph):
                     "sections": [
                         {
                             "folios": [
-                                build_folio_entry(report_graph, nodegroup_id)
-                                for nodegroup_id in report_graph.child_nodegroup_ids(
-                                    None
-                                )
+                                {"nodegroup_alias": nodegroup_alias}
+                                for nodegroup_alias in report_graph.top_level_nodegroup_aliases()
                             ]
                         }
                     ],
@@ -314,13 +306,21 @@ def validate_folio(report_graph, folio):
 
 
 def validate_resource_report_config(resource_report_config, graph):
+    unknown_keys = set(resource_report_config) - RESOURCE_REPORT_CONFIG_KEYS
+    if unknown_keys:
+        raise ValidationError(
+            f"Report config has unknown keys: {', '.join(sorted(unknown_keys))}"
+        )
     report_graph = ResourceReportGraph(graph)
     for folio in iterate_folios(resource_report_config):
         validate_folio(report_graph, folio)
     for summary_entry in iterate_summary_entries(resource_report_config):
         node_alias = summary_entry.get("node_alias")
-        if node_alias not in report_graph.nodes_by_alias:
-            raise ValidationError(f"Summary refers to an unknown node: {node_alias}")
+        summary_node = report_graph.nodes_by_alias.get(node_alias)
+        if summary_node is None or summary_node.datatype == "semantic":
+            raise ValidationError(
+                f"Summary must name a node that holds a value: {node_alias}"
+            )
     for graph_slug in iterate_related_graph_slugs(resource_report_config):
         if not GraphModel.objects.filter(slug=graph_slug, isresource=True).exists():
             raise ValidationError(

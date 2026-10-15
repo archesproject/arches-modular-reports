@@ -200,6 +200,37 @@ class ResourceReportConfigTests(TestCase):
             ],
         )
 
+    def test_descriptor_tokens_resolve_within_their_nodegroup(self):
+        Node.objects.create(
+            nodegroup=self.identifiers,
+            name="Content",
+            alias="content",
+            graph=self.graph,
+            istopnode=False,
+            datatype="string",
+        )
+        Node.objects.create(
+            nodegroup=self.description,
+            name="content",
+            alias="description_text",
+            graph=self.graph,
+            istopnode=False,
+            datatype="string",
+        )
+        descriptor_function = FunctionXGraph.objects.get(graph=self.graph)
+        descriptor_function.config["descriptor_types"]["description"][
+            "string_template"
+        ] = "<content>"
+        descriptor_function.save()
+
+        report_config = ReportConfig(graph=self.graph)
+        report_config.full_clean()
+
+        self.assertEqual(
+            resource_report_config_from(report_config.config)["header"]["summary"],
+            [{"node_alias": "description_text", "label": None}],
+        )
+
     def test_related_resources_panel_lists_models_linked_either_way(self):
         linked_model = make_resource_model("linked_model", "Linked Model")
         linking_model = make_resource_model("linking_model", "Another Model")
@@ -257,6 +288,14 @@ class ResourceReportConfigTests(TestCase):
                 {"node_alias": "missing"}
             ]
 
+        def mutate_unknown_top_level_key(config):
+            resource_report_config_from(config)["views"] = []
+
+        def mutate_semantic_summary_node(config):
+            resource_report_config_from(config)["header"]["summary"] = [
+                {"node_alias": "production"}
+            ]
+
         def mutate_unknown_related_model(config):
             workspace_config = resource_report_config_from(config)["workspaces"][0][
                 "config"
@@ -283,6 +322,8 @@ class ResourceReportConfigTests(TestCase):
             mutate_unknown_nodegroup,
             mutate_child_nodegroup_at_top_level,
             mutate_unknown_summary_node,
+            mutate_unknown_top_level_key,
+            mutate_semantic_summary_node,
             mutate_unknown_related_model,
             mutate_unknown_image_source,
         ):

@@ -1,5 +1,6 @@
 import json
 import os
+import tempfile
 import uuid
 from io import StringIO
 from unittest.mock import patch
@@ -68,6 +69,28 @@ class ReportConfigCommandTests(TestCase):
             with open(file_path) as f:
                 d = json.load(f)
                 self.assertTrue(d["name"] == report_config.config["name"])
+
+    def test_load_skips_configs_that_fail_validation(self):
+        with tempfile.TemporaryDirectory() as reports_dir:
+            graph_dir = os.path.join(reports_dir, self.graph.slug)
+            os.makedirs(graph_dir)
+            with open(os.path.join(graph_dir, "broken.json"), "w") as config_file:
+                json.dump(
+                    {
+                        "name": "Broken",
+                        "components": [
+                            {
+                                "component": "arches_modular_reports/ResourceReport/ResourceReport",
+                                "config": {"views": []},
+                            }
+                        ],
+                    },
+                    config_file,
+                )
+
+            management.call_command("report_configs", "load", source=graph_dir)
+
+        self.assertFalse(ReportConfig.objects.filter(slug="broken").exists())
 
 
 class GenerateReportConfigCommandTests(TestCase):

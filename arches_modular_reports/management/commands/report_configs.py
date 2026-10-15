@@ -201,14 +201,14 @@ class Command(BaseCommand):
                     if dir_graph_slug:
                         try:
                             graph = models.GraphModel.objects.get(slug=dir_graph_slug)
+                            config = ReportConfig.objects.filter(
+                                graph=graph, slug=Path(file).stem
+                            ).first() or ReportConfig(graph=graph, slug=Path(file).stem)
+                            config.config = data
+                            config.clean()
                             graph.template = editable_report_template
                             graph.save()
-                            config, created = ReportConfig.objects.update_or_create(
-                                graph=graph,
-                                slug=Path(file).stem,
-                                defaults={"config": data},
-                            )
-                            config.clean()
+                            config.save()
 
                             print(
                                 f'\n\n\tReport {Path(file).name} for graph "{dir_graph_slug}" was successfully loaded'
