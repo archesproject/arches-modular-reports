@@ -21,6 +21,7 @@ import {
     updateResource,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 
+import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import type {
     CardXNodeXWidgetData,
     NodegroupWidgetConfig,
@@ -230,6 +231,13 @@ const HISTORY_PAGE: EditHistoryPage = {
     has_next: true,
 };
 
+const SECOND_HISTORY_PAGE: EditHistoryPage = {
+    ...HISTORY_PAGE,
+    results: [{ ...HISTORY_PAGE.results[0], editlogid: "edit-2" }],
+    page: 2,
+    has_next: false,
+};
+
 const PIGMENTS_GROUP: RelatedResourceGroup = {
     graph_slug: "pigments",
     graph_name: "Pigments",
@@ -327,7 +335,7 @@ function drawerConfig(): ResourceReportConfig {
     };
 }
 
-function mountReport(config: ResourceReportConfig = REPORT_CONFIG) {
+function mountReport(config: ResourceReportConfig = REPORT_CONFIG): VueWrapper {
     return mount(ResourceReport, {
         props: {
             component: {
@@ -348,7 +356,7 @@ function mountReport(config: ResourceReportConfig = REPORT_CONFIG) {
     });
 }
 
-function folioButton(wrapper: ReturnType<typeof mountReport>, label: string) {
+function folioButton(wrapper: VueWrapper, label: string): DOMWrapper<Element> {
     const button = wrapper
         .findAll(".report-folio-field button")
         .find((candidate) => candidate.text() === label);
@@ -358,7 +366,10 @@ function folioButton(wrapper: ReturnType<typeof mountReport>, label: string) {
     return button;
 }
 
-function drawerTrigger(wrapper: ReturnType<typeof mountReport>, label: string) {
+function drawerTrigger(
+    wrapper: VueWrapper,
+    label: string,
+): DOMWrapper<Element> {
     const trigger = wrapper
         .findAll(".home-drawer-triggers button")
         .find((candidate) => candidate.text() === label);
@@ -368,7 +379,7 @@ function drawerTrigger(wrapper: ReturnType<typeof mountReport>, label: string) {
     return trigger;
 }
 
-function manageButton(wrapper: ReturnType<typeof mountReport>, label: string) {
+function manageButton(wrapper: VueWrapper, label: string): DOMWrapper<Element> {
     const button = wrapper
         .findAll(".manage button")
         .find((candidate) => candidate.text() === label);
@@ -378,7 +389,7 @@ function manageButton(wrapper: ReturnType<typeof mountReport>, label: string) {
     return button;
 }
 
-function tabLabels(wrapper: ReturnType<typeof mountReport>): string[] {
+function tabLabels(wrapper: VueWrapper): string[] {
     return wrapper.findAll('[role="tab"]').map((tab) => tab.text());
 }
 
@@ -673,7 +684,9 @@ describe("ResourceReport", () => {
     });
 
     it("opens edit history from the home drawer, filters it and loads more", async () => {
-        vi.mocked(fetchEditHistory).mockResolvedValue(HISTORY_PAGE);
+        vi.mocked(fetchEditHistory).mockImplementation((_resourceId, page) =>
+            Promise.resolve(page === 1 ? HISTORY_PAGE : SECOND_HISTORY_PAGE),
+        );
         const wrapper = mountReport(drawerConfig());
         await flushPromises();
 
@@ -870,7 +883,10 @@ describe("ResourceReport", () => {
                 button.textContent?.trim() === "Delete Resource" &&
                 !wrapper.element.contains(button),
         );
-        acceptButton?.click();
+        if (acceptButton === undefined) {
+            throw new Error("No Delete Resource button in the confirm dialog");
+        }
+        acceptButton.click();
         await flushPromises();
         expect(deleteResource).toHaveBeenCalledWith("resource-id");
         expect(wrapper.find(".manage").text()).toContain(

@@ -7,6 +7,7 @@ import DataFolio from "@/arches_modular_reports/ResourceReport/components/DataWo
 import { useResourceChangeSet } from "@/arches_modular_reports/ResourceReport/composables/useResourceChangeSet.ts";
 import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
+import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import type {
     AliasedData,
     AliasedNodeData,
@@ -135,7 +136,10 @@ const RESOURCE: AliasedResourceData = {
     },
 };
 
-async function mountEditor(nodegroupAlias: string, filterText = "") {
+async function mountEditor(
+    nodegroupAlias: string,
+    filterText = "",
+): Promise<{ changeSet: ResourceChangeSet; wrapper: VueWrapper }> {
     const changeSet = effectScope().run(() =>
         useResourceChangeSet("pigment", "resource"),
     );
@@ -167,10 +171,7 @@ function workingTiles(
     );
 }
 
-function tileRow(
-    wrapper: Awaited<ReturnType<typeof mountEditor>>["wrapper"],
-    summary: string,
-) {
+function tileRow(wrapper: VueWrapper, summary: string): DOMWrapper<Element> {
     const row = wrapper
         .findAll(".data-folio-tile")
         .find((tile) => tile.find(".data-folio-summary").text() === summary);
@@ -180,7 +181,10 @@ function tileRow(
     return row;
 }
 
-function rowButton(row: ReturnType<typeof tileRow>, label: string) {
+function rowButton(
+    row: DOMWrapper<Element>,
+    label: string,
+): DOMWrapper<Element> {
     const button = row
         .find(".data-folio-tile-row")
         .findAll("button")
