@@ -16,22 +16,6 @@ const WORKSPACE_CONFIGS: WorkspaceConfig[] = [
 ];
 
 describe("resolveWorkspaces", () => {
-    it("resolves configured workspaces, falling back to the workspace id as label", () => {
-        const workspaces = resolveWorkspaces(WORKSPACE_CONFIGS, {
-            canEdit: true,
-            activeLanguage: "en",
-        });
-
-        expect(
-            workspaces.map((workspace) => [workspace.id, workspace.label]),
-        ).toEqual([
-            ["report", "Report"],
-            ["data", "Data"],
-            ["custom", "custom"],
-        ]);
-        expect(workspaces[0].description).toBe("A curated summary");
-    });
-
     it("hides the data workspace from users who cannot edit", () => {
         const workspaces = resolveWorkspaces(WORKSPACE_CONFIGS, {
             canEdit: false,

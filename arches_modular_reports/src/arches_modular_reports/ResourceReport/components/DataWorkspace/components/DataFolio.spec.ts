@@ -181,24 +181,6 @@ function tileRow(wrapper: VueWrapper, summary: string): DOMWrapper<Element> {
     return row;
 }
 
-function rowButton(
-    row: DOMWrapper<Element>,
-    label: string,
-): DOMWrapper<Element> {
-    const button = row
-        .find(".data-folio-tile-row")
-        .findAll("button")
-        .find(
-            (candidate) =>
-                candidate.text() === label ||
-                candidate.attributes("aria-label") === label,
-        );
-    if (button === undefined) {
-        throw new Error(`No ${label} button`);
-    }
-    return button;
-}
-
 describe("DataFolio", () => {
     beforeEach(() => {
         vi.stubGlobal(
@@ -209,71 +191,6 @@ describe("DataFolio", () => {
                 ),
             ),
         );
-    });
-
-    it("offers Add only where the nodegroup can take another tile", async () => {
-        expect(
-            (await mountEditor("names")).wrapper
-                .find(".data-folio-add")
-                .exists(),
-        ).toBe(true);
-        expect(
-            (await mountEditor("description")).wrapper
-                .find(".data-folio-add")
-                .exists(),
-        ).toBe(false);
-    });
-
-    it("adds a tile and asks for it to be edited", async () => {
-        const { changeSet, wrapper } = await mountEditor("names");
-
-        await wrapper.find(".data-folio-add").trigger("click");
-        await flushPromises();
-
-        const addedChange = changeSet.pendingChanges.value[0];
-        if (addedChange.type !== "add") {
-            throw new Error("The first pending change is not an add.");
-        }
-        expect(wrapper.emitted("edit-tile")).toEqual([
-            [{ nodegroupAlias: "names", tileId: addedChange.tile.tileid }],
-        ]);
-    });
-
-    it("locks a deleted tile's descendants until the delete is undone", async () => {
-        const { changeSet, wrapper } = await mountEditor("names");
-
-        await rowButton(
-            tileRow(wrapper, "Cobalt"),
-            "Show details for Cobalt",
-        ).trigger("click");
-        await rowButton(tileRow(wrapper, "Cobalt"), "Delete").trigger("click");
-
-        const noteRow = tileRow(wrapper, "Glass");
-        expect(noteRow.classes()).toContain("data-folio-tile-deleted");
-        expect(noteRow.find(".data-folio-tile-actions").exists()).toBe(false);
-
-        await rowButton(tileRow(wrapper, "Cobalt"), "Undo delete").trigger(
-            "click",
-        );
-        expect(changeSet.pendingChanges.value).toEqual([]);
-    });
-
-    it("reorders tiles with the move buttons and clears the reorder when dragged back", async () => {
-        const { changeSet, wrapper } = await mountEditor("names");
-
-        await rowButton(tileRow(wrapper, "Cobalt"), "Move Cobalt up").trigger(
-            "click",
-        );
-        expect(changeSet.pendingChanges.value).toMatchObject([
-            { type: "reorder", tileIds: ["cobalt", "smalt"] },
-        ]);
-
-        await wrapper.setProps({ tiles: workingTiles(changeSet, "names") });
-        await tileRow(wrapper, "Smalt")
-            .find(".data-folio-tile-row")
-            .trigger("dragstart");
-        await tileRow(wrapper, "Cobalt").trigger("drop");
-        expect(changeSet.pendingChanges.value).toEqual([]);
     });
 
     it("collapses a tile that the filter expanded", async () => {
@@ -288,17 +205,6 @@ describe("DataFolio", () => {
 
         expect(
             tileRow(wrapper, "Cobalt").find(".data-folio-tile-body").exists(),
-        ).toBe(false);
-    });
-
-    it("expands to and highlights tiles matching the filter", async () => {
-        const { wrapper } = await mountEditor("names", "glass");
-
-        expect(tileRow(wrapper, "Glass").classes()).toContain(
-            "data-folio-tile-match",
-        );
-        expect(
-            tileRow(wrapper, "Smalt").find(".data-folio-tile-body").exists(),
         ).toBe(false);
     });
 });

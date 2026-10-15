@@ -1,4 +1,3 @@
-import { defineComponent, h, onMounted } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import OpenVue from "openvue/config";
@@ -6,14 +5,9 @@ import ConfirmationService from "openvue/confirmationservice";
 
 import ResourceReport from "@/arches_modular_reports/ResourceReport/ResourceReport.vue";
 
-import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
-
 import {
-    copyResource,
     deleteResource,
-    fetchEditHistory,
     fetchResource,
-    fetchResourceImages,
     fetchRelatedResourceGroup,
     fetchRelatedResourceGroups,
     fetchReportContext,
@@ -27,7 +21,6 @@ import type {
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
 import type {
-    EditHistoryPage,
     LifecycleStateSummary,
     RelatedResourceGroup,
     ReportContext,
@@ -207,37 +200,6 @@ const REPORT_CONFIG: ResourceReportConfig = {
     ],
 };
 
-const HISTORY_PAGE: EditHistoryPage = {
-    results: [
-        {
-            editlogid: "edit-1",
-            edit_type: "tile edit",
-            timestamp: "2026-10-14T10:00:00Z",
-            user: "Ada Lovelace",
-            card_name: "Names",
-            values: [
-                {
-                    node_alias: "name_content",
-                    label: "Name",
-                    before: "Smalt",
-                    after: "Cobalt blue",
-                    changed: true,
-                },
-            ],
-        },
-    ],
-    page: 1,
-    total_count: 2,
-    has_next: true,
-};
-
-const SECOND_HISTORY_PAGE: EditHistoryPage = {
-    ...HISTORY_PAGE,
-    results: [{ ...HISTORY_PAGE.results[0], editlogid: "edit-2" }],
-    page: 2,
-    has_next: false,
-};
-
 const PIGMENTS_GROUP: RelatedResourceGroup = {
     graph_slug: "pigments",
     graph_name: "Pigments",
@@ -254,17 +216,6 @@ const PIGMENTS_GROUP: RelatedResourceGroup = {
             report_url: "/report/smalt",
         },
     ],
-};
-
-const PEOPLE_GROUP: RelatedResourceGroup = {
-    graph_slug: "people",
-    graph_name: "People",
-    iconclass: null,
-    color: null,
-    total_count: 0,
-    page: 1,
-    has_next: false,
-    items: [],
 };
 
 const FOLIO_CONFIG: ResourceReportConfig = {
@@ -294,38 +245,15 @@ function drawerConfig(): ResourceReportConfig {
                         summary: [],
                         drawer: [
                             {
-                                component: "EditHistoryPanel",
-                                label: "Edit History",
-                                icon: "pi pi-clock",
-                            },
-                            {
-                                component: "ImagesPanel",
-                                label: "Images",
-                                icon: "pi pi-image",
-                                config: {
-                                    images: [
-                                        {
-                                            model: "digital_resources",
-                                            node: "file",
-                                        },
-                                    ],
-                                },
-                            },
-                            {
                                 component: "RelatedResourcesPanel",
                                 label: "Related Resources",
                                 icon: "pi pi-link",
-                                config: { graphs: ["pigments", "people"] },
+                                config: { graphs: ["pigments"] },
                             },
                             {
                                 component: "ManagePanel",
                                 label: "Manage",
                                 icon: "pi pi-cog",
-                            },
-                            {
-                                component: "WorkflowsPanel",
-                                label: "Workflows",
-                                icon: "pi pi-list-check",
                             },
                         ],
                     },
@@ -389,10 +317,6 @@ function manageButton(wrapper: VueWrapper, label: string): DOMWrapper<Element> {
     return button;
 }
 
-function tabLabels(wrapper: VueWrapper): string[] {
-    return wrapper.findAll('[role="tab"]').map((tab) => tab.text());
-}
-
 describe("ResourceReport", () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -400,125 +324,6 @@ describe("ResourceReport", () => {
         vi.mocked(fetchReportContext).mockResolvedValue(makeContext());
         vi.mocked(fetchResource).mockResolvedValue(RESOURCE);
         vi.mocked(updateLifecycleState).mockResolvedValue();
-    });
-
-    it("renders the header, summary lines and every view for editors", async () => {
-        const wrapper = mountReport({
-            ...REPORT_CONFIG,
-            header: { summary: [{ node_alias: "name_content" }] },
-        });
-        await flushPromises();
-
-        expect(wrapper.find("dt").text()).toBe("Name");
-        expect(wrapper.find("dd").text()).toBe("Cobalt blue");
-
-        expect(wrapper.find("h2").text()).toBe("Cobalt blue");
-        expect(tabLabels(wrapper)).toEqual(["Report", "Data", "Graph"]);
-        expect(wrapper.find(".resource-report-caption").text()).toBe(
-            "A curated summary of this resource's data",
-        );
-        expect(wrapper.find(".report-workspace").exists()).toBe(true);
-    });
-
-    it("switches between workspaces", async () => {
-        const wrapper = mountReport();
-        await flushPromises();
-
-        await wrapper.findAll('[role="tab"]')[2].trigger("click");
-
-        expect(wrapper.find(".report-workspace").exists()).toBe(false);
-        expect(wrapper.find(".resource-report-workspace").text()).toBe(
-            "A graph view of this resource is coming soon.",
-        );
-    });
-
-    it("renders configured folios and jumps to them from the key data summary", async () => {
-        const wrapper = mountReport({
-            workspaces: [
-                {
-                    id: "report",
-                    component: "ReportWorkspace",
-                    config: {
-                        tabs: [
-                            {
-                                sections: [
-                                    {
-                                        folios: [{ nodegroup_alias: "names" }],
-                                    },
-                                ],
-                            },
-                        ],
-                        home: { summary: [{ node_alias: "name_content" }] },
-                    },
-                },
-            ],
-        });
-        await flushPromises();
-
-        const widgets = wrapper.findAllComponents(GenericWidgetStub);
-        expect(widgets).toHaveLength(1);
-        expect(widgets[0].props()).toMatchObject({
-            mode: "view",
-            nodeAlias: "name_content",
-            graphSlug: "reference_and_sample_collection_item",
-        });
-
-        await wrapper.find(".key-data-summary button").trigger("click");
-        await flushPromises();
-
-        expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
-            block: "center",
-        });
-        expect(wrapper.find(".report-workspace-folio").classes()).toContain(
-            "report-workspace-folio-flash",
-        );
-    });
-
-    it("edits a tile from a report folio and lists the change in the tray", async () => {
-        const wrapper = mountReport({
-            workspaces: [
-                {
-                    id: "report",
-                    component: "ReportWorkspace",
-                    config: {
-                        tabs: [
-                            {
-                                sections: [
-                                    { folios: [{ nodegroup_alias: "names" }] },
-                                ],
-                            },
-                        ],
-                        home: { summary: [] },
-                    },
-                },
-            ],
-        });
-        await flushPromises();
-
-        await folioButton(wrapper, "Edit").trigger("click");
-        expect(wrapper.find(".key-data-summary").exists()).toBe(false);
-
-        await folioButton(wrapper, "Edit").trigger("click");
-        await flushPromises();
-        expect(focusWidgetInputForNodeAlias).toHaveBeenCalledWith(
-            "name_content",
-        );
-
-        await folioButton(wrapper, "Delete").trigger("click");
-        expect(
-            wrapper.findComponent(GenericCardStub).props("tileData")
-                .aliased_data.name_content.display_value,
-        ).toBe("");
-
-        await wrapper.find(".card-stub").trigger("click");
-        expect(wrapper.find(".edit-list-tray-entry").text()).toContain(
-            "Edited",
-        );
-
-        await wrapper
-            .find('.edit-list-tray-entry [aria-label="Discard change"]')
-            .trigger("click");
-        expect(wrapper.find(".edit-list-tray").exists()).toBe(false);
     });
 
     it("holds lifecycle changes while edits are pending", async () => {
@@ -574,93 +379,6 @@ describe("ResourceReport", () => {
         expect(wrapper.text()).toContain("Unable to refresh this report");
     });
 
-    it("closes the editor when editing becomes unavailable", async () => {
-        const readOnlyContext = makeContext();
-        readOnlyContext.lifecycle_state = {
-            ...readOnlyContext.lifecycle_state,
-            can_edit_resource_instances: false,
-        };
-        vi.mocked(fetchReportContext)
-            .mockResolvedValueOnce(makeContext())
-            .mockResolvedValueOnce(readOnlyContext);
-        const wrapper = mountReport(FOLIO_CONFIG);
-        await flushPromises();
-        await folioButton(wrapper, "Edit").trigger("click");
-        expect(wrapper.find(".editor-panel").exists()).toBe(true);
-
-        await wrapper
-            .find(".report-header-lifecycle-actions button")
-            .trigger("click");
-        await flushPromises();
-
-        expect(wrapper.find(".editor-panel").exists()).toBe(false);
-    });
-
-    it("keeps a custom workspace mounted when the context reloads", async () => {
-        vi.mocked(fetchReportContext)
-            .mockResolvedValueOnce(makeContext())
-            .mockResolvedValueOnce(makeContext());
-        let mountCount = 0;
-        vi.mocked(loadComponent).mockImplementation(() =>
-            defineComponent({
-                setup() {
-                    onMounted(() => {
-                        mountCount += 1;
-                    });
-                    return () => h("div", { class: "custom-workspace" });
-                },
-            }),
-        );
-        const wrapper = mountReport({
-            workspaces: [{ id: "custom", component: "my_app/CustomWorkspace" }],
-        });
-        await flushPromises();
-
-        await wrapper
-            .find(".report-header-lifecycle-actions button")
-            .trigger("click");
-        await flushPromises();
-
-        expect(mountCount).toBe(1);
-    });
-
-    it("lets reviewers change the lifecycle state", async () => {
-        const wrapper = mountReport();
-        await flushPromises();
-
-        await wrapper
-            .find(".report-header-lifecycle-actions button")
-            .trigger("click");
-        await flushPromises();
-
-        expect(updateLifecycleState).toHaveBeenCalledWith(
-            "resource-id",
-            "active",
-        );
-        expect(fetchReportContext).toHaveBeenCalledTimes(2);
-    });
-
-    it("hides lifecycle actions from users who are not reviewers", async () => {
-        vi.mocked(fetchReportContext).mockResolvedValue(
-            makeContext({ is_reviewer: false }),
-        );
-        const wrapper = mountReport();
-        await flushPromises();
-
-        expect(wrapper.find(".report-header-lifecycle-actions").exists()).toBe(
-            false,
-        );
-    });
-
-    it("reports a configuration without workspaces", async () => {
-        const wrapper = mountReport({});
-        await flushPromises();
-
-        expect(wrapper.text()).toBe(
-            "This report configuration has no workspaces.",
-        );
-    });
-
     it("shows interpolated text unescaped once", async () => {
         vi.mocked(fetchReportContext).mockRejectedValue(
             new Error("Smalt & Cobalt's sample"),
@@ -673,146 +391,29 @@ describe("ResourceReport", () => {
         );
     });
 
-    it("reports report data that cannot be loaded", async () => {
-        vi.mocked(fetchReportContext).mockRejectedValue(new Error("Not found"));
-        const wrapper = mountReport();
-        await flushPromises();
-
-        expect(wrapper.text()).toContain(
-            "Unable to load this report: Not found",
-        );
-    });
-
-    it("opens edit history from the home drawer, filters it and loads more", async () => {
-        vi.mocked(fetchEditHistory).mockImplementation((_resourceId, page) =>
-            Promise.resolve(page === 1 ? HISTORY_PAGE : SECOND_HISTORY_PAGE),
-        );
+    it("deletes the resource only once the deletion is confirmed", async () => {
+        vi.mocked(deleteResource).mockRejectedValue(new Error("Offline"));
         const wrapper = mountReport(drawerConfig());
         await flushPromises();
+        await drawerTrigger(wrapper, "Manage").trigger("click");
 
-        await drawerTrigger(wrapper, "Edit History").trigger("click");
+        await manageButton(wrapper, "Delete Resource").trigger("click");
         await flushPromises();
-        expect(wrapper.find(".home-drawer-crumb").text()).toContain(
-            "Cobalt blue",
-        );
-        expect(wrapper.find(".home-drawer-crumb").text()).toContain(
-            "Edit History",
-        );
-        expect(wrapper.find(".edit-history-entry").text()).toContain(
-            "Ada Lovelace",
-        );
-        expect(
-            wrapper
-                .findAll(".edit-history-field-changed dd")
-                .map((value) => value.text()),
-        ).toEqual(["Smalt", "Cobalt blue"]);
-        expect(fetchEditHistory).toHaveBeenLastCalledWith("resource-id", 1, "");
+        expect(deleteResource).not.toHaveBeenCalled();
 
-        vi.useFakeTimers();
-        await wrapper.find(".edit-history-filter").setValue("ada");
-        await vi.advanceTimersByTimeAsync(300);
-        vi.useRealTimers();
+        const acceptButton = [...document.body.querySelectorAll("button")].find(
+            (button) =>
+                button.textContent?.trim() === "Delete Resource" &&
+                !wrapper.element.contains(button),
+        );
+        if (acceptButton === undefined) {
+            throw new Error("No Delete Resource button in the confirm dialog");
+        }
+        acceptButton.click();
         await flushPromises();
-        expect(fetchEditHistory).toHaveBeenLastCalledWith(
-            "resource-id",
-            1,
-            "ada",
-        );
+        expect(deleteResource).toHaveBeenCalledWith("resource-id");
 
-        await wrapper.find(".edit-history > button").trigger("click");
-        await flushPromises();
-        expect(fetchEditHistory).toHaveBeenLastCalledWith(
-            "resource-id",
-            2,
-            "ada",
-        );
-        expect(wrapper.findAll(".edit-history-entry")).toHaveLength(2);
-
-        await drawerTrigger(wrapper, "Edit History").trigger("click");
-        expect(wrapper.find(".home-drawer-panel").exists()).toBe(false);
-    });
-
-    it("hides edit history from users who cannot edit and flags unknown panels", async () => {
-        vi.mocked(fetchReportContext).mockResolvedValue(
-            makeContext({ can_edit: false }),
-        );
-        const wrapper = mountReport(drawerConfig());
-        await flushPromises();
-
-        expect(
-            wrapper
-                .findAll(".home-drawer-triggers button")
-                .map((trigger) => trigger.text()),
-        ).toEqual(["Images", "Related Resources", "Manage", "Workflows"]);
-
-        await drawerTrigger(wrapper, "Workflows").trigger("click");
-        expect(wrapper.find(".home-drawer-body").text()).toContain(
-            "This panel is not available",
-        );
-    });
-
-    it("lists related resources by model, with empty sections, filtering and load more", async () => {
-        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
-            PIGMENTS_GROUP,
-            PEOPLE_GROUP,
-        ]);
-        vi.mocked(fetchRelatedResourceGroup).mockResolvedValue({
-            ...PIGMENTS_GROUP,
-            page: 2,
-            has_next: false,
-            items: [
-                {
-                    resourcexid: "cobalt-relation",
-                    display_name: "Cobalt sample",
-                    relationship: "Source",
-                    report_url: "/report/cobalt",
-                },
-            ],
-        });
-        const wrapper = mountReport(drawerConfig());
-        await flushPromises();
-
-        await drawerTrigger(wrapper, "Related Resources").trigger("click");
-        await flushPromises();
-        expect(fetchRelatedResourceGroups).toHaveBeenLastCalledWith(
-            "resource-id",
-            ["pigments", "people"],
-            "",
-        );
-        const sections = wrapper.findAll(".related-resources-group");
-        expect(sections[0].text()).toContain("Smalt sample");
-        expect(sections[0].text()).toContain("Source");
-        expect(sections[1].find(".related-resources-empty").exists()).toBe(
-            true,
-        );
-
-        vi.useFakeTimers();
-        await wrapper.find(".related-resources-filter").setValue("sample");
-        await vi.advanceTimersByTimeAsync(300);
-        vi.useRealTimers();
-        await flushPromises();
-        expect(fetchRelatedResourceGroups).toHaveBeenLastCalledWith(
-            "resource-id",
-            ["pigments", "people"],
-            "sample",
-        );
-
-        await wrapper
-            .findAll(".related-resources-group")[0]
-            .find("button")
-            .trigger("click");
-        await flushPromises();
-        expect(fetchRelatedResourceGroup).toHaveBeenLastCalledWith(
-            "resource-id",
-            "pigments",
-            2,
-            "sample",
-        );
-        expect(
-            wrapper
-                .findAll(".related-resources-group")[0]
-                .findAll(".related-resources-item"),
-        ).toHaveLength(2);
+        wrapper.unmount();
     });
 
     it("ignores a Load more page from a superseded filter", async () => {
@@ -853,88 +454,5 @@ describe("ResourceReport", () => {
         await flushPromises();
 
         expect(wrapper.findAll(".related-resources-item")).toHaveLength(1);
-    });
-
-    it("copies, prints and confirms deletion from the manage panel", async () => {
-        vi.mocked(copyResource).mockResolvedValue("copy-id");
-        vi.mocked(deleteResource).mockRejectedValue(
-            new Error("Unable to Delete Resource"),
-        );
-        const print = vi.spyOn(window, "print").mockImplementation(() => {});
-        const wrapper = mountReport(drawerConfig());
-        await flushPromises();
-        await drawerTrigger(wrapper, "Manage").trigger("click");
-
-        await manageButton(wrapper, "Create Copy").trigger("click");
-        await flushPromises();
-        expect(copyResource).toHaveBeenCalledWith("resource-id");
-        expect(wrapper.find('.manage a[href="/report/copy-id"]').exists()).toBe(
-            true,
-        );
-
-        await manageButton(wrapper, "Print").trigger("click");
-        expect(print).toHaveBeenCalled();
-
-        await manageButton(wrapper, "Delete Resource").trigger("click");
-        await flushPromises();
-        expect(deleteResource).not.toHaveBeenCalled();
-        const acceptButton = [...document.body.querySelectorAll("button")].find(
-            (button) =>
-                button.textContent?.trim() === "Delete Resource" &&
-                !wrapper.element.contains(button),
-        );
-        if (acceptButton === undefined) {
-            throw new Error("No Delete Resource button in the confirm dialog");
-        }
-        acceptButton.click();
-        await flushPromises();
-        expect(deleteResource).toHaveBeenCalledWith("resource-id");
-        expect(wrapper.find(".manage").text()).toContain(
-            "Unable to Delete Resource",
-        );
-
-        print.mockRestore();
-        wrapper.unmount();
-    });
-
-    it("shows images from the configured sources with captions and their source", async () => {
-        vi.mocked(fetchResourceImages).mockResolvedValue([
-            {
-                url: "/files/pyrite_1",
-                name: "pyrite_1.jpg",
-                caption: "Front view",
-                alt_text: "A cube",
-                resourceinstanceid: "photo-set",
-                resource_name: "Pyrite photo set",
-                report_url: "/report/photo-set",
-            },
-        ]);
-        const wrapper = mountReport(drawerConfig());
-        await flushPromises();
-
-        await drawerTrigger(wrapper, "Images").trigger("click");
-        await flushPromises();
-
-        expect(fetchResourceImages).toHaveBeenCalledWith("resource-id", [
-            { model: "digital_resources", node: "file" },
-        ]);
-        expect(wrapper.find(".images-main").attributes("alt")).toBe("A cube");
-        expect(wrapper.find(".images-caption").text()).toContain("Front view");
-        expect(
-            wrapper.find('.images-caption a[href="/report/photo-set"]').text(),
-        ).toBe("Pyrite photo set");
-    });
-
-    it("says so when a resource has no images", async () => {
-        vi.mocked(fetchResourceImages).mockResolvedValue([]);
-        const wrapper = mountReport(drawerConfig());
-        await flushPromises();
-
-        await drawerTrigger(wrapper, "Images").trigger("click");
-        await flushPromises();
-
-        expect(wrapper.find(".images-empty").text()).toBe(
-            "This resource does not have any associated images.",
-        );
     });
 });

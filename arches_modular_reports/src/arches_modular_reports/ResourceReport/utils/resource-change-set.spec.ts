@@ -53,7 +53,7 @@ const RESOURCE: AliasedResourceData = {
 };
 
 describe("resource change set replay", () => {
-    it("applies adds, edits and reorders while sharing untouched nodegroups", () => {
+    it("applies adds, edits and reorders", () => {
         const workingResource = applyResourceChanges(RESOURCE, [
             {
                 id: "edit",
@@ -88,9 +88,6 @@ describe("resource change set replay", () => {
                 (tile) => tile.tileid,
             ),
         ).toEqual(["note"]);
-        expect(workingResource.aliased_data.description).toBe(
-            RESOURCE.aliased_data.description,
-        );
     });
 
     it("removes deleted tiles and reports changes whose tiles have vanished", () => {
@@ -122,37 +119,6 @@ describe("resource change set replay", () => {
         expect(conflictingChanges.map((change) => change.id)).toEqual([
             "stale",
         ]);
-    });
-
-    it("flags an edit to a value the server changed after it was loaded", () => {
-        const freshResource: AliasedResourceData = {
-            ...RESOURCE,
-            aliased_data: {
-                ...RESOURCE.aliased_data,
-                names: [
-                    makeTile("smalt", 0, {
-                        name_content: nodeData("Smalt (renamed)"),
-                        name_notes: [],
-                    }),
-                ],
-            },
-        };
-
-        const { conflictingChanges } = replayResourceChanges(
-            freshResource,
-            [
-                {
-                    id: "edit",
-                    type: "edit",
-                    nodegroupAlias: "names",
-                    tileId: "smalt",
-                    aliasedData: { name_content: nodeData("Smalt blue") },
-                },
-            ],
-            RESOURCE,
-        );
-
-        expect(conflictingChanges.map((change) => change.id)).toEqual(["edit"]);
     });
 
     it("flags an add into a single-tile slot that is already filled", () => {

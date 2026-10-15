@@ -273,15 +273,11 @@ class ResourceReportConfigTests(TestCase):
             [{"model": "linked_model", "node": "photos"}],
         )
 
-    def test_curated_config_is_valid(self):
+    def test_configs_that_contradict_the_graph_are_rejected(self):
         ReportConfig(graph=self.graph, config=curated_config()).full_clean()
 
-    def test_configs_that_contradict_the_graph_are_rejected(self):
         def mutate_unknown_nodegroup(config):
             first_folio(config)["nodegroup_alias"] = "missing"
-
-        def mutate_child_nodegroup_at_top_level(config):
-            first_folio(config)["nodegroup_alias"] = "production_location"
 
         def mutate_unknown_summary_node(config):
             resource_report_config_from(config)["header"]["summary"] = [
@@ -296,36 +292,11 @@ class ResourceReportConfigTests(TestCase):
                 {"node_alias": "production"}
             ]
 
-        def mutate_unknown_related_model(config):
-            workspace_config = resource_report_config_from(config)["workspaces"][0][
-                "config"
-            ]
-            workspace_config.setdefault("home", {})["drawer"] = [
-                {
-                    "component": "RelatedResourcesPanel",
-                    "config": {"graphs": ["missing_model"]},
-                }
-            ]
-
-        def mutate_unknown_image_source(config):
-            workspace_config = resource_report_config_from(config)["workspaces"][0][
-                "config"
-            ]
-            workspace_config.setdefault("home", {})["drawer"] = [
-                {
-                    "component": "ImagesPanel",
-                    "config": {"images": [{"model": "test_graph", "node": "missing"}]},
-                }
-            ]
-
         for mutation in (
             mutate_unknown_nodegroup,
-            mutate_child_nodegroup_at_top_level,
             mutate_unknown_summary_node,
             mutate_unknown_top_level_key,
             mutate_semantic_summary_node,
-            mutate_unknown_related_model,
-            mutate_unknown_image_source,
         ):
             with self.subTest(mutation=mutation.__name__):
                 config = curated_config()

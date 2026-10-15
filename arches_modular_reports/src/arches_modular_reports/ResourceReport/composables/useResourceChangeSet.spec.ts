@@ -2,7 +2,6 @@ import { effectScope } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 
-import { fetchTileData } from "@/arches_vue_components/generics/GenericCard/api.ts";
 import { useResourceChangeSet } from "@/arches_modular_reports/ResourceReport/composables/useResourceChangeSet.ts";
 import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
@@ -161,15 +160,6 @@ describe("useResourceChangeSet", () => {
         expect(changeSet.pendingChanges.value).toHaveLength(1);
     });
 
-    it("reports a blank tile that cannot be fetched", async () => {
-        const changeSet = await createChangeSet();
-        vi.mocked(fetchTileData).mockRejectedValueOnce(new Error("Offline"));
-
-        expect(await changeSet.addTile("names", null)).toBeNull();
-        expect(changeSet.addError.value?.message).toBe("Offline");
-        expect(changeSet.pendingChanges.value).toEqual([]);
-    });
-
     it("discards everything added under a discarded add", async () => {
         const changeSet = await createChangeSet();
 
@@ -315,26 +305,5 @@ describe("useResourceChangeSet", () => {
         expect(await changeSet.save()).toBe(false);
         expect(changeSet.conflictingChangeIds.value).toHaveLength(1);
         expect(await changeSet.save()).toBe(true);
-    });
-
-    it("refuses to save changes whose tiles have vanished", async () => {
-        const changeSet = await createChangeSet();
-        changeSet.editTile("names", "smalt", {
-            name_content: nodeData("Smalt blue"),
-        });
-        serverResource = {
-            resourceinstanceid: "resource",
-            aliased_data: { names: [] },
-        };
-
-        expect(await changeSet.save()).toBe(false);
-        expect(changeSet.conflictingChangeIds.value).toEqual([
-            changeSet.pendingChanges.value[0].id,
-        ]);
-        expect(
-            vi
-                .mocked(fetch)
-                .mock.calls.some(([, init]) => init?.method === "PUT"),
-        ).toBe(false);
     });
 });

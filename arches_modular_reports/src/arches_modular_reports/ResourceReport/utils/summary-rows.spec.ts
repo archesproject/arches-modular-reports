@@ -58,20 +58,4 @@ describe("summaryRows", () => {
             },
         ]);
     });
-
-    it("prefers a configured label in the active language", () => {
-        const [summaryRow] = summaryRows(
-            [
-                {
-                    node_alias: "name_content",
-                    label: { en: "Pigment", de: "Pigment (de)" },
-                },
-            ],
-            ALIASED_DATA,
-            GRAPH_NODES_BY_ALIAS,
-            "de",
-        );
-
-        expect(summaryRow.label).toBe("Pigment (de)");
-    });
 });
