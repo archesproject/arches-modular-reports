@@ -6,6 +6,8 @@ import ConfirmationService from "openvue/confirmationservice";
 import ResourceReport from "@/arches_modular_reports/ResourceReport/ResourceReport.vue";
 
 import {
+    copyResource,
+    deleteResource,
     fetchEditHistory,
     fetchResource,
     fetchReportContext,
@@ -29,6 +31,11 @@ vi.mock("@/arches_vue_components/application/generate-arches-url.ts", () => ({
 }));
 
 vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
+    copyResource: vi.fn(),
+    deleteResource: vi.fn(),
+    resourceReportUrl: (resourceInstanceId: string) =>
+        `/report/${resourceInstanceId}`,
+    searchUrl: () => "/search",
     fetchEditHistory: vi.fn(),
     fetchResource: vi.fn(),
     fetchReportContext: vi.fn(),
@@ -229,6 +236,11 @@ function drawerConfig(): ResourceReportConfig {
                                 label: "Manage",
                                 icon: "pi pi-cog",
                             },
+                            {
+                                component: "WorkflowsPanel",
+                                label: "Workflows",
+                                icon: "pi pi-list-check",
+                            },
                         ],
                     },
                 },
@@ -276,6 +288,16 @@ function drawerTrigger(wrapper: ReturnType<typeof mountReport>, label: string) {
         throw new Error(`No ${label} drawer trigger`);
     }
     return trigger;
+}
+
+function manageButton(wrapper: ReturnType<typeof mountReport>, label: string) {
+    const button = wrapper
+        .findAll(".manage button")
+        .find((candidate) => candidate.text() === label);
+    if (button === undefined) {
+        throw new Error(`No ${label} button in the manage panel`);
+    }
+    return button;
 }
 
 function tabLabels(wrapper: ReturnType<typeof mountReport>): string[] {
@@ -515,11 +537,50 @@ describe("ResourceReport", () => {
             wrapper
                 .findAll(".home-drawer-triggers button")
                 .map((trigger) => trigger.text()),
-        ).toEqual(["Manage"]);
+        ).toEqual(["Manage", "Workflows"]);
 
-        await drawerTrigger(wrapper, "Manage").trigger("click");
+        await drawerTrigger(wrapper, "Workflows").trigger("click");
         expect(wrapper.find(".home-drawer-body").text()).toContain(
             "This panel is not available",
         );
+    });
+
+    it("copies, prints and confirms deletion from the manage panel", async () => {
+        vi.mocked(copyResource).mockResolvedValue("copy-id");
+        vi.mocked(deleteResource).mockRejectedValue(
+            new Error("Unable to Delete Resource"),
+        );
+        const print = vi.spyOn(window, "print").mockImplementation(() => {});
+        const wrapper = mountReport(drawerConfig());
+        await flushPromises();
+        await drawerTrigger(wrapper, "Manage").trigger("click");
+
+        await manageButton(wrapper, "Create Copy").trigger("click");
+        await flushPromises();
+        expect(copyResource).toHaveBeenCalledWith("resource-id");
+        expect(wrapper.find('.manage a[href="/report/copy-id"]').exists()).toBe(
+            true,
+        );
+
+        await manageButton(wrapper, "Print").trigger("click");
+        expect(print).toHaveBeenCalled();
+
+        await manageButton(wrapper, "Delete Resource").trigger("click");
+        await flushPromises();
+        expect(deleteResource).not.toHaveBeenCalled();
+        const acceptButton = [...document.body.querySelectorAll("button")].find(
+            (button) =>
+                button.textContent?.trim() === "Delete Resource" &&
+                !wrapper.element.contains(button),
+        );
+        acceptButton?.click();
+        await flushPromises();
+        expect(deleteResource).toHaveBeenCalledWith("resource-id");
+        expect(wrapper.find(".manage").text()).toContain(
+            "Unable to Delete Resource",
+        );
+
+        print.mockRestore();
+        wrapper.unmount();
     });
 });

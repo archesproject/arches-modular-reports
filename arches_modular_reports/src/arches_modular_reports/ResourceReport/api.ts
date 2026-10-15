@@ -85,6 +85,37 @@ export async function fetchEditHistory(
     return parseResponse<EditHistoryPage>(response);
 }
 
+export async function copyResource(
+    resourceInstanceId: string,
+): Promise<string> {
+    const response = await fetch(
+        arches.urls.resource_copy.replace("//", `/${resourceInstanceId}/`),
+    );
+    const parsed = await parseResponse<{ resourceid: string }>(response);
+    return parsed.resourceid;
+}
+
+export async function deleteResource(
+    resourceInstanceId: string,
+): Promise<void> {
+    const response = await fetch(
+        `${arches.urls.resource_editor}${resourceInstanceId}`,
+        {
+            method: "DELETE",
+            headers: { "X-CSRFToken": Cookies.get("csrftoken") ?? "" },
+        },
+    );
+    await parseResponse<unknown>(response);
+}
+
+export function resourceReportUrl(resourceInstanceId: string): string {
+    return `${arches.urls.resource_report}${resourceInstanceId}`;
+}
+
+export function searchUrl(): string {
+    return arches.urls.search_home;
+}
+
 export async function updateLifecycleState(
     resourceInstanceId: string,
     lifecycleStateId: string,

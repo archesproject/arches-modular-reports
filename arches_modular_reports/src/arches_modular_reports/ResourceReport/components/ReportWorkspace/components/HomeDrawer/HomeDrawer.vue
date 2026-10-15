@@ -6,6 +6,7 @@ import Button from "openvue/button";
 import Message from "openvue/message";
 
 import EditHistoryPanel from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/HomeDrawer/components/EditHistoryPanel.vue";
+import ManagePanel from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/HomeDrawer/components/ManagePanel.vue";
 
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
 
@@ -17,7 +18,8 @@ import type {
 
 const EDIT_HISTORY_PANEL = "EditHistoryPanel";
 const DRAWER_PANEL_COMPONENTS: Record<string, Component> = {
-    [EDIT_HISTORY_PANEL]: EditHistoryPanel,
+    EditHistoryPanel,
+    ManagePanel,
 };
 
 const { entries, reportData } = defineProps<{
