@@ -15,6 +15,7 @@ from arches.app.models.models import (
     NodeGroup,
     ResourceInstance,
     ResourceXResource,
+    TileModel,
 )
 
 
@@ -184,6 +185,97 @@ class ResourceReportEndpointTests(TestCase):
         self.assertEqual(related_count("smalt"), 1)
         self.assertEqual(related_count("PIGMENT"), 1)
         self.assertEqual(related_count("nothing"), 0)
+
+    def add_related_photos(self):
+        photos = NodeGroup.objects.create(cardinality="n")
+        Node.objects.create(
+            pk=photos.pk,
+            name="Photos",
+            alias="photos",
+            graph=self.related_graph,
+            nodegroup=photos,
+            datatype="semantic",
+            istopnode=False,
+        )
+        photo_files = Node.objects.create(
+            nodegroup=photos,
+            name="Photo files",
+            alias="photo_files",
+            graph=self.related_graph,
+            istopnode=False,
+            datatype="file-list",
+        )
+        ResourceInstance.objects.filter(pk=self.related_resource.pk).update(
+            name={"en": "Pyrite photo set"}
+        )
+        TileModel.objects.create(
+            resourceinstance=self.related_resource,
+            nodegroup=photos,
+            data={
+                str(photo_files.pk): [
+                    {
+                        "name": "pyrite_1.jpg",
+                        "url": "/files/pyrite_1",
+                        "type": "image/jpeg",
+                        "title": {"en": {"value": "Front view", "direction": "ltr"}},
+                        "altText": {"en": {"value": "A cube", "direction": "ltr"}},
+                    },
+                    {
+                        "name": "spectrum.pdf",
+                        "url": "/files/spectrum",
+                        "type": "application/pdf",
+                    },
+                ]
+            },
+        )
+        return photos
+
+    def test_resource_images_come_from_related_file_nodes(self):
+        self.add_related_photos()
+        self.client.force_login(self.superuser)
+
+        response = self.client.get(
+            reverse("api_resource_images", args=[self.resource.pk]),
+            {"sources": "related_graph:photo_files"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["images"],
+            [
+                {
+                    "url": "/files/pyrite_1",
+                    "name": "pyrite_1.jpg",
+                    "caption": "Front view",
+                    "alt_text": "A cube",
+                    "resourceinstanceid": str(self.related_resource.pk),
+                    "resource_name": "Pyrite photo set",
+                    "report_url": reverse(
+                        "resource_report", args=[self.related_resource.pk]
+                    ),
+                }
+            ],
+        )
+
+    def test_resource_images_skip_relationships_the_user_cannot_read(self):
+        self.add_related_photos()
+        make_nodegroup(self.graph, "notes")
+        assign_perm("models.view_resourceinstance", self.reader_user, self.resource)
+        assign_perm(
+            "models.view_resourceinstance", self.reader_user, self.related_resource
+        )
+        self.client.force_login(self.reader_user)
+
+        def image_count():
+            response = self.client.get(
+                reverse("api_resource_images", args=[self.resource.pk]),
+                {"sources": "related_graph:photo_files"},
+            )
+            return len(response.json()["images"])
+
+        self.assertEqual(image_count(), 1)
+        assign_perm("models.no_access_to_nodegroup", self.reader_user, self.names)
+        self.assertEqual(image_count(), 0)
 
     def test_related_resource_groups_count_only_what_the_user_can_read(self):
         make_nodegroup(self.related_graph, "details")

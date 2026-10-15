@@ -422,6 +422,101 @@ class RelatedResourceGroupsView(APIBase):
         }
 
 
+def file_metadata_text(file_value, field):
+    metadata = file_value.get(field)
+    if isinstance(metadata, dict):
+        return localized_text(
+            {
+                language: entry.get("value", "")
+                for language, entry in metadata.items()
+                if isinstance(entry, dict)
+            }
+        )
+    return metadata or ""
+
+
+@method_decorator(can_read_resource_instance, name="dispatch")
+class ResourceImagesView(APIBase):
+    def get(self, request, resourceid):
+        resource = models.ResourceInstance.objects.get(pk=resourceid)
+        readable_nodegroup_ids = {
+            str(nodegroup_id)
+            for nodegroup_id in get_nodegroups_by_perm(
+                request.user, "models.read_nodegroup"
+            )
+        }
+        images = []
+        for source in request.GET.get("sources", "").split(","):
+            graph_slug, _separator, node_alias = source.partition(":")
+            file_node = models.Node.objects.filter(
+                graph__slug=graph_slug,
+                alias=node_alias,
+                datatype="file-list",
+                source_identifier__isnull=True,
+            ).first()
+            if (
+                file_node is None
+                or str(file_node.nodegroup_id) not in readable_nodegroup_ids
+            ):
+                continue
+            if file_node.graph_id == resource.graph_id:
+                resource_ids = {resource.pk}
+            else:
+                resource_ids = {
+                    related_resource_id
+                    for related_resource_id in self.related_resource_ids(
+                        resource.pk, file_node.graph_id, readable_nodegroup_ids
+                    )
+                    if user_can_read_resource(
+                        request.user, resourceid=related_resource_id
+                    )
+                }
+            tiles = models.TileModel.objects.filter(
+                resourceinstance_id__in=resource_ids,
+                nodegroup_id=file_node.nodegroup_id,
+            ).select_related("resourceinstance")
+            for tile in tiles:
+                for file_value in tile.data.get(str(file_node.pk)) or []:
+                    if str(file_value.get("type", "")).startswith("image/"):
+                        images.append(
+                            self.serialize_image(file_value, tile.resourceinstance)
+                        )
+        return JSONResponse({"images": images})
+
+    @staticmethod
+    def related_resource_ids(resource_id, graph_id, readable_nodegroup_ids):
+        readable_relations = models.ResourceXResource.objects.filter(
+            node__nodegroup_id__in=readable_nodegroup_ids
+        )
+        return set(
+            readable_relations.filter(
+                from_resource_id=resource_id, to_resource_graph_id=graph_id
+            ).values_list("to_resource_id", flat=True)
+        ) | set(
+            readable_relations.filter(
+                to_resource_id=resource_id, from_resource_graph_id=graph_id
+            ).values_list("from_resource_id", flat=True)
+        )
+
+    @staticmethod
+    def serialize_image(file_value, resource):
+        resource_name = localized_text(resource.name)
+        caption = (
+            file_metadata_text(file_value, "title")
+            or file_metadata_text(file_value, "description")
+            or resource_name
+        )
+        return {
+            "url": file_value.get("url"),
+            "name": file_value.get("name"),
+            "caption": caption,
+            "alt_text": file_metadata_text(file_value, "altText") or caption,
+            "resourceinstanceid": str(resource.pk),
+            "resource_name": resource_name,
+            "report_url": reverse("resource_report", args=[resource.pk]),
+        }
+
+
 class NodePresentationView(APIBase):
     @method_decorator(can_read_resource_instance, name="dispatch")
     def get(self, request, resourceid):

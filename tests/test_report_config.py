@@ -220,6 +220,9 @@ class ResourceReportConfigTests(TestCase):
             config={"graphs": [{"graphid": str(self.graph.pk)}]},
         )
 
+        photos_nodegroup = make_nodegroup(linked_model, "photos_group")
+        make_node(linked_model, photos_nodegroup, "photos", "file-list")
+
         report_config = ReportConfig(graph=self.graph)
         report_config.full_clean()
 
@@ -230,6 +233,10 @@ class ResourceReportConfigTests(TestCase):
         self.assertEqual(
             entries_by_component["RelatedResourcesPanel"]["config"]["graphs"],
             ["linking_model", "linked_model"],
+        )
+        self.assertEqual(
+            entries_by_component["ImagesPanel"]["config"]["images"],
+            [{"model": "linked_model", "node": "photos"}],
         )
 
     def test_curated_config_is_valid(self):
@@ -258,11 +265,23 @@ class ResourceReportConfigTests(TestCase):
                 }
             ]
 
+        def mutate_unknown_image_source(config):
+            workspace_config = resource_report_config_from(config)["workspaces"][0][
+                "config"
+            ]
+            workspace_config.setdefault("home", {})["drawer"] = [
+                {
+                    "component": "ImagesPanel",
+                    "config": {"images": [{"model": "test_graph", "node": "missing"}]},
+                }
+            ]
+
         for mutation in (
             mutate_unknown_nodegroup,
             mutate_child_nodegroup_at_top_level,
             mutate_unknown_summary_node,
             mutate_unknown_related_model,
+            mutate_unknown_image_source,
         ):
             with self.subTest(mutation=mutation.__name__):
                 config = curated_config()

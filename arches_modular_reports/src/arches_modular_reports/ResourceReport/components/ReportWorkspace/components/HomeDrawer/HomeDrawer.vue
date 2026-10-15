@@ -6,6 +6,7 @@ import Button from "openvue/button";
 import Message from "openvue/message";
 
 import EditHistoryPanel from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/HomeDrawer/components/EditHistoryPanel.vue";
+import ImagesPanel from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/HomeDrawer/components/ImagesPanel.vue";
 import ManagePanel from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/HomeDrawer/components/ManagePanel.vue";
 import RelatedResourcesPanel from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/HomeDrawer/components/RelatedResourcesPanel.vue";
 
@@ -20,6 +21,7 @@ import type {
 const EDIT_HISTORY_PANEL = "EditHistoryPanel";
 const DRAWER_PANEL_COMPONENTS: Record<string, Component> = {
     EditHistoryPanel,
+    ImagesPanel,
     ManagePanel,
     RelatedResourcesPanel,
 };

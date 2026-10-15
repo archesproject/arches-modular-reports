@@ -12,6 +12,7 @@ RESOURCE_REPORT_COMPONENT = "arches_modular_reports/ResourceReport/ResourceRepor
 DESCRIPTOR_TOKEN_PATTERN = re.compile(r"<([^<>]+)>")
 RESOURCE_INSTANCE_DATATYPES = ["resource-instance", "resource-instance-list"]
 RELATED_RESOURCES_PANEL = "RelatedResourcesPanel"
+IMAGES_PANEL = "ImagesPanel"
 
 
 def is_resource_report_component(component_path):
@@ -100,6 +101,28 @@ class ResourceReportGraph:
             for graph in sorted(related_graphs, key=lambda graph: str(graph.name))
         ]
 
+    def image_sources(self, related_graph_slugs):
+        graph_slugs = [self.graph.slug] + [
+            graph_slug
+            for graph_slug in related_graph_slugs
+            if graph_slug != self.graph.slug
+        ]
+        file_nodes = Node.objects.filter(
+            graph__slug__in=graph_slugs,
+            datatype="file-list",
+            source_identifier__isnull=True,
+        ).select_related("graph")
+        return [
+            {"model": file_node.graph.slug, "node": file_node.alias}
+            for file_node in sorted(
+                file_nodes,
+                key=lambda file_node: (
+                    graph_slugs.index(file_node.graph.slug),
+                    file_node.alias,
+                ),
+            )
+        ]
+
     def descriptor_node_aliases(self, *descriptor_type_names):
         node_aliases = []
         for descriptor_type_name in descriptor_type_names:
@@ -186,7 +209,14 @@ def generate_resource_report_config(graph):
                     drawer_entry(
                         "EditHistoryPanel", gettext_noop("Edit History"), "pi pi-clock"
                     ),
-                    drawer_entry("ImagesPanel", gettext_noop("Images"), "pi pi-image"),
+                    drawer_entry(
+                        IMAGES_PANEL,
+                        gettext_noop("Images"),
+                        "pi pi-image",
+                        config={
+                            "images": report_graph.image_sources(related_graph_slugs)
+                        },
+                    ),
                     drawer_entry(
                         RELATED_RESOURCES_PANEL,
                         gettext_noop("Related Resources"),
@@ -263,6 +293,11 @@ def iterate_related_graph_slugs(resource_report_config):
         yield from entry_config.get("graphs", [])
 
 
+def iterate_image_sources(resource_report_config):
+    for entry_config in iterate_drawer_entries(resource_report_config, IMAGES_PANEL):
+        yield from entry_config.get("images", [])
+
+
 def validate_folio(report_graph, folio):
     nodegroup_alias = folio.get("nodegroup_alias")
     grouping_node = report_graph.grouping_nodes_by_alias.get(nodegroup_alias)
@@ -290,6 +325,16 @@ def validate_resource_report_config(resource_report_config, graph):
         if not GraphModel.objects.filter(slug=graph_slug, isresource=True).exists():
             raise ValidationError(
                 f"Related resources panel refers to an unknown resource model: {graph_slug}"
+            )
+    for image_source in iterate_image_sources(resource_report_config):
+        if not Node.objects.filter(
+            graph__slug=image_source.get("model"),
+            graph__isresource=True,
+            alias=image_source.get("node"),
+            datatype="file-list",
+        ).exists():
+            raise ValidationError(
+                f"Images panel refers to an unknown file node: {image_source}"
             )
 
 

@@ -10,6 +10,7 @@ import {
     deleteResource,
     fetchEditHistory,
     fetchResource,
+    fetchResourceImages,
     fetchRelatedResourceGroup,
     fetchRelatedResourceGroups,
     fetchReportContext,
@@ -41,6 +42,7 @@ vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
     searchUrl: () => "/search",
     fetchEditHistory: vi.fn(),
     fetchResource: vi.fn(),
+    fetchResourceImages: vi.fn(),
     fetchRelatedResourceGroup: vi.fn(),
     fetchRelatedResourceGroups: vi.fn(),
     fetchReportContext: vi.fn(),
@@ -264,6 +266,19 @@ function drawerConfig(): ResourceReportConfig {
                                 component: "EditHistoryPanel",
                                 label: "Edit History",
                                 icon: "pi pi-clock",
+                            },
+                            {
+                                component: "ImagesPanel",
+                                label: "Images",
+                                icon: "pi pi-image",
+                                config: {
+                                    images: [
+                                        {
+                                            model: "digital_resources",
+                                            node: "file",
+                                        },
+                                    ],
+                                },
                             },
                             {
                                 component: "RelatedResourcesPanel",
@@ -577,7 +592,7 @@ describe("ResourceReport", () => {
             wrapper
                 .findAll(".home-drawer-triggers button")
                 .map((trigger) => trigger.text()),
-        ).toEqual(["Related Resources", "Manage", "Workflows"]);
+        ).toEqual(["Images", "Related Resources", "Manage", "Workflows"]);
 
         await drawerTrigger(wrapper, "Workflows").trigger("click");
         expect(wrapper.find(".home-drawer-body").text()).toContain(
@@ -686,5 +701,46 @@ describe("ResourceReport", () => {
 
         print.mockRestore();
         wrapper.unmount();
+    });
+
+    it("shows images from the configured sources with captions and their source", async () => {
+        vi.mocked(fetchResourceImages).mockResolvedValue([
+            {
+                url: "/files/pyrite_1",
+                name: "pyrite_1.jpg",
+                caption: "Front view",
+                alt_text: "A cube",
+                resourceinstanceid: "photo-set",
+                resource_name: "Pyrite photo set",
+                report_url: "/report/photo-set",
+            },
+        ]);
+        const wrapper = mountReport(drawerConfig());
+        await flushPromises();
+
+        await drawerTrigger(wrapper, "Images").trigger("click");
+        await flushPromises();
+
+        expect(fetchResourceImages).toHaveBeenCalledWith("resource-id", [
+            { model: "digital_resources", node: "file" },
+        ]);
+        expect(wrapper.find(".images-main").attributes("alt")).toBe("A cube");
+        expect(wrapper.find(".images-caption").text()).toContain("Front view");
+        expect(
+            wrapper.find('.images-caption a[href="/report/photo-set"]').text(),
+        ).toBe("Pyrite photo set");
+    });
+
+    it("says so when a resource has no images", async () => {
+        vi.mocked(fetchResourceImages).mockResolvedValue([]);
+        const wrapper = mountReport(drawerConfig());
+        await flushPromises();
+
+        await drawerTrigger(wrapper, "Images").trigger("click");
+        await flushPromises();
+
+        expect(wrapper.find(".images-empty").text()).toBe(
+            "This resource does not have any associated images.",
+        );
     });
 });

@@ -274,3 +274,22 @@ export interface RelatedResourceGroup {
 export interface RelatedResourcesPanelConfig {
     graphs?: string[];
 }
+
+export interface ImageSource {
+    model: string;
+    node: string;
+}
+
+export interface ImagesPanelConfig {
+    images?: ImageSource[];
+}
+
+export interface ResourceImage {
+    url: string;
+    name: string;
+    caption: string;
+    alt_text: string;
+    resourceinstanceid: string;
+    resource_name: string;
+    report_url: string;
+}

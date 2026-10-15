@@ -12,8 +12,10 @@ import type {
     AliasedResourceData,
     EditHistoryPage,
     ExportFormat,
+    ImageSource,
     RelatedResourceGroup,
     ReportContext,
+    ResourceImage,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 async function parseResponse<ResponseBody>(
@@ -119,6 +121,22 @@ export async function fetchRelatedResourceGroup(
         `${arches.urls.api_related_resource_groups(resourceInstanceId)}?${params}`,
     );
     return parseResponse<RelatedResourceGroup>(response);
+}
+
+export async function fetchResourceImages(
+    resourceInstanceId: string,
+    imageSources: ImageSource[],
+): Promise<ResourceImage[]> {
+    const params = new URLSearchParams({
+        sources: imageSources
+            .map((imageSource) => `${imageSource.model}:${imageSource.node}`)
+            .join(","),
+    });
+    const response = await fetch(
+        `${arches.urls.api_resource_images(resourceInstanceId)}?${params}`,
+    );
+    const parsed = await parseResponse<{ images: ResourceImage[] }>(response);
+    return parsed.images;
 }
 
 export async function copyResource(
