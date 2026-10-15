@@ -7,6 +7,7 @@ import ResourceReport from "@/arches_modular_reports/ResourceReport/ResourceRepo
 
 import {
     fetchEditHistory,
+    fetchResource,
     fetchReportContext,
     updateLifecycleState,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
@@ -29,8 +30,10 @@ vi.mock("@/arches_vue_components/application/generate-arches-url.ts", () => ({
 
 vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
     fetchEditHistory: vi.fn(),
+    fetchResource: vi.fn(),
     fetchReportContext: vi.fn(),
     updateLifecycleState: vi.fn(),
+    updateResource: vi.fn(),
     buildExportUrl: () => "/export",
 }));
 
@@ -284,14 +287,7 @@ describe("ResourceReport", () => {
         vi.clearAllMocks();
         Element.prototype.scrollIntoView = vi.fn();
         vi.mocked(fetchReportContext).mockResolvedValue(makeContext());
-        vi.stubGlobal(
-            "fetch",
-            vi.fn(() =>
-                Promise.resolve(
-                    new Response(JSON.stringify(RESOURCE), { status: 200 }),
-                ),
-            ),
-        );
+        vi.mocked(fetchResource).mockResolvedValue(RESOURCE);
         vi.mocked(updateLifecycleState).mockResolvedValue();
     });
 

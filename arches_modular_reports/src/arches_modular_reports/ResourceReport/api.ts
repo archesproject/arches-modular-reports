@@ -2,7 +2,14 @@ import Cookies from "js-cookie";
 
 import arches from "arches";
 
+import { generateArchesURL } from "@/arches_vue_components/application/generate-arches-url.ts";
+import {
+    buildFileUploadFormData,
+    extractFileEntriesFromAliasedData,
+} from "@/arches_vue_components/generics/GenericCard/utils.ts";
+
 import type {
+    AliasedResourceData,
     EditHistoryPage,
     ExportFormat,
     ReportContext,
@@ -16,6 +23,45 @@ async function parseResponse<ResponseBody>(
         throw new Error(parsed.message || response.statusText);
     }
     return parsed;
+}
+
+function resourceUrl(graphSlug: string, resourceInstanceId: string): string {
+    return generateArchesURL("arches_querysets:api-resource", {
+        graph: graphSlug,
+        pk: resourceInstanceId,
+    });
+}
+
+export async function fetchResource(
+    graphSlug: string,
+    resourceInstanceId: string,
+): Promise<AliasedResourceData> {
+    const response = await fetch(resourceUrl(graphSlug, resourceInstanceId));
+    return parseResponse<AliasedResourceData>(response);
+}
+
+export async function updateResource(
+    graphSlug: string,
+    resource: AliasedResourceData,
+): Promise<AliasedResourceData> {
+    const fileEntries = extractFileEntriesFromAliasedData(
+        resource.aliased_data,
+    );
+    const headers: Record<string, string> = {
+        "X-CSRFToken": Cookies.get("csrftoken") ?? "",
+    };
+    let body: BodyInit;
+    if (fileEntries.length > 0) {
+        body = buildFileUploadFormData(resource, fileEntries);
+    } else {
+        headers["Content-Type"] = "application/json";
+        body = JSON.stringify(resource);
+    }
+    const response = await fetch(
+        resourceUrl(graphSlug, resource.resourceinstanceid),
+        { method: "PUT", headers, body },
+    );
+    return parseResponse<AliasedResourceData>(response);
 }
 
 export async function fetchReportContext(

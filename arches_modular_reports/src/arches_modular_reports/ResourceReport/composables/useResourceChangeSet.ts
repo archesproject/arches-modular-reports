@@ -1,14 +1,12 @@
-import { computed, ref, shallowRef, toValue, watchEffect } from "vue";
+import { computed, ref, shallowRef, watchEffect } from "vue";
 import { isEqual } from "es-toolkit";
-import Cookies from "js-cookie";
 
-import { generateArchesURL } from "@/arches_vue_components/application/generate-arches-url.ts";
 import { fetchTileData } from "@/arches_vue_components/generics/GenericCard/api.ts";
+import { isAliasedNodeData } from "@/arches_vue_components/generics/GenericCard/utils.ts";
 import {
-    buildFileUploadFormData,
-    extractFileEntriesFromAliasedData,
-    isAliasedNodeData,
-} from "@/arches_vue_components/generics/GenericCard/utils.ts";
+    fetchResource,
+    updateResource,
+} from "@/arches_modular_reports/ResourceReport/api.ts";
 import {
     applyResourceChanges,
     findTile,
@@ -18,7 +16,6 @@ import {
 import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 import { toError } from "@/arches_modular_reports/utils.ts";
 
-import type { MaybeRefOrGetter } from "vue";
 import type {
     AliasedData,
     AliasedNodeData,
@@ -45,59 +42,9 @@ function withoutChildTiles(aliasedData: AliasedData): AliasedData {
     return ownAliasedData;
 }
 
-function resourceUrl(graphSlug: string, resourceInstanceId: string): string {
-    return generateArchesURL("arches_querysets:api-resource", {
-        graph: graphSlug,
-        pk: resourceInstanceId,
-    });
-}
-
-async function parseResponse(response: Response): Promise<AliasedResourceData> {
-    const parsed = await response.json();
-    if (!response.ok) {
-        throw new Error(parsed.message ?? response.statusText);
-    }
-    return parsed;
-}
-
-async function requestResource(
+export function useResourceChangeSet(
     graphSlug: string,
     resourceInstanceId: string,
-): Promise<AliasedResourceData> {
-    return parseResponse(
-        await fetch(resourceUrl(graphSlug, resourceInstanceId)),
-    );
-}
-
-async function putResource(
-    graphSlug: string,
-    resource: AliasedResourceData,
-): Promise<AliasedResourceData> {
-    const fileEntries = extractFileEntriesFromAliasedData(
-        resource.aliased_data,
-    );
-    const headers: Record<string, string> = {
-        "X-CSRFTOKEN": Cookies.get("csrftoken") ?? "",
-    };
-    let body: BodyInit;
-    if (fileEntries.length > 0) {
-        body = buildFileUploadFormData(resource, fileEntries);
-    } else {
-        headers["Content-Type"] = "application/json";
-        body = JSON.stringify(resource);
-    }
-    return parseResponse(
-        await fetch(resourceUrl(graphSlug, resource.resourceinstanceid), {
-            method: "PUT",
-            headers,
-            body,
-        }),
-    );
-}
-
-export function useResourceChangeSet(
-    graphSlug: MaybeRefOrGetter<string>,
-    resourceInstanceId: MaybeRefOrGetter<string>,
 ): ResourceChangeSet {
     const resource = shallowRef<AliasedResourceData | null>(null);
     const pendingChanges = shallowRef<ResourceChange[]>([]);
@@ -124,10 +71,7 @@ export function useResourceChangeSet(
     watchEffect(async () => {
         fetchError.value = null;
         try {
-            resource.value = await requestResource(
-                toValue(graphSlug),
-                toValue(resourceInstanceId),
-            );
+            resource.value = await fetchResource(graphSlug, resourceInstanceId);
         } catch (error) {
             fetchError.value = toError(error);
         }
@@ -180,7 +124,7 @@ export function useResourceChangeSet(
         addError.value = null;
         let blankTile: AliasedTileData;
         try {
-            blankTile = await fetchTileData(toValue(graphSlug), nodegroupAlias);
+            blankTile = await fetchTileData(graphSlug, nodegroupAlias);
         } catch (error) {
             addError.value = toError(error);
             return null;
@@ -196,7 +140,7 @@ export function useResourceChangeSet(
                 aliased_data: withoutChildTiles(blankTile.aliased_data),
                 tileid: newTileId,
                 parenttile: parentTileId,
-                resourceinstance: toValue(resourceInstanceId),
+                resourceinstance: resourceInstanceId,
                 sortorder: siblingTiles(nodegroupAlias, parentTileId).reduce(
                     (nextSortorder, siblingTile) =>
                         Math.max(nextSortorder, siblingTile.sortorder + 1),
@@ -374,10 +318,7 @@ export function useResourceChangeSet(
         try {
             const { resource: replayedResource, conflictingChanges } =
                 replayResourceChanges(
-                    await requestResource(
-                        toValue(graphSlug),
-                        toValue(resourceInstanceId),
-                    ),
+                    await fetchResource(graphSlug, resourceInstanceId),
                     pendingChanges.value,
                 );
             if (conflictingChanges.length > 0) {
@@ -386,10 +327,7 @@ export function useResourceChangeSet(
                 );
                 return false;
             }
-            resource.value = await putResource(
-                toValue(graphSlug),
-                replayedResource,
-            );
+            resource.value = await updateResource(graphSlug, replayedResource);
             pendingChanges.value = [];
             return true;
         } catch (error) {
