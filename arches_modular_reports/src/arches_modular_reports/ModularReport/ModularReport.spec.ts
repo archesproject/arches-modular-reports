@@ -1,5 +1,4 @@
 import { defineComponent, h } from "vue";
-import type { PropType } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import OpenVue from "openvue/config";
@@ -9,6 +8,7 @@ import ModularReport from "@/arches_modular_reports/ModularReport/ModularReport.
 import { fetchReportConfig } from "@/arches_modular_reports/ModularReport/api.ts";
 import { importComponents } from "@/arches_modular_reports/ModularReport/utils.ts";
 
+import type { PropType } from "vue";
 import type {
     ComponentLookup,
     NamedSection,

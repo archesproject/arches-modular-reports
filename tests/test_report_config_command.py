@@ -227,8 +227,6 @@ class GenerateReportConfigCommandTests(TestCase):
         self.assertFalse(ReportConfig.objects.filter(slug="test_gen").exists())
         self.assertIn("totally_nonexistent_slug", stderr.getvalue())
 
-    # --- generator slug targeting ---
-
     def test_generate_with_slug_only_runs_that_generator(self):
         register(
             "other_gen",
