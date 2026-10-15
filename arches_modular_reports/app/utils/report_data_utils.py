@@ -18,6 +18,19 @@ def localized_text(i18n_value):
     return str(i18n_value)
 
 
+def file_metadata_text(file_value, field):
+    metadata = file_value.get(field)
+    if isinstance(metadata, dict):
+        return localized_text(
+            {
+                language: entry.get("value", "")
+                for language, entry in metadata.items()
+                if isinstance(entry, dict)
+            }
+        )
+    return metadata or ""
+
+
 class EditValueDescriber:
     def __init__(self):
         self.datatype_factory = DataTypeFactory()

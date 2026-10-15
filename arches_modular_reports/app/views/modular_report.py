@@ -2,7 +2,7 @@ import json
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
-from django.db.models import Case, F, OuterRef, Q, Subquery, When
+from django.db.models import Case, F, OuterRef, Q, Subquery, Value, When
 from django.db.models.fields.json import KT
 from django.http import Http404
 from django.shortcuts import render
@@ -34,6 +34,7 @@ from arches_modular_reports.app.utils.decorators import can_read_nodegroup
 from arches_modular_reports.app.utils.get_report_config import get_report_config
 from arches_modular_reports.app.utils.report_data_utils import (
     EditValueDescriber,
+    file_metadata_text,
     localized_text,
 )
 from arches_modular_reports.app.utils.nodegroup_tile_data_utils import (
@@ -175,7 +176,9 @@ class ReportContextView(APIBase):
                     ),
                     "can_copy": user_can_edit
                     and group_required(request.user, "Resource Editor"),
-                    "is_reviewer": user_is_resource_reviewer(request.user),
+                    "is_reviewer": user_is_resource_reviewer(
+                        request.user, resource=resource
+                    ),
                 },
             }
         )
@@ -202,7 +205,7 @@ class EditHistoryView(APIBase):
             .filter(
                 Q(nodegroupid__isnull=True) | Q(nodegroupid__in=readable_nodegroup_ids)
             )
-            .order_by("-timestamp")
+            .order_by("-timestamp", "-editlogid")
         )
         if query := request.GET.get("q", "").strip():
             edits = edits.filter(
@@ -295,10 +298,16 @@ class RelatedResourceGroupsView(APIBase):
                     When(relates_from_this_resource, then=F("to_resource__name")),
                     default=F("from_resource__name"),
                 ),
-                relationship_label=Subquery(
-                    models.CardXNodeXWidget.objects.filter(
-                        node=OuterRef("node")
-                    ).values("label")[:1]
+                relationship_label=Case(
+                    When(
+                        relates_from_this_resource,
+                        then=Subquery(
+                            models.CardXNodeXWidget.objects.filter(
+                                node=OuterRef("node")
+                            ).values("label")[:1]
+                        ),
+                    ),
+                    default=Value(None),
                 ),
             )
             .annotate(
@@ -316,12 +325,16 @@ class RelatedResourceGroupsView(APIBase):
                 )
             ).filter(
                 Q(related_resource_sort_name__icontains=query)
-                | Q(relationship_label_text__icontains=query)
+                | (
+                    relates_from_this_resource
+                    & Q(relationship_label_text__icontains=query)
+                )
                 | Q(related_graph_id__in=self.graph_ids_named(query))
             )
         relations = relations.filter(
-            related_resource_id__in=self.readable_related_resource_ids(
-                request.user, relations
+            related_resource_id__in=readable_resource_ids(
+                request.user,
+                set(relations.values_list("related_resource_id", flat=True)),
             )
         )
         related_graphs = models.GraphModel.objects.filter(
@@ -334,7 +347,6 @@ class RelatedResourceGroupsView(APIBase):
                 return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
             return JSONResponse(
                 self.serialize_group(
-                    request,
                     relations,
                     requested_graph,
                     page_number=request.GET.get("page", 1),
@@ -355,7 +367,6 @@ class RelatedResourceGroupsView(APIBase):
                 {
                     "groups": [
                         self.serialize_group(
-                            request,
                             relations,
                             graphs_by_slug[graph_slug],
                             page_number=1,
@@ -368,23 +379,13 @@ class RelatedResourceGroupsView(APIBase):
         return JSONResponse(
             {
                 "groups": [
-                    self.serialize_group(request, relations, graph, page_number=1)
+                    self.serialize_group(relations, graph, page_number=1)
                     for graph in sorted(
                         related_graphs, key=lambda graph: str(graph.name)
                     )
                 ]
             }
         )
-
-    @staticmethod
-    def readable_related_resource_ids(user, relations):
-        return [
-            related_resource_id
-            for related_resource_id in set(
-                relations.values_list("related_resource_id", flat=True)
-            )
-            if user_can_read_resource(user, resourceid=related_resource_id)
-        ]
 
     @staticmethod
     def graph_ids_named(query):
@@ -396,9 +397,9 @@ class RelatedResourceGroupsView(APIBase):
             if query.casefold() in str(graph.name).casefold()
         ]
 
-    def serialize_group(self, request, relations, graph, page_number):
+    def serialize_group(self, relations, graph, page_number):
         group_relations = relations.filter(related_graph_id=graph.pk).order_by(
-            F("related_resource_sort_name").asc(nulls_last=True)
+            F("related_resource_sort_name").asc(nulls_last=True), "resourcexid"
         )
         paginator = Paginator(group_relations, self.page_size)
         relation_page = paginator.get_page(page_number)
@@ -424,23 +425,21 @@ class RelatedResourceGroupsView(APIBase):
         }
 
 
-def file_metadata_text(file_value, field):
-    metadata = file_value.get(field)
-    if isinstance(metadata, dict):
-        return localized_text(
-            {
-                language: entry.get("value", "")
-                for language, entry in metadata.items()
-                if isinstance(entry, dict)
-            }
-        )
-    return metadata or ""
+def readable_resource_ids(user, resource_ids):
+    return {
+        resource.pk
+        for resource in models.ResourceInstance.objects.filter(pk__in=resource_ids)
+        if user_can_read_resource(user, resource=resource)
+    }
 
 
 @method_decorator(can_read_resource_instance, name="dispatch")
 class ResourceImagesView(APIBase):
     def get(self, request, resourceid):
-        resource = models.ResourceInstance.objects.get(pk=resourceid)
+        try:
+            resource = models.ResourceInstance.objects.get(pk=resourceid)
+        except models.ResourceInstance.DoesNotExist:
+            return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
         readable_nodegroup_ids = {
             str(nodegroup_id)
             for nodegroup_id in nodegroup_ids_with_inherited_permission(
@@ -464,19 +463,20 @@ class ResourceImagesView(APIBase):
             if file_node.graph_id == resource.graph_id:
                 resource_ids = {resource.pk}
             else:
-                resource_ids = {
-                    related_resource_id
-                    for related_resource_id in self.related_resource_ids(
+                resource_ids = readable_resource_ids(
+                    request.user,
+                    self.related_resource_ids(
                         resource.pk, file_node.graph_id, readable_nodegroup_ids
-                    )
-                    if user_can_read_resource(
-                        request.user, resourceid=related_resource_id
-                    )
-                }
-            tiles = models.TileModel.objects.filter(
-                resourceinstance_id__in=resource_ids,
-                nodegroup_id=file_node.nodegroup_id,
-            ).select_related("resourceinstance")
+                    ),
+                )
+            tiles = (
+                models.TileModel.objects.filter(
+                    resourceinstance_id__in=resource_ids,
+                    nodegroup_id=file_node.nodegroup_id,
+                )
+                .select_related("resourceinstance")
+                .order_by("resourceinstance_id", "sortorder", "tileid")
+            )
             for tile in tiles:
                 for file_value in tile.data.get(str(file_node.pk)) or []:
                     if str(file_value.get("type", "")).startswith("image/"):

@@ -1,4 +1,5 @@
 import uuid
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -9,6 +10,7 @@ from guardian.shortcuts import assign_perm
 from arches.app.models.graph import Graph
 from arches.app.models.models import (
     CardModel,
+    CardXNodeXWidget,
     EditLog,
     GraphModel,
     Node,
@@ -16,6 +18,7 @@ from arches.app.models.models import (
     ResourceInstance,
     ResourceXResource,
     TileModel,
+    Widget,
 )
 
 
@@ -276,6 +279,121 @@ class ResourceReportEndpointTests(TestCase):
         self.assertEqual(image_count(), 1)
         assign_perm("models.no_access_to_nodegroup", self.reader_user, self.names)
         self.assertEqual(image_count(), 0)
+
+    def test_dangling_relations_do_not_break_related_resources_or_images(self):
+        self.add_related_photos()
+        ResourceXResource.objects.create(
+            from_resource=self.resource,
+            from_resource_graph=self.graph,
+            to_resource_id=uuid.uuid4(),
+            to_resource_graph=self.related_graph,
+            node=self.related_thing,
+        )
+        assign_perm("models.view_resourceinstance", self.reader_user, self.resource)
+        assign_perm(
+            "models.view_resourceinstance", self.reader_user, self.related_resource
+        )
+        self.client.force_login(self.reader_user)
+
+        groups_response = self.client.get(
+            reverse("api_related_resource_groups", args=[self.resource.pk]),
+            {"graphs": "related_graph"},
+        )
+        images_response = self.client.get(
+            reverse("api_resource_images", args=[self.resource.pk]),
+            {"sources": "related_graph:photo_files"},
+        )
+
+        self.assertEqual(groups_response.json()["groups"][0]["total_count"], 1)
+        self.assertEqual(len(images_response.json()["images"]), 1)
+
+    def test_inbound_relations_have_no_relationship_label(self):
+        linking_nodegroup = make_nodegroup(self.related_graph, "links")
+        points_here = Node.objects.create(
+            nodegroup=linking_nodegroup,
+            name="Points here",
+            alias="points_here",
+            graph=self.related_graph,
+            istopnode=False,
+            datatype="resource-instance",
+        )
+        CardXNodeXWidget.objects.create(
+            node=points_here,
+            card=CardModel.objects.create(
+                graph=self.related_graph, nodegroup=linking_nodegroup, name="Links"
+            ),
+            widget=Widget.objects.first(),
+            label={"en": "Points here"},
+        )
+        ResourceXResource.objects.filter(from_resource=self.resource).delete()
+        ResourceXResource.objects.create(
+            from_resource=self.related_resource,
+            from_resource_graph=self.related_graph,
+            to_resource=self.resource,
+            to_resource_graph=self.graph,
+            node=points_here,
+        )
+        self.client.force_login(self.superuser)
+
+        [group] = self.client.get(
+            reverse("api_related_resource_groups", args=[self.resource.pk]),
+            {"graphs": "related_graph"},
+        ).json()["groups"]
+
+        self.assertEqual(group["items"][0]["relationship"], "")
+
+    def test_images_for_a_missing_resource_are_not_found(self):
+        self.client.force_login(self.superuser)
+
+        response = self.client.get(
+            reverse("api_resource_images", args=[uuid.uuid4()]),
+            {"sources": "related_graph:photo_files"},
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_edit_history_hides_unreadable_nodegroups(self):
+        self.client.force_login(self.superuser)
+
+        with mock.patch(
+            "arches_modular_reports.app.views.modular_report.nodegroup_ids_with_inherited_permission",
+            return_value=set(),
+        ):
+            response = self.client.get(
+                reverse("api_edit_history", args=[self.resource.pk])
+            )
+
+        self.assertEqual(response.json()["total_count"], 0)
+
+    def test_resource_images_skip_unreadable_file_nodegroups(self):
+        photos = self.add_related_photos()
+        make_nodegroup(self.graph, "notes")
+        assign_perm("models.view_resourceinstance", self.reader_user, self.resource)
+        assign_perm(
+            "models.view_resourceinstance", self.reader_user, self.related_resource
+        )
+        assign_perm("models.no_access_to_nodegroup", self.reader_user, photos)
+        self.client.force_login(self.reader_user)
+
+        response = self.client.get(
+            reverse("api_resource_images", args=[self.resource.pk]),
+            {"sources": "related_graph:photo_files"},
+        )
+
+        self.assertEqual(response.json()["images"], [])
+
+    def test_resource_images_skip_related_resources_the_user_cannot_read(self):
+        self.add_related_photos()
+        make_nodegroup(self.graph, "notes")
+        assign_perm("models.view_resourceinstance", self.reader_user, self.resource)
+        self.client.force_login(self.reader_user)
+
+        response = self.client.get(
+            reverse("api_resource_images", args=[self.resource.pk]),
+            {"sources": "related_graph:photo_files"},
+        )
+
+        self.assertEqual(response.json()["images"], [])
 
     def test_related_resource_groups_count_only_what_the_user_can_read(self):
         make_nodegroup(self.related_graph, "details")
