@@ -252,3 +252,25 @@ export interface EditHistoryPage {
     total_count: number;
     has_next: boolean;
 }
+
+export interface RelatedResourceItem {
+    resourcexid: string;
+    display_name: string;
+    relationship: string;
+    report_url: string;
+}
+
+export interface RelatedResourceGroup {
+    graph_slug: string;
+    graph_name: string;
+    iconclass: string | null;
+    color: string | null;
+    total_count: number;
+    page: number;
+    has_next: boolean;
+    items: RelatedResourceItem[];
+}
+
+export interface RelatedResourcesPanelConfig {
+    graphs?: string[];
+}

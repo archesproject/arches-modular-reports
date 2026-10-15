@@ -10,6 +10,8 @@ import {
     deleteResource,
     fetchEditHistory,
     fetchResource,
+    fetchRelatedResourceGroup,
+    fetchRelatedResourceGroups,
     fetchReportContext,
     updateLifecycleState,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
@@ -21,6 +23,7 @@ import type {
 import type {
     EditHistoryPage,
     LifecycleStateSummary,
+    RelatedResourceGroup,
     ReportContext,
     ReportPermissions,
     ResourceReportConfig,
@@ -38,6 +41,8 @@ vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
     searchUrl: () => "/search",
     fetchEditHistory: vi.fn(),
     fetchResource: vi.fn(),
+    fetchRelatedResourceGroup: vi.fn(),
+    fetchRelatedResourceGroups: vi.fn(),
     fetchReportContext: vi.fn(),
     updateLifecycleState: vi.fn(),
     updateResource: vi.fn(),
@@ -215,6 +220,35 @@ const HISTORY_PAGE: EditHistoryPage = {
     has_next: true,
 };
 
+const PIGMENTS_GROUP: RelatedResourceGroup = {
+    graph_slug: "pigments",
+    graph_name: "Pigments",
+    iconclass: "fa fa-flask",
+    color: null,
+    total_count: 2,
+    page: 1,
+    has_next: true,
+    items: [
+        {
+            resourcexid: "smalt-relation",
+            display_name: "Smalt sample",
+            relationship: "Source",
+            report_url: "/report/smalt",
+        },
+    ],
+};
+
+const PEOPLE_GROUP: RelatedResourceGroup = {
+    graph_slug: "people",
+    graph_name: "People",
+    iconclass: null,
+    color: null,
+    total_count: 0,
+    page: 1,
+    has_next: false,
+    items: [],
+};
+
 function drawerConfig(): ResourceReportConfig {
     return {
         workspaces: [
@@ -230,6 +264,12 @@ function drawerConfig(): ResourceReportConfig {
                                 component: "EditHistoryPanel",
                                 label: "Edit History",
                                 icon: "pi pi-clock",
+                            },
+                            {
+                                component: "RelatedResourcesPanel",
+                                label: "Related Resources",
+                                icon: "pi pi-link",
+                                config: { graphs: ["pigments", "people"] },
                             },
                             {
                                 component: "ManagePanel",
@@ -537,12 +577,76 @@ describe("ResourceReport", () => {
             wrapper
                 .findAll(".home-drawer-triggers button")
                 .map((trigger) => trigger.text()),
-        ).toEqual(["Manage", "Workflows"]);
+        ).toEqual(["Related Resources", "Manage", "Workflows"]);
 
         await drawerTrigger(wrapper, "Workflows").trigger("click");
         expect(wrapper.find(".home-drawer-body").text()).toContain(
             "This panel is not available",
         );
+    });
+
+    it("lists related resources by model, with empty sections, filtering and load more", async () => {
+        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
+            PIGMENTS_GROUP,
+            PEOPLE_GROUP,
+        ]);
+        vi.mocked(fetchRelatedResourceGroup).mockResolvedValue({
+            ...PIGMENTS_GROUP,
+            page: 2,
+            has_next: false,
+            items: [
+                {
+                    resourcexid: "cobalt-relation",
+                    display_name: "Cobalt sample",
+                    relationship: "Source",
+                    report_url: "/report/cobalt",
+                },
+            ],
+        });
+        const wrapper = mountReport(drawerConfig());
+        await flushPromises();
+
+        await drawerTrigger(wrapper, "Related Resources").trigger("click");
+        await flushPromises();
+        expect(fetchRelatedResourceGroups).toHaveBeenLastCalledWith(
+            "resource-id",
+            ["pigments", "people"],
+            "",
+        );
+        const sections = wrapper.findAll(".related-resources-group");
+        expect(sections[0].text()).toContain("Smalt sample");
+        expect(sections[0].text()).toContain("Source");
+        expect(sections[1].find(".related-resources-empty").exists()).toBe(
+            true,
+        );
+
+        vi.useFakeTimers();
+        await wrapper.find(".related-resources-filter").setValue("sample");
+        await vi.advanceTimersByTimeAsync(300);
+        vi.useRealTimers();
+        await flushPromises();
+        expect(fetchRelatedResourceGroups).toHaveBeenLastCalledWith(
+            "resource-id",
+            ["pigments", "people"],
+            "sample",
+        );
+
+        await wrapper
+            .findAll(".related-resources-group")[0]
+            .find("button")
+            .trigger("click");
+        await flushPromises();
+        expect(fetchRelatedResourceGroup).toHaveBeenLastCalledWith(
+            "resource-id",
+            "pigments",
+            2,
+            "sample",
+        );
+        expect(
+            wrapper
+                .findAll(".related-resources-group")[0]
+                .findAll(".related-resources-item"),
+        ).toHaveLength(2);
     });
 
     it("copies, prints and confirms deletion from the manage panel", async () => {

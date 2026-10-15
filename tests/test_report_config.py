@@ -6,6 +6,7 @@ from arches.app.models.models import (
     CardModel,
     Function,
     FunctionXGraph,
+    GraphModel,
     Node,
     NodeGroup,
 )
@@ -56,6 +57,13 @@ def make_card(graph, nodegroup, sortorder, visible=True):
         sortorder=sortorder,
         visible=visible,
     )
+
+
+def make_resource_model(slug, name):
+    Graph.objects.create_graph(is_resource=True, slug=slug)
+    Graph.objects.filter(slug=slug).exclude(source_identifier=None).delete()
+    GraphModel.objects.filter(slug=slug).update(name={"en": name})
+    return GraphModel.objects.get(slug=slug)
 
 
 def curated_config():
@@ -189,6 +197,41 @@ class ResourceReportConfigTests(TestCase):
             ],
         )
 
+    def test_related_resources_panel_lists_models_linked_either_way(self):
+        linked_model = make_resource_model("linked_model", "Linked Model")
+        linking_model = make_resource_model("linking_model", "Another Model")
+        Node.objects.create(
+            nodegroup=self.identifiers,
+            name="Linked thing",
+            alias="linked_thing",
+            graph=self.graph,
+            istopnode=False,
+            datatype="resource-instance",
+            config={"graphs": [{"graphid": str(linked_model.pk)}]},
+        )
+        linking_nodegroup = make_nodegroup(linking_model, "points_here_group")
+        Node.objects.create(
+            nodegroup=linking_nodegroup,
+            name="Points here",
+            alias="points_here",
+            graph=linking_model,
+            istopnode=False,
+            datatype="resource-instance-list",
+            config={"graphs": [{"graphid": str(self.graph.pk)}]},
+        )
+
+        report_config = ReportConfig(graph=self.graph)
+        report_config.full_clean()
+
+        drawer = report_config.config["components"][0]["config"]["workspaces"][0][
+            "config"
+        ]["home"]["drawer"]
+        entries_by_component = {entry["component"]: entry for entry in drawer}
+        self.assertEqual(
+            entries_by_component["RelatedResourcesPanel"]["config"]["graphs"],
+            ["linking_model", "linked_model"],
+        )
+
     def test_curated_config_is_valid(self):
         ReportConfig(graph=self.graph, config=curated_config()).full_clean()
 
@@ -204,10 +247,22 @@ class ResourceReportConfigTests(TestCase):
                 {"node_alias": "missing"}
             ]
 
+        def mutate_unknown_related_model(config):
+            workspace_config = resource_report_config_from(config)["workspaces"][0][
+                "config"
+            ]
+            workspace_config.setdefault("home", {})["drawer"] = [
+                {
+                    "component": "RelatedResourcesPanel",
+                    "config": {"graphs": ["missing_model"]},
+                }
+            ]
+
         for mutation in (
             mutate_unknown_nodegroup,
             mutate_child_nodegroup_at_top_level,
             mutate_unknown_summary_node,
+            mutate_unknown_related_model,
         ):
             with self.subTest(mutation=mutation.__name__):
                 config = curated_config()

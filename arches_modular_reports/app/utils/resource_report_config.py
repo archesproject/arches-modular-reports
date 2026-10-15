@@ -5,11 +5,13 @@ from django.core.exceptions import ValidationError
 from django.utils import translation
 from django.utils.translation import gettext, gettext_noop
 
-from arches.app.models.models import FunctionXGraph
+from arches.app.models.models import FunctionXGraph, GraphModel, Node
 from arches.app.models.system_settings import settings
 
 RESOURCE_REPORT_COMPONENT = "arches_modular_reports/ResourceReport/ResourceReport"
 DESCRIPTOR_TOKEN_PATTERN = re.compile(r"<([^<>]+)>")
+RESOURCE_INSTANCE_DATATYPES = ["resource-instance", "resource-instance-list"]
+RELATED_RESOURCES_PANEL = "RelatedResourcesPanel"
 
 
 def is_resource_report_component(component_path):
@@ -24,8 +26,17 @@ def translated_labels(message):
     return labels
 
 
+def configured_graph_ids(node):
+    return {
+        graph_config["graphid"]
+        for graph_config in (node.config or {}).get("graphs", [])
+        if graph_config.get("graphid")
+    }
+
+
 class ResourceReportGraph:
     def __init__(self, graph):
+        self.graph = graph
         graph_nodes = list(graph.node_set.select_related("nodegroup"))
         self.nodes_by_alias = {node.alias: node for node in graph_nodes if node.alias}
         self.grouping_nodes_by_nodegroup_id = {
@@ -66,6 +77,27 @@ class ResourceReportGraph:
             for card in self.visible_cards
             if self.parent_nodegroup_ids_by_nodegroup_id.get(card.nodegroup_id)
             == parent_nodegroup_id
+        ]
+
+    def related_graph_slugs(self):
+        linked_graph_ids = set()
+        for node in self.nodes_by_alias.values():
+            if node.datatype in RESOURCE_INSTANCE_DATATYPES:
+                linked_graph_ids.update(configured_graph_ids(node))
+        linked_graph_ids.update(
+            str(node.graph_id)
+            for node in Node.objects.filter(
+                datatype__in=RESOURCE_INSTANCE_DATATYPES,
+                source_identifier__isnull=True,
+            ).only("graph_id", "config")
+            if str(self.graph.pk) in configured_graph_ids(node)
+        )
+        related_graphs = GraphModel.objects.filter(
+            pk__in=linked_graph_ids, isresource=True, source_identifier__isnull=True
+        )
+        return [
+            graph.slug
+            for graph in sorted(related_graphs, key=lambda graph: str(graph.name))
         ]
 
     def descriptor_node_aliases(self, *descriptor_type_names):
@@ -111,12 +143,16 @@ def workspace_entry(workspace_id, component, label, description):
     }
 
 
-def drawer_entry(component, label, icon):
-    return {"component": component, "label": translated_labels(label), "icon": icon}
+def drawer_entry(component, label, icon, config=None):
+    entry = {"component": component, "label": translated_labels(label), "icon": icon}
+    if config is not None:
+        entry["config"] = config
+    return entry
 
 
 def generate_resource_report_config(graph):
     report_graph = ResourceReportGraph(graph)
+    related_graph_slugs = report_graph.related_graph_slugs()
     report_workspace = {
         **workspace_entry(
             "report",
@@ -152,9 +188,10 @@ def generate_resource_report_config(graph):
                     ),
                     drawer_entry("ImagesPanel", gettext_noop("Images"), "pi pi-image"),
                     drawer_entry(
-                        "RelatedResourcesPanel",
+                        RELATED_RESOURCES_PANEL,
                         gettext_noop("Related Resources"),
                         "pi pi-link",
+                        config={"graphs": related_graph_slugs},
                     ),
                     drawer_entry("ManagePanel", gettext_noop("Manage"), "pi pi-cog"),
                 ],
@@ -211,6 +248,21 @@ def iterate_summary_entries(resource_report_config):
         yield from workspace.get("config", {}).get("home", {}).get("summary", [])
 
 
+def iterate_drawer_entries(resource_report_config, component):
+    for workspace in resource_report_config.get("workspaces", []):
+        drawer = workspace.get("config", {}).get("home", {}).get("drawer", [])
+        for entry in drawer:
+            if entry.get("component") == component:
+                yield entry.get("config", {})
+
+
+def iterate_related_graph_slugs(resource_report_config):
+    for entry_config in iterate_drawer_entries(
+        resource_report_config, RELATED_RESOURCES_PANEL
+    ):
+        yield from entry_config.get("graphs", [])
+
+
 def validate_folio(report_graph, folio):
     nodegroup_alias = folio.get("nodegroup_alias")
     grouping_node = report_graph.grouping_nodes_by_alias.get(nodegroup_alias)
@@ -234,6 +286,11 @@ def validate_resource_report_config(resource_report_config, graph):
         node_alias = summary_entry.get("node_alias")
         if node_alias not in report_graph.nodes_by_alias:
             raise ValidationError(f"Summary refers to an unknown node: {node_alias}")
+    for graph_slug in iterate_related_graph_slugs(resource_report_config):
+        if not GraphModel.objects.filter(slug=graph_slug, isresource=True).exists():
+            raise ValidationError(
+                f"Related resources panel refers to an unknown resource model: {graph_slug}"
+            )
 
 
 def prune_resource_report_config(

@@ -10,6 +10,7 @@ from arches.app.models.graph import Graph
 from arches.app.models.models import (
     CardModel,
     EditLog,
+    GraphModel,
     Node,
     NodeGroup,
     ResourceInstance,
@@ -21,6 +22,20 @@ def make_graph(slug):
     Graph.objects.create_graph(is_resource=True, slug=slug)
     Graph.objects.filter(slug=slug).exclude(source_identifier=None).delete()
     return Graph.objects.get(slug=slug)
+
+
+def make_nodegroup(graph, alias):
+    nodegroup = NodeGroup.objects.create(cardinality="n")
+    Node.objects.create(
+        pk=nodegroup.pk,
+        name=alias.title(),
+        alias=alias,
+        graph=graph,
+        nodegroup=nodegroup,
+        datatype="semantic",
+        istopnode=False,
+    )
+    return nodegroup
 
 
 class ResourceReportEndpointTests(TestCase):
@@ -140,6 +155,79 @@ class ResourceReportEndpointTests(TestCase):
         self.assertEqual(matching_users("grace"), ["Grace Hopper"])
         self.assertEqual(matching_users("NAMES"), ["Ada Lovelace"])
         self.assertEqual(matching_users("nobody"), [])
+
+    def test_related_resource_groups_for_listed_models_and_query(self):
+        ResourceInstance.objects.filter(pk=self.related_resource.pk).update(
+            name={"en": "Smalt sample"}
+        )
+        GraphModel.objects.filter(pk=self.related_graph.pk).update(
+            name={"en": "Pigment Samples"}
+        )
+        self.client.force_login(self.superuser)
+        groups_url = reverse("api_related_resource_groups", args=[self.resource.pk])
+
+        listed_groups = self.client.get(
+            groups_url, {"graphs": "related_graph,endpoint_graph"}
+        ).json()["groups"]
+        self.assertEqual(
+            [group["graph_slug"] for group in listed_groups],
+            ["related_graph", "endpoint_graph"],
+        )
+        self.assertEqual([group["total_count"] for group in listed_groups], [1, 0])
+
+        def related_count(query):
+            groups = self.client.get(
+                groups_url, {"graphs": "related_graph", "q": query}
+            ).json()["groups"]
+            return groups[0]["total_count"]
+
+        self.assertEqual(related_count("smalt"), 1)
+        self.assertEqual(related_count("PIGMENT"), 1)
+        self.assertEqual(related_count("nothing"), 0)
+
+    def test_related_resource_groups_count_only_what_the_user_can_read(self):
+        make_nodegroup(self.related_graph, "details")
+        hidden_resource = ResourceInstance.objects.create(graph=self.related_graph)
+        ResourceXResource.objects.create(
+            from_resource=self.resource,
+            from_resource_graph=self.graph,
+            to_resource=hidden_resource,
+            to_resource_graph=self.related_graph,
+            node=self.related_thing,
+        )
+        secrets = make_nodegroup(self.graph, "secrets")
+        ResourceXResource.objects.create(
+            from_resource=self.resource,
+            from_resource_graph=self.graph,
+            to_resource=self.related_resource,
+            to_resource_graph=self.related_graph,
+            node=Node.objects.create(
+                nodegroup=secrets,
+                name="Secret link",
+                alias="secret_link",
+                graph=self.graph,
+                istopnode=False,
+                datatype="resource-instance",
+            ),
+        )
+        assign_perm("models.view_resourceinstance", self.reader_user, self.resource)
+        assign_perm(
+            "models.view_resourceinstance", self.reader_user, self.related_resource
+        )
+        assign_perm("models.no_access_to_nodegroup", self.reader_user, secrets)
+        self.client.force_login(self.reader_user)
+
+        [group] = self.client.get(
+            reverse("api_related_resource_groups", args=[self.resource.pk]),
+            {"graphs": "related_graph"},
+        ).json()["groups"]
+
+        self.assertEqual(group["total_count"], 1)
+        self.assertFalse(group["has_next"])
+        self.assertEqual(
+            [item["report_url"] for item in group["items"]],
+            [reverse("resource_report", args=[self.related_resource.pk])],
+        )
 
     def test_reader_without_edit_permission(self):
         assign_perm("models.view_resourceinstance", self.reader_user, self.resource)

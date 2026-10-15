@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, watchEffect } from "vue";
-import { debounce } from "es-toolkit";
+import { computed, ref, watchEffect } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
@@ -11,6 +10,7 @@ import Message from "openvue/message";
 import Tag from "openvue/tag";
 
 import { fetchEditHistory } from "@/arches_modular_reports/ResourceReport/api.ts";
+import { useFilterQuery } from "@/arches_modular_reports/ResourceReport/composables/useFilterQuery.ts";
 import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type {
@@ -19,7 +19,6 @@ import type {
     TagSeverity,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
-const FILTER_DELAY_MILLISECONDS = 300;
 const TILE_CREATE = "tile create";
 const TILE_EDIT = "tile edit";
 const TILE_DELETE = "tile delete";
@@ -30,9 +29,8 @@ const { reportData } = defineProps<{
 }>();
 
 const { $gettext } = useGettext();
+const { filterText, query } = useFilterQuery();
 
-const filterText = ref("");
-const query = ref("");
 const entries = ref<EditHistoryEntry[]>([]);
 const currentPage = ref(1);
 const hasNextPage = ref(false);
@@ -41,13 +39,6 @@ const loadError = ref<Error | null>(null);
 
 const resourceInstanceId = computed(
     () => reportData.resource.resourceinstanceid,
-);
-
-watch(
-    filterText,
-    debounce((text: string) => {
-        query.value = text.trim();
-    }, FILTER_DELAY_MILLISECONDS),
 );
 
 watchEffect(() => {

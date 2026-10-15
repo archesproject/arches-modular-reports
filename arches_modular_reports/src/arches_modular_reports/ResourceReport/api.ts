@@ -12,6 +12,7 @@ import type {
     AliasedResourceData,
     EditHistoryPage,
     ExportFormat,
+    RelatedResourceGroup,
     ReportContext,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
@@ -83,6 +84,41 @@ export async function fetchEditHistory(
         `${arches.urls.api_edit_history(resourceInstanceId)}?${params}`,
     );
     return parseResponse<EditHistoryPage>(response);
+}
+
+export async function fetchRelatedResourceGroups(
+    resourceInstanceId: string,
+    graphSlugs: string[],
+    query: string,
+): Promise<RelatedResourceGroup[]> {
+    const params = new URLSearchParams({
+        graphs: graphSlugs.join(","),
+        q: query,
+    });
+    const response = await fetch(
+        `${arches.urls.api_related_resource_groups(resourceInstanceId)}?${params}`,
+    );
+    const parsed = await parseResponse<{ groups: RelatedResourceGroup[] }>(
+        response,
+    );
+    return parsed.groups;
+}
+
+export async function fetchRelatedResourceGroup(
+    resourceInstanceId: string,
+    graphSlug: string,
+    page: number,
+    query: string,
+): Promise<RelatedResourceGroup> {
+    const params = new URLSearchParams({
+        graph: graphSlug,
+        page: String(page),
+        q: query,
+    });
+    const response = await fetch(
+        `${arches.urls.api_related_resource_groups(resourceInstanceId)}?${params}`,
+    );
+    return parseResponse<RelatedResourceGroup>(response);
 }
 
 export async function copyResource(

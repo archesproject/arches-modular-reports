@@ -302,7 +302,24 @@ class RelatedResourceGroupsView(APIBase):
             .annotate(
                 related_resource_sort_name=KT(
                     f"related_resource_name__{get_language()}"
+                ),
+            )
+        )
+        if query := request.GET.get("q", "").strip():
+            relations = relations.annotate(
+                relationship_label_text=Subquery(
+                    models.CardXNodeXWidget.objects.filter(
+                        node=OuterRef("node")
+                    ).values(label_text=KT(f"label__{get_language()}"))[:1]
                 )
+            ).filter(
+                Q(related_resource_sort_name__icontains=query)
+                | Q(relationship_label_text__icontains=query)
+                | Q(related_graph_id__in=self.graph_ids_named(query))
+            )
+        relations = relations.filter(
+            related_resource_id__in=self.readable_related_resource_ids(
+                request.user, relations
             )
         )
         related_graphs = models.GraphModel.objects.filter(
@@ -322,6 +339,30 @@ class RelatedResourceGroupsView(APIBase):
                 )
             )
 
+        if requested_graph_slugs := request.GET.get("graphs"):
+            graph_slugs = requested_graph_slugs.split(",")
+            graphs_by_slug = {
+                graph.slug: graph
+                for graph in models.GraphModel.objects.filter(
+                    slug__in=graph_slugs,
+                    isresource=True,
+                    source_identifier__isnull=True,
+                )
+            }
+            return JSONResponse(
+                {
+                    "groups": [
+                        self.serialize_group(
+                            request,
+                            relations,
+                            graphs_by_slug[graph_slug],
+                            page_number=1,
+                        )
+                        for graph_slug in graph_slugs
+                        if graph_slug in graphs_by_slug
+                    ]
+                }
+            )
         return JSONResponse(
             {
                 "groups": [
@@ -332,6 +373,26 @@ class RelatedResourceGroupsView(APIBase):
                 ]
             }
         )
+
+    @staticmethod
+    def readable_related_resource_ids(user, relations):
+        return [
+            related_resource_id
+            for related_resource_id in set(
+                relations.values_list("related_resource_id", flat=True)
+            )
+            if user_can_read_resource(user, resourceid=related_resource_id)
+        ]
+
+    @staticmethod
+    def graph_ids_named(query):
+        return [
+            graph.pk
+            for graph in models.GraphModel.objects.filter(
+                isresource=True, source_identifier__isnull=True
+            )
+            if query.casefold() in str(graph.name).casefold()
+        ]
 
     def serialize_group(self, request, relations, graph, page_number):
         group_relations = relations.filter(related_graph_id=graph.pk).order_by(
@@ -349,7 +410,7 @@ class RelatedResourceGroupsView(APIBase):
             "has_next": relation_page.has_next(),
             "items": [
                 {
-                    "resourceinstanceid": relation.related_resource_id,
+                    "resourcexid": relation.resourcexid,
                     "display_name": localized_text(relation.related_resource_name),
                     "relationship": localized_text(relation.relationship_label),
                     "report_url": reverse(
@@ -357,9 +418,6 @@ class RelatedResourceGroupsView(APIBase):
                     ),
                 }
                 for relation in relation_page
-                if user_can_read_resource(
-                    request.user, resourceid=relation.related_resource_id
-                )
             ],
         }
 
