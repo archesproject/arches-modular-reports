@@ -1,8 +1,8 @@
 import copy
 import re
 
-from arches.app.permissions.arches_permission_base import (
-    get_nodegroups_by_perm_for_user_or_group,
+from arches.extensions.vue_components.utils.nodegroup_permissions import (
+    nodegroup_ids_with_inherited_permission,
 )
 
 from arches_modular_reports.app.utils.resource_report_config import (
@@ -122,33 +122,12 @@ def update_report_configuration_for_nodegroup_permissions(
         if node.nodegroup
     }
 
-    report_nodegroup_ids_with_user_read_permission = set()
-    report_nodegroup_ids_with_user_write_permission = set()
-
-    nodegroups_permissions = get_nodegroups_by_perm_for_user_or_group(
-        user_or_group=user,
-        perms=["models.read_nodegroup", "models.write_nodegroup"],
-    )
-
-    for nodegroup, permissions in nodegroups_permissions.items():
-        if nodegroup.pk not in graph_nodegroup_ids:
-            continue
-
-        if not permissions:  # Empty set implies user has all permissions
-            report_nodegroup_ids_with_user_read_permission.add(nodegroup.pk)
-            report_nodegroup_ids_with_user_write_permission.add(nodegroup.pk)
-            continue
-
-        if "read_nodegroup" in permissions:
-            report_nodegroup_ids_with_user_read_permission.add(nodegroup.pk)
-
-        if "write_nodegroup" in permissions:
-            report_nodegroup_ids_with_user_write_permission.add(nodegroup.pk)
-
     return update_report_configuration_with_nodegroup_permissions(
         report_configuration_instance=report_configuration_instance,
-        report_nodegroup_ids_with_user_read_permission=report_nodegroup_ids_with_user_read_permission,
-        report_nodegroup_ids_with_user_write_permission=report_nodegroup_ids_with_user_write_permission,
+        report_nodegroup_ids_with_user_read_permission=graph_nodegroup_ids
+        & nodegroup_ids_with_inherited_permission(user, "models.read_nodegroup"),
+        report_nodegroup_ids_with_user_write_permission=graph_nodegroup_ids
+        & nodegroup_ids_with_inherited_permission(user, "models.write_nodegroup"),
     )
 
 

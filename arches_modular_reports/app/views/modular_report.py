@@ -16,7 +16,6 @@ from arches.app.models import models
 from arches.app.utils.betterJSONSerializer import JSONDeserializer
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.permission_backend import (
-    get_nodegroups_by_perm,
     group_required,
     user_can_delete_resource,
     user_can_edit_resource,
@@ -27,6 +26,9 @@ from arches.app.utils.response import JSONErrorResponse, JSONResponse
 from arches.app.views.api import APIBase
 from arches.app.views.base import MapBaseManagerView
 from arches.app.views.resource import ResourceReportView
+from arches.extensions.vue_components.utils.nodegroup_permissions import (
+    nodegroup_ids_with_inherited_permission,
+)
 
 from arches_modular_reports.app.utils.decorators import can_read_nodegroup
 from arches_modular_reports.app.utils.get_report_config import get_report_config
@@ -191,7 +193,7 @@ class EditHistoryView(APIBase):
 
         readable_nodegroup_ids = {
             str(nodegroup_id)
-            for nodegroup_id in get_nodegroups_by_perm(
+            for nodegroup_id in nodegroup_ids_with_inherited_permission(
                 request.user, "models.read_nodegroup"
             )
         }
@@ -271,7 +273,7 @@ class RelatedResourceGroupsView(APIBase):
     page_size = 25
 
     def get(self, request, resourceid):
-        permitted_nodegroup_ids = get_nodegroups_by_perm(
+        permitted_nodegroup_ids = nodegroup_ids_with_inherited_permission(
             request.user, "models.read_nodegroup"
         )
         relates_from_this_resource = Q(from_resource_id=resourceid)
@@ -441,7 +443,7 @@ class ResourceImagesView(APIBase):
         resource = models.ResourceInstance.objects.get(pk=resourceid)
         readable_nodegroup_ids = {
             str(nodegroup_id)
-            for nodegroup_id in get_nodegroups_by_perm(
+            for nodegroup_id in nodegroup_ids_with_inherited_permission(
                 request.user, "models.read_nodegroup"
             )
         }
@@ -524,7 +526,7 @@ class NodePresentationView(APIBase):
             graph = models.GraphModel.objects.filter(resourceinstance=resourceid).get()
         except models.GraphModel.DoesNotExist:
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
-        permitted_nodegroups = get_nodegroups_by_perm(
+        permitted_nodegroups = nodegroup_ids_with_inherited_permission(
             request.user, "models.read_nodegroup"
         )
         nodes = (
