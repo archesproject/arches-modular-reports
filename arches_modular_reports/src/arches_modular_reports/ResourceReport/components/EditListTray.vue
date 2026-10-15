@@ -5,7 +5,6 @@ import { useGettext } from "vue3-gettext";
 import Button from "openvue/button";
 import ConfirmDialog from "openvue/confirmdialog";
 import Message from "openvue/message";
-import Tag from "openvue/tag";
 import { useConfirm } from "openvue/useconfirm";
 
 import { findTile } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
@@ -29,7 +28,6 @@ const entries = computed(() =>
     reportData.changeSet.pendingChanges.value.map((change) => ({
         change,
         label: entryLabel(change),
-        hasNoChanges: !reportData.changeSet.hasChanges(change),
         isConflicting: reportData.changeSet.conflictingChangeIds.value.includes(
             change.id,
         ),
@@ -111,7 +109,8 @@ function confirmCancelAll(): void {
 }
 
 async function applyAll(): Promise<void> {
-    if (await reportData.changeSet.save()) {
+    const isSaved = await reportData.changeSet.save();
+    if (isSaved && reportData.changeSet.pendingChanges.value.length === 0) {
         reportData.editor.close();
     }
 }
@@ -176,11 +175,6 @@ async function applyAll(): Promise<void> {
                     :label="entry.label"
                     :disabled="entry.change.type === 'reorder'"
                     @click="openChange(entry.change)"
-                />
-                <Tag
-                    v-if="entry.hasNoChanges"
-                    severity="secondary"
-                    :value="$gettext('No changes')"
                 />
                 <Button
                     icon="pi pi-times"

@@ -174,7 +174,6 @@ export type ResourceChange =
 export type TileChangeType = "add" | "edit" | "delete";
 
 export interface ResourceChangeSet {
-    resource: ShallowRef<AliasedResourceData | null>;
     workingResource: ComputedRef<AliasedResourceData | null>;
     pendingChanges: ShallowRef<ResourceChange[]>;
     conflictingChangeIds: Ref<string[]>;
@@ -200,7 +199,6 @@ export interface ResourceChangeSet {
     ) => void;
     discardChange: (changeId: string) => void;
     discardAll: () => void;
-    hasChanges: (change: ResourceChange) => boolean;
     changeTypeForTile: (tileId: string) => TileChangeType | null;
     isPendingDelete: (tileId: string) => boolean;
     save: () => Promise<boolean>;

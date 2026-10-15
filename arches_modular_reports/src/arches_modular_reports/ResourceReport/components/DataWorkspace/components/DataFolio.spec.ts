@@ -253,7 +253,7 @@ describe("DataFolio", () => {
         expect(changeSet.pendingChanges.value).toEqual([]);
     });
 
-    it("reorders tiles with the move buttons and by dragging", async () => {
+    it("reorders tiles with the move buttons and clears the reorder when dragged back", async () => {
         const { changeSet, wrapper } = await mountEditor("names");
 
         await rowButton(tileRow(wrapper, "Cobalt"), "Move up").trigger("click");
@@ -266,9 +266,7 @@ describe("DataFolio", () => {
             .find(".data-folio-tile-row")
             .trigger("dragstart");
         await tileRow(wrapper, "Cobalt").trigger("drop");
-        expect(changeSet.pendingChanges.value).toMatchObject([
-            { type: "reorder", tileIds: ["smalt", "cobalt"] },
-        ]);
+        expect(changeSet.pendingChanges.value).toEqual([]);
     });
 
     it("expands to and highlights tiles matching the filter", async () => {

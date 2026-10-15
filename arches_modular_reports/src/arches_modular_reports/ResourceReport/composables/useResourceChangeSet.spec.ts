@@ -95,6 +95,20 @@ function respondWith(body: unknown): Response {
     return new Response(JSON.stringify(body), { status: 200 });
 }
 
+function deferPut(): () => void {
+    let finishPut: () => void = () => undefined;
+    vi.mocked(fetch).mockImplementation((_url, init) => {
+        if (init?.method !== "PUT") {
+            return Promise.resolve(respondWith(serverResource));
+        }
+        return new Promise((resolve) => {
+            finishPut = () =>
+                resolve(respondWith(JSON.parse(String(init.body))));
+        });
+    });
+    return () => finishPut();
+}
+
 async function createChangeSet(): Promise<ResourceChangeSet> {
     const changeSet = effectScope().run(() =>
         useResourceChangeSet("pigment", "resource"),
@@ -188,6 +202,84 @@ describe("useResourceChangeSet", () => {
             .mock.calls.find(([, init]) => init?.method === "PUT");
         expect(putRequest?.[1]?.body).toBeInstanceOf(FormData);
         expect(changeSet.pendingChanges.value).toEqual([]);
+    });
+
+    it("drops an edit once its values match the server again", async () => {
+        const changeSet = await createChangeSet();
+
+        changeSet.editTile("names", "smalt", {
+            name_content: nodeData("Smalt blue"),
+        });
+        changeSet.editTile("names", "smalt", {
+            name_content: nodeData("Smalt"),
+        });
+
+        expect(changeSet.pendingChanges.value).toEqual([]);
+    });
+
+    it("drops a reorder back to the current order, even with a pending add", async () => {
+        const changeSet = await createChangeSet();
+        const newTileId = await changeSet.addTile("names", null);
+        if (newTileId === null) {
+            throw new Error("The tile was not added.");
+        }
+
+        changeSet.reorderTiles("names", null, [newTileId, "smalt", "cobalt"]);
+        changeSet.reorderTiles("names", null, ["smalt", "cobalt", newTileId]);
+
+        expect(
+            changeSet.pendingChanges.value.map((change) => change.type),
+        ).toEqual(["add"]);
+    });
+
+    it("keeps edits made while a save is in flight", async () => {
+        const changeSet = await createChangeSet();
+        changeSet.editTile("names", "smalt", {
+            name_content: nodeData("Smalt blue"),
+        });
+        const finishPut = deferPut();
+
+        const saving = changeSet.save();
+        await flushPromises();
+        changeSet.editTile("names", "cobalt", {
+            name_content: nodeData("Cobalt green"),
+        });
+        finishPut();
+
+        expect(await saving).toBe(true);
+        expect(changeSet.pendingChanges.value).toMatchObject([
+            { type: "edit", tileId: "cobalt" },
+        ]);
+    });
+
+    it("turns an add edited during its save into an edit", async () => {
+        const changeSet = await createChangeSet();
+        const newTileId = await changeSet.addTile("names", null);
+        if (newTileId === null) {
+            throw new Error("The tile was not added.");
+        }
+        const finishPut = deferPut();
+
+        const saving = changeSet.save();
+        await flushPromises();
+        changeSet.editTile("names", newTileId, {
+            name_content: nodeData("Ultramarine"),
+        });
+        finishPut();
+        await saving;
+
+        expect(changeSet.pendingChanges.value).toMatchObject([
+            {
+                type: "edit",
+                tileId: newTileId,
+                aliasedData: { name_content: nodeData("Ultramarine") },
+            },
+        ]);
+        expect(
+            nodegroupTiles(
+                changeSet.workingResource.value?.aliased_data.names,
+            ).filter((tile) => tile.tileid === newTileId),
+        ).toHaveLength(1);
     });
 
     it("refuses to save changes whose tiles have vanished", async () => {

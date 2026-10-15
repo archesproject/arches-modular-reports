@@ -1,5 +1,4 @@
 import { computed, ref, shallowRef, watchEffect } from "vue";
-import { isEqual } from "es-toolkit";
 
 import { fetchTileData } from "@/arches_vue_components/generics/GenericCard/api.ts";
 import { isAliasedNodeData } from "@/arches_vue_components/generics/GenericCard/utils.ts";
@@ -9,16 +8,16 @@ import {
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 import {
     applyResourceChanges,
-    findTile,
+    ownNodeData,
     parentTileIdsByTileId,
+    rebaseChanges,
     replayResourceChanges,
+    siblingTiles,
 } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
-import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type {
     AliasedData,
-    AliasedNodeData,
     AliasedTileData,
 } from "@/arches_vue_components/types.ts";
 import type {
@@ -88,33 +87,24 @@ export function useResourceChangeSet(
         return false;
     }
 
+    function setPendingChanges(changes: ResourceChange[]): void {
+        if (resource.value === null) {
+            pendingChanges.value = changes;
+            return;
+        }
+        pendingChanges.value = rebaseChanges(changes, resource.value);
+    }
+
     function replaceChange(updatedChange: ResourceChange): void {
-        pendingChanges.value = pendingChanges.value.map((change) =>
-            change.id === updatedChange.id ? updatedChange : change,
+        setPendingChanges(
+            pendingChanges.value.map((change) =>
+                change.id === updatedChange.id ? updatedChange : change,
+            ),
         );
     }
 
     function appendChange(change: ResourceChange): void {
-        pendingChanges.value = [...pendingChanges.value, change];
-    }
-
-    function siblingTiles(
-        nodegroupAlias: string,
-        parentTileId: string | null,
-    ): AliasedTileData[] {
-        if (workingResource.value === null) {
-            return [];
-        }
-        if (parentTileId === null) {
-            return nodegroupTiles(
-                workingResource.value.aliased_data[nodegroupAlias],
-            );
-        }
-        const parentTile = findTile(
-            workingResource.value.aliased_data,
-            parentTileId,
-        );
-        return nodegroupTiles(parentTile?.aliased_data[nodegroupAlias]);
+        setPendingChanges([...pendingChanges.value, change]);
     }
 
     async function addTile(
@@ -141,7 +131,11 @@ export function useResourceChangeSet(
                 tileid: newTileId,
                 parenttile: parentTileId,
                 resourceinstance: resourceInstanceId,
-                sortorder: siblingTiles(nodegroupAlias, parentTileId).reduce(
+                sortorder: siblingTiles(
+                    workingResource.value?.aliased_data ?? {},
+                    nodegroupAlias,
+                    parentTileId,
+                ).reduce(
                     (nextSortorder, siblingTile) =>
                         Math.max(nextSortorder, siblingTile.sortorder + 1),
                     0,
@@ -156,12 +150,7 @@ export function useResourceChangeSet(
         tileId: string,
         aliasedData: AliasedData,
     ): void {
-        const nodeDataByAlias: Record<string, AliasedNodeData> = {};
-        for (const [nodeAlias, value] of Object.entries(aliasedData)) {
-            if (isAliasedNodeData(value)) {
-                nodeDataByAlias[nodeAlias] = value;
-            }
-        }
+        const nodeDataByAlias = ownNodeData(aliasedData);
 
         for (const change of pendingChanges.value) {
             if (change.type === "add" && change.tile.tileid === tileId) {
@@ -213,8 +202,11 @@ export function useResourceChangeSet(
     }
 
     function undoDelete(tileId: string): void {
-        pendingChanges.value = pendingChanges.value.filter(
-            (change) => !(change.type === "delete" && change.tileId === tileId),
+        setPendingChanges(
+            pendingChanges.value.filter(
+                (change) =>
+                    !(change.type === "delete" && change.tileId === tileId),
+            ),
         );
     }
 
@@ -247,45 +239,28 @@ export function useResourceChangeSet(
             (change) => change.id === changeId,
         );
         if (discardedChange?.type !== "add") {
-            pendingChanges.value = pendingChanges.value.filter(
-                (change) => change.id !== changeId,
+            setPendingChanges(
+                pendingChanges.value.filter((change) => change.id !== changeId),
             );
             return;
         }
         const addedTileId = discardedChange.tile.tileid;
-        pendingChanges.value = pendingChanges.value.filter((change) => {
-            if (change.id === changeId) {
-                return false;
-            }
-            if (change.type === "add" || change.type === "reorder") {
-                return !isWithin(change.parentTileId, addedTileId);
-            }
-            return !isWithin(change.tileId, addedTileId);
-        });
+        setPendingChanges(
+            pendingChanges.value.filter((change) => {
+                if (change.id === changeId) {
+                    return false;
+                }
+                if (change.type === "add" || change.type === "reorder") {
+                    return !isWithin(change.parentTileId, addedTileId);
+                }
+                return !isWithin(change.tileId, addedTileId);
+            }),
+        );
     }
 
     function discardAll(): void {
         pendingChanges.value = [];
         conflictingChangeIds.value = [];
-    }
-
-    function hasChanges(change: ResourceChange): boolean {
-        if (change.type !== "edit" || resource.value === null) {
-            return true;
-        }
-        const serverTile = findTile(resource.value.aliased_data, change.tileId);
-        if (serverTile === null) {
-            return true;
-        }
-        return Object.entries(change.aliasedData).some(
-            ([nodeAlias, nodeData]) => {
-                const serverNodeData = serverTile.aliased_data[nodeAlias];
-                return (
-                    !isAliasedNodeData(serverNodeData) ||
-                    !isEqual(nodeData.node_value, serverNodeData.node_value)
-                );
-            },
-        );
     }
 
     function changeTypeForTile(tileId: string): TileChangeType | null {
@@ -315,11 +290,12 @@ export function useResourceChangeSet(
         isSaving.value = true;
         saveError.value = null;
         conflictingChangeIds.value = [];
+        const sentChanges = pendingChanges.value;
         try {
             const { resource: replayedResource, conflictingChanges } =
                 replayResourceChanges(
                     await fetchResource(graphSlug, resourceInstanceId),
-                    pendingChanges.value,
+                    sentChanges,
                 );
             if (conflictingChanges.length > 0) {
                 conflictingChangeIds.value = conflictingChanges.map(
@@ -328,7 +304,11 @@ export function useResourceChangeSet(
                 return false;
             }
             resource.value = await updateResource(graphSlug, replayedResource);
-            pendingChanges.value = [];
+            setPendingChanges(
+                pendingChanges.value.filter(
+                    (change) => !sentChanges.includes(change),
+                ),
+            );
             return true;
         } catch (error) {
             saveError.value = toError(error);
@@ -339,7 +319,6 @@ export function useResourceChangeSet(
     }
 
     return {
-        resource,
         workingResource,
         pendingChanges,
         conflictingChangeIds,
@@ -354,7 +333,6 @@ export function useResourceChangeSet(
         reorderTiles,
         discardChange,
         discardAll,
-        hasChanges,
         changeTypeForTile,
         isPendingDelete,
         save,

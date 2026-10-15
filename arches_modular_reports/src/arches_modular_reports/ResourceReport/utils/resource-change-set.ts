@@ -1,12 +1,17 @@
+import { isEqual } from "es-toolkit";
+
 import { isAliasedNodeData } from "@/arches_vue_components/generics/GenericCard/utils.ts";
 import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
 import type {
     AliasedData,
+    AliasedNodeData,
     AliasedTileData,
 } from "@/arches_vue_components/types.ts";
 import type {
     AliasedResourceData,
+    EditTileChange,
+    ReorderTilesChange,
     ResourceChange,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
@@ -183,6 +188,114 @@ export function findTile(
     return null;
 }
 
+export function ownNodeData(
+    aliasedData: AliasedData,
+): Record<string, AliasedNodeData> {
+    const nodeDataByAlias: Record<string, AliasedNodeData> = {};
+    for (const [nodeAlias, value] of Object.entries(aliasedData)) {
+        if (isAliasedNodeData(value)) {
+            nodeDataByAlias[nodeAlias] = value;
+        }
+    }
+    return nodeDataByAlias;
+}
+
+export function siblingTiles(
+    aliasedData: AliasedData,
+    nodegroupAlias: string,
+    parentTileId: string | null,
+): AliasedTileData[] {
+    if (parentTileId === null) {
+        return nodegroupTiles(aliasedData[nodegroupAlias]);
+    }
+    return nodegroupTiles(
+        findTile(aliasedData, parentTileId)?.aliased_data[nodegroupAlias],
+    );
+}
+
+function withChangedNodesOnly(
+    editChange: EditTileChange,
+    resource: AliasedResourceData,
+): EditTileChange | null {
+    const serverTile = findTile(resource.aliased_data, editChange.tileId);
+    if (serverTile === null) {
+        return editChange;
+    }
+    const changedNodeEntries = Object.entries(editChange.aliasedData).filter(
+        ([nodeAlias, nodeData]) => {
+            const serverNodeData = serverTile.aliased_data[nodeAlias];
+            return (
+                !isAliasedNodeData(serverNodeData) ||
+                !isEqual(nodeData.node_value, serverNodeData.node_value)
+            );
+        },
+    );
+    if (changedNodeEntries.length === 0) {
+        return null;
+    }
+    if (
+        changedNodeEntries.length === Object.keys(editChange.aliasedData).length
+    ) {
+        return editChange;
+    }
+    return {
+        ...editChange,
+        aliasedData: Object.fromEntries(changedNodeEntries),
+    };
+}
+
+function keepsCurrentOrder(
+    reorderChange: ReorderTilesChange,
+    resource: AliasedResourceData,
+    changes: ResourceChange[],
+): boolean {
+    const workingResource = applyResourceChanges(
+        resource,
+        changes.filter((change) => change !== reorderChange),
+    );
+    const currentTileIds = siblingTiles(
+        workingResource.aliased_data,
+        reorderChange.nodegroupAlias,
+        reorderChange.parentTileId,
+    ).map((tile) => tile.tileid);
+    return isEqual(currentTileIds, reorderChange.tileIds);
+}
+
+export function rebaseChanges(
+    changes: ResourceChange[],
+    resource: AliasedResourceData,
+): ResourceChange[] {
+    const existingTileIds = new Set(
+        parentTileIdsByTileId(resource.aliased_data).keys(),
+    );
+    const rebasedChanges: ResourceChange[] = [];
+    for (const change of changes) {
+        let rebasedChange: ResourceChange | null = change;
+        if (change.type === "add" && existingTileIds.has(change.tile.tileid)) {
+            rebasedChange = withChangedNodesOnly(
+                {
+                    id: change.id,
+                    type: "edit",
+                    nodegroupAlias: change.nodegroupAlias,
+                    tileId: change.tile.tileid,
+                    aliasedData: ownNodeData(change.tile.aliased_data),
+                },
+                resource,
+            );
+        } else if (change.type === "edit") {
+            rebasedChange = withChangedNodesOnly(change, resource);
+        }
+        if (rebasedChange !== null) {
+            rebasedChanges.push(rebasedChange);
+        }
+    }
+    return rebasedChanges.filter(
+        (change) =>
+            change.type !== "reorder" ||
+            !keepsCurrentOrder(change, resource, rebasedChanges),
+    );
+}
+
 export function replayResourceChanges(
     resource: AliasedResourceData,
     changes: ResourceChange[],
@@ -217,7 +330,7 @@ export function replayResourceChanges(
             aliased_data: applyToAliasedData(
                 resource.aliased_data,
                 null,
-                changes,
+                rebaseChanges(changes, resource),
                 true,
             ),
         },
