@@ -106,6 +106,7 @@ function clearNode(tileId: string, nodeAlias: string): void {
                 variant="link"
                 size="small"
                 :label="$gettext('Add')"
+                :disabled="reportData.changeSet.isBusy.value"
                 @click="addTile"
             />
         </div>

@@ -15,6 +15,7 @@ import {
     fetchRelatedResourceGroups,
     fetchReportContext,
     updateLifecycleState,
+    updateResource,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 
 import type {
@@ -251,6 +252,21 @@ const PEOPLE_GROUP: RelatedResourceGroup = {
     items: [],
 };
 
+const FOLIO_CONFIG: ResourceReportConfig = {
+    workspaces: [
+        {
+            id: "report",
+            component: "ReportWorkspace",
+            config: {
+                tabs: [
+                    { sections: [{ folios: [{ nodegroup_alias: "names" }] }] },
+                ],
+                home: { summary: [] },
+            },
+        },
+    ],
+};
+
 function drawerConfig(): ResourceReportConfig {
     return {
         workspaces: [
@@ -485,6 +501,81 @@ describe("ResourceReport", () => {
             .find('.edit-list-tray-entry [aria-label="Discard change"]')
             .trigger("click");
         expect(wrapper.find(".edit-list-tray").exists()).toBe(false);
+    });
+
+    it("holds lifecycle changes while edits are pending", async () => {
+        const wrapper = mountReport(FOLIO_CONFIG);
+        await flushPromises();
+
+        await folioButton(wrapper, "Edit").trigger("click");
+        await wrapper.find(".card-stub").trigger("click");
+
+        expect(
+            wrapper
+                .find(".report-header-lifecycle-actions button")
+                .attributes("disabled"),
+        ).toBeDefined();
+    });
+
+    it("holds structural edits while a save is running", async () => {
+        vi.mocked(updateResource).mockReturnValueOnce(new Promise(() => {}));
+        const wrapper = mountReport(FOLIO_CONFIG);
+        await flushPromises();
+        await folioButton(wrapper, "Edit").trigger("click");
+        await wrapper.find(".card-stub").trigger("click");
+
+        const applyButton = wrapper
+            .findAll(".edit-list-tray-header button")
+            .find((button) => button.text() === "Apply all");
+        if (applyButton === undefined) {
+            throw new Error("No Apply all button");
+        }
+        await applyButton.trigger("click");
+        await flushPromises();
+
+        expect(
+            wrapper
+                .find('.edit-list-tray-entry [aria-label="Discard change"]')
+                .attributes("disabled"),
+        ).toBeDefined();
+    });
+
+    it("keeps the report when refreshing it fails", async () => {
+        vi.mocked(fetchReportContext)
+            .mockResolvedValueOnce(makeContext())
+            .mockRejectedValueOnce(new Error("Offline"));
+        const wrapper = mountReport();
+        await flushPromises();
+
+        await wrapper
+            .find(".report-header-lifecycle-actions button")
+            .trigger("click");
+        await flushPromises();
+
+        expect(wrapper.find(".resource-report").exists()).toBe(true);
+        expect(wrapper.text()).toContain("Unable to refresh this report");
+    });
+
+    it("closes the editor when editing becomes unavailable", async () => {
+        const readOnlyContext = makeContext();
+        readOnlyContext.lifecycle_state = {
+            ...readOnlyContext.lifecycle_state,
+            can_edit_resource_instances: false,
+        };
+        vi.mocked(fetchReportContext)
+            .mockResolvedValueOnce(makeContext())
+            .mockResolvedValueOnce(readOnlyContext);
+        const wrapper = mountReport(FOLIO_CONFIG);
+        await flushPromises();
+        await folioButton(wrapper, "Edit").trigger("click");
+        expect(wrapper.find(".editor-panel").exists()).toBe(true);
+
+        await wrapper
+            .find(".report-header-lifecycle-actions button")
+            .trigger("click");
+        await flushPromises();
+
+        expect(wrapper.find(".editor-panel").exists()).toBe(false);
     });
 
     it("lets reviewers change the lifecycle state", async () => {

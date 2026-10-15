@@ -148,6 +148,19 @@ describe("useResourceChangeSet", () => {
         expect(nameTiles[2].aliased_data.name_notes).toEqual([]);
     });
 
+    it("ignores another add while one is in flight", async () => {
+        const changeSet = await createChangeSet();
+
+        const [firstTileId, secondTileId] = await Promise.all([
+            changeSet.addTile("names", null),
+            changeSet.addTile("names", null),
+        ]);
+
+        expect(firstTileId).not.toBeNull();
+        expect(secondTileId).toBeNull();
+        expect(changeSet.pendingChanges.value).toHaveLength(1);
+    });
+
     it("reports a blank tile that cannot be fetched", async () => {
         const changeSet = await createChangeSet();
         vi.mocked(fetchTileData).mockRejectedValueOnce(new Error("Offline"));

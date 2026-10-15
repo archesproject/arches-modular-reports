@@ -52,6 +52,7 @@ export function useResourceChangeSet(
     const isSaving = ref(false);
     const saveError = ref<Error | null>(null);
     const addError = ref<Error | null>(null);
+    const isAdding = ref(false);
 
     const workingResource = computed(() => {
         if (resource.value === null) {
@@ -59,6 +60,8 @@ export function useResourceChangeSet(
         }
         return applyResourceChanges(resource.value, pendingChanges.value);
     });
+
+    const isBusy = computed(() => isSaving.value || isAdding.value);
 
     const parentTileIds = computed(() => {
         if (workingResource.value === null) {
@@ -111,6 +114,10 @@ export function useResourceChangeSet(
         nodegroupAlias: string,
         parentTileId: string | null,
     ): Promise<string | null> {
+        if (isAdding.value) {
+            return null;
+        }
+        isAdding.value = true;
         addError.value = null;
         let blankTile: AliasedTileData;
         try {
@@ -118,6 +125,8 @@ export function useResourceChangeSet(
         } catch (error) {
             addError.value = toError(error);
             return null;
+        } finally {
+            isAdding.value = false;
         }
         const newTileId = crypto.randomUUID();
         appendChange({
@@ -331,6 +340,7 @@ export function useResourceChangeSet(
         conflictingChangeIds,
         fetchError,
         isSaving,
+        isBusy,
         saveError,
         addError,
         addTile,

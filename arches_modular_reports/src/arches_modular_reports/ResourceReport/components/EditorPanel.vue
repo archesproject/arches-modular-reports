@@ -158,6 +158,7 @@ function undoDelete(): void {
                 variant="text"
                 size="small"
                 :label="$gettext('Undo delete')"
+                :disabled="reportData.changeSet.isBusy.value"
                 @click="undoDelete"
             />
             <Button
@@ -167,6 +168,7 @@ function undoDelete(): void {
                 size="small"
                 severity="danger"
                 :label="$gettext('Delete')"
+                :disabled="reportData.changeSet.isBusy.value"
                 @click="deleteTile"
             />
             <Button
@@ -222,6 +224,7 @@ function undoDelete(): void {
                                 name: childCardName(childAlias),
                             })
                         "
+                        :disabled="reportData.changeSet.isBusy.value"
                         @click="addChild(childAlias)"
                     />
                 </div>

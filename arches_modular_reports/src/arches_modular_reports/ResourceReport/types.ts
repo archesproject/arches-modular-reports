@@ -179,6 +179,7 @@ export interface ResourceChangeSet {
     conflictingChangeIds: Ref<string[]>;
     fetchError: Ref<Error | null>;
     isSaving: Ref<boolean>;
+    isBusy: ComputedRef<boolean>;
     saveError: Ref<Error | null>;
     addError: Ref<Error | null>;
     addTile: (

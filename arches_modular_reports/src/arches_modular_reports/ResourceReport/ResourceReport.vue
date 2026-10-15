@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, onUnmounted, ref } from "vue";
+import { computed, inject, onMounted, onUnmounted, ref, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Message from "openvue/message";
@@ -132,6 +132,12 @@ const activeWorkspaceComponent = computed(() => {
     );
 });
 
+watch(canEdit, (isEditable) => {
+    if (!isEditable) {
+        closeEditor();
+    }
+});
+
 onMounted(() => {
     window.addEventListener("beforeunload", warnAboutPendingChanges);
 });
@@ -157,7 +163,7 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
 
 <template>
     <Message
-        v-if="fetchError"
+        v-if="fetchError && reportData === null"
         severity="error"
     >
         <span>
@@ -199,6 +205,18 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
             :is-transitioning="isTransitioning"
             @transition-lifecycle="transitionLifecycle"
         />
+        <Message
+            v-if="fetchError"
+            severity="error"
+        >
+            <span>
+                {{
+                    $gettext("Unable to refresh this report: %{message}", {
+                        message: fetchError.message,
+                    })
+                }}
+            </span>
+        </Message>
         <Message
             v-if="transitionError"
             severity="error"

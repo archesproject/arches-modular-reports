@@ -181,6 +181,7 @@ async function applyAll(): Promise<void> {
                     variant="text"
                     size="small"
                     :aria-label="$gettext('Discard change')"
+                    :disabled="reportData.changeSet.isBusy.value"
                     @click="reportData.changeSet.discardChange(entry.change.id)"
                 />
             </li>

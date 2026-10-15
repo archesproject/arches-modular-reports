@@ -244,6 +244,7 @@ function onDragEnd(): void {
                 variant="text"
                 size="small"
                 :label="$gettext('Add')"
+                :disabled="changeSet.isBusy.value"
                 @click="addTile"
             />
         </header>
@@ -266,7 +267,7 @@ function onDragEnd(): void {
             >
                 <div
                     class="data-folio-tile-row"
-                    :draggable="!isLocked(tile)"
+                    :draggable="!isLocked(tile) && !changeSet.isBusy.value"
                     @dragstart="onDragStart($event, tile)"
                     @dragend="onDragEnd"
                 >
@@ -291,7 +292,9 @@ function onDragEnd(): void {
                             variant="text"
                             size="small"
                             :aria-label="$gettext('Move up')"
-                            :disabled="tileIndex === 0"
+                            :disabled="
+                                tileIndex === 0 || changeSet.isBusy.value
+                            "
                             @click="moveTileTo(tileIdOf(tile), tileIndex - 1)"
                         />
                         <Button
@@ -299,7 +302,10 @@ function onDragEnd(): void {
                             variant="text"
                             size="small"
                             :aria-label="$gettext('Move down')"
-                            :disabled="tileIndex === tiles.length - 1"
+                            :disabled="
+                                tileIndex === tiles.length - 1 ||
+                                changeSet.isBusy.value
+                            "
                             @click="moveTileTo(tileIdOf(tile), tileIndex + 1)"
                         />
                     </div>
@@ -321,6 +327,7 @@ function onDragEnd(): void {
                             variant="text"
                             size="small"
                             :label="$gettext('Undo delete')"
+                            :disabled="changeSet.isBusy.value"
                             @click="undoDelete(tile)"
                         />
                         <template v-else>
@@ -337,6 +344,7 @@ function onDragEnd(): void {
                                 size="small"
                                 severity="danger"
                                 :label="$gettext('Delete')"
+                                :disabled="changeSet.isBusy.value"
                                 @click="deleteTile(tile)"
                             />
                         </template>

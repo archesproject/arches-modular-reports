@@ -93,6 +93,12 @@ const summaryLines = computed(() =>
 
 const exportFormats = computed(() => headerConfig.export_formats ?? []);
 
+const isHoldingTransitions = computed(
+    () =>
+        reportData.changeSet.pendingChanges.value.length > 0 ||
+        reportData.changeSet.isSaving.value,
+);
+
 function transitionSeverity(
     lifecycleState: LifecycleStateSummary,
 ): TagSeverity {
@@ -159,6 +165,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                     :label="lifecycleState.action_label"
                     :severity="transitionSeverity(lifecycleState)"
                     :loading="isTransitioning"
+                    :disabled="isHoldingTransitions"
                     @click="emit(TRANSITION_LIFECYCLE, lifecycleState.id)"
                 />
                 <Button
@@ -170,6 +177,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                     :label="lifecycleState.action_label"
                     :severity="transitionSeverity(lifecycleState)"
                     :loading="isTransitioning"
+                    :disabled="isHoldingTransitions"
                     @click="emit(TRANSITION_LIFECYCLE, lifecycleState.id)"
                 />
             </div>
