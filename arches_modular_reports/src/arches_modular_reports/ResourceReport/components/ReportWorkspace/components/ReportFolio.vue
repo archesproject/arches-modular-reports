@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from "vue";
-import { isEqual } from "es-toolkit";
+import { computed } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
@@ -15,10 +14,7 @@ import {
     nodegroupTiles,
 } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
-import type {
-    AliasedTileData,
-    CardXNodeXWidgetData,
-} from "@/arches_vue_components/types.ts";
+import type { AliasedTileData } from "@/arches_vue_components/types.ts";
 import type { ReportData } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const { nodegroupAlias, tiles, parentTileId, reportData } = defineProps<{
@@ -29,8 +25,6 @@ const { nodegroupAlias, tiles, parentTileId, reportData } = defineProps<{
 }>();
 
 const { $gettext } = useGettext();
-
-const nodeRevisions = reactive<Record<string, number>>({});
 
 const nodegroupWidgetConfig = computed(
     () => reportData.nodegroupWidgetConfigs[nodegroupAlias],
@@ -66,45 +60,6 @@ const isAddable = computed(
             reportData.changeSet,
         ),
 );
-
-watch(
-    () => tiles,
-    (newTiles, previousTiles) => {
-        for (const tile of newTiles) {
-            const previousTile = previousTiles.find(
-                (candidate) => candidate.tileid === tile.tileid,
-            );
-            for (const widget of visibleWidgets.value) {
-                const nodeAlias = widget.node.alias;
-                if (
-                    !isEqual(
-                        nodeValueOf(tile, nodeAlias),
-                        nodeValueOf(previousTile, nodeAlias),
-                    )
-                ) {
-                    const revisionKey = `${tile.tileid}-${nodeAlias}`;
-                    nodeRevisions[revisionKey] =
-                        (nodeRevisions[revisionKey] ?? 0) + 1;
-                }
-            }
-        }
-    },
-);
-
-function nodeValueOf(
-    tile: AliasedTileData | undefined,
-    nodeAlias: string,
-): unknown {
-    if (tile === undefined) {
-        return undefined;
-    }
-    return aliasedNodeDataOf(tile, nodeAlias)?.node_value;
-}
-
-function fieldKey(tile: AliasedTileData, widget: CardXNodeXWidgetData): string {
-    const revision = nodeRevisions[`${tile.tileid}-${widget.node.alias}`] ?? 0;
-    return `${widget.id}-${revision}`;
-}
 
 function isEditableTile(
     tile: AliasedTileData,
@@ -168,7 +123,7 @@ function clearNode(tileId: string, nodeAlias: string): void {
             <div class="report-folio-fields">
                 <div
                     v-for="widget in visibleWidgets"
-                    :key="fieldKey(tile, widget)"
+                    :key="widget.id"
                     class="report-folio-field"
                 >
                     <div class="report-folio-widget">
