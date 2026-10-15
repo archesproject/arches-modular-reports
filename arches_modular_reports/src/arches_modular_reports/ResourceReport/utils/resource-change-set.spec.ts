@@ -111,6 +111,7 @@ describe("resource change set replay", () => {
                     aliasedData: {},
                 },
             ],
+            RESOURCE,
         );
 
         expect(
@@ -121,5 +122,56 @@ describe("resource change set replay", () => {
         expect(conflictingChanges.map((change) => change.id)).toEqual([
             "stale",
         ]);
+    });
+
+    it("flags an edit to a value the server changed after it was loaded", () => {
+        const freshResource: AliasedResourceData = {
+            ...RESOURCE,
+            aliased_data: {
+                ...RESOURCE.aliased_data,
+                names: [
+                    makeTile("smalt", 0, {
+                        name_content: nodeData("Smalt (renamed)"),
+                        name_notes: [],
+                    }),
+                ],
+            },
+        };
+
+        const { conflictingChanges } = replayResourceChanges(
+            freshResource,
+            [
+                {
+                    id: "edit",
+                    type: "edit",
+                    nodegroupAlias: "names",
+                    tileId: "smalt",
+                    aliasedData: { name_content: nodeData("Smalt blue") },
+                },
+            ],
+            RESOURCE,
+        );
+
+        expect(conflictingChanges.map((change) => change.id)).toEqual(["edit"]);
+    });
+
+    it("flags an add into a single-tile slot that is already filled", () => {
+        const { conflictingChanges } = replayResourceChanges(
+            RESOURCE,
+            [
+                {
+                    id: "add",
+                    type: "add",
+                    nodegroupAlias: "description",
+                    parentTileId: null,
+                    tile: makeTile("second-description", 0, {
+                        description_content: nodeData("Green"),
+                    }),
+                },
+            ],
+            RESOURCE,
+        );
+
+        expect(conflictingChanges.map((change) => change.id)).toEqual(["add"]);
     });
 });

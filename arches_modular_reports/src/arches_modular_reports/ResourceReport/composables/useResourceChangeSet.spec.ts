@@ -282,6 +282,28 @@ describe("useResourceChangeSet", () => {
         ).toHaveLength(1);
     });
 
+    it("refreshes its baseline on a conflict so applying again keeps the edit", async () => {
+        const changeSet = await createChangeSet();
+        changeSet.editTile("names", "smalt", {
+            name_content: nodeData("Smalt blue"),
+        });
+        serverResource = {
+            resourceinstanceid: "resource",
+            aliased_data: {
+                names: [
+                    makeTile("smalt", 0, {
+                        name_content: nodeData("Smalt (renamed)"),
+                        name_notes: [],
+                    }),
+                ],
+            },
+        };
+
+        expect(await changeSet.save()).toBe(false);
+        expect(changeSet.conflictingChangeIds.value).toHaveLength(1);
+        expect(await changeSet.save()).toBe(true);
+    });
+
     it("refuses to save changes whose tiles have vanished", async () => {
         const changeSet = await createChangeSet();
         changeSet.editTile("names", "smalt", {

@@ -149,7 +149,7 @@ async function applyAll(): Promise<void> {
             <span>
                 {{
                     $gettext(
-                        "Some changes refer to data that no longer exists. Discard them and try again.",
+                        "Some changes conflict with newer data. Apply again to keep yours, or discard them.",
                     )
                 }}
             </span>

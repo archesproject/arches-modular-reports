@@ -292,12 +292,19 @@ export function useResourceChangeSet(
         conflictingChangeIds.value = [];
         const sentChanges = pendingChanges.value;
         try {
+            const freshResource = await fetchResource(
+                graphSlug,
+                resourceInstanceId,
+            );
             const { resource: replayedResource, conflictingChanges } =
                 replayResourceChanges(
-                    await fetchResource(graphSlug, resourceInstanceId),
+                    freshResource,
                     sentChanges,
+                    resource.value ?? freshResource,
                 );
             if (conflictingChanges.length > 0) {
+                resource.value = freshResource;
+                setPendingChanges(pendingChanges.value);
                 conflictingChangeIds.value = conflictingChanges.map(
                     (change) => change.id,
                 );

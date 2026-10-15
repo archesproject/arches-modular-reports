@@ -9,6 +9,7 @@ import type {
     AliasedTileData,
 } from "@/arches_vue_components/types.ts";
 import type {
+    AddTileChange,
     AliasedResourceData,
     EditTileChange,
     ReorderTilesChange,
@@ -296,12 +297,50 @@ export function rebaseChanges(
     );
 }
 
+function changedSinceLoad(
+    editChange: EditTileChange,
+    freshResource: AliasedResourceData,
+    loadedResource: AliasedResourceData,
+): boolean {
+    const freshTile = findTile(freshResource.aliased_data, editChange.tileId);
+    const loadedTile = findTile(loadedResource.aliased_data, editChange.tileId);
+    if (freshTile === null || loadedTile === null) {
+        return false;
+    }
+    return Object.keys(editChange.aliasedData).some((nodeAlias) => {
+        const freshNodeData = freshTile.aliased_data[nodeAlias];
+        const loadedNodeData = loadedTile.aliased_data[nodeAlias];
+        return (
+            isAliasedNodeData(freshNodeData) &&
+            isAliasedNodeData(loadedNodeData) &&
+            !isEqual(freshNodeData.node_value, loadedNodeData.node_value)
+        );
+    });
+}
+
+function fillsTakenSlot(
+    addChange: AddTileChange,
+    freshResource: AliasedResourceData,
+): boolean {
+    let slot: AliasedData[string] | undefined =
+        freshResource.aliased_data[addChange.nodegroupAlias];
+    if (addChange.parentTileId !== null) {
+        slot = findTile(freshResource.aliased_data, addChange.parentTileId)
+            ?.aliased_data[addChange.nodegroupAlias];
+    }
+    if (!slot || Array.isArray(slot) || isAliasedNodeData(slot)) {
+        return false;
+    }
+    return slot.tileid !== addChange.tile.tileid;
+}
+
 export function replayResourceChanges(
-    resource: AliasedResourceData,
+    freshResource: AliasedResourceData,
     changes: ResourceChange[],
+    loadedResource: AliasedResourceData,
 ): { resource: AliasedResourceData; conflictingChanges: ResourceChange[] } {
     const existingTileIds = new Set(
-        parentTileIdsByTileId(resource.aliased_data).keys(),
+        parentTileIdsByTileId(freshResource.aliased_data).keys(),
     );
     const addedTileIds = new Set(
         changes.flatMap((change) =>
@@ -318,19 +357,31 @@ export function replayResourceChanges(
     }
 
     const conflictingChanges = changes.filter((change) => {
-        if (change.type === "add" || change.type === "reorder") {
+        if (change.type === "add") {
+            return (
+                !isPresent(change.parentTileId) ||
+                fillsTakenSlot(change, freshResource)
+            );
+        }
+        if (change.type === "reorder") {
             return !isPresent(change.parentTileId);
         }
-        return !existingTileIds.has(change.tileId);
+        if (!existingTileIds.has(change.tileId)) {
+            return true;
+        }
+        return (
+            change.type === "edit" &&
+            changedSinceLoad(change, freshResource, loadedResource)
+        );
     });
 
     return {
         resource: {
-            ...resource,
+            ...freshResource,
             aliased_data: applyToAliasedData(
-                resource.aliased_data,
+                freshResource.aliased_data,
                 null,
-                rebaseChanges(changes, resource),
+                rebaseChanges(changes, freshResource),
                 true,
             ),
         },
