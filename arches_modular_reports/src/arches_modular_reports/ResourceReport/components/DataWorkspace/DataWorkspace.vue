@@ -111,8 +111,8 @@ const folios = computed(() =>
 .data-workspace-pane {
     display: flex;
     flex-direction: column;
-    min-width: 0;
-    overflow-y: auto;
+    min-inline-size: 0;
+    overflow: auto;
 }
 
 .data-workspace-browser {
@@ -121,7 +121,7 @@ const folios = computed(() =>
 }
 
 .data-workspace-filter {
-    width: 100%;
+    inline-size: 100%;
 }
 
 .data-workspace-editor {

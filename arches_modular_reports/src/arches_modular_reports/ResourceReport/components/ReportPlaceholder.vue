@@ -31,8 +31,8 @@ const { icon, message } = defineProps<{
     align-items: center;
     justify-content: center;
     gap: 0.8rem;
-    width: 100%;
-    max-width: 48rem;
+    inline-size: 100%;
+    max-inline-size: 48rem;
     padding-block: 3.2rem;
     padding-inline: 2.4rem;
     border: 0.1rem solid var(--p-content-border-color);

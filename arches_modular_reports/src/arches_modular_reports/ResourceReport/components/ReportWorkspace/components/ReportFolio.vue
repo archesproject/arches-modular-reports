@@ -217,7 +217,7 @@ function clearNode(tileId: string, nodeAlias: string): void {
 
 .report-folio-widget {
     flex: 1;
-    min-width: 0;
+    min-inline-size: 0;
 }
 
 .report-folio-delete,

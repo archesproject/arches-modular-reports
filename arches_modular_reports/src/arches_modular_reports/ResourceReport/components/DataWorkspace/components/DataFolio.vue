@@ -428,7 +428,7 @@ function onDragEnd(): void {
 }
 
 .data-folio-tile-match {
-    box-shadow: inset 0.3rem 0 0 var(--p-primary-color);
+    border-inline-start: 0.4rem solid var(--p-primary-color);
 }
 
 .data-folio-tile-row {
@@ -450,7 +450,7 @@ function onDragEnd(): void {
 
 .data-folio-summary {
     flex: 1;
-    min-width: 0;
+    min-inline-size: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -482,7 +482,7 @@ function onDragEnd(): void {
 }
 
 .data-folio-field dt {
-    min-width: 14rem;
+    min-inline-size: 14rem;
     color: var(--p-text-muted-color);
 }
 

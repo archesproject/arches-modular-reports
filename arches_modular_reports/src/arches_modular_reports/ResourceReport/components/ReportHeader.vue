@@ -204,7 +204,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
 .report-header {
     display: flex;
     align-items: stretch;
-    min-height: 9rem;
+    min-block-size: 9rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
     background: var(--p-content-background);
 }
@@ -214,7 +214,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    min-width: 9rem;
+    min-inline-size: 9rem;
     padding-inline: 2.4rem;
     background: var(--p-highlight-background);
     color: var(--p-highlight-color);
@@ -227,7 +227,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     flex-direction: column;
     justify-content: center;
     gap: 0.2rem;
-    min-width: 0;
+    min-inline-size: 0;
     padding-block: 1.2rem;
     padding-inline: 1.6rem;
 }
@@ -236,7 +236,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     display: flex;
     align-items: center;
     gap: 1rem;
-    min-width: 0;
+    min-inline-size: 0;
 }
 
 .report-header-name {

@@ -249,7 +249,7 @@ function undoDelete(): void {
     flex: 1;
     flex-direction: column;
     gap: 0.4rem;
-    min-width: 0;
+    min-inline-size: 0;
 }
 
 .editor-panel-caption {

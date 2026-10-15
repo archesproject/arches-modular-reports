@@ -85,6 +85,6 @@ watchEffect(async () => {
 
 <style scoped>
 .modular-report {
-    height: 100%;
+    block-size: 100%;
 }
 </style>

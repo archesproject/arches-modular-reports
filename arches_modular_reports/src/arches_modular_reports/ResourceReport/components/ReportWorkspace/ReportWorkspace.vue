@@ -238,8 +238,8 @@ function clearFlash(): void {
 .report-workspace-pane {
     display: flex;
     flex-direction: column;
-    min-width: 0;
-    overflow-y: auto;
+    min-inline-size: 0;
+    overflow: auto;
 }
 
 .report-workspace-home {
@@ -257,7 +257,7 @@ function clearFlash(): void {
     display: flex;
     flex-direction: column;
     gap: 2.4rem;
-    max-width: 120rem;
+    max-inline-size: 120rem;
 }
 
 .report-workspace-section {

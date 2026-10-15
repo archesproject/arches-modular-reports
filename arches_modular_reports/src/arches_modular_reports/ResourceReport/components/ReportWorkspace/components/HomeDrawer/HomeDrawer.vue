@@ -161,7 +161,7 @@ function closeDrawer(): void {
     display: flex;
     flex: 1;
     flex-direction: column;
-    min-height: 0;
+    min-block-size: 0;
 }
 
 .home-drawer-triggers {
@@ -175,13 +175,13 @@ function closeDrawer(): void {
 .home-drawer-stage {
     position: relative;
     flex: 1;
-    min-height: 0;
+    min-block-size: 0;
     overflow: hidden;
 }
 
 .home-drawer-content {
     block-size: 100%;
-    overflow-y: auto;
+    overflow: auto;
 }
 
 .home-drawer-scrim {
@@ -230,8 +230,8 @@ function closeDrawer(): void {
 
 .home-drawer-body {
     flex: 1;
-    min-height: 0;
-    overflow-y: auto;
+    min-block-size: 0;
+    overflow: auto;
 }
 
 .home-drawer-fade-enter-active,

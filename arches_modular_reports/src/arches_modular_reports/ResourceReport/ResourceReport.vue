@@ -244,7 +244,7 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
 .resource-report {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    block-size: 100%;
     background: var(--p-content-background);
 }
 
@@ -263,7 +263,7 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
 
 .resource-report-workspace {
     flex: 1;
-    min-height: 0;
+    min-block-size: 0;
 }
 
 .resource-report-loading {
