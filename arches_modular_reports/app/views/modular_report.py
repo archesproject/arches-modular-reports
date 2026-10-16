@@ -26,9 +26,7 @@ from arches.app.utils.response import JSONErrorResponse, JSONResponse
 from arches.app.views.api import APIBase
 from arches.app.views.base import MapBaseManagerView
 from arches.app.views.resource import ResourceReportView
-from arches.extensions.vue_components.utils.nodegroup_permissions import (
-    nodegroup_ids_with_inherited_permission,
-)
+from arches.app.utils.permission_backend import nodegroup_ids_with_inherited_permission
 
 from arches_modular_reports.app.utils.decorators import can_read_nodegroup
 from arches_modular_reports.app.utils.get_report_config import get_report_config

@@ -1,9 +1,7 @@
 import copy
 import re
 
-from arches.extensions.vue_components.utils.nodegroup_permissions import (
-    nodegroup_ids_with_inherited_permission,
-)
+from arches.app.utils.permission_backend import nodegroup_ids_with_inherited_permission
 
 from arches_modular_reports.app.utils.resource_report_config import (
     is_resource_report_component,
