@@ -16,8 +16,8 @@ from arches.app.models import models
 from arches.app.utils.betterJSONSerializer import JSONDeserializer
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.permission_backend import (
+    get_nodegroups_by_perm,
     group_required,
-    nodegroup_ids_with_inherited_permission,
     user_can_delete_resource,
     user_can_edit_resource,
     user_can_read_resource,
@@ -194,7 +194,7 @@ class EditHistoryView(APIBase):
 
         readable_nodegroup_ids = {
             str(nodegroup_id)
-            for nodegroup_id in nodegroup_ids_with_inherited_permission(
+            for nodegroup_id in get_nodegroups_by_perm(
                 request.user, "models.read_nodegroup"
             )
         }
@@ -274,7 +274,7 @@ class RelatedResourceGroupsView(APIBase):
     page_size = 25
 
     def get(self, request, resourceid):
-        permitted_nodegroup_ids = nodegroup_ids_with_inherited_permission(
+        permitted_nodegroup_ids = get_nodegroups_by_perm(
             request.user, "models.read_nodegroup"
         )
         relates_from_this_resource = Q(from_resource_id=resourceid)
@@ -440,7 +440,7 @@ class ResourceImagesView(APIBase):
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
         readable_nodegroup_ids = {
             str(nodegroup_id)
-            for nodegroup_id in nodegroup_ids_with_inherited_permission(
+            for nodegroup_id in get_nodegroups_by_perm(
                 request.user, "models.read_nodegroup"
             )
         }
@@ -524,7 +524,7 @@ class NodePresentationView(APIBase):
             graph = models.GraphModel.objects.filter(resourceinstance=resourceid).get()
         except models.GraphModel.DoesNotExist:
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
-        permitted_nodegroups = nodegroup_ids_with_inherited_permission(
+        permitted_nodegroups = get_nodegroups_by_perm(
             request.user, "models.read_nodegroup"
         )
         nodes = (

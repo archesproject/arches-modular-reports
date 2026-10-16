@@ -1,7 +1,7 @@
 import copy
 import re
 
-from arches.app.utils.permission_backend import nodegroup_ids_with_inherited_permission
+from arches.app.utils.permission_backend import get_nodegroups_by_perm
 
 from arches_modular_reports.app.utils.resource_report_config import (
     is_resource_report_component,
@@ -123,9 +123,9 @@ def update_report_configuration_for_nodegroup_permissions(
     return update_report_configuration_with_nodegroup_permissions(
         report_configuration_instance=report_configuration_instance,
         report_nodegroup_ids_with_user_read_permission=graph_nodegroup_ids
-        & nodegroup_ids_with_inherited_permission(user, "models.read_nodegroup"),
+        & set(get_nodegroups_by_perm(user, "models.read_nodegroup")),
         report_nodegroup_ids_with_user_write_permission=graph_nodegroup_ids
-        & nodegroup_ids_with_inherited_permission(user, "models.write_nodegroup"),
+        & set(get_nodegroups_by_perm(user, "models.write_nodegroup")),
     )
 
 

@@ -287,8 +287,8 @@ class ResourceReportEndpointTests(TestCase):
         self.client.force_login(self.superuser)
 
         with mock.patch(
-            "arches_modular_reports.app.views.modular_report.nodegroup_ids_with_inherited_permission",
-            return_value=set(),
+            "arches_modular_reports.app.views.modular_report.get_nodegroups_by_perm",
+            return_value=[],
         ):
             response = self.client.get(
                 reverse("api_edit_history", args=[self.resource.pk])

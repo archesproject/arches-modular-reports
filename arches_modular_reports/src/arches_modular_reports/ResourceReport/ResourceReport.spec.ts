@@ -14,6 +14,7 @@ import {
     updateLifecycleState,
     updateResource,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
+import { EMPTY_VALUE } from "@/arches_modular_reports/ResourceReport/constants.ts";
 
 import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import type {
@@ -156,6 +157,13 @@ const NODEGROUP_WIDGET_CONFIGS: Record<string, NodegroupWidgetConfig> = {
         is_writable: true,
         card: null,
         card_x_node_x_widgets: [makeWidget("name_content", "Name")],
+    },
+    part_notes: {
+        parent_nodegroup_alias: "parts",
+        cardinality: "n",
+        is_writable: true,
+        card: null,
+        card_x_node_x_widgets: [makeWidget("part_note_content", "Part note")],
     },
 };
 
@@ -414,6 +422,32 @@ describe("ResourceReport", () => {
         expect(deleteResource).toHaveBeenCalledWith("resource-id");
 
         wrapper.unmount();
+    });
+
+    it("shows a summary node under an unreadable parent as empty", async () => {
+        const wrapper = mountReport({
+            header: { summary: [{ node_alias: "part_note_content" }] },
+            workspaces: [
+                {
+                    id: "report",
+                    component: "ReportWorkspace",
+                    config: {
+                        tabs: [],
+                        home: {
+                            summary: [{ node_alias: "part_note_content" }],
+                        },
+                    },
+                },
+            ],
+        });
+        await flushPromises();
+
+        expect(wrapper.find(".report-header-summary dd").text()).toBe(
+            EMPTY_VALUE,
+        );
+        await wrapper.find(".key-data-summary button").trigger("click");
+        await flushPromises();
+        expect(wrapper.find(".key-data-summary dd").text()).toBe(EMPTY_VALUE);
     });
 
     it("ignores a Load more page from a superseded filter", async () => {

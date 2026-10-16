@@ -1,7 +1,5 @@
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from guardian.shortcuts import assign_perm
 
 from arches.app.models.graph import Graph
 from arches.app.models.models import (
@@ -17,7 +15,6 @@ from arches_modular_reports.app.utils.resource_report_config import (
     RESOURCE_REPORT_COMPONENT,
 )
 from arches_modular_reports.app.utils.update_report_configuration_for_nodegroup_permissions import (
-    update_report_configuration_for_nodegroup_permissions,
     update_report_configuration_with_nodegroup_permissions,
 )
 from arches_modular_reports.models import ReportConfig
@@ -312,22 +309,6 @@ class ResourceReportConfigTests(TestCase):
                 nodegroup.pk for nodegroup in readable_nodegroups
             },
             report_nodegroup_ids_with_user_write_permission=set(),
-        )
-
-    def test_pruning_hides_nodes_under_an_unreadable_parent(self):
-        user = User.objects.create_user("pruned_reader")
-        assign_perm("models.no_access_to_nodegroup", user, self.production)
-        config = curated_config()
-        resource_report_config_from(config)["header"]["summary"] = [
-            {"node_alias": "location_geometry"}
-        ]
-
-        pruned_config = update_report_configuration_for_nodegroup_permissions(
-            ReportConfig(graph=self.graph, config=config), user
-        )
-
-        self.assertEqual(
-            resource_report_config_from(pruned_config)["header"]["summary"], []
         )
 
     def test_pruning_removes_unreadable_folios_summaries_and_empty_tabs(self):
