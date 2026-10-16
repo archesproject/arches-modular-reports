@@ -65,9 +65,11 @@ watchEffect(async () => {
         >
             <span>
                 {{
-                    $gettext("Unable to load the report: %{message}", {
-                        message: fetchError.message,
-                    })
+                    $gettext(
+                        "Unable to load the report: %{message}",
+                        { message: fetchError.message },
+                        true,
+                    )
                 }}
             </span>
         </Message>
