@@ -71,7 +71,6 @@ watchEffect(async () => {
             v-else
             :value="images"
             :num-visible="VISIBLE_THUMBNAIL_COUNT"
-            :circular="false"
             :show-item-navigators="images.length > 1"
             :show-thumbnails="images.length > 1"
         >
