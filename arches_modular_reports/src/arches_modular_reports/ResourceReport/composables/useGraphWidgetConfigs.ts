@@ -14,6 +14,7 @@ export interface GraphWidgetConfigsState {
 export function useGraphWidgetConfigs(
     graphSlug: string,
 ): GraphWidgetConfigsState {
+    const nodegroupWidgetConfigStore = useNodegroupWidgetConfigStore();
     const nodegroupWidgetConfigs = ref<Record<
         string,
         NodegroupWidgetConfig
@@ -23,7 +24,7 @@ export function useGraphWidgetConfigs(
     watchEffect(async () => {
         try {
             nodegroupWidgetConfigs.value =
-                await useNodegroupWidgetConfigStore().fetchGraphWidgetConfigs(
+                await nodegroupWidgetConfigStore.fetchGraphWidgetConfigs(
                     graphSlug,
                 );
         } catch (error) {
