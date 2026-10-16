@@ -17,6 +17,7 @@ from arches.app.utils.betterJSONSerializer import JSONDeserializer
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.permission_backend import (
     group_required,
+    nodegroup_ids_with_inherited_permission,
     user_can_delete_resource,
     user_can_edit_resource,
     user_can_read_resource,
@@ -26,7 +27,6 @@ from arches.app.utils.response import JSONErrorResponse, JSONResponse
 from arches.app.views.api import APIBase
 from arches.app.views.base import MapBaseManagerView
 from arches.app.views.resource import ResourceReportView
-from arches.app.utils.permission_backend import nodegroup_ids_with_inherited_permission
 
 from arches_modular_reports.app.utils.decorators import can_read_nodegroup
 from arches_modular_reports.app.utils.get_report_config import get_report_config
