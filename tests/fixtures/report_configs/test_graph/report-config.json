@@ -1,72 +1,94 @@
 {
     "name": "Example Report",
-    "theme": "",
     "components": [
         {
-            "component": "arches_modular_reports/ModularReport/components/ReportHeader",
+            "component": "arches_modular_reports/ResourceReport/ResourceReport",
             "config": {
-                "descriptor": " descriptor template",
-                "node_alias_options": {}
-            }
-        },
-        {
-            "component": "arches_modular_reports/ModularReport/components/ReportToolbar",
-            "config": {
-                "lists": true,
-                "export_formats": [
-                    "csv",
-                    "json-ld",
-                    "json"
-                ]
-            }
-        },
-        {
-            "component": "arches_modular_reports/ModularReport/components/ReportTombstone",
-            "config": {
-                "node_aliases": [],
-                "image_node_alias": null,
-                "custom_labels": {}
-            }
-        },
-        {
-            "component": "arches_modular_reports/ModularReport/components/ReportTabs",
-            "config": {
-                "tabs": [
+                "header": {
+                    "summary": [],
+                    "export_formats": [
+                        "json-ld",
+                        "json",
+                        "csv"
+                    ]
+                },
+                "workspaces": [
                     {
-                        "name": "Data",
-                        "components": [
-                            {
-                                "component": "arches_modular_reports/ModularReport/components/LinkedSections",
-                                "config": {
-                                    "sections": []
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "Related Resources",
-                        "components": [
-                            {
-                                "component": "arches_modular_reports/ModularReport/components/LinkedSections",
-                                "config": {
+                        "id": "report",
+                        "component": "ReportWorkspace",
+                        "config": {
+                            "tabs": [
+                                {
                                     "sections": [
                                         {
-                                            "name": "",
-                                            "components": [
-                                                {
-                                                    "component": "arches_modular_reports/ModularReport/components/RelatedResourcesSection",
-                                                    "config": {
-                                                        "graph_slug": "test_graph",
-                                                        "node_aliases": [],
-                                                        "custom_labels": {}
-                                                    }
-                                                }
-                                            ]
+                                            "folios": []
                                         }
-                                    ]
+                                    ],
+                                    "label": {
+                                        "en": "Overview"
+                                    }
                                 }
+                            ],
+                            "home": {
+                                "summary": [],
+                                "drawer": [
+                                    {
+                                        "component": "EditHistoryPanel",
+                                        "label": {
+                                            "en": "Edit History"
+                                        },
+                                        "icon": "pi pi-clock"
+                                    },
+                                    {
+                                        "component": "ImagesPanel",
+                                        "label": {
+                                            "en": "Images"
+                                        },
+                                        "icon": "pi pi-image"
+                                    },
+                                    {
+                                        "component": "RelatedResourcesPanel",
+                                        "label": {
+                                            "en": "Related Resources"
+                                        },
+                                        "icon": "pi pi-link"
+                                    },
+                                    {
+                                        "component": "ManagePanel",
+                                        "label": {
+                                            "en": "Manage"
+                                        },
+                                        "icon": "pi pi-cog"
+                                    }
+                                ]
                             }
-                        ]
+                        },
+                        "label": {
+                            "en": "Report"
+                        },
+                        "description": {
+                            "en": "A curated summary of this resource's data"
+                        }
+                    },
+                    {
+                        "id": "data",
+                        "component": "DataWorkspace",
+                        "label": {
+                            "en": "Data"
+                        },
+                        "description": {
+                            "en": "Browse and edit every field recorded on this resource"
+                        }
+                    },
+                    {
+                        "id": "graph",
+                        "component": "GraphWorkspace",
+                        "label": {
+                            "en": "Graph"
+                        },
+                        "description": {
+                            "en": "A visual overview of how this resource connects to its data"
+                        }
                     }
                 ]
             }

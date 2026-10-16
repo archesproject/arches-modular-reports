@@ -81,18 +81,6 @@ export interface ReferenceDetails {
     list_item_id: string;
 }
 
-export interface NodeValueDisplayData {
-    display_values: string[];
-    links: {
-        label: string;
-        link: string;
-    }[];
-}
-
-export interface NodeValueDisplayDataLookup {
-    [key: string]: NodeValueDisplayData[];
-}
-
 export interface NodeData {
     display_value: string;
     node_value: unknown;
@@ -113,24 +101,6 @@ export interface TileData {
     resourceinstance: string;
     sortorder: number;
     tileid: string | null;
-}
-
-export interface ResourceData {
-    aliased_data: AliasedData;
-    resourceinstanceid?: string;
-    name?: string;
-    descriptors?: {
-        [key: string]: {
-            name: string;
-            map_popup: string;
-            description: string;
-        };
-    };
-    legacyid?: string | null;
-    createdtime?: string;
-    graph?: string;
-    graph_publication: string;
-    principaluser: number;
 }
 
 // NodegroupTileDataView produces this, not label-based graph.

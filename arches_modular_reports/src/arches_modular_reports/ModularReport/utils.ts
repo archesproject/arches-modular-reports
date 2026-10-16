@@ -1,12 +1,11 @@
 import numeral from "numeral";
 
 import { defineAsyncComponent, isRef } from "vue";
-import type { Ref } from "vue";
+import type { Component, Ref } from "vue";
 
 import type {
     ComponentLookup,
     NamedSection,
-    NodeValueDisplayData,
     SectionContent,
     LanguageSettings,
     NumberFormat,
@@ -17,6 +16,10 @@ export function uniqueId(_unused: unknown) {
     return Math.floor(Math.random() * Date.now());
 }
 
+export function loadComponent(componentPath: string): Component {
+    return defineAsyncComponent(() => import(`@/${componentPath}.vue`));
+}
+
 export async function importComponents(
     namedSections: NamedSection[],
     componentLookup: ComponentLookup,
@@ -24,35 +27,11 @@ export async function importComponents(
     namedSections.forEach((section: NamedSection) => {
         section.components.forEach((component: SectionContent) => {
             componentLookup[component.component] = {
-                component: defineAsyncComponent(
-                    () => import(`@/${component.component}.vue`),
-                ),
+                component: loadComponent(component.component),
                 key: uniqueId(component),
             };
         });
     });
-}
-
-export function truncateDisplayData(
-    displayValues: NodeValueDisplayData[],
-    limit: number,
-) {
-    // The tiles were already fetched with a limit, but we unpack
-    // multiple display values for *-list datatypes, so truncate.
-    let counter = 0;
-    return displayValues.reduce((acc, tileData) => {
-        counter += tileData.display_values.length;
-        const excess = counter - limit;
-        if (excess > 0) {
-            acc.push({
-                display_values: tileData.display_values.slice(0, -excess),
-                links: tileData.links.slice(0, -excess),
-            });
-        } else {
-            acc.push(tileData);
-        }
-        return acc;
-    }, [] as NodeValueDisplayData[]);
 }
 
 export function formatNumber(
