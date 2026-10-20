@@ -1,7 +1,17 @@
+from django.db.models.fields.json import KT
+from django.db.models.functions import Coalesce
 from django.utils.translation import get_language
 
 from arches.app.datatypes.datatypes import DataTypeFactory
 from arches.app.models import models
+from arches.app.models.system_settings import settings
+
+
+def localized_text_expression(field_path):
+    return Coalesce(
+        KT(f"{field_path}__{get_language()}"),
+        KT(f"{field_path}__{settings.LANGUAGE_CODE}"),
+    )
 
 
 def file_metadata_text(file_value, field):

@@ -2,8 +2,17 @@ import json
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
-from django.db.models import Case, F, OuterRef, Q, Subquery, Value, When
-from django.db.models.fields.json import KT
+from django.db.models import (
+    Case,
+    F,
+    OuterRef,
+    Q,
+    Subquery,
+    TextField,
+    Value,
+    When,
+)
+from django.db.models.functions import Cast
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
@@ -33,6 +42,7 @@ from arches_modular_reports.app.utils.get_report_config import get_report_config
 from arches_modular_reports.app.utils.report_data_utils import (
     EditValueDescriber,
     file_metadata_text,
+    localized_text_expression,
 )
 from arches_modular_reports.app.utils.nodegroup_tile_data_utils import (
     build_valueid_annotation,
@@ -210,7 +220,15 @@ class EditHistoryView(APIBase):
                 | Q(user_lastname__icontains=query)
                 | Q(user_username__icontains=query)
                 | Q(
-                    nodegroupid__in=self.nodegroup_ids_with_card_name(resourceid, query)
+                    nodegroupid__in=models.CardModel.objects.annotate(
+                        card_name_text=localized_text_expression("name"),
+                        nodegroup_id_text=Cast("nodegroup_id", TextField()),
+                    )
+                    .filter(
+                        graph__resourceinstance=resourceid,
+                        card_name_text__icontains=query,
+                    )
+                    .values("nodegroup_id_text")
                 )
             )
         paginator = Paginator(edits, self.page_size)
@@ -227,21 +245,6 @@ class EditHistoryView(APIBase):
                 "has_next": edit_page.has_next(),
             }
         )
-
-    @staticmethod
-    def nodegroup_ids_with_card_name(resourceid, query):
-        graph_id = (
-            models.ResourceInstance.objects.filter(pk=resourceid)
-            .values_list("graph_id", flat=True)
-            .first()
-        )
-        return [
-            str(nodegroup_id)
-            for nodegroup_id, card_name in models.CardModel.objects.filter(
-                graph_id=graph_id
-            ).values_list("nodegroup_id", "name")
-            if query.casefold() in str(card_name or "").casefold()
-        ]
 
     @staticmethod
     def serialize_edit(edit, value_describer):
@@ -304,8 +307,8 @@ class RelatedResourceGroupsView(APIBase):
                 ),
             )
             .annotate(
-                related_resource_sort_name=KT(
-                    f"related_resource_name__{get_language()}"
+                related_resource_sort_name=localized_text_expression(
+                    "related_resource_name"
                 ),
             )
         )
@@ -314,7 +317,7 @@ class RelatedResourceGroupsView(APIBase):
                 relationship_label_text=Subquery(
                     models.CardXNodeXWidget.objects.filter(
                         node=OuterRef("node")
-                    ).values(label_text=KT(f"label__{get_language()}"))[:1]
+                    ).values(label_text=localized_text_expression("label"))[:1]
                 )
             ).filter(
                 Q(related_resource_sort_name__icontains=query)
@@ -322,7 +325,17 @@ class RelatedResourceGroupsView(APIBase):
                     relates_from_this_resource
                     & Q(relationship_label_text__icontains=query)
                 )
-                | Q(related_graph_id__in=self.graph_ids_named(query))
+                | Q(
+                    related_graph_id__in=models.GraphModel.objects.annotate(
+                        graph_name_text=localized_text_expression("name")
+                    )
+                    .filter(
+                        isresource=True,
+                        source_identifier__isnull=True,
+                        graph_name_text__icontains=query,
+                    )
+                    .values("pk")
+                )
             )
         relations = relations.filter(
             related_resource_id__in=readable_resource_ids(
@@ -379,16 +392,6 @@ class RelatedResourceGroupsView(APIBase):
                 ]
             }
         )
-
-    @staticmethod
-    def graph_ids_named(query):
-        return [
-            graph.pk
-            for graph in models.GraphModel.objects.filter(
-                isresource=True, source_identifier__isnull=True
-            )
-            if query.casefold() in str(graph.name).casefold()
-        ]
 
     def serialize_group(self, relations, graph, page_number):
         group_relations = relations.filter(related_graph_id=graph.pk).order_by(
