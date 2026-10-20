@@ -43,7 +43,7 @@ const { component, resourceInstanceId } = defineProps<{
     resourceInstanceId: string;
 }>();
 
-const graphSlug = inject<string>("graphSlug", "");
+const graphSlug = inject("graphSlug") as string;
 
 const { $gettext } = useGettext();
 const reportContext = useReportContext(resourceInstanceId);

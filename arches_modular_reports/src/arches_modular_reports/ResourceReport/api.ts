@@ -1,7 +1,5 @@
 import Cookies from "js-cookie";
 
-import arches from "arches";
-
 import { generateArchesURL } from "@/arches_vue_components/application/generate-arches-url.ts";
 import {
     buildFileUploadFormData,
@@ -71,7 +69,9 @@ export async function fetchReportContext(
     resourceInstanceId: string,
 ): Promise<ReportContext> {
     const response = await fetch(
-        arches.urls.api_report_context(resourceInstanceId),
+        generateArchesURL("arches_modular_reports:api_report_context", {
+            resourceid: resourceInstanceId,
+        }),
     );
     return parseResponse<ReportContext>(response);
 }
@@ -81,9 +81,12 @@ export async function fetchEditHistory(
     page: number,
     query: string,
 ): Promise<EditHistoryPage> {
-    const params = new URLSearchParams({ page: String(page), q: query });
     const response = await fetch(
-        `${arches.urls.api_edit_history(resourceInstanceId)}?${params}`,
+        generateArchesURL(
+            "arches_modular_reports:api_edit_history",
+            { resourceid: resourceInstanceId },
+            { page, q: query },
+        ),
     );
     return parseResponse<EditHistoryPage>(response);
 }
@@ -93,12 +96,12 @@ export async function fetchRelatedResourceGroups(
     graphSlugs: string[],
     query: string,
 ): Promise<RelatedResourceGroup[]> {
-    const params = new URLSearchParams({
-        graphs: graphSlugs.join(","),
-        q: query,
-    });
     const response = await fetch(
-        `${arches.urls.api_related_resource_groups(resourceInstanceId)}?${params}`,
+        generateArchesURL(
+            "arches_modular_reports:api_related_resource_groups",
+            { resourceid: resourceInstanceId },
+            { graphs: graphSlugs.join(","), q: query },
+        ),
     );
     const parsed = await parseResponse<{ groups: RelatedResourceGroup[] }>(
         response,
@@ -112,13 +115,12 @@ export async function fetchRelatedResourceGroup(
     page: number,
     query: string,
 ): Promise<RelatedResourceGroup> {
-    const params = new URLSearchParams({
-        graph: graphSlug,
-        page: String(page),
-        q: query,
-    });
     const response = await fetch(
-        `${arches.urls.api_related_resource_groups(resourceInstanceId)}?${params}`,
+        generateArchesURL(
+            "arches_modular_reports:api_related_resource_groups",
+            { resourceid: resourceInstanceId },
+            { graph: graphSlug, page, q: query },
+        ),
     );
     return parseResponse<RelatedResourceGroup>(response);
 }
@@ -127,13 +129,19 @@ export async function fetchResourceImages(
     resourceInstanceId: string,
     imageSources: ImageSource[],
 ): Promise<ResourceImage[]> {
-    const params = new URLSearchParams({
-        sources: imageSources
-            .map((imageSource) => `${imageSource.model}:${imageSource.node}`)
-            .join(","),
-    });
     const response = await fetch(
-        `${arches.urls.api_resource_images(resourceInstanceId)}?${params}`,
+        generateArchesURL(
+            "arches_modular_reports:api_resource_images",
+            { resourceid: resourceInstanceId },
+            {
+                sources: imageSources
+                    .map(
+                        (imageSource) =>
+                            `${imageSource.model}:${imageSource.node}`,
+                    )
+                    .join(","),
+            },
+        ),
     );
     const parsed = await parseResponse<{ images: ResourceImage[] }>(response);
     return parsed.images;
@@ -143,7 +151,9 @@ export async function copyResource(
     resourceInstanceId: string,
 ): Promise<string> {
     const response = await fetch(
-        arches.urls.resource_copy.replace("//", `/${resourceInstanceId}/`),
+        generateArchesURL("arches:resource_copy", {
+            resourceid: resourceInstanceId,
+        }),
     );
     const parsed = await parseResponse<{ resourceid: string }>(response);
     return parsed.resourceid;
@@ -153,7 +163,9 @@ export async function deleteResource(
     resourceInstanceId: string,
 ): Promise<void> {
     const response = await fetch(
-        `${arches.urls.resource_editor}${resourceInstanceId}`,
+        generateArchesURL("arches:resource_editor", {
+            resourceid: resourceInstanceId,
+        }),
         {
             method: "DELETE",
             headers: { "X-CSRFToken": Cookies.get("csrftoken") ?? "" },
@@ -163,11 +175,13 @@ export async function deleteResource(
 }
 
 export function resourceReportUrl(resourceInstanceId: string): string {
-    return `${arches.urls.resource_report}${resourceInstanceId}`;
+    return generateArchesURL("arches:resource_report", {
+        resourceid: resourceInstanceId,
+    });
 }
 
 export function searchUrl(): string {
-    return arches.urls.search_home;
+    return generateArchesURL("arches:search_home");
 }
 
 export async function updateLifecycleState(
@@ -175,7 +189,9 @@ export async function updateLifecycleState(
     lifecycleStateId: string,
 ): Promise<void> {
     const response = await fetch(
-        arches.urls.api_resource_instance_lifecycle_state(resourceInstanceId),
+        generateArchesURL("arches:api_resource_instance_lifecycle_state", {
+            resourceid: resourceInstanceId,
+        }),
         {
             method: "POST",
             headers: {
@@ -193,25 +209,36 @@ export function buildExportUrl(
     exportFormat: ExportFormat,
 ): string {
     if (exportFormat === "json-ld") {
-        return `${arches.urls.api_resources(resourceInstanceId)}?format=json-ld`;
+        return generateArchesURL(
+            "arches:resources",
+            { resourceid: resourceInstanceId },
+            { format: "json-ld" },
+        );
     }
     if (exportFormat === "json") {
-        return `${arches.urls.api_resources(resourceInstanceId)}?format=json&v=beta`;
+        return generateArchesURL(
+            "arches:resources",
+            { resourceid: resourceInstanceId },
+            { format: "json", v: "beta" },
+        );
     }
-    const searchParams = new URLSearchParams({
-        format: "tilecsv",
-        total: "1",
-        "term-filter": JSON.stringify([
-            {
-                inverted: false,
-                type: "string",
-                context: "",
-                context_label: "",
-                id: resourceInstanceId,
-                value: resourceInstanceId,
-                selected: true,
-            },
-        ]),
-    });
-    return `${arches.urls.export_results}?${searchParams.toString()}`;
+    return generateArchesURL(
+        "arches:export_results",
+        {},
+        {
+            format: "tilecsv",
+            total: 1,
+            "term-filter": JSON.stringify([
+                {
+                    inverted: false,
+                    type: "string",
+                    context: "",
+                    context_label: "",
+                    id: resourceInstanceId,
+                    value: resourceInstanceId,
+                    selected: true,
+                },
+            ]),
+        },
+    );
 }

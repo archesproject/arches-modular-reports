@@ -19,6 +19,6 @@ const { $gettext } = useGettext();
 <template>
     <ReportPlaceholder
         icon="pi pi-sitemap"
-        :message="$gettext('A graph view of this resource is coming soon.')"
+        :message="$gettext('Graph view — coming soon')"
     />
 </template>

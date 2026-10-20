@@ -1,11 +1,13 @@
 import { isEqual } from "es-toolkit";
 
-import { isAliasedNodeData } from "@/arches_vue_components/generics/GenericCard/utils.ts";
+import {
+    extractAliasedNodeDataEntries,
+    isAliasedNodeData,
+} from "@/arches_vue_components/generics/GenericCard/utils.ts";
 import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
 import type {
     AliasedData,
-    AliasedNodeData,
     AliasedTileData,
 } from "@/arches_vue_components/types.ts";
 import type {
@@ -189,18 +191,6 @@ export function findTile(
     return null;
 }
 
-export function ownNodeData(
-    aliasedData: AliasedData,
-): Record<string, AliasedNodeData> {
-    const nodeDataByAlias: Record<string, AliasedNodeData> = {};
-    for (const [nodeAlias, value] of Object.entries(aliasedData)) {
-        if (isAliasedNodeData(value)) {
-            nodeDataByAlias[nodeAlias] = value;
-        }
-    }
-    return nodeDataByAlias;
-}
-
 export function siblingTiles(
     aliasedData: AliasedData,
     nodegroupAlias: string,
@@ -279,7 +269,9 @@ export function rebaseChanges(
                     type: "edit",
                     nodegroupAlias: change.nodegroupAlias,
                     tileId: change.tile.tileid,
-                    aliasedData: ownNodeData(change.tile.aliased_data),
+                    aliasedData: extractAliasedNodeDataEntries(
+                        change.tile.aliased_data,
+                    ),
                 },
                 resource,
             );

@@ -4,31 +4,20 @@ from arches.app.datatypes.datatypes import DataTypeFactory
 from arches.app.models import models
 
 
-def localized_text(i18n_value):
-    if isinstance(i18n_value, dict):
-        active_language_text = i18n_value.get(get_language())
-        if active_language_text:
-            return active_language_text
-        populated_texts = [text for text in i18n_value.values() if text]
-        if populated_texts:
-            return populated_texts[0]
-        return ""
-    if i18n_value is None:
-        return ""
-    return str(i18n_value)
-
-
 def file_metadata_text(file_value, field):
     metadata = file_value.get(field)
-    if isinstance(metadata, dict):
-        return localized_text(
-            {
-                language: entry.get("value", "")
-                for language, entry in metadata.items()
-                if isinstance(entry, dict)
-            }
-        )
-    return metadata or ""
+    if not isinstance(metadata, dict):
+        return metadata or ""
+    texts_by_language = {
+        language: entry["value"] for language, entry in metadata.items()
+    }
+    active_language_text = texts_by_language.get(get_language())
+    if active_language_text:
+        return active_language_text
+    populated_texts = [text for text in texts_by_language.values() if text]
+    if populated_texts:
+        return populated_texts[0]
+    return ""
 
 
 class EditValueDescriber:
@@ -50,7 +39,7 @@ class EditValueDescriber:
                 .values_list("name", flat=True)
                 .first()
             )
-            self.card_names_by_nodegroup_id[nodegroup_id] = localized_text(card_name)
+            self.card_names_by_nodegroup_id[nodegroup_id] = str(card_name or "")
         return self.card_names_by_nodegroup_id[nodegroup_id]
 
     def nodes(self, nodegroup_id):
@@ -63,7 +52,7 @@ class EditValueDescriber:
             )
             for node in nodegroup_nodes:
                 widgets = node.cardxnodexwidget_set.all()
-                widget_label = localized_text(widgets[0].label) if widgets else ""
+                widget_label = str(widgets[0].label or "") if widgets else ""
                 node.report_label = widget_label or node.name
             self.nodes_by_nodegroup_id[nodegroup_id] = nodegroup_nodes
         return self.nodes_by_nodegroup_id[nodegroup_id]

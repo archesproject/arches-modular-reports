@@ -126,7 +126,7 @@ A report config is a name and a list of components. The default config has one c
 
 Labels are a string or an object keyed by language, e.g. `{"en": "Report"}`.
 
-Configs are validated against the graph on save: only `header` and `workspaces` are allowed, folios must be top-level nodegroups, summaries must name nodes that hold a value, related models must be resource models, and image sources must be `file-list` nodes. Folios and summary entries the user can't read, including those under a nodegroup they can't read, are removed when the report loads.
+Configs are validated against the graph on save: only `header` and `workspaces` are allowed, folios must be top-level nodegroups, summaries must name nodes that hold a value, related models must be resource models, and image sources must be `file-list` nodes. Folios and summary entries the user can't read are removed when the report loads.
 
 ---
 

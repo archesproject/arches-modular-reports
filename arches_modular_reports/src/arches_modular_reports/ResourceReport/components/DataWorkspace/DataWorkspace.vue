@@ -62,7 +62,7 @@ const folios = computed(() =>
                 <InputText
                     v-model="filterText"
                     class="data-workspace-filter"
-                    :placeholder="$gettext('Filter...')"
+                    :placeholder="$gettext('Filter branches, groups, fields…')"
                     :aria-label="$gettext('Filter the data')"
                 />
             </IconField>

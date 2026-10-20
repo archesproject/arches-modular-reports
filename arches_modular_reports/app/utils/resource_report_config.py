@@ -127,24 +127,18 @@ class ResourceReportGraph:
         node_aliases = []
         for descriptor_type_name in descriptor_type_names:
             descriptor = self.descriptor_types.get(descriptor_type_name, {})
+            nodegroup_id = descriptor.get("nodegroup_id")
+            if not nodegroup_id:
+                continue
             for token in DESCRIPTOR_TOKEN_PATTERN.findall(
-                descriptor.get("string_template") or ""
+                descriptor["string_template"]
             ):
-                node_alias = self.descriptor_token_node_alias(
-                    token, descriptor.get("nodegroup_id")
+                node_alias = self.node_aliases_by_nodegroup_id_and_name.get(
+                    (nodegroup_id, token)
                 )
                 if node_alias and node_alias not in node_aliases:
                     node_aliases.append(node_alias)
         return node_aliases
-
-    def descriptor_token_node_alias(self, token, nodegroup_id):
-        if nodegroup_id:
-            return self.node_aliases_by_nodegroup_id_and_name.get(
-                (str(nodegroup_id), token)
-            )
-        if token in self.nodes_by_alias:
-            return token
-        return None
 
 
 def summary_entries(node_aliases):

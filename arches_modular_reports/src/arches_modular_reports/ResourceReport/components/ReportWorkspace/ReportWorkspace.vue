@@ -127,7 +127,7 @@ function clearFlash(): void {
         :key="String(hasAside)"
         class="report-workspace"
         state-storage="local"
-        :state-key="SPLITTER_STATE_KEY"
+        :state-key="hasAside ? SPLITTER_STATE_KEY : undefined"
     >
         <SplitterPanel
             class="report-workspace-pane"

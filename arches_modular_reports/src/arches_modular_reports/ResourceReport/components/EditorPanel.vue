@@ -100,10 +100,10 @@ const deletionMessage = computed(() => {
     );
     if (hasChildData) {
         return $gettext(
-            "This entry and all of its related data will be removed when you apply your changes.",
+            "This entry and all its related child data will be removed when you Apply all edits.",
         );
     }
-    return $gettext("This entry will be removed when you apply your changes.");
+    return $gettext("This entry will be removed when you Apply all edits.");
 });
 
 watch(

@@ -121,27 +121,19 @@ async function applyAll(): Promise<void> {
         <ConfirmDialog :group="CONFIRM_GROUP" />
         <header class="edit-list-tray-header">
             <h3 class="edit-list-tray-title">
-                {{
-                    $gettext(
-                        "Edit list (%{count})",
-                        {
-                            count: String(entries.length),
-                        },
-                        true,
-                    )
-                }}
+                {{ $gettext("Edit List") }}
             </h3>
             <Button
                 variant="text"
                 size="small"
-                :label="$gettext('Cancel all')"
+                :label="$gettext('Cancel all edits')"
                 :disabled="reportData.changeSet.isSaving.value"
                 @click="confirmCancelAll"
             />
             <Button
                 size="small"
                 icon="pi pi-check"
-                :label="$gettext('Apply all')"
+                :label="$gettext('Apply all edits')"
                 :loading="reportData.changeSet.isSaving.value"
                 @click="applyAll"
             />

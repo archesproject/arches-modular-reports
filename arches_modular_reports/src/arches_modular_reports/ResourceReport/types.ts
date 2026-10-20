@@ -285,7 +285,6 @@ export interface ImagesPanelConfig {
 
 export interface ResourceImage {
     url: string;
-    name: string;
     caption: string;
     alt_text: string;
     resourceinstanceid: string;

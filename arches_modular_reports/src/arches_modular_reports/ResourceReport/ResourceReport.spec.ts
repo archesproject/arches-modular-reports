@@ -292,35 +292,16 @@ function mountReport(config: ResourceReportConfig = REPORT_CONFIG): VueWrapper {
     });
 }
 
-function folioButton(wrapper: VueWrapper, label: string): DOMWrapper<Element> {
-    const button = wrapper
-        .findAll(".report-folio-field button")
-        .find((candidate) => candidate.text() === label);
-    if (button === undefined) {
-        throw new Error(`No ${label} button in the report folio`);
-    }
-    return button;
-}
-
-function drawerTrigger(
+function buttonWithText(
     wrapper: VueWrapper,
+    containerSelector: string,
     label: string,
 ): DOMWrapper<Element> {
-    const trigger = wrapper
-        .findAll(".home-drawer-triggers button")
-        .find((candidate) => candidate.text() === label);
-    if (trigger === undefined) {
-        throw new Error(`No ${label} drawer trigger`);
-    }
-    return trigger;
-}
-
-function manageButton(wrapper: VueWrapper, label: string): DOMWrapper<Element> {
     const button = wrapper
-        .findAll(".manage button")
+        .findAll(`${containerSelector} button`)
         .find((candidate) => candidate.text() === label);
     if (button === undefined) {
-        throw new Error(`No ${label} button in the manage panel`);
+        throw new Error(`No ${label} button in ${containerSelector}`);
     }
     return button;
 }
@@ -338,7 +319,9 @@ describe("ResourceReport", () => {
         const wrapper = mountReport(FOLIO_CONFIG);
         await flushPromises();
 
-        await folioButton(wrapper, "Edit").trigger("click");
+        await buttonWithText(wrapper, ".report-folio-field", "Edit").trigger(
+            "click",
+        );
         await wrapper.find(".card-stub").trigger("click");
 
         expect(
@@ -352,16 +335,16 @@ describe("ResourceReport", () => {
         vi.mocked(updateResource).mockReturnValueOnce(new Promise(() => {}));
         const wrapper = mountReport(FOLIO_CONFIG);
         await flushPromises();
-        await folioButton(wrapper, "Edit").trigger("click");
+        await buttonWithText(wrapper, ".report-folio-field", "Edit").trigger(
+            "click",
+        );
         await wrapper.find(".card-stub").trigger("click");
 
-        const applyButton = wrapper
-            .findAll(".edit-list-tray-header button")
-            .find((button) => button.text() === "Apply all");
-        if (applyButton === undefined) {
-            throw new Error("No Apply all button");
-        }
-        await applyButton.trigger("click");
+        await buttonWithText(
+            wrapper,
+            ".edit-list-tray-header",
+            "Apply all edits",
+        ).trigger("click");
         await flushPromises();
 
         expect(
@@ -403,9 +386,15 @@ describe("ResourceReport", () => {
         vi.mocked(deleteResource).mockRejectedValue(new Error("Offline"));
         const wrapper = mountReport(drawerConfig());
         await flushPromises();
-        await drawerTrigger(wrapper, "Manage").trigger("click");
+        await buttonWithText(
+            wrapper,
+            ".home-drawer-triggers",
+            "Manage",
+        ).trigger("click");
 
-        await manageButton(wrapper, "Delete Resource").trigger("click");
+        await buttonWithText(wrapper, ".manage", "Delete Resource").trigger(
+            "click",
+        );
         await flushPromises();
         expect(deleteResource).not.toHaveBeenCalled();
 
@@ -463,7 +452,11 @@ describe("ResourceReport", () => {
         );
         const wrapper = mountReport(drawerConfig());
         await flushPromises();
-        await drawerTrigger(wrapper, "Related Resources").trigger("click");
+        await buttonWithText(
+            wrapper,
+            ".home-drawer-triggers",
+            "Related Resources",
+        ).trigger("click");
         await flushPromises();
 
         await wrapper.find(".related-resources-group button").trigger("click");

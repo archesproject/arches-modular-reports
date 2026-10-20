@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from arches import __version__ as _arches_version_str
-from arches.app.models.models import GraphModel, NodeGroup
+from arches.app.models.models import GraphModel, Node, NodeGroup
 from arches.app.models.system_settings import settings
 from arches_modular_reports.app.utils.resource_report_config import (
     generate_resource_report_config,
@@ -66,6 +66,57 @@ class ReportConfig(models.Model):
 
     def generate_config(self):
         return generate_resource_report_config(self.graph)
+
+    def generate_card_sections(self):
+        ordered_allowed_nodes = (
+            Node.objects.filter(graph=self.graph)
+            .exclude(datatype__in=self.excluded_datatypes)
+            .exclude(cardxnodexwidget__visible=False)
+            .order_by("cardxnodexwidget__sortorder")
+        )
+        ordered_top_cards = (
+            self.graph.cardmodel_set.filter(nodegroup__parentnodegroup__isnull=True)
+            .select_related(
+                "nodegroup__grouping_node"
+                if arches_version >= Version("8.0")
+                else "nodegroup"
+            )
+            .prefetch_related(
+                models.Prefetch(
+                    "nodegroup__node_set",
+                    ordered_allowed_nodes,
+                    to_attr="allowed_nodes",
+                )
+            )
+            .order_by("sortorder")
+        )
+
+        def get_grouping_node(nodegroup):
+            if arches_version >= Version("8.0"):
+                return nodegroup.grouping_node
+            return nodegroup.node_set.filter(pk=nodegroup.pk).first()
+
+        return [
+            {
+                "name": str(card.name),
+                "components": [
+                    {
+                        "component": "arches_modular_reports/ModularReport/components/DataSection",
+                        "config": {
+                            "nodegroup_alias": get_grouping_node(card.nodegroup).alias,
+                            "node_aliases": [
+                                node.alias for node in card.nodegroup.allowed_nodes
+                            ],
+                            # custom_labels: {node alias: "my custom widget label"}
+                            "custom_labels": {},
+                            # custom_card_name: "My Custom Card Name"
+                            "custom_card_name": None,
+                        },
+                    }
+                ],
+            }
+            for card in ordered_top_cards
+        ]
 
     def validate_config(self):
         def validate_dict(config_dict):

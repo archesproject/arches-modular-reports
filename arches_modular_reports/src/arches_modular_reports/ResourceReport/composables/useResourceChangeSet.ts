@@ -1,14 +1,16 @@
 import { computed, ref, shallowRef, watchEffect } from "vue";
 
 import { fetchTileData } from "@/arches_vue_components/generics/GenericCard/api.ts";
-import { isAliasedNodeData } from "@/arches_vue_components/generics/GenericCard/utils.ts";
+import {
+    extractAliasedNodeDataEntries,
+    isAliasedNodeData,
+} from "@/arches_vue_components/generics/GenericCard/utils.ts";
 import {
     fetchResource,
     updateResource,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 import {
     applyResourceChanges,
-    ownNodeData,
     parentTileIdsByTileId,
     rebaseChanges,
     replayResourceChanges,
@@ -159,7 +161,7 @@ export function useResourceChangeSet(
         tileId: string,
         aliasedData: AliasedData,
     ): void {
-        const nodeDataByAlias = ownNodeData(aliasedData);
+        const nodeDataByAlias = extractAliasedNodeDataEntries(aliasedData);
 
         for (const change of pendingChanges.value) {
             if (change.type === "add" && change.tile.tileid === tileId) {

@@ -33,7 +33,6 @@ from arches_modular_reports.app.utils.get_report_config import get_report_config
 from arches_modular_reports.app.utils.report_data_utils import (
     EditValueDescriber,
     file_metadata_text,
-    localized_text,
 )
 from arches_modular_reports.app.utils.nodegroup_tile_data_utils import (
     build_valueid_annotation,
@@ -241,7 +240,7 @@ class EditHistoryView(APIBase):
             for nodegroup_id, card_name in models.CardModel.objects.filter(
                 graph_id=graph_id
             ).values_list("nodegroup_id", "name")
-            if query.casefold() in localized_text(card_name).casefold()
+            if query.casefold() in str(card_name or "").casefold()
         ]
 
     @staticmethod
@@ -253,13 +252,9 @@ class EditHistoryView(APIBase):
         )
         serialized_edit = {
             "editlogid": edit.editlogid,
-            "transactionid": edit.transactionid,
             "edit_type": edit.edittype,
             "timestamp": edit.timestamp,
             "user": user_full_name or edit.user_username,
-            "note": edit.note,
-            "nodegroup_id": edit.nodegroupid,
-            "tileid": edit.tileinstanceid,
             "card_name": None,
             "values": [],
         }
@@ -412,8 +407,8 @@ class RelatedResourceGroupsView(APIBase):
             "items": [
                 {
                     "resourcexid": relation.resourcexid,
-                    "display_name": localized_text(relation.related_resource_name),
-                    "relationship": localized_text(relation.relationship_label),
+                    "display_name": str(relation.related_resource_name or ""),
+                    "relationship": str(relation.relationship_label or ""),
                     "report_url": reverse(
                         "resource_report", args=[relation.related_resource_id]
                     ),
@@ -500,7 +495,7 @@ class ResourceImagesView(APIBase):
 
     @staticmethod
     def serialize_image(file_value, resource):
-        resource_name = localized_text(resource.name)
+        resource_name = str(resource.name or "")
         caption = (
             file_metadata_text(file_value, "title")
             or file_metadata_text(file_value, "description")
@@ -508,7 +503,6 @@ class ResourceImagesView(APIBase):
         )
         return {
             "url": file_value.get("url"),
-            "name": file_value.get("name"),
             "caption": caption,
             "alt_text": file_metadata_text(file_value, "altText") or caption,
             "resourceinstanceid": str(resource.pk),

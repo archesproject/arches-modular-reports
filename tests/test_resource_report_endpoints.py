@@ -224,7 +224,6 @@ class ResourceReportEndpointTests(TestCase):
             [
                 {
                     "url": "/files/pyrite_1",
-                    "name": "pyrite_1.jpg",
                     "caption": "Front view",
                     "alt_text": "A cube",
                     "resourceinstanceid": str(self.related_resource.pk),

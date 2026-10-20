@@ -160,12 +160,18 @@ class ResourceReportConfigTests(TestCase):
             function=Function.objects.filter(functiontype="primarydescriptors").first(),
             config={
                 "descriptor_types": {
-                    "name": {"string_template": "<name_content> #<identifier_content>"},
+                    "name": {
+                        "nodegroup_id": str(cls.production.pk),
+                        "string_template": "<Name Content>",
+                    },
                     "description": {
                         "nodegroup_id": str(cls.description.pk),
                         "string_template": "<Description Content>",
                     },
-                    "map_popup": {"string_template": "<retired_alias>"},
+                    "map_popup": {
+                        "nodegroup_id": str(cls.identifiers.pk),
+                        "string_template": "#<Identifier Content> <Retired Node>",
+                    },
                 }
             },
         )
@@ -184,8 +190,8 @@ class ResourceReportConfigTests(TestCase):
             workspaces[0]["config"]["home"]["summary"],
             [
                 {"node_alias": "name_content", "label": None},
-                {"node_alias": "identifier_content", "label": None},
                 {"node_alias": "description_content", "label": None},
+                {"node_alias": "identifier_content", "label": None},
             ],
         )
         self.assertEqual(
@@ -226,6 +232,17 @@ class ResourceReportConfigTests(TestCase):
         self.assertEqual(
             resource_report_config_from(report_config.config)["header"]["summary"],
             [{"node_alias": "description_text", "label": None}],
+        )
+
+    def test_card_sections_cover_top_level_cards(self):
+        sections = ReportConfig(graph=self.graph).generate_card_sections()
+
+        self.assertEqual(
+            [
+                section["components"][0]["config"]["nodegroup_alias"]
+                for section in sections
+            ],
+            ["identifiers", "production", "hidden_branch", "description"],
         )
 
     def test_related_resources_panel_lists_models_linked_either_way(self):
