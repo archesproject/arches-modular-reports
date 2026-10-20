@@ -1,9 +1,9 @@
 import copy
-import re
 
 from arches.app.utils.permission_backend import get_nodegroups_by_perm
 
 from arches_modular_reports.app.utils.resource_report_config import (
+    extract_substrings,
     is_resource_report_component,
     prune_resource_report_config,
 )
@@ -127,10 +127,3 @@ def update_report_configuration_for_nodegroup_permissions(
         report_nodegroup_ids_with_user_write_permission=graph_nodegroup_ids
         & set(get_nodegroups_by_perm(user, "models.write_nodegroup")),
     )
-
-
-def extract_substrings(template_string):
-    pattern = r"<(.*?)>"
-    substrings = re.findall(pattern, template_string)
-
-    return substrings

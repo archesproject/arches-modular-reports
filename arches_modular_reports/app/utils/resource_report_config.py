@@ -9,15 +9,19 @@ from arches.app.models.models import FunctionXGraph, GraphModel, Node
 from arches.app.models.system_settings import settings
 
 RESOURCE_REPORT_COMPONENT = "arches_modular_reports/ResourceReport/ResourceReport"
-DESCRIPTOR_TOKEN_PATTERN = re.compile(r"<([^<>]+)>")
 RESOURCE_INSTANCE_DATATYPES = ["resource-instance", "resource-instance-list"]
-RELATED_RESOURCES_PANEL = "RelatedResourcesPanel"
-IMAGES_PANEL = "ImagesPanel"
 RESOURCE_REPORT_CONFIG_KEYS = {"header", "workspaces"}
 
 
 def is_resource_report_component(component_path):
     return Path(component_path).stem == Path(RESOURCE_REPORT_COMPONENT).stem
+
+
+def extract_substrings(template_string):
+    pattern = r"<(.*?)>"
+    substrings = re.findall(pattern, template_string)
+
+    return substrings
 
 
 def translated_labels(message):
@@ -130,9 +134,7 @@ class ResourceReportGraph:
             nodegroup_id = descriptor.get("nodegroup_id")
             if not nodegroup_id:
                 continue
-            for token in DESCRIPTOR_TOKEN_PATTERN.findall(
-                descriptor["string_template"]
-            ):
+            for token in extract_substrings(descriptor["string_template"]):
                 node_alias = self.node_aliases_by_nodegroup_id_and_name.get(
                     (nodegroup_id, token)
                 )
@@ -196,7 +198,7 @@ def generate_resource_report_config(graph):
                         "EditHistoryPanel", gettext_noop("Edit History"), "pi pi-clock"
                     ),
                     drawer_entry(
-                        IMAGES_PANEL,
+                        "ImagesPanel",
                         gettext_noop("Images"),
                         "pi pi-image",
                         config={
@@ -204,7 +206,7 @@ def generate_resource_report_config(graph):
                         },
                     ),
                     drawer_entry(
-                        RELATED_RESOURCES_PANEL,
+                        "RelatedResourcesPanel",
                         gettext_noop("Related Resources"),
                         "pi pi-link",
                         config={"graphs": related_graph_slugs},
@@ -264,23 +266,20 @@ def iterate_summary_entries(resource_report_config):
         yield from workspace.get("config", {}).get("home", {}).get("summary", [])
 
 
-def iterate_drawer_entries(resource_report_config, component):
+def iterate_drawer_configs(resource_report_config):
     for workspace in resource_report_config.get("workspaces", []):
         drawer = workspace.get("config", {}).get("home", {}).get("drawer", [])
         for entry in drawer:
-            if entry.get("component") == component:
-                yield entry.get("config", {})
+            yield entry.get("config", {})
 
 
 def iterate_related_graph_slugs(resource_report_config):
-    for entry_config in iterate_drawer_entries(
-        resource_report_config, RELATED_RESOURCES_PANEL
-    ):
+    for entry_config in iterate_drawer_configs(resource_report_config):
         yield from entry_config.get("graphs", [])
 
 
 def iterate_image_sources(resource_report_config):
-    for entry_config in iterate_drawer_entries(resource_report_config, IMAGES_PANEL):
+    for entry_config in iterate_drawer_configs(resource_report_config):
         yield from entry_config.get("images", [])
 
 
@@ -318,7 +317,7 @@ def validate_resource_report_config(resource_report_config, graph):
     for graph_slug in iterate_related_graph_slugs(resource_report_config):
         if not GraphModel.objects.filter(slug=graph_slug, isresource=True).exists():
             raise ValidationError(
-                f"Related resources panel refers to an unknown resource model: {graph_slug}"
+                f"Drawer panel refers to an unknown resource model: {graph_slug}"
             )
     for image_source in iterate_image_sources(resource_report_config):
         if not Node.objects.filter(
@@ -328,7 +327,7 @@ def validate_resource_report_config(resource_report_config, graph):
             datatype="file-list",
         ).exists():
             raise ValidationError(
-                f"Images panel refers to an unknown file node: {image_source}"
+                f"Drawer panel refers to an unknown file node: {image_source}"
             )
 
 
