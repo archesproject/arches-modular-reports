@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import IconField from "openvue/iconfield";
@@ -12,6 +12,7 @@ import DataFolio from "@/arches_modular_reports/ResourceReport/components/DataWo
 import EditorPanel from "@/arches_modular_reports/ResourceReport/components/EditorPanel.vue";
 import ReportPlaceholder from "@/arches_modular_reports/ResourceReport/components/ReportPlaceholder.vue";
 
+import { useFilterQuery } from "@/arches_modular_reports/ResourceReport/composables/useFilterQuery.ts";
 import { folioMatches } from "@/arches_modular_reports/ResourceReport/utils/data-filter.ts";
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
@@ -30,9 +31,9 @@ const { reportData } = defineProps<{
 
 const { $gettext } = useGettext();
 
-const filterText = ref("");
+const { filterText, query: appliedFilterText } = useFilterQuery();
 
-const query = computed(() => filterText.value.trim().toLocaleLowerCase());
+const query = computed(() => appliedFilterText.value.toLocaleLowerCase());
 
 const folios = computed(() =>
     childNodegroupAliases(reportData.nodegroupWidgetConfigs, null)
@@ -82,7 +83,7 @@ const folios = computed(() =>
                 {{
                     $gettext(
                         "No results for “%{query}”",
-                        { query: filterText.trim() },
+                        { query: appliedFilterText },
                         true,
                     )
                 }}
