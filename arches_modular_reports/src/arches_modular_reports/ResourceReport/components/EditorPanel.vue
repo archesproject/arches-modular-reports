@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, useTemplateRef, watch } from "vue";
+import { computed } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
@@ -30,8 +30,6 @@ const { target, reportData } = defineProps<{
 }>();
 
 const { $gettext } = useGettext();
-
-const genericCard = useTemplateRef("genericCard");
 
 const liveTile = computed(() =>
     findTile(reportData.resource.aliased_data, target.tileId),
@@ -106,18 +104,6 @@ const deletionMessage = computed(() => {
     return $gettext("This entry will be removed when you Apply all edits.");
 });
 
-watch(
-    () => target,
-    (editTileRequest) => {
-        if (editTileRequest.nodeAlias && genericCard.value) {
-            genericCard.value.focusWidgetInputForNodeAlias(
-                editTileRequest.nodeAlias,
-            );
-        }
-    },
-    { flush: "post" },
-);
-
 function childCardName(childAlias: string): string {
     return reportData.nodegroupWidgetConfigs[childAlias].card?.name ?? "";
 }
@@ -191,7 +177,6 @@ function undoDelete(): void {
         </p>
         <template v-else>
             <GenericCard
-                ref="genericCard"
                 :key="`${target.tileId}-${cardMode}`"
                 :mode="cardMode"
                 :graph-slug="reportData.context.graph.slug"

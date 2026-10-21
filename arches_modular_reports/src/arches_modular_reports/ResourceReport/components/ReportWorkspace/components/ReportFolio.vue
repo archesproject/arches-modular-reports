@@ -43,13 +43,16 @@ const childAliases = computed(() =>
 );
 
 const emptyMessage = computed(() => {
-    const name = cardName.value.toLocaleLowerCase();
     if (parentTileId === null) {
-        return $gettext("No %{name} have been recorded.", { name }, true);
+        return $gettext(
+            "No %{name} have been recorded.",
+            { name: cardName.value },
+            true,
+        );
     }
     return $gettext(
         "No %{name} have been recorded for this entry.",
-        { name },
+        { name: cardName.value },
         true,
     );
 });
@@ -77,7 +80,8 @@ function isEditableTile(
 }
 
 function hasValue(tile: AliasedTileData, nodeAlias: string): boolean {
-    return aliasedNodeDataOf(tile, nodeAlias)?.display_value !== "";
+    const nodeData = aliasedNodeDataOf(tile, nodeAlias);
+    return nodeData !== null && nodeData.display_value !== "";
 }
 
 async function addTile(): Promise<void> {

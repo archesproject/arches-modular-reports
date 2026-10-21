@@ -247,10 +247,7 @@ function clearFlash(): void {
 }
 
 .report-workspace-aside {
-    background: var(
-        --p-resource-report-aside-background,
-        var(--p-content-hover-background)
-    );
+    background: var(--p-resource-report-aside-background);
 }
 
 .report-workspace-tab {

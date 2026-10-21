@@ -111,6 +111,10 @@ function editTypeSeverity(entry: EditHistoryEntry): TagSeverity {
 function formatTimestamp(timestamp: string): string {
     return new Date(timestamp).toLocaleString(reportData.context.language);
 }
+
+function fieldLabel(nodeAlias: string): string {
+    return reportData.graphNodesByAlias[nodeAlias].label;
+}
 </script>
 
 <template>
@@ -128,7 +132,15 @@ function formatTimestamp(timestamp: string): string {
             v-if="loadError"
             severity="error"
         >
-            <span>{{ loadError.message }}</span>
+            <span>
+                {{
+                    $gettext(
+                        "Unable to load the edit history: %{message}",
+                        { message: loadError.message },
+                        true,
+                    )
+                }}
+            </span>
         </Message>
         <p
             v-else-if="!isLoading && entries.length === 0 && query"
@@ -166,7 +178,7 @@ function formatTimestamp(timestamp: string): string {
                             class="pi pi-user"
                             aria-hidden="true"
                         />
-                        {{ entry.user }}
+                        <span>{{ entry.user }}</span>
                     </span>
                 </div>
                 <time
@@ -205,7 +217,11 @@ function formatTimestamp(timestamp: string): string {
                                     {{
                                         $gettext(
                                             "%{label}:",
-                                            { label: value.label },
+                                            {
+                                                label: fieldLabel(
+                                                    value.node_alias,
+                                                ),
+                                            },
                                             true,
                                         )
                                     }}
@@ -240,7 +256,11 @@ function formatTimestamp(timestamp: string): string {
                                     {{
                                         $gettext(
                                             "%{label}:",
-                                            { label: value.label },
+                                            {
+                                                label: fieldLabel(
+                                                    value.node_alias,
+                                                ),
+                                            },
                                             true,
                                         )
                                     }}

@@ -6,7 +6,10 @@ import Button from "openvue/button";
 import Tag from "openvue/tag";
 
 import { buildExportUrl } from "@/arches_modular_reports/ResourceReport/api.ts";
-import { EMPTY_VALUE } from "@/arches_modular_reports/ResourceReport/constants.ts";
+import {
+    DEFAULT_GRAPH_ICON_CLASS,
+    EMPTY_VALUE,
+} from "@/arches_modular_reports/ResourceReport/constants.ts";
 import { lifecycleSeverity } from "@/arches_modular_reports/ResourceReport/utils/lifecycle-severity.ts";
 import { summaryRows } from "@/arches_modular_reports/ResourceReport/utils/summary-rows.ts";
 
@@ -19,7 +22,6 @@ import type {
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const TRANSITION_LIFECYCLE = "transition-lifecycle" as const;
-const DEFAULT_GRAPH_ICON_CLASS = "pi pi-database";
 
 const { reportData, headerConfig, isTransitioning } = defineProps<{
     reportData: ReportData;

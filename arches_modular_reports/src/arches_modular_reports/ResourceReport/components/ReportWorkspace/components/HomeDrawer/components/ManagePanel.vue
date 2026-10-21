@@ -93,7 +93,15 @@ function printReport(): void {
             v-if="actionError"
             severity="error"
         >
-            <span>{{ actionError.message }}</span>
+            <span>
+                {{
+                    $gettext(
+                        "Unable to complete this action: %{message}",
+                        { message: actionError.message },
+                        true,
+                    )
+                }}
+            </span>
         </Message>
         <section
             v-if="permissions.can_copy"

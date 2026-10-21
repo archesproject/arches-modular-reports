@@ -13,6 +13,7 @@ import {
     fetchRelatedResourceGroups,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { useFilterQuery } from "@/arches_modular_reports/ResourceReport/composables/useFilterQuery.ts";
+import { DEFAULT_GRAPH_ICON_CLASS } from "@/arches_modular_reports/ResourceReport/constants.ts";
 import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type {
@@ -114,7 +115,15 @@ async function loadMore(group: RelatedResourceGroup): Promise<void> {
             v-if="loadError"
             severity="error"
         >
-            <span>{{ loadError.message }}</span>
+            <span>
+                {{
+                    $gettext(
+                        "Unable to load related resources: %{message}",
+                        { message: loadError.message },
+                        true,
+                    )
+                }}
+            </span>
         </Message>
         <section
             v-for="group in groups"
@@ -124,7 +133,7 @@ async function loadMore(group: RelatedResourceGroup): Promise<void> {
             <h4 class="related-resources-group-label">
                 <i
                     aria-hidden="true"
-                    :class="group.iconclass"
+                    :class="group.iconclass || DEFAULT_GRAPH_ICON_CLASS"
                     :style="{ color: group.color ?? undefined }"
                 />
                 <span>{{ group.graph_name }}</span>

@@ -24,7 +24,6 @@ const {
 }>();
 
 provide("graphSlug", graphSlug);
-provide("resourceInstanceId", resourceInstanceId);
 
 const { $gettext } = useGettext();
 

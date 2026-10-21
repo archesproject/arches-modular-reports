@@ -230,7 +230,6 @@ export interface ReportData {
 
 export interface EditHistoryValue {
     node_alias: string;
-    label: string;
     before: string | null;
     after: string | null;
     changed: boolean;

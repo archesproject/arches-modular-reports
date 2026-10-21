@@ -19,11 +19,14 @@ import type {
 async function parseResponse<ResponseBody>(
     response: Response,
 ): Promise<ResponseBody> {
-    const parsed = await response.json();
-    if (!response.ok) {
+    if (response.ok) {
+        return response.json();
+    }
+    if (response.headers.get("Content-Type")?.startsWith("application/json")) {
+        const parsed = await response.json();
         throw new Error(parsed.message || response.statusText);
     }
-    return parsed;
+    throw new Error(response.statusText);
 }
 
 function resourceUrl(graphSlug: string, resourceInstanceId: string): string {

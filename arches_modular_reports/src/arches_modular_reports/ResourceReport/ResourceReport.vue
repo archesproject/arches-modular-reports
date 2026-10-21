@@ -249,7 +249,17 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
             v-if="changeSet.addError.value"
             severity="error"
         >
-            <span>{{ changeSet.addError.value.message }}</span>
+            <span>
+                {{
+                    $gettext(
+                        "Unable to add an entry: %{message}",
+                        {
+                            message: changeSet.addError.value.message,
+                        },
+                        true,
+                    )
+                }}
+            </span>
         </Message>
         <component
             :is="activeWorkspaceComponent"
@@ -284,10 +294,7 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
     padding-block: 0.5rem;
     padding-inline: 1.6rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
-    background: var(
-        --p-resource-report-caption-background,
-        var(--p-content-hover-background)
-    );
+    background: var(--p-resource-report-caption-background);
     color: var(--p-text-muted-color);
     font-size: 1.15rem;
 }

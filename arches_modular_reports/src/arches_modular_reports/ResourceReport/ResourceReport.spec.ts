@@ -70,13 +70,10 @@ const GenericWidgetStub = {
     template: "<span class='widget-stub' />",
 };
 
-const focusWidgetInputForNodeAlias = vi.fn();
-
 const GenericCardStub = {
     name: "GenericCard",
     props: ["tileData", "mode"],
     emits: ["update:tileData"],
-    methods: { focusWidgetInputForNodeAlias },
     template:
         "<button class='card-stub' @click=\"$emit('update:tileData', { ...tileData, aliased_data: { name_content: { display_value: 'Smalt', node_value: 'Smalt', details: [] } } })\" />",
 };

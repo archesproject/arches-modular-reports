@@ -59,7 +59,15 @@ watchEffect(async () => {
             v-else-if="loadError"
             severity="error"
         >
-            <span>{{ loadError.message }}</span>
+            <span>
+                {{
+                    $gettext(
+                        "Unable to load images: %{message}",
+                        { message: loadError.message },
+                        true,
+                    )
+                }}
+            </span>
         </Message>
         <p
             v-else-if="images.length === 0"

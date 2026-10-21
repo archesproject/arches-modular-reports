@@ -134,7 +134,7 @@ function changeTag(
 ): { label: string; severity: "success" | "info" | "danger" } | null {
     const changeType = changeSet.changeTypeForTile(tileId);
     if (changeType === "add") {
-        return { label: $gettext("New"), severity: "success" };
+        return { label: $gettext("Added"), severity: "success" };
     }
     if (changeType === "edit") {
         return { label: $gettext("Edited"), severity: "info" };
@@ -231,7 +231,8 @@ function onDragOver(event: DragEvent): void {
     }
 }
 
-function onDrop(targetIndex: number): void {
+function onDrop(event: DragEvent, targetIndex: number): void {
+    event.preventDefault();
     if (draggedTileId.value !== null) {
         moveTileTo(draggedTileId.value, targetIndex);
     }
@@ -277,7 +278,7 @@ function onDragEnd(): void {
                     'data-folio-tile-match': tileRow.isHighlighted,
                 }"
                 @dragover="onDragOver"
-                @drop="onDrop(tileRow.tileIndex)"
+                @drop="onDrop($event, tileRow.tileIndex)"
             >
                 <div
                     class="data-folio-tile-row"

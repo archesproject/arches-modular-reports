@@ -27,7 +27,10 @@ const confirm = useConfirm();
 const entries = computed(() =>
     reportData.changeSet.pendingChanges.value.map((change) => ({
         change,
-        label: entryLabel(change),
+        changeTypeLabel: changeTypeLabel(change),
+        cardName:
+            reportData.nodegroupWidgetConfigs[change.nodegroupAlias].card?.name,
+        tileSummary: changedTileSummary(change),
         isConflicting: reportData.changeSet.conflictingChangeIds.value.includes(
             change.id,
         ),
@@ -70,16 +73,6 @@ function changedTileSummary(change: ResourceChange): string {
         tile,
         reportData.nodegroupWidgetConfigs[change.nodegroupAlias],
     );
-}
-
-function entryLabel(change: ResourceChange): string {
-    return [
-        changeTypeLabel(change),
-        reportData.nodegroupWidgetConfigs[change.nodegroupAlias].card?.name,
-        changedTileSummary(change),
-    ]
-        .filter(Boolean)
-        .join(" · ");
 }
 
 function openChange(change: ResourceChange): void {
@@ -127,7 +120,7 @@ async function applyAll(): Promise<void> {
                 variant="text"
                 size="small"
                 :label="$gettext('Cancel all edits')"
-                :disabled="reportData.changeSet.isSaving.value"
+                :disabled="reportData.changeSet.isBusy.value"
                 @click="confirmCancelAll"
             />
             <Button
@@ -154,7 +147,18 @@ async function applyAll(): Promise<void> {
             v-else-if="reportData.changeSet.saveError.value"
             severity="error"
         >
-            <span>{{ reportData.changeSet.saveError.value.message }}</span>
+            <span>
+                {{
+                    $gettext(
+                        "Unable to apply your edits: %{message}",
+                        {
+                            message:
+                                reportData.changeSet.saveError.value.message,
+                        },
+                        true,
+                    )
+                }}
+            </span>
         </Message>
         <ul class="edit-list-tray-entries">
             <li
@@ -166,12 +170,20 @@ async function applyAll(): Promise<void> {
                 }"
             >
                 <Button
+                    class="edit-list-tray-entry-open"
                     variant="link"
                     size="small"
-                    :label="entry.label"
                     :disabled="entry.change.type === 'reorder'"
                     @click="openChange(entry.change)"
-                />
+                >
+                    <span class="edit-list-tray-entry-type">
+                        {{ entry.changeTypeLabel }}
+                    </span>
+                    <span v-if="entry.cardName">{{ entry.cardName }}</span>
+                    <span v-if="entry.tileSummary">
+                        {{ entry.tileSummary }}
+                    </span>
+                </Button>
                 <Button
                     icon="pi pi-times"
                     variant="text"
@@ -226,6 +238,14 @@ async function applyAll(): Promise<void> {
     border: 0.1rem solid var(--p-content-border-color);
     border-radius: var(--p-content-border-radius);
     background: var(--p-content-background);
+}
+
+.edit-list-tray-entry-open {
+    gap: 0.4rem;
+}
+
+.edit-list-tray-entry-type {
+    font-weight: 600;
 }
 
 .edit-list-tray-entry-conflict {

@@ -125,9 +125,6 @@ const folios = computed(() =>
 }
 
 .data-workspace-editor {
-    background: var(
-        --p-resource-report-aside-background,
-        var(--p-content-hover-background)
-    );
+    background: var(--p-resource-report-aside-background);
 }
 </style>

@@ -42,10 +42,7 @@ function onTabChange(workspaceId: string | number): void {
 
 <style scoped>
 .workspace-strip :deep(.p-tablist-tab-list) {
-    background: var(
-        --p-resource-report-strip-background,
-        var(--p-content-hover-background)
-    );
+    background: var(--p-resource-report-strip-background);
 }
 
 .workspace-strip :deep(.p-tab) {

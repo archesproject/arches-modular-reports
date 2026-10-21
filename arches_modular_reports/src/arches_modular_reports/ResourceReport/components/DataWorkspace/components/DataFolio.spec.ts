@@ -24,19 +24,6 @@ vi.mock("@/arches_vue_components/application/generate-arches-url.ts", () => ({
     generateArchesURL: (urlName: string) => urlName,
 }));
 
-vi.mock("@/arches_vue_components/generics/GenericCard/api.ts", () => ({
-    fetchTileData: () =>
-        Promise.resolve({
-            aliased_data: {},
-            nodegroup: "nodegroup",
-            parenttile: null,
-            provisionaledits: null,
-            resourceinstance: "",
-            sortorder: 0,
-            tileid: null,
-        }),
-}));
-
 function makeWidget(nodeAlias: string, label: string): CardXNodeXWidgetData {
     return {
         card: {
