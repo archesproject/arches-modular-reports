@@ -191,7 +191,7 @@ const RESOURCE = {
 };
 
 const REPORT_CONFIG: ResourceReportConfig = {
-    header: { export_formats: ["json-ld"] },
+    header: { summary: [], export_formats: ["json-ld"] },
     workspaces: [
         {
             id: "report",
@@ -200,8 +200,20 @@ const REPORT_CONFIG: ResourceReportConfig = {
             description: { en: "A curated summary of this resource's data" },
             config: { tabs: [], home: { summary: [], drawer: [] } },
         },
-        { id: "data", component: "DataWorkspace", label: { en: "Data" } },
-        { id: "graph", component: "GraphWorkspace", label: { en: "Graph" } },
+        {
+            id: "data",
+            component: "DataWorkspace",
+            label: { en: "Data" },
+            description: "",
+            config: {},
+        },
+        {
+            id: "graph",
+            component: "GraphWorkspace",
+            label: { en: "Graph" },
+            description: "",
+            config: {},
+        },
     ],
 };
 
@@ -224,15 +236,27 @@ const PIGMENTS_GROUP: RelatedResourceGroup = {
 };
 
 const FOLIO_CONFIG: ResourceReportConfig = {
+    header: { summary: [], export_formats: [] },
     workspaces: [
         {
             id: "report",
             component: "ReportWorkspace",
+            label: "Report",
+            description: "",
             config: {
                 tabs: [
-                    { sections: [{ folios: [{ nodegroup_alias: "names" }] }] },
+                    {
+                        label: "Overview",
+                        sections: [
+                            {
+                                label: null,
+                                icon: null,
+                                folios: [{ nodegroup_alias: "names" }],
+                            },
+                        ],
+                    },
                 ],
-                home: { summary: [] },
+                home: { summary: [], drawer: [] },
             },
         },
     ],
@@ -240,10 +264,13 @@ const FOLIO_CONFIG: ResourceReportConfig = {
 
 function drawerConfig(): ResourceReportConfig {
     return {
+        header: { summary: [], export_formats: [] },
         workspaces: [
             {
                 id: "report",
                 component: "ReportWorkspace",
+                label: "Report",
+                description: "",
                 config: {
                     tabs: [],
                     home: {
@@ -259,6 +286,7 @@ function drawerConfig(): ResourceReportConfig {
                                 component: "ManagePanel",
                                 label: "Manage",
                                 icon: "pi pi-cog",
+                                config: {},
                             },
                         ],
                     },
@@ -412,15 +440,28 @@ describe("ResourceReport", () => {
 
     it("shows a summary node under an unreadable parent as empty", async () => {
         const wrapper = mountReport({
-            header: { summary: [{ node_alias: "part_note_content" }] },
+            header: {
+                summary: [
+                    { node_alias: "part_note_content", label: "Part note" },
+                ],
+                export_formats: [],
+            },
             workspaces: [
                 {
                     id: "report",
                     component: "ReportWorkspace",
+                    label: "Report",
+                    description: "",
                     config: {
                         tabs: [],
                         home: {
-                            summary: [{ node_alias: "part_note_content" }],
+                            summary: [
+                                {
+                                    node_alias: "part_note_content",
+                                    label: "Part note",
+                                },
+                            ],
+                            drawer: [],
                         },
                     },
                 },

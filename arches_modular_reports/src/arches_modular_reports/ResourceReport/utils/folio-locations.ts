@@ -8,15 +8,15 @@ export function folioLocations(
 ): Record<string, string> {
     const locationsByNodegroupAlias: Record<string, string> = {};
     for (const workspaceConfig of workspaceConfigs) {
-        for (const tab of workspaceConfig.config?.tabs ?? []) {
-            for (const section of tab.sections ?? []) {
+        for (const tab of workspaceConfig.config.tabs ?? []) {
+            for (const section of tab.sections) {
                 const location = [
                     localizeLabel(tab.label, activeLanguage),
                     localizeLabel(section.label, activeLanguage),
                 ]
                     .filter(Boolean)
                     .join(" / ");
-                for (const folio of section.folios ?? []) {
+                for (const folio of section.folios) {
                     locationsByNodegroupAlias[folio.nodegroup_alias] ??=
                         location;
                 }

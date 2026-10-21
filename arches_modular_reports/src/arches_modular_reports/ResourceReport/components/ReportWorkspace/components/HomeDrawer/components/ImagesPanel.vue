@@ -39,7 +39,7 @@ watchEffect(async () => {
     try {
         images.value = await fetchResourceImages(
             resourceInstanceId.value,
-            panelConfig.images ?? [],
+            panelConfig.images,
         );
     } catch (error) {
         loadError.value = toError(error);

@@ -20,12 +20,12 @@ export type TagSeverity =
 
 export interface SummaryEntryConfig {
     node_alias: string;
-    label?: LocalizedLabel | null;
+    label: LocalizedLabel;
 }
 
 export interface HeaderConfig {
-    summary?: SummaryEntryConfig[];
-    export_formats?: ExportFormat[];
+    summary: SummaryEntryConfig[];
+    export_formats: ExportFormat[];
     lifecycle_severities?: Record<string, TagSeverity>;
 }
 
@@ -34,44 +34,44 @@ export interface FolioConfig {
 }
 
 export interface SectionConfig {
-    label?: LocalizedLabel;
-    icon?: string;
-    folios?: FolioConfig[];
+    label: LocalizedLabel | null;
+    icon: string | null;
+    folios: FolioConfig[];
 }
 
 export interface TabConfig {
-    label?: LocalizedLabel;
-    sections?: SectionConfig[];
+    label: LocalizedLabel;
+    sections: SectionConfig[];
 }
 
 export interface DrawerPanelConfig {
     component: string;
-    label?: LocalizedLabel;
-    icon?: string;
-    config?: Record<string, unknown>;
+    label: LocalizedLabel;
+    icon: string;
+    config: Record<string, unknown>;
 }
 
 export interface HomeConfig {
-    summary?: SummaryEntryConfig[];
-    drawer?: DrawerPanelConfig[];
+    summary: SummaryEntryConfig[];
+    drawer: DrawerPanelConfig[];
 }
 
 export interface ReportWorkspaceConfig {
-    tabs?: TabConfig[];
-    home?: HomeConfig;
+    tabs: TabConfig[];
+    home: HomeConfig | null;
 }
 
 export interface WorkspaceConfig {
     id: string;
-    label?: LocalizedLabel;
-    description?: LocalizedLabel;
+    label: LocalizedLabel;
+    description: LocalizedLabel;
     component: string;
-    config?: ReportWorkspaceConfig;
+    config: Partial<ReportWorkspaceConfig>;
 }
 
 export interface ResourceReportConfig {
-    header?: HeaderConfig;
-    workspaces?: WorkspaceConfig[];
+    header: HeaderConfig;
+    workspaces: WorkspaceConfig[];
 }
 
 export interface ResolvedWorkspace {
@@ -79,7 +79,7 @@ export interface ResolvedWorkspace {
     label: string;
     description: string;
     component: string;
-    config: ReportWorkspaceConfig;
+    config: Partial<ReportWorkspaceConfig>;
 }
 
 export interface LifecycleStateSummary {
@@ -120,6 +120,11 @@ export interface ReportContext {
 export interface GraphNode {
     label: string;
     nodegroupAlias: string;
+}
+
+export interface HighlightSegment {
+    text: string;
+    matched: boolean;
 }
 
 export interface SummaryRow {
@@ -270,7 +275,7 @@ export interface RelatedResourceGroup {
 }
 
 export interface RelatedResourcesPanelConfig {
-    graphs?: string[];
+    graphs: string[];
 }
 
 export interface ImageSource {
@@ -279,7 +284,7 @@ export interface ImageSource {
 }
 
 export interface ImagesPanelConfig {
-    images?: ImageSource[];
+    images: ImageSource[];
 }
 
 export interface ResourceImage {

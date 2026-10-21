@@ -29,7 +29,6 @@ const rows = computed(() =>
     summaryRows(
         summary,
         reportData.resource.aliased_data,
-        reportData.graphNodesByAlias,
         reportData.context.language,
     ).map((summaryRow) => ({
         nodeAlias: summaryRow.nodeAlias,

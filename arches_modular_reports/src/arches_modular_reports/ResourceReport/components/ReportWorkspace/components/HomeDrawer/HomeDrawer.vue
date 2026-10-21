@@ -3,13 +3,13 @@ import { computed, shallowRef } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
-import Message from "openvue/message";
 
 import EditHistoryPanel from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/HomeDrawer/components/EditHistoryPanel.vue";
 import ImagesPanel from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/HomeDrawer/components/ImagesPanel.vue";
 import ManagePanel from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/HomeDrawer/components/ManagePanel.vue";
 import RelatedResourcesPanel from "@/arches_modular_reports/ResourceReport/components/ReportWorkspace/components/HomeDrawer/components/RelatedResourcesPanel.vue";
 
+import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
 
 import type { Component } from "vue";
@@ -19,7 +19,6 @@ import type {
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const EDIT_HISTORY_PANEL = "EditHistoryPanel";
-const EMPTY_PANEL_CONFIG: Record<string, unknown> = {};
 const DRAWER_PANEL_COMPONENTS: Record<string, Component> = {
     EditHistoryPanel,
     ImagesPanel,
@@ -54,14 +53,14 @@ const openPanelComponent = computed(() => {
     if (openEntry.value === null) {
         return undefined;
     }
-    return DRAWER_PANEL_COMPONENTS[openEntry.value.component];
+    return (
+        DRAWER_PANEL_COMPONENTS[openEntry.value.component] ??
+        loadComponent(openEntry.value.component)
+    );
 });
 
 function entryLabel(entry: DrawerPanelConfig): string {
-    return (
-        localizeLabel(entry.label, reportData.context.language) ??
-        entry.component
-    );
+    return localizeLabel(entry.label, reportData.context.language);
 }
 
 function toggleEntry(entry: DrawerPanelConfig): void {
@@ -139,26 +138,9 @@ function closeDrawer(): void {
                     <div class="home-drawer-body">
                         <component
                             :is="openPanelComponent"
-                            v-if="openPanelComponent"
                             :report-data="reportData"
-                            :panel-config="
-                                openEntry.config ?? EMPTY_PANEL_CONFIG
-                            "
+                            :panel-config="openEntry.config"
                         />
-                        <Message
-                            v-else
-                            severity="warn"
-                        >
-                            <span>
-                                {{
-                                    $gettext(
-                                        "This panel is not available: %{component}",
-                                        { component: openEntry.component },
-                                        true,
-                                    )
-                                }}
-                            </span>
-                        </Message>
                     </div>
                 </section>
             </Transition>

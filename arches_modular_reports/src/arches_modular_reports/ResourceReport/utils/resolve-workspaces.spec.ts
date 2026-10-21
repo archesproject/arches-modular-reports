@@ -10,9 +10,22 @@ const WORKSPACE_CONFIGS: WorkspaceConfig[] = [
         component: "ReportWorkspace",
         label: { en: "Report" },
         description: { en: "A curated summary" },
+        config: { tabs: [], home: null },
     },
-    { id: "data", component: "DataWorkspace", label: "Data" },
-    { id: "custom", component: "my_app/Report/CustomWorkspace" },
+    {
+        id: "data",
+        component: "DataWorkspace",
+        label: "Data",
+        description: "",
+        config: {},
+    },
+    {
+        id: "custom",
+        component: "my_app/Report/CustomWorkspace",
+        label: "Custom",
+        description: "",
+        config: {},
+    },
 ];
 
 describe("resolveWorkspaces", () => {

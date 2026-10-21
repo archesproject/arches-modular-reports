@@ -21,6 +21,8 @@
                                 {
                                     "sections": [
                                         {
+                                            "label": null,
+                                            "icon": null,
                                             "folios": []
                                         }
                                     ],
@@ -37,28 +39,36 @@
                                         "label": {
                                             "en": "Edit History"
                                         },
-                                        "icon": "pi pi-clock"
+                                        "icon": "pi pi-clock",
+                                        "config": {}
                                     },
                                     {
                                         "component": "ImagesPanel",
                                         "label": {
                                             "en": "Images"
                                         },
-                                        "icon": "pi pi-image"
+                                        "icon": "pi pi-image",
+                                        "config": {
+                                            "images": []
+                                        }
                                     },
                                     {
                                         "component": "RelatedResourcesPanel",
                                         "label": {
                                             "en": "Related Resources"
                                         },
-                                        "icon": "pi pi-link"
+                                        "icon": "pi pi-link",
+                                        "config": {
+                                            "graphs": []
+                                        }
                                     },
                                     {
                                         "component": "ManagePanel",
                                         "label": {
                                             "en": "Manage"
                                         },
-                                        "icon": "pi pi-cog"
+                                        "icon": "pi pi-cog",
+                                        "config": {}
                                     }
                                 ]
                             }
@@ -78,7 +88,8 @@
                         },
                         "description": {
                             "en": "Browse and edit every field recorded on this resource"
-                        }
+                        },
+                        "config": {}
                     },
                     {
                         "id": "graph",
@@ -88,7 +99,8 @@
                         },
                         "description": {
                             "en": "A visual overview of how this resource connects to its data"
-                        }
+                        },
+                        "config": {}
                     }
                 ]
             }

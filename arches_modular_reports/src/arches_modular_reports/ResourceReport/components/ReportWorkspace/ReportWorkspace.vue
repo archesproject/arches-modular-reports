@@ -40,8 +40,7 @@ const activeTabIndex = ref(0);
 const flashedNodegroupAlias = ref<string | null>(null);
 
 const hasAside = computed(
-    () =>
-        workspaceConfig.home !== undefined || reportData.editor.target !== null,
+    () => workspaceConfig.home !== null || reportData.editor.target !== null,
 );
 
 const mainPaneSize = computed(() => {
@@ -52,17 +51,15 @@ const mainPaneSize = computed(() => {
 });
 
 const tabs = computed(() =>
-    (workspaceConfig.tabs ?? []).map((tabConfig) => ({
-        label:
-            localizeLabel(tabConfig.label, reportData.context.language) ?? "",
-        sections: (tabConfig.sections ?? []).map((sectionConfig) => ({
-            label:
-                localizeLabel(
-                    sectionConfig.label,
-                    reportData.context.language,
-                ) ?? "",
-            icon: sectionConfig.icon ?? "",
-            folios: (sectionConfig.folios ?? []).map((folioConfig) => ({
+    workspaceConfig.tabs.map((tabConfig) => ({
+        label: localizeLabel(tabConfig.label, reportData.context.language),
+        sections: tabConfig.sections.map((sectionConfig) => ({
+            label: localizeLabel(
+                sectionConfig.label,
+                reportData.context.language,
+            ),
+            icon: sectionConfig.icon,
+            folios: sectionConfig.folios.map((folioConfig) => ({
                 nodegroupAlias: folioConfig.nodegroup_alias,
                 tiles: nodegroupTiles(
                     reportData.resource.aliased_data[
@@ -214,12 +211,12 @@ function clearFlash(): void {
             />
             <HomeDrawer
                 v-else-if="workspaceConfig.home"
-                :entries="workspaceConfig.home.drawer ?? []"
+                :entries="workspaceConfig.home.drawer"
                 :report-data="reportData"
             >
                 <div class="report-workspace-home">
                     <KeyDataSummary
-                        :summary="workspaceConfig.home.summary ?? []"
+                        :summary="workspaceConfig.home.summary"
                         :report-data="reportData"
                         @jump-to-node="jumpToNode"
                     />

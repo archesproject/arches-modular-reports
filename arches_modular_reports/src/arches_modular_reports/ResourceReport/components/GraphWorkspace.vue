@@ -3,13 +3,10 @@ import { useGettext } from "vue3-gettext";
 
 import ReportPlaceholder from "@/arches_modular_reports/ResourceReport/components/ReportPlaceholder.vue";
 
-import type {
-    ReportData,
-    ReportWorkspaceConfig,
-} from "@/arches_modular_reports/ResourceReport/types.ts";
+import type { ReportData } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 defineProps<{
-    workspaceConfig: ReportWorkspaceConfig;
+    workspaceConfig: Record<string, unknown>;
     reportData: ReportData;
 }>();
 

@@ -1,11 +1,11 @@
 import type { LocalizedLabel } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 export function localizeLabel(
-    label: LocalizedLabel | null | undefined,
+    label: LocalizedLabel | null,
     activeLanguage: string,
-): string | undefined {
-    if (label === undefined || label === null) {
-        return undefined;
+): string {
+    if (label === null) {
+        return "";
     }
     if (typeof label === "string") {
         return label;
@@ -13,5 +13,7 @@ export function localizeLabel(
     if (label[activeLanguage]) {
         return label[activeLanguage];
     }
-    return Object.values(label).find((localizedText) => localizedText !== "");
+    return (
+        Object.values(label).find((localizedText) => localizedText !== "") ?? ""
+    );
 }

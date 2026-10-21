@@ -6,7 +6,6 @@ import type {
     AliasedNodeData,
     AliasedTileData,
 } from "@/arches_vue_components/types.ts";
-import type { GraphNode } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 function nameTile(
     tileid: string,
@@ -37,17 +36,12 @@ const ALIASED_DATA = {
     ],
 };
 
-const GRAPH_NODES_BY_ALIAS: Record<string, GraphNode> = {
-    name_content: { label: "Name", nodegroupAlias: "names" },
-};
-
 describe("summaryRows", () => {
-    it("labels each entry from its node and keeps its non-empty values in order", () => {
+    it("labels each entry from its config and keeps its non-empty values in order", () => {
         expect(
             summaryRows(
-                [{ node_alias: "name_content" }],
+                [{ node_alias: "name_content", label: { en: "Name" } }],
                 ALIASED_DATA,
-                GRAPH_NODES_BY_ALIAS,
                 "en",
             ),
         ).toEqual([

@@ -81,7 +81,7 @@ class ReportConfigCommandTests(TestCase):
                         "components": [
                             {
                                 "component": "arches_modular_reports/ResourceReport/ResourceReport",
-                                "config": {"views": []},
+                                "config": {"workspaces": [{"id": "report"}]},
                             }
                         ],
                     },

@@ -50,7 +50,7 @@ async function loadGroups(searchText: string): Promise<void> {
     try {
         const loadedGroups = await fetchRelatedResourceGroups(
             resourceInstanceId.value,
-            panelConfig.graphs ?? [],
+            panelConfig.graphs,
             searchText,
         );
         if (groupsRequestNumber === latestGroupsRequestNumber) {

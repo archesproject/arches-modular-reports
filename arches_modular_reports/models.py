@@ -146,10 +146,13 @@ class ReportConfig(models.Model):
                         raise ValidationError(f"Invalid key in components: {key}")
                 component = self.get_or_raise(item, "component", "")
                 config = self.get_or_raise(item, "config", "")
-                component_name = Path(component).stem.lower()
-                method = getattr(self, "validate_" + component_name, lambda _: None)
-                # example method: validate_datasection
-                method(config)
+                if "workspaces" in config:
+                    validate_resource_report_config(config, self.graph)
+                else:
+                    component_name = Path(component).stem.lower()
+                    method = getattr(self, "validate_" + component_name, lambda _: None)
+                    # example method: validate_datasection
+                    method(config)
 
         def validate_components_config(config_dict):
             for val in config_dict.values():
@@ -163,9 +166,6 @@ class ReportConfig(models.Model):
                             validate_dict(list_item)
 
         validate_dict(self.config)
-
-    def validate_resourcereport(self, resource_report_config):
-        validate_resource_report_config(resource_report_config, self.graph)
 
     def validate_datasection(self, card_config):
         nodegroup_alias = self.get_or_raise(card_config, "nodegroup_alias", "Data")

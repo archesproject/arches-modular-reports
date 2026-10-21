@@ -126,6 +126,8 @@ A report config is a name and a list of components. The default config has one c
 
 Labels are a string or an object keyed by language, e.g. `{"en": "Report"}`.
 
+Every key shown below is required, except `lifecycle_severities`. Use `null` where a value can be empty. Any component whose config has `workspaces` is treated as a `ResourceReport` config, whatever its path.
+
 Configs are validated against the graph on save: only `header` and `workspaces` are allowed, folios must be top-level nodegroups, summaries must name nodes that hold a value, related models must be resource models, and image sources must be `file-list` nodes. Folios and summary entries the user can't read are removed when the report loads.
 
 ---
@@ -134,13 +136,13 @@ Configs are validated against the graph on save: only `header` and `workspaces` 
 
 ```json
 "header": {
-    "summary": [{ "node_alias": "description_content", "label": null }],
+    "summary": [{ "node_alias": "description_content", "label": { "en": "Description" } }],
     "export_formats": ["json-ld", "json", "csv"],
     "lifecycle_severities": { "<lifecycle state id>": "warn" }
 }
 ```
 
--   `summary`: nodes shown under the resource name (first value only). `label` overrides the node label.
+-   `summary`: nodes shown under the resource name (first value only), each with its label. The generator writes each node's widget label.
 -   `export_formats`: any of `json-ld`, `json` and `csv`.
 -   `lifecycle_severities`: optional tag colours by lifecycle state id: `info`, `success`, `warn`, `danger`, `secondary` or `contrast`.
 
@@ -164,7 +166,7 @@ Each workspace is a tab at the top of the report.
 -   `DataWorkspace`: every nodegroup in a tree, with an editor. Editors only.
 -   `GraphWorkspace`: placeholder.
 
-Any other `component` is loaded by path, e.g. `my_app/Report/CustomWorkspace`, and gets `workspaceConfig` and `reportData` props.
+Any other `component` is loaded by path, e.g. `my_app/Report/CustomWorkspace`, and gets `workspaceConfig` and `reportData` props. `config` is `{}` for workspaces that take no settings.
 
 ---
 
@@ -185,16 +187,17 @@ Any other `component` is loaded by path, e.g. `my_app/Report/CustomWorkspace`, a
         }
     ],
     "home": {
-        "summary": [{ "node_alias": "name_content", "label": null }],
+        "summary": [{ "node_alias": "name_content", "label": { "en": "Name" } }],
         "drawer": [ ... ]
     }
 }
 ```
 
--   `tabs`: each tab has `sections`, each section has `folios`. Section `label` and `icon` are optional.
+-   `tabs`: each tab has `sections`, each section has `folios`. Section `label` and `icon` can be `null`.
 -   `folios`: a top-level nodegroup. Child nodegroups render inside it.
 -   `home.summary`: the Key Data Summary. Clicking a label jumps to its folio.
 -   `home.drawer`: panels that open over the Key Data Summary.
+-   `home` can be `null` for a report with no home pane.
 
 #### Drawer panels
 
@@ -211,6 +214,8 @@ Any other `component` is loaded by path, e.g. `my_app/Report/CustomWorkspace`, a
 -   `ImagesPanel`: images from `file-list` nodes. `config.images` is a list of `{"model": "<graph slug>", "node": "<node alias>"}`. Sources on other models show images from related resources.
 -   `RelatedResourcesPanel`: related resources by model. `config.graphs` lists the models, in order.
 -   `ManagePanel`: copy, delete and print.
+
+`config` is `{}` for panels that take no settings. Any other `component` is loaded by path, e.g. `my_app/Report/CustomPanel`, and gets `panelConfig` and `reportData` props.
 
 ---
 

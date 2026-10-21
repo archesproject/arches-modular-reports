@@ -4,11 +4,13 @@ from django.test import TestCase
 from arches.app.models.graph import Graph
 from arches.app.models.models import (
     CardModel,
+    CardXNodeXWidget,
     Function,
     FunctionXGraph,
     GraphModel,
     Node,
     NodeGroup,
+    Widget,
 )
 
 from arches_modular_reports.app.utils.resource_report_config import (
@@ -82,12 +84,15 @@ def curated_config():
                             "id": "report",
                             "component": "ReportWorkspace",
                             "label": {"en": "Report"},
+                            "description": {"en": "A curated summary"},
                             "config": {
                                 "tabs": [
                                     {
                                         "label": {"en": "Overview"},
                                         "sections": [
                                             {
+                                                "label": None,
+                                                "icon": None,
                                                 "folios": [
                                                     {"nodegroup_alias": "production"},
                                                     {"nodegroup_alias": "identifiers"},
@@ -97,7 +102,13 @@ def curated_config():
                                     }
                                 ],
                                 "home": {
-                                    "summary": [{"node_alias": "identifier_content"}],
+                                    "summary": [
+                                        {
+                                            "node_alias": "identifier_content",
+                                            "label": "Identifier",
+                                        }
+                                    ],
+                                    "drawer": [],
                                 },
                             },
                         },
@@ -183,15 +194,15 @@ class ResourceReportConfigTests(TestCase):
         resource_report = report_config.config["components"][0]
         self.assertEqual(
             resource_report["config"]["header"]["summary"],
-            [{"node_alias": "description_content", "label": None}],
+            [{"node_alias": "description_content", "label": "Description Content"}],
         )
         workspaces = resource_report["config"]["workspaces"]
         self.assertEqual(
             workspaces[0]["config"]["home"]["summary"],
             [
-                {"node_alias": "name_content", "label": None},
-                {"node_alias": "description_content", "label": None},
-                {"node_alias": "identifier_content", "label": None},
+                {"node_alias": "name_content", "label": "Name Content"},
+                {"node_alias": "description_content", "label": "Description Content"},
+                {"node_alias": "identifier_content", "label": "Identifier Content"},
             ],
         )
         self.assertEqual(
@@ -201,6 +212,24 @@ class ResourceReportConfigTests(TestCase):
                 generated_folio("production"),
                 generated_folio("description"),
             ],
+        )
+
+    def test_summary_labels_come_from_widgets(self):
+        CardXNodeXWidget.objects.create(
+            card=CardModel.objects.get(nodegroup=self.production),
+            node=Node.objects.get(graph=self.graph, alias="name_content"),
+            widget=Widget.objects.first(),
+            label={"en": "Name"},
+        )
+
+        report_config = ReportConfig(graph=self.graph)
+        report_config.full_clean()
+
+        home = resource_report_config_from(report_config.config)["workspaces"][0][
+            "config"
+        ]["home"]
+        self.assertEqual(
+            home["summary"][0], {"node_alias": "name_content", "label": {"en": "Name"}}
         )
 
     def test_descriptor_tokens_resolve_within_their_nodegroup(self):
@@ -231,7 +260,7 @@ class ResourceReportConfigTests(TestCase):
 
         self.assertEqual(
             resource_report_config_from(report_config.config)["header"]["summary"],
-            [{"node_alias": "description_text", "label": None}],
+            [{"node_alias": "description_text", "label": "content"}],
         )
 
     def test_card_sections_cover_top_level_cards(self):
@@ -295,7 +324,7 @@ class ResourceReportConfigTests(TestCase):
 
         def mutate_unknown_summary_node(config):
             resource_report_config_from(config)["header"]["summary"] = [
-                {"node_alias": "missing"}
+                {"node_alias": "missing", "label": "Missing"}
             ]
 
         def mutate_unknown_top_level_key(config):
@@ -303,14 +332,23 @@ class ResourceReportConfigTests(TestCase):
 
         def mutate_semantic_summary_node(config):
             resource_report_config_from(config)["header"]["summary"] = [
-                {"node_alias": "production"}
+                {"node_alias": "production", "label": "Production"}
             ]
+
+        def mutate_missing_summary_label(config):
+            del resource_report_config_from(config)["header"]["summary"][0]["label"]
+
+        def mutate_renamed_component(config):
+            config["components"][0]["component"] = "my_app/Reports/CustomReport"
+            first_folio(config)["nodegroup_alias"] = "missing"
 
         for mutation in (
             mutate_unknown_nodegroup,
             mutate_unknown_summary_node,
             mutate_unknown_top_level_key,
             mutate_semantic_summary_node,
+            mutate_missing_summary_label,
+            mutate_renamed_component,
         ):
             with self.subTest(mutation=mutation.__name__):
                 config = curated_config()
@@ -341,7 +379,7 @@ class ResourceReportConfigTests(TestCase):
         )
         self.assertEqual(
             report_workspace_config["home"]["summary"],
-            [{"node_alias": "identifier_content"}],
+            [{"node_alias": "identifier_content", "label": "Identifier"}],
         )
 
         resource_report = resource_report_config_from(self.prune([]))

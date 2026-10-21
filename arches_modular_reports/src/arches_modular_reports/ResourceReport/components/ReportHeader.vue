@@ -90,14 +90,11 @@ const hasTransitions = computed(
 
 const summaryLines = computed(() =>
     summaryRows(
-        headerConfig.summary ?? [],
+        headerConfig.summary,
         reportData.resource.aliased_data,
-        reportData.graphNodesByAlias,
         reportData.context.language,
     ),
 );
-
-const exportFormats = computed(() => headerConfig.export_formats ?? []);
 
 const isHoldingTransitions = computed(
     () =>
@@ -160,7 +157,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
             </dl>
         </div>
         <div
-            v-if="hasTransitions || exportFormats.length > 0"
+            v-if="hasTransitions || headerConfig.export_formats.length > 0"
             class="report-header-actions"
         >
             <div
@@ -192,12 +189,12 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                 />
             </div>
             <nav
-                v-if="exportFormats.length > 0"
+                v-if="headerConfig.export_formats.length > 0"
                 class="report-header-exports"
                 :aria-label="$gettext('Export')"
             >
                 <Button
-                    v-for="exportFormat in exportFormats"
+                    v-for="exportFormat in headerConfig.export_formats"
                     :key="exportFormat"
                     as="a"
                     variant="link"

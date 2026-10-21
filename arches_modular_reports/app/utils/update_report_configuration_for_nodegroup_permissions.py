@@ -4,7 +4,6 @@ from arches.app.utils.permission_backend import get_nodegroups_by_perm
 
 from arches_modular_reports.app.utils.resource_report_config import (
     extract_substrings,
-    is_resource_report_component,
     prune_resource_report_config,
 )
 
@@ -24,7 +23,7 @@ def update_report_configuration_with_nodegroup_permissions(
 
     def filter_node(node):
         if isinstance(node, dict):
-            if is_resource_report_component(node.get("component", "")):
+            if "workspaces" in node.get("config", {}):
                 prune_resource_report_config(
                     node.get("config", {}),
                     report_nodegroup_ids_with_user_read_permission,

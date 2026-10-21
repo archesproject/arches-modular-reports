@@ -17,13 +17,12 @@ export function resolveWorkspaces(
         )
         .map((workspaceConfig) => ({
             id: workspaceConfig.id,
-            label:
-                localizeLabel(workspaceConfig.label, activeLanguage) ??
-                workspaceConfig.id,
-            description:
-                localizeLabel(workspaceConfig.description, activeLanguage) ??
-                "",
+            label: localizeLabel(workspaceConfig.label, activeLanguage),
+            description: localizeLabel(
+                workspaceConfig.description,
+                activeLanguage,
+            ),
             component: workspaceConfig.component,
-            config: workspaceConfig.config ?? {},
+            config: workspaceConfig.config,
         }));
 }

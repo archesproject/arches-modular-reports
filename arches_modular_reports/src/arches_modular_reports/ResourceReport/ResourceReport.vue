@@ -73,7 +73,7 @@ const hasPendingChanges = computed(
 );
 
 const workspaces = computed(() =>
-    resolveWorkspaces(component.config.workspaces ?? [], {
+    resolveWorkspaces(component.config.workspaces, {
         canEdit: canEdit.value,
         activeLanguage: context.value?.language ?? "",
     }),
@@ -91,10 +91,7 @@ const graphNodesByAlias = computed(() =>
 );
 
 const folioLocationsByNodegroupAlias = computed(() =>
-    folioLocations(
-        component.config.workspaces ?? [],
-        context.value?.language ?? "",
-    ),
+    folioLocations(component.config.workspaces, context.value?.language ?? ""),
 );
 
 const reportData = computed<ReportData | null>(() => {
@@ -209,7 +206,7 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
         </p>
         <ReportHeader
             :report-data="reportData"
-            :header-config="component.config.header ?? {}"
+            :header-config="component.config.header"
             :is-transitioning="isTransitioning"
             @transition-lifecycle="transitionLifecycle"
         />
