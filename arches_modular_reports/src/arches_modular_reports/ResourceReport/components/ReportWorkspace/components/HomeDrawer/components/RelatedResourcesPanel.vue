@@ -71,7 +71,7 @@ async function loadMore(group: RelatedResourceGroup): Promise<void> {
         const nextPage = await fetchRelatedResourceGroup(
             resourceInstanceId.value,
             group.graph_slug,
-            group.page + 1,
+            group.next_cursor,
             query.value,
         );
         if (groupsRequestNumber !== latestGroupsRequestNumber) {
@@ -174,7 +174,7 @@ async function loadMore(group: RelatedResourceGroup): Promise<void> {
                 </li>
             </ul>
             <Button
-                v-if="group.has_next"
+                v-if="group.next_cursor !== null"
                 variant="link"
                 size="small"
                 :label="$gettext('Load more')"

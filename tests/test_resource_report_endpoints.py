@@ -1,4 +1,5 @@
 import uuid
+from datetime import timedelta
 from unittest import mock
 
 from django.contrib.auth.models import User
@@ -16,6 +17,12 @@ from arches.app.models.models import (
     ResourceInstance,
     ResourceXResource,
     TileModel,
+)
+
+from arches_modular_reports.app.views.modular_report import (
+    EditHistoryView,
+    RelatedResourceGroupsView,
+    ResourceImagesView,
 )
 
 
@@ -154,13 +161,13 @@ class ResourceReportEndpointTests(TestCase):
             [group["graph_slug"] for group in listed_groups],
             ["related_graph", "endpoint_graph"],
         )
-        self.assertEqual([group["total_count"] for group in listed_groups], [1, 0])
+        self.assertEqual([len(group["items"]) for group in listed_groups], [1, 0])
 
         def related_count(query):
             groups = self.client.get(
                 groups_url, {"graphs": "related_graph", "q": query}
             ).json()["groups"]
-            return groups[0]["total_count"]
+            return len(groups[0]["items"])
 
         self.assertEqual(related_count("smalt"), 1)
         self.assertEqual(related_count("nothing"), 0)
@@ -235,6 +242,45 @@ class ResourceReportEndpointTests(TestCase):
             ],
         )
 
+    def test_resource_images_page_by_cursor(self):
+        photos = self.add_related_photos()
+        photo_files = Node.objects.get(graph=self.related_graph, alias="photo_files")
+        TileModel.objects.create(
+            resourceinstance=self.related_resource,
+            nodegroup=photos,
+            data={
+                str(photo_files.pk): [
+                    {
+                        "name": "pyrite_2.jpg",
+                        "url": "/files/pyrite_2",
+                        "type": "image/jpeg",
+                    }
+                ]
+            },
+        )
+        self.client.force_login(self.superuser)
+        images_url = reverse("api_resource_images", args=[self.resource.pk])
+
+        with mock.patch.object(ResourceImagesView, "page_size", 1):
+            first_page = self.client.get(
+                images_url, {"sources": "related_graph:photo_files"}
+            ).json()
+            second_page = self.client.get(
+                images_url,
+                {
+                    "sources": "related_graph:photo_files",
+                    "after": first_page["next_cursor"],
+                },
+            ).json()
+
+        self.assertEqual(
+            sorted(
+                image["url"] for image in first_page["images"] + second_page["images"]
+            ),
+            ["/files/pyrite_1", "/files/pyrite_2"],
+        )
+        self.assertIsNone(second_page["next_cursor"])
+
     def test_resource_images_skip_relationships_the_user_cannot_read(self):
         self.add_related_photos()
         make_nodegroup(self.graph, "notes")
@@ -279,7 +325,7 @@ class ResourceReportEndpointTests(TestCase):
             {"sources": "related_graph:photo_files"},
         )
 
-        self.assertEqual(groups_response.json()["groups"][0]["total_count"], 1)
+        self.assertEqual(len(groups_response.json()["groups"][0]["items"]), 1)
         self.assertEqual(len(images_response.json()["images"]), 1)
 
     def test_edit_history_hides_unreadable_nodegroups(self):
@@ -293,7 +339,7 @@ class ResourceReportEndpointTests(TestCase):
                 reverse("api_edit_history", args=[self.resource.pk])
             )
 
-        self.assertEqual(response.json()["total_count"], 0)
+        self.assertEqual(response.json()["results"], [])
 
     def test_resource_images_skip_unreadable_file_nodegroups(self):
         photos = self.add_related_photos()
@@ -362,7 +408,7 @@ class ResourceReportEndpointTests(TestCase):
             {"graphs": "related_graph"},
         ).json()["groups"]
 
-        self.assertEqual(group["total_count"], 1)
+        self.assertEqual(len(group["items"]), 1)
         self.assertEqual(
             [item["report_url"] for item in group["items"]],
             [reverse("resource_report", args=[self.related_resource.pk])],
@@ -384,10 +430,58 @@ class ResourceReportEndpointTests(TestCase):
         )
         self.assertEqual(history_response.status_code, 403)
 
-    def test_related_resource_group_pages_one_model(self):
-        self.client.force_login(self.superuser)
-        response = self.client.get(
-            reverse("api_related_resource_groups", args=[self.resource.pk]),
-            {"graph": "related_graph", "page": 1},
+    def test_related_resource_groups_page_by_cursor(self):
+        second_related_resource = ResourceInstance.objects.create(
+            graph=self.related_graph
         )
-        self.assertEqual(response.json()["graph_slug"], "related_graph")
+        ResourceXResource.objects.create(
+            from_resource=self.resource,
+            from_resource_graph=self.graph,
+            to_resource=second_related_resource,
+            to_resource_graph=self.related_graph,
+            node=self.related_thing,
+        )
+        self.client.force_login(self.superuser)
+        groups_url = reverse("api_related_resource_groups", args=[self.resource.pk])
+
+        with mock.patch.object(RelatedResourceGroupsView, "page_size", 1):
+            [first_page] = self.client.get(
+                groups_url, {"graphs": "related_graph"}
+            ).json()["groups"]
+            second_page = self.client.get(
+                groups_url,
+                {"graph": "related_graph", "after": first_page["next_cursor"]},
+            ).json()
+
+        self.assertIsNone(second_page["next_cursor"])
+        self.assertEqual(
+            {item["report_url"] for item in first_page["items"] + second_page["items"]},
+            {
+                reverse("resource_report", args=[self.related_resource.pk]),
+                reverse("resource_report", args=[second_related_resource.pk]),
+            },
+        )
+
+    def test_edit_history_pages_by_cursor(self):
+        EditLog.objects.create(
+            resourceinstanceid=str(self.resource.pk),
+            nodegroupid=str(self.names.pk),
+            edittype="tile create",
+            newvalue={},
+            timestamp=timezone.now() - timedelta(days=1),
+            user_username="grace",
+        )
+        self.client.force_login(self.superuser)
+        history_url = reverse("api_edit_history", args=[self.resource.pk])
+
+        with mock.patch.object(EditHistoryView, "page_size", 1):
+            first_page = self.client.get(history_url).json()
+            second_page = self.client.get(
+                history_url, {"after": first_page["next_cursor"]}
+            ).json()
+
+        self.assertEqual(
+            [edit["user"] for edit in first_page["results"] + second_page["results"]],
+            ["Ada Lovelace", "grace"],
+        )
+        self.assertIsNone(second_page["next_cursor"])

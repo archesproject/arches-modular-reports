@@ -13,7 +13,7 @@ import type {
     ImageSource,
     RelatedResourceGroup,
     ReportContext,
-    ResourceImage,
+    ResourceImagesPage,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 async function parseResponse<ResponseBody>(
@@ -81,14 +81,18 @@ export async function fetchReportContext(
 
 export async function fetchEditHistory(
     resourceInstanceId: string,
-    page: number,
+    cursor: string | null,
     query: string,
 ): Promise<EditHistoryPage> {
+    const queryParameters: Record<string, string> = { q: query };
+    if (cursor !== null) {
+        queryParameters.after = cursor;
+    }
     const response = await fetch(
         generateArchesURL(
             "arches_modular_reports:api_edit_history",
             { resourceid: resourceInstanceId },
-            { page, q: query },
+            queryParameters,
         ),
     );
     return parseResponse<EditHistoryPage>(response);
@@ -115,14 +119,21 @@ export async function fetchRelatedResourceGroups(
 export async function fetchRelatedResourceGroup(
     resourceInstanceId: string,
     graphSlug: string,
-    page: number,
+    cursor: string | null,
     query: string,
 ): Promise<RelatedResourceGroup> {
+    const queryParameters: Record<string, string> = {
+        graph: graphSlug,
+        q: query,
+    };
+    if (cursor !== null) {
+        queryParameters.after = cursor;
+    }
     const response = await fetch(
         generateArchesURL(
             "arches_modular_reports:api_related_resource_groups",
             { resourceid: resourceInstanceId },
-            { graph: graphSlug, page, q: query },
+            queryParameters,
         ),
     );
     return parseResponse<RelatedResourceGroup>(response);
@@ -131,23 +142,24 @@ export async function fetchRelatedResourceGroup(
 export async function fetchResourceImages(
     resourceInstanceId: string,
     imageSources: ImageSource[],
-): Promise<ResourceImage[]> {
+    cursor: string | null,
+): Promise<ResourceImagesPage> {
+    const queryParameters: Record<string, string> = {
+        sources: imageSources
+            .map((imageSource) => `${imageSource.model}:${imageSource.node}`)
+            .join(","),
+    };
+    if (cursor !== null) {
+        queryParameters.after = cursor;
+    }
     const response = await fetch(
         generateArchesURL(
             "arches_modular_reports:api_resource_images",
             { resourceid: resourceInstanceId },
-            {
-                sources: imageSources
-                    .map(
-                        (imageSource) =>
-                            `${imageSource.model}:${imageSource.node}`,
-                    )
-                    .join(","),
-            },
+            queryParameters,
         ),
     );
-    const parsed = await parseResponse<{ images: ResourceImage[] }>(response);
-    return parsed.images;
+    return parseResponse<ResourceImagesPage>(response);
 }
 
 export async function copyResource(

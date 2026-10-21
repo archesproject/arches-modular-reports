@@ -251,9 +251,7 @@ export interface EditHistoryEntry {
 
 export interface EditHistoryPage {
     results: EditHistoryEntry[];
-    page: number;
-    total_count: number;
-    has_next: boolean;
+    next_cursor: string | null;
 }
 
 export interface RelatedResourceItem {
@@ -268,9 +266,7 @@ export interface RelatedResourceGroup {
     graph_name: string;
     iconclass: string | null;
     color: string | null;
-    total_count: number;
-    page: number;
-    has_next: boolean;
+    next_cursor: string | null;
     items: RelatedResourceItem[];
 }
 
@@ -285,6 +281,11 @@ export interface ImageSource {
 
 export interface ImagesPanelConfig {
     images: ImageSource[];
+}
+
+export interface ResourceImagesPage {
+    images: ResourceImage[];
+    next_cursor: string | null;
 }
 
 export interface ResourceImage {

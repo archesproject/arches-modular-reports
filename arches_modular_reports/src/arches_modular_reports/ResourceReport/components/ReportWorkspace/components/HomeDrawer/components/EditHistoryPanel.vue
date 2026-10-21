@@ -32,8 +32,7 @@ const { $gettext } = useGettext();
 const { filterText, query } = useFilterQuery();
 
 const entries = ref<EditHistoryEntry[]>([]);
-const currentPage = ref(1);
-const hasNextPage = ref(false);
+const nextCursor = ref<string | null>(null);
 const isLoading = ref(false);
 const loadError = ref<Error | null>(null);
 let latestHistoryRequestNumber = 0;
@@ -43,10 +42,13 @@ const resourceInstanceId = computed(
 );
 
 watchEffect(() => {
-    loadHistory(query.value, 1);
+    loadHistory(query.value, null);
 });
 
-async function loadHistory(searchText: string, page: number): Promise<void> {
+async function loadHistory(
+    searchText: string,
+    cursor: string | null,
+): Promise<void> {
     latestHistoryRequestNumber += 1;
     const historyRequestNumber = latestHistoryRequestNumber;
     isLoading.value = true;
@@ -54,19 +56,18 @@ async function loadHistory(searchText: string, page: number): Promise<void> {
     try {
         const historyPage = await fetchEditHistory(
             resourceInstanceId.value,
-            page,
+            cursor,
             searchText,
         );
         if (historyRequestNumber !== latestHistoryRequestNumber) {
             return;
         }
-        if (page === 1) {
+        if (cursor === null) {
             entries.value = historyPage.results;
         } else {
             entries.value = [...entries.value, ...historyPage.results];
         }
-        currentPage.value = historyPage.page;
-        hasNextPage.value = historyPage.has_next;
+        nextCursor.value = historyPage.next_cursor;
     } catch (error) {
         if (historyRequestNumber === latestHistoryRequestNumber) {
             loadError.value = toError(error);
@@ -79,7 +80,7 @@ async function loadHistory(searchText: string, page: number): Promise<void> {
 }
 
 function loadMore(): void {
-    loadHistory(query.value, currentPage.value + 1);
+    loadHistory(query.value, nextCursor.value);
 }
 
 function editTypeLabel(entry: EditHistoryEntry): string {
@@ -273,7 +274,7 @@ function fieldLabel(nodeAlias: string): string {
             </li>
         </ol>
         <Button
-            v-if="hasNextPage"
+            v-if="nextCursor !== null"
             variant="link"
             size="small"
             :label="$gettext('Load more')"

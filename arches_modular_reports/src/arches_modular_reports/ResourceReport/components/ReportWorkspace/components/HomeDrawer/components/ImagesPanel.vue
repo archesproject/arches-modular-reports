@@ -26,7 +26,9 @@ const { reportData, panelConfig } = defineProps<{
 const { $gettext } = useGettext();
 
 const images = ref<ResourceImage[]>([]);
+const nextCursor = ref<string | null>(null);
 const isLoading = ref(true);
+const isLoadingMore = ref(false);
 const loadError = ref<Error | null>(null);
 
 const resourceInstanceId = computed(
@@ -37,16 +39,37 @@ watchEffect(async () => {
     isLoading.value = true;
     loadError.value = null;
     try {
-        images.value = await fetchResourceImages(
+        const imagesPage = await fetchResourceImages(
             resourceInstanceId.value,
             panelConfig.images,
+            null,
         );
+        images.value = imagesPage.images;
+        nextCursor.value = imagesPage.next_cursor;
     } catch (error) {
         loadError.value = toError(error);
     } finally {
         isLoading.value = false;
     }
 });
+
+async function loadMore(): Promise<void> {
+    isLoadingMore.value = true;
+    loadError.value = null;
+    try {
+        const imagesPage = await fetchResourceImages(
+            resourceInstanceId.value,
+            panelConfig.images,
+            nextCursor.value,
+        );
+        images.value = [...images.value, ...imagesPage.images];
+        nextCursor.value = imagesPage.next_cursor;
+    } catch (error) {
+        loadError.value = toError(error);
+    } finally {
+        isLoadingMore.value = false;
+    }
+}
 </script>
 
 <template>
@@ -112,6 +135,14 @@ watchEffect(async () => {
                 />
             </template>
         </Galleria>
+        <Button
+            v-if="nextCursor !== null"
+            variant="link"
+            size="small"
+            :label="$gettext('Load more')"
+            :loading="isLoadingMore"
+            @click="loadMore"
+        />
     </div>
 </template>
 

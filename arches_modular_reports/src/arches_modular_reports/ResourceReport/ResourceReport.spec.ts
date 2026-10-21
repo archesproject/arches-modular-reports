@@ -222,9 +222,7 @@ const PIGMENTS_GROUP: RelatedResourceGroup = {
     graph_name: "Pigments",
     iconclass: "fa fa-flask",
     color: null,
-    total_count: 2,
-    page: 1,
-    has_next: true,
+    next_cursor: "next-pigments",
     items: [
         {
             resourcexid: "smalt-relation",
@@ -505,8 +503,7 @@ describe("ResourceReport", () => {
         await flushPromises();
         finishLoadMore({
             ...PIGMENTS_GROUP,
-            page: 2,
-            has_next: false,
+            next_cursor: null,
             items: [
                 {
                     resourcexid: "cobalt-relation",

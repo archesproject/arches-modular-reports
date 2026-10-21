@@ -13,7 +13,7 @@ from django.db.models import (
     When,
 )
 from django.db.models.fields.json import KT
-from django.db.models.functions import Cast
+from django.db.models.functions import Cast, Coalesce
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
@@ -228,18 +228,29 @@ class EditHistoryView(APIBase):
                     .values("nodegroup_id_text")
                 )
             )
-        paginator = Paginator(edits, self.page_size)
-        edit_page = paginator.get_page(request.GET.get("page", 1))
-        value_describer = EditValueDescriber()
+        if cursor := request.GET.get("after"):
+            timestamp, editlogid = json.loads(cursor)
+            edits = edits.filter(
+                Q(timestamp__lt=timestamp)
+                | Q(timestamp=timestamp, editlogid__lt=editlogid)
+            )
+        page_edits = list(edits[: self.page_size + 1])
+        next_cursor = None
+        if len(page_edits) > self.page_size:
+            page_edits = page_edits[: self.page_size]
+            next_cursor = json.dumps(
+                [page_edits[-1].timestamp.isoformat(), str(page_edits[-1].editlogid)]
+            )
+        value_describer = EditValueDescriber(
+            {edit.nodegroupid for edit in page_edits if edit.nodegroupid}
+        )
 
         return JSONResponse(
             {
                 "results": [
-                    self.serialize_edit(edit, value_describer) for edit in edit_page
+                    self.serialize_edit(edit, value_describer) for edit in page_edits
                 ],
-                "page": edit_page.number,
-                "total_count": paginator.count,
-                "has_next": edit_page.has_next(),
+                "next_cursor": next_cursor,
             }
         )
 
@@ -259,7 +270,9 @@ class EditHistoryView(APIBase):
             "values": [],
         }
         if edit.nodegroupid:
-            serialized_edit["card_name"] = value_describer.card_name(edit.nodegroupid)
+            serialized_edit["card_name"] = (
+                value_describer.card_names_by_nodegroup_id.get(edit.nodegroupid, "")
+            )
             serialized_edit["values"] = value_describer.describe(edit)
         return serialized_edit
 
@@ -334,12 +347,6 @@ class RelatedResourceGroupsView(APIBase):
                     .values("pk")
                 )
             )
-        relations = relations.filter(
-            related_resource_id__in=readable_resource_ids(
-                request.user,
-                set(relations.values_list("related_resource_id", flat=True)),
-            )
-        )
         related_graphs = models.GraphModel.objects.filter(
             pk__in=relations.values("related_graph_id")
         )
@@ -350,9 +357,7 @@ class RelatedResourceGroupsView(APIBase):
                 return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
             return JSONResponse(
                 self.serialize_group(
-                    relations,
-                    requested_graph,
-                    page_number=request.GET.get("page", 1),
+                    relations, requested_graph, request.GET.get("after"), request.user
                 )
             )
 
@@ -373,9 +378,7 @@ class RelatedResourceGroupsView(APIBase):
             {
                 "groups": [
                     self.serialize_group(
-                        relations,
-                        graphs_by_slug[graph_slug],
-                        page_number=1,
+                        relations, graphs_by_slug[graph_slug], None, request.user
                     )
                     for graph_slug in graph_slugs
                     if graph_slug in graphs_by_slug
@@ -383,20 +386,63 @@ class RelatedResourceGroupsView(APIBase):
             }
         )
 
-    def serialize_group(self, relations, graph, page_number):
-        group_relations = relations.filter(related_graph_id=graph.pk).order_by(
+    def serialize_group(self, relations, graph, cursor, user):
+        group_relations = relations.filter(related_graph_id=graph.pk)
+        if cursor is not None:
+            sort_name, resourcexid = json.loads(cursor)
+            if sort_name is None:
+                group_relations = group_relations.filter(
+                    related_resource_sort_name__isnull=True,
+                    resourcexid__gt=resourcexid,
+                )
+            else:
+                group_relations = group_relations.filter(
+                    Q(related_resource_sort_name__gt=sort_name)
+                    | Q(
+                        related_resource_sort_name=sort_name,
+                        resourcexid__gt=resourcexid,
+                    )
+                    | Q(related_resource_sort_name__isnull=True)
+                )
+        group_relations = group_relations.order_by(
             F("related_resource_sort_name").asc(nulls_last=True), "resourcexid"
         )
-        paginator = Paginator(group_relations, self.page_size)
-        relation_page = paginator.get_page(page_number)
+
+        page_relations = []
+        has_more = False
+        batch_start = 0
+        while not has_more:
+            batch = list(
+                group_relations[batch_start : batch_start + self.page_size + 1]
+            )
+            readable_ids = readable_resource_ids(
+                user, {relation.related_resource_id for relation in batch}
+            )
+            for relation in batch:
+                if relation.related_resource_id not in readable_ids:
+                    continue
+                if len(page_relations) == self.page_size:
+                    has_more = True
+                    break
+                page_relations.append(relation)
+            if len(batch) <= self.page_size:
+                break
+            batch_start += len(batch)
+
+        next_cursor = None
+        if has_more:
+            next_cursor = json.dumps(
+                [
+                    page_relations[-1].related_resource_sort_name,
+                    str(page_relations[-1].resourcexid),
+                ]
+            )
         return {
             "graph_slug": graph.slug,
             "graph_name": str(graph.name),
             "iconclass": graph.iconclass,
             "color": graph.color,
-            "total_count": paginator.count,
-            "page": relation_page.number,
-            "has_next": relation_page.has_next(),
+            "next_cursor": next_cursor,
             "items": [
                 {
                     "resourcexid": relation.resourcexid,
@@ -406,7 +452,7 @@ class RelatedResourceGroupsView(APIBase):
                         "resource_report", args=[relation.related_resource_id]
                     ),
                 }
-                for relation in relation_page
+                for relation in page_relations
             ],
         }
 
@@ -421,6 +467,8 @@ def readable_resource_ids(user, resource_ids):
 
 @method_decorator(can_read_resource_instance, name="dispatch")
 class ResourceImagesView(APIBase):
+    page_size = 25
+
     def get(self, request, resourceid):
         try:
             resource = models.ResourceInstance.objects.get(pk=resourceid)
@@ -432,59 +480,117 @@ class ResourceImagesView(APIBase):
                 request.user, "models.read_nodegroup"
             )
         }
-        images = []
+        requested_sources = []
+        source_filter = Q()
         for source in request.GET.get("sources", "").split(","):
             graph_slug, _separator, node_alias = source.partition(":")
-            file_node = models.Node.objects.filter(
-                graph__slug=graph_slug,
-                alias=node_alias,
+            requested_sources.append((graph_slug, node_alias))
+            source_filter |= Q(graph__slug=graph_slug, alias=node_alias)
+        file_nodes_by_source = {
+            (file_node.graph.slug, file_node.alias): file_node
+            for file_node in models.Node.objects.filter(
+                source_filter,
                 datatype="file-list",
                 source_identifier__isnull=True,
-            ).first()
-            if (
-                file_node is None
-                or str(file_node.nodegroup_id) not in readable_nodegroup_ids
-            ):
+                nodegroup_id__in=readable_nodegroup_ids,
+            ).select_related("graph")
+        }
+        cursor = None
+        if raw_cursor := request.GET.get("after"):
+            cursor = json.loads(raw_cursor)
+
+        images = []
+        last_included_tile = None
+        readable_by_resource_id = {resource.pk: True}
+        for source_index, requested_source in enumerate(requested_sources):
+            file_node = file_nodes_by_source.get(requested_source)
+            if file_node is None or (cursor is not None and source_index < cursor[0]):
                 continue
-            if file_node.graph_id == resource.graph_id:
-                resource_ids = {resource.pk}
-            else:
-                resource_ids = readable_resource_ids(
-                    request.user,
-                    self.related_resource_ids(
-                        resource.pk, file_node.graph_id, readable_nodegroup_ids
-                    ),
+            tiles = self.ordered_tiles(resource, file_node, readable_nodegroup_ids)
+            if cursor is not None and source_index == cursor[0]:
+                _source_index, resource_id, sortorder, tileid = cursor
+                tiles = tiles.filter(
+                    Q(resourceinstance_id__gt=resource_id)
+                    | Q(resourceinstance_id=resource_id, tile_sortorder__gt=sortorder)
+                    | Q(
+                        resourceinstance_id=resource_id,
+                        tile_sortorder=sortorder,
+                        tileid__gt=tileid,
+                    )
                 )
-            tiles = (
-                models.TileModel.objects.filter(
-                    resourceinstance_id__in=resource_ids,
-                    nodegroup_id=file_node.nodegroup_id,
-                )
-                .select_related("resourceinstance")
-                .order_by("resourceinstance_id", "sortorder", "tileid")
-            )
-            for tile in tiles:
-                for file_value in tile.data.get(str(file_node.pk)) or []:
-                    if file_value["type"].startswith("image/"):
-                        images.append(
-                            self.serialize_image(file_value, tile.resourceinstance)
-                        )
-        return JSONResponse({"images": images})
+            for tile in self.readable_tiles(
+                tiles, request.user, readable_by_resource_id
+            ):
+                tile_images = [
+                    self.serialize_image(file_value, tile.resourceinstance)
+                    for file_value in tile.data.get(str(file_node.pk)) or []
+                    if file_value["type"].startswith("image/")
+                ]
+                if not tile_images:
+                    continue
+                if len(images) >= self.page_size:
+                    return JSONResponse(
+                        {
+                            "images": images,
+                            "next_cursor": json.dumps(last_included_tile),
+                        }
+                    )
+                images.extend(tile_images)
+                last_included_tile = [
+                    source_index,
+                    str(tile.resourceinstance_id),
+                    tile.tile_sortorder,
+                    str(tile.tileid),
+                ]
+        return JSONResponse({"images": images, "next_cursor": None})
 
     @staticmethod
-    def related_resource_ids(resource_id, graph_id, readable_nodegroup_ids):
-        readable_relations = models.ResourceXResource.objects.filter(
-            node__nodegroup_id__in=readable_nodegroup_ids
+    def ordered_tiles(resource, file_node, readable_nodegroup_ids):
+        tiles = models.TileModel.objects.filter(nodegroup_id=file_node.nodegroup_id)
+        if file_node.graph_id == resource.graph_id:
+            tiles = tiles.filter(resourceinstance_id=resource.pk)
+        else:
+            readable_relations = models.ResourceXResource.objects.filter(
+                node__nodegroup_id__in=readable_nodegroup_ids
+            )
+            tiles = tiles.filter(
+                Q(
+                    resourceinstance_id__in=readable_relations.filter(
+                        from_resource_id=resource.pk,
+                        to_resource_graph_id=file_node.graph_id,
+                    ).values("to_resource_id")
+                )
+                | Q(
+                    resourceinstance_id__in=readable_relations.filter(
+                        to_resource_id=resource.pk,
+                        from_resource_graph_id=file_node.graph_id,
+                    ).values("from_resource_id")
+                )
+            )
+        return (
+            tiles.annotate(tile_sortorder=Coalesce("sortorder", 0))
+            .select_related("resourceinstance")
+            .order_by("resourceinstance_id", "tile_sortorder", "tileid")
         )
-        return set(
-            readable_relations.filter(
-                from_resource_id=resource_id, to_resource_graph_id=graph_id
-            ).values_list("to_resource_id", flat=True)
-        ) | set(
-            readable_relations.filter(
-                to_resource_id=resource_id, from_resource_graph_id=graph_id
-            ).values_list("from_resource_id", flat=True)
-        )
+
+    def readable_tiles(self, tiles, user, readable_by_resource_id):
+        batch_start = 0
+        while True:
+            batch = list(tiles[batch_start : batch_start + self.page_size + 1])
+            unchecked_resource_ids = {
+                tile.resourceinstance_id for tile in batch
+            } - readable_by_resource_id.keys()
+            readable_ids = readable_resource_ids(user, unchecked_resource_ids)
+            for resource_id in unchecked_resource_ids:
+                readable_by_resource_id[resource_id] = resource_id in readable_ids
+            yield from (
+                tile
+                for tile in batch
+                if readable_by_resource_id[tile.resourceinstance_id]
+            )
+            if len(batch) <= self.page_size:
+                return
+            batch_start += len(batch)
 
     @staticmethod
     def serialize_image(file_value, resource):

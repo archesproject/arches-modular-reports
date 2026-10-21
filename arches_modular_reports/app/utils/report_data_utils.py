@@ -5,29 +5,24 @@ from arches_modular_reports.models import ReportConfig
 
 
 class EditValueDescriber:
-    def __init__(self):
+    def __init__(self, nodegroup_ids):
         self.datatype_factory = DataTypeFactory()
-        self.nodes_by_nodegroup_id = {}
         self.card_names_by_nodegroup_id = {}
-
-    def card_name(self, nodegroup_id):
-        if nodegroup_id not in self.card_names_by_nodegroup_id:
-            card_name = (
-                models.CardModel.objects.filter(nodegroup_id=nodegroup_id)
-                .values_list("name", flat=True)
-                .first()
+        for nodegroup_id, card_name in models.CardModel.objects.filter(
+            nodegroup_id__in=nodegroup_ids
+        ).values_list("nodegroup_id", "name"):
+            self.card_names_by_nodegroup_id.setdefault(
+                str(nodegroup_id), str(card_name or "")
             )
-            self.card_names_by_nodegroup_id[nodegroup_id] = str(card_name or "")
-        return self.card_names_by_nodegroup_id[nodegroup_id]
-
-    def nodes(self, nodegroup_id):
-        if nodegroup_id not in self.nodes_by_nodegroup_id:
-            self.nodes_by_nodegroup_id[nodegroup_id] = list(
-                models.Node.objects.filter(nodegroup_id=nodegroup_id)
-                .exclude(datatype__in=ReportConfig.excluded_datatypes)
-                .order_by("cardxnodexwidget__sortorder")
+        self.nodes_by_nodegroup_id = {}
+        for node in (
+            models.Node.objects.filter(nodegroup_id__in=nodegroup_ids)
+            .exclude(datatype__in=ReportConfig.excluded_datatypes)
+            .order_by("cardxnodexwidget__sortorder")
+        ):
+            self.nodes_by_nodegroup_id.setdefault(str(node.nodegroup_id), []).append(
+                node
             )
-        return self.nodes_by_nodegroup_id[nodegroup_id]
 
     def display_value(self, tile_data, nodegroup_id, node):
         raw_value = tile_data.get(str(node.pk))
@@ -42,7 +37,7 @@ class EditValueDescriber:
 
     def describe(self, edit):
         described_values = []
-        for node in self.nodes(edit.nodegroupid):
+        for node in self.nodes_by_nodegroup_id.get(edit.nodegroupid, []):
             before = None
             after = None
             old_raw_value = None
