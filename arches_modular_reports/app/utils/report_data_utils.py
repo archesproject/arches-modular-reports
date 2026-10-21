@@ -1,44 +1,12 @@
-from django.db.models.fields.json import KT
-from django.db.models.functions import Coalesce
-from django.utils.translation import get_language
-
 from arches.app.datatypes.datatypes import DataTypeFactory
 from arches.app.models import models
-from arches.app.models.system_settings import settings
 
-
-def localized_text_expression(field_path):
-    return Coalesce(
-        KT(f"{field_path}__{get_language()}"),
-        KT(f"{field_path}__{settings.LANGUAGE_CODE}"),
-    )
-
-
-def file_metadata_text(file_value, field):
-    metadata = file_value.get(field)
-    if not isinstance(metadata, dict):
-        return metadata or ""
-    texts_by_language = {
-        language: entry["value"] for language, entry in metadata.items()
-    }
-    active_language_text = texts_by_language.get(get_language())
-    if active_language_text:
-        return active_language_text
-    populated_texts = [text for text in texts_by_language.values() if text]
-    if populated_texts:
-        return populated_texts[0]
-    return ""
+from arches_modular_reports.models import ReportConfig
 
 
 class EditValueDescriber:
     def __init__(self):
         self.datatype_factory = DataTypeFactory()
-        self.excluded_datatypes = {
-            "semantic",
-            *models.DDataType.objects.filter(isgeometric=True).values_list(
-                "datatype", flat=True
-            ),
-        }
         self.nodes_by_nodegroup_id = {}
         self.card_names_by_nodegroup_id = {}
 
@@ -54,22 +22,16 @@ class EditValueDescriber:
 
     def nodes(self, nodegroup_id):
         if nodegroup_id not in self.nodes_by_nodegroup_id:
-            nodegroup_nodes = list(
+            self.nodes_by_nodegroup_id[nodegroup_id] = list(
                 models.Node.objects.filter(nodegroup_id=nodegroup_id)
-                .exclude(datatype__in=self.excluded_datatypes)
-                .prefetch_related("cardxnodexwidget_set")
+                .exclude(datatype__in=ReportConfig.excluded_datatypes)
                 .order_by("cardxnodexwidget__sortorder")
             )
-            for node in nodegroup_nodes:
-                widgets = node.cardxnodexwidget_set.all()
-                widget_label = str(widgets[0].label or "") if widgets else ""
-                node.report_label = widget_label or node.name
-            self.nodes_by_nodegroup_id[nodegroup_id] = nodegroup_nodes
         return self.nodes_by_nodegroup_id[nodegroup_id]
 
     def display_value(self, tile_data, nodegroup_id, node):
         raw_value = tile_data.get(str(node.pk))
-        if raw_value in (None, "", [], {}):
+        if raw_value is None:
             return ""
         tile = models.TileModel(nodegroup_id=nodegroup_id, data=tile_data)
         datatype = self.datatype_factory.get_instance(node.datatype)
@@ -79,22 +41,21 @@ class EditValueDescriber:
             return str(raw_value)
 
     def describe(self, edit):
-        old_tile_data = edit.oldvalue if isinstance(edit.oldvalue, dict) else None
-        new_tile_data = edit.newvalue if isinstance(edit.newvalue, dict) else None
         described_values = []
         for node in self.nodes(edit.nodegroupid):
             before = None
             after = None
-            if old_tile_data is not None:
-                before = self.display_value(old_tile_data, edit.nodegroupid, node)
-            if new_tile_data is not None:
-                after = self.display_value(new_tile_data, edit.nodegroupid, node)
-            old_raw_value = (old_tile_data or {}).get(str(node.pk))
-            new_raw_value = (new_tile_data or {}).get(str(node.pk))
+            old_raw_value = None
+            new_raw_value = None
+            if edit.oldvalue is not None:
+                before = self.display_value(edit.oldvalue, edit.nodegroupid, node)
+                old_raw_value = edit.oldvalue.get(str(node.pk))
+            if edit.newvalue is not None:
+                after = self.display_value(edit.newvalue, edit.nodegroupid, node)
+                new_raw_value = edit.newvalue.get(str(node.pk))
             described_values.append(
                 {
                     "node_alias": node.alias,
-                    "label": node.report_label,
                     "before": before,
                     "after": after,
                     "changed": old_raw_value != new_raw_value,

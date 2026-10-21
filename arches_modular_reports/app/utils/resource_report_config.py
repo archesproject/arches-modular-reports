@@ -33,11 +33,7 @@ def translated_labels(message):
 
 
 def configured_graph_ids(node):
-    return {
-        graph_config["graphid"]
-        for graph_config in (node.config or {}).get("graphs", [])
-        if graph_config.get("graphid")
-    }
+    return {graph_config["graphid"] for graph_config in node.config["graphs"]}
 
 
 class ResourceReportGraph:
@@ -64,9 +60,8 @@ class ResourceReportGraph:
                 self.node_aliases_by_nodegroup_id_and_name[
                     (str(node.nodegroup_id), node.name)
                 ] = node.alias
-        self.visible_cards = sorted(
-            (card for card in graph.cardmodel_set.all() if card.visible),
-            key=lambda card: card.sortorder or 0,
+        self.visible_cards = graph.cardmodel_set.filter(visible=True).order_by(
+            "sortorder"
         )
         descriptor_function = FunctionXGraph.objects.filter(
             graph=graph, function__functiontype="primarydescriptors"

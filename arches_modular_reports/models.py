@@ -38,6 +38,8 @@ class ReportConfig(models.Model):
         limit_choices_to=get_graph_choices,
     )
 
+    excluded_datatypes = {"semantic", "annotation", "geojson-feature-collection"}
+
     class Meta:
         managed = True
         db_table = "arches_modular_report_config"
@@ -52,10 +54,6 @@ class ReportConfig(models.Model):
         if self.config and self.graph:
             return f"Config for: {self.graph.name}: {self.config.get('name')}"
         return super().__str__()
-
-    @property
-    def excluded_datatypes(self):
-        return {"semantic", "annotation", "geojson-feature-collection"}
 
     def clean(self):
         if not self.graph.slug:

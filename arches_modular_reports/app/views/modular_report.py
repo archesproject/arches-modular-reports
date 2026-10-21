@@ -12,6 +12,7 @@ from django.db.models import (
     Value,
     When,
 )
+from django.db.models.fields.json import KT
 from django.db.models.functions import Cast
 from django.http import Http404
 from django.shortcuts import render
@@ -39,11 +40,7 @@ from arches.app.views.resource import ResourceReportView
 
 from arches_modular_reports.app.utils.decorators import can_read_nodegroup
 from arches_modular_reports.app.utils.get_report_config import get_report_config
-from arches_modular_reports.app.utils.report_data_utils import (
-    EditValueDescriber,
-    file_metadata_text,
-    localized_text_expression,
-)
+from arches_modular_reports.app.utils.report_data_utils import EditValueDescriber
 from arches_modular_reports.app.utils.nodegroup_tile_data_utils import (
     build_valueid_annotation,
     get_sorted_filtered_tiles,
@@ -221,7 +218,7 @@ class EditHistoryView(APIBase):
                 | Q(user_username__icontains=query)
                 | Q(
                     nodegroupid__in=models.CardModel.objects.annotate(
-                        card_name_text=localized_text_expression("name"),
+                        card_name_text=KT(f"name__{get_language()}"),
                         nodegroup_id_text=Cast("nodegroup_id", TextField()),
                     )
                     .filter(
@@ -307,8 +304,8 @@ class RelatedResourceGroupsView(APIBase):
                 ),
             )
             .annotate(
-                related_resource_sort_name=localized_text_expression(
-                    "related_resource_name"
+                related_resource_sort_name=KT(
+                    f"related_resource_name__{get_language()}"
                 ),
             )
         )
@@ -317,7 +314,7 @@ class RelatedResourceGroupsView(APIBase):
                 relationship_label_text=Subquery(
                     models.CardXNodeXWidget.objects.filter(
                         node=OuterRef("node")
-                    ).values(label_text=localized_text_expression("label"))[:1]
+                    ).values(label_text=KT(f"label__{get_language()}"))[:1]
                 )
             ).filter(
                 Q(related_resource_sort_name__icontains=query)
@@ -327,7 +324,7 @@ class RelatedResourceGroupsView(APIBase):
                 )
                 | Q(
                     related_graph_id__in=models.GraphModel.objects.annotate(
-                        graph_name_text=localized_text_expression("name")
+                        graph_name_text=KT(f"name__{get_language()}")
                     )
                     .filter(
                         isresource=True,
@@ -359,36 +356,29 @@ class RelatedResourceGroupsView(APIBase):
                 )
             )
 
-        if requested_graph_slugs := request.GET.get("graphs"):
-            graph_slugs = requested_graph_slugs.split(",")
-            graphs_by_slug = {
-                graph.slug: graph
-                for graph in models.GraphModel.objects.filter(
-                    slug__in=graph_slugs,
-                    isresource=True,
-                    source_identifier__isnull=True,
-                )
-            }
-            return JSONResponse(
-                {
-                    "groups": [
-                        self.serialize_group(
-                            relations,
-                            graphs_by_slug[graph_slug],
-                            page_number=1,
-                        )
-                        for graph_slug in graph_slugs
-                        if graph_slug in graphs_by_slug
-                    ]
-                }
+        graph_slugs = [
+            graph_slug
+            for graph_slug in request.GET.get("graphs", "").split(",")
+            if graph_slug
+        ]
+        graphs_by_slug = {
+            graph.slug: graph
+            for graph in models.GraphModel.objects.filter(
+                slug__in=graph_slugs,
+                isresource=True,
+                source_identifier__isnull=True,
             )
+        }
         return JSONResponse(
             {
                 "groups": [
-                    self.serialize_group(relations, graph, page_number=1)
-                    for graph in sorted(
-                        related_graphs, key=lambda graph: str(graph.name)
+                    self.serialize_group(
+                        relations,
+                        graphs_by_slug[graph_slug],
+                        page_number=1,
                     )
+                    for graph_slug in graph_slugs
+                    if graph_slug in graphs_by_slug
                 ]
             }
         )
@@ -475,7 +465,7 @@ class ResourceImagesView(APIBase):
             )
             for tile in tiles:
                 for file_value in tile.data.get(str(file_node.pk)) or []:
-                    if str(file_value.get("type", "")).startswith("image/"):
+                    if file_value["type"].startswith("image/"):
                         images.append(
                             self.serialize_image(file_value, tile.resourceinstance)
                         )
@@ -498,16 +488,18 @@ class ResourceImagesView(APIBase):
 
     @staticmethod
     def serialize_image(file_value, resource):
+        language = get_language()
         resource_name = str(resource.name or "")
         caption = (
-            file_metadata_text(file_value, "title")
-            or file_metadata_text(file_value, "description")
+            file_value.get("title", {}).get(language, {}).get("value")
+            or file_value.get("description", {}).get(language, {}).get("value")
             or resource_name
         )
         return {
             "url": file_value.get("url"),
             "caption": caption,
-            "alt_text": file_metadata_text(file_value, "altText") or caption,
+            "alt_text": file_value.get("altText", {}).get(language, {}).get("value")
+            or caption,
             "resourceinstanceid": str(resource.pk),
             "resource_name": resource_name,
             "report_url": reverse("resource_report", args=[resource.pk]),

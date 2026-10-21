@@ -251,7 +251,40 @@ class GenerateReportConfigCommandTests(TestCase):
         self.assertIn("totally_nonexistent_slug", stderr.getvalue())
 
     def test_generate_skips_invalid_generated_config(self):
-        register("broken_gen", lambda graph: {"name": "Broken", "bogus": True})
+        register(
+            "broken_gen",
+            lambda graph: {
+                "name": "Broken",
+                "components": [
+                    {
+                        "component": "arches_modular_reports/ResourceReport/ResourceReport",
+                        "config": {
+                            "workspaces": [
+                                {
+                                    "id": "report",
+                                    "component": "ReportWorkspace",
+                                    "config": {
+                                        "tabs": [
+                                            {
+                                                "sections": [
+                                                    {
+                                                        "folios": [
+                                                            {
+                                                                "nodegroup_alias": "missing"
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                }
+                            ]
+                        },
+                    }
+                ],
+            },
+        )
         management.call_command(
             "report_configs",
             "generate",
