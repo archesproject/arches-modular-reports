@@ -1,337 +1,80 @@
 <script setup lang="ts">
-import arches from "arches";
-
-import { computed, watchEffect, provide, ref } from "vue";
+import { provide, ref, watchEffect } from "vue";
 import { useGettext } from "vue3-gettext";
 
-import Panel from "openvue/panel";
-import Splitter from "openvue/splitter";
-import SplitterPanel from "openvue/splitterpanel";
-import Toast from "openvue/toast";
-import Button from "openvue/button";
-import { useToast } from "openvue/usetoast";
+import Message from "openvue/message";
 
-import {
-    fetchNodePresentation,
-    fetchReportConfig,
-    fetchUserResourcePermissions,
-    fetchLanguageSettings,
-} from "@/arches_modular_reports/ModularReport/api.ts";
-
-import { DEFAULT_ERROR_TOAST_LIFE } from "@/arches_modular_reports/constants.ts";
+import { fetchReportConfig } from "@/arches_modular_reports/ModularReport/api.ts";
 import { importComponents } from "@/arches_modular_reports/ModularReport/utils.ts";
-import ResourceEditor from "@/arches_modular_reports/ModularReport/components/ResourceEditor/ResourceEditor.vue";
+import { toError } from "@/arches_modular_reports/utils.ts";
 
-import type { Ref } from "vue";
 import type {
     ComponentLookup,
     NamedSection,
-    NodePresentationLookup,
-    LanguageSettings,
-} from "@/arches_modular_reports/ModularReport/types";
+} from "@/arches_modular_reports/ModularReport/types.ts";
 
-const toast = useToast();
-const { $gettext } = useGettext();
-const componentLookup: ComponentLookup = {};
-
-const EDITOR = $gettext("Editor");
-const CLOSE_EDITOR = $gettext("Close editor");
-const EDIT_HISTORY = $gettext("Edit history");
-
-const { graphSlug, resourceInstanceId, reportConfigSlug } = defineProps<{
+const {
+    graphSlug,
+    resourceInstanceId,
+    reportConfigSlug = "default",
+} = defineProps<{
     graphSlug: string;
     resourceInstanceId: string;
     reportConfigSlug?: string;
 }>();
 
 provide("graphSlug", graphSlug);
-provide("resourceInstanceId", resourceInstanceId);
 
-const nodePresentationLookup: Ref<NodePresentationLookup | undefined> = ref();
-provide("nodePresentationLookup", nodePresentationLookup);
+const { $gettext } = useGettext();
 
-const userCanEditResourceInstance = ref(false);
-provide("userCanEditResourceInstance", userCanEditResourceInstance);
-
-const languageSettings = ref<Partial<LanguageSettings>>({});
-provide("languageSettings", languageSettings);
-
-const selectedNodegroupAlias = ref<string | null>();
-function setSelectedNodegroupAlias(nodegroupAlias: string | null | undefined) {
-    selectedNodegroupAlias.value = nodegroupAlias;
-}
-provide("selectedNodegroupAlias", {
-    selectedNodegroupAlias,
-    setSelectedNodegroupAlias,
-});
-
-const selectedNodeAlias = ref<string | null>();
-function setSelectedNodeAlias(nodeAlias: string | null) {
-    selectedNodeAlias.value = nodeAlias;
-}
-provide("selectedNodeAlias", {
-    selectedNodeAlias,
-    setSelectedNodeAlias,
-});
-
-const selectedTileId = ref<string | null | undefined>();
-function setSelectedTileId(tileId?: string | null) {
-    selectedTileId.value = tileId;
-}
-provide("selectedTileId", {
-    selectedTileId,
-    setSelectedTileId,
-});
-
-const selectedTilePath = ref<string[] | null>();
-function setSelectedTilePath(path: string[] | null) {
-    selectedTilePath.value = path;
-}
-provide("selectedTilePath", {
-    selectedTilePath,
-    setSelectedTilePath,
-});
-
-const shouldShowEditor = ref(false);
-function setShouldShowEditor(shouldShow: boolean) {
-    shouldShowEditor.value = shouldShow;
-}
-provide("shouldShowEditor", {
-    shouldShowEditor,
-    setShouldShowEditor,
-});
-
-const createTileRequestId = ref(0);
-const createTileRequestedNodegroupAlias = ref<string | null>(null);
-const createTileRequestedTilePath = ref<Array<string | number> | null>(null);
-
-function requestCreateTile(
-    nodegroupAlias: string,
-    tilePath: Array<string | number> | null = null,
-) {
-    createTileRequestedNodegroupAlias.value = nodegroupAlias;
-    createTileRequestedTilePath.value = tilePath;
-    createTileRequestId.value++;
-}
-
-provide("createTile", {
-    createTileRequestId,
-    createTileRequestedNodegroupAlias,
-    createTileRequestedTilePath,
-    requestCreateTile,
-});
-
-const softDeleteTileRequestId = ref(0);
-const softDeleteRequestedNodegroupAlias = ref<string | null>(null);
-const softDeleteRequestedTileId = ref<string | null>(null);
-
-function requestSoftDeleteTile(nodegroupAlias: string, tileId: string) {
-    softDeleteRequestedNodegroupAlias.value = nodegroupAlias;
-    softDeleteRequestedTileId.value = tileId;
-    softDeleteTileRequestId.value++;
-}
-
-provide("softDeleteTile", {
-    softDeleteTileRequestId,
-    softDeleteRequestedNodegroupAlias,
-    softDeleteRequestedTileId,
-    requestSoftDeleteTile,
-});
-
-const reportKey = ref(0);
-
-const config: Ref<NamedSection> = ref({
-    name: $gettext("Loading data"),
-    components: [],
-});
-
-const gutterVisibility = computed(() => {
-    return selectedNodegroupAlias.value ? "visible" : "hidden";
-});
+const componentLookup: ComponentLookup = {};
+const config = ref<NamedSection | null>(null);
+const fetchError = ref<Error | null>(null);
 
 watchEffect(async () => {
     try {
-        await Promise.all([
-            fetchNodePresentation(resourceInstanceId).then((data) => {
-                nodePresentationLookup.value = data;
-            }),
-            fetchUserResourcePermissions(resourceInstanceId).then((data) => {
-                userCanEditResourceInstance.value = data.edit;
-            }),
-            fetchLanguageSettings().then((data) => {
-                languageSettings.value = {
-                    ACTIVE_LANGUAGE: data.language,
-                    ACTIVE_LANGUAGE_DIRECTION: data.language_dir,
-                };
-            }),
-            fetchReportConfig(resourceInstanceId, reportConfigSlug).then(
-                (data) => {
-                    importComponents([data], componentLookup);
-                    config.value = data;
-                },
-            ),
-        ]);
+        const reportConfig = await fetchReportConfig(
+            resourceInstanceId,
+            reportConfigSlug,
+        );
+        await importComponents([reportConfig], componentLookup);
+        config.value = reportConfig;
     } catch (error) {
-        toast.add({
-            severity: "error",
-            life: DEFAULT_ERROR_TOAST_LIFE,
-            summary: $gettext("Unable to fetch resource"),
-            detail: (error as Error).message ?? error,
-        });
-        return;
+        fetchError.value = toError(error);
     }
 });
-
-function closeEditor() {
-    setShouldShowEditor(false);
-}
 </script>
 
 <template>
-    <Splitter style="overflow: hidden">
-        <SplitterPanel style="overflow: auto">
-            <div :key="reportKey">
-                <component
-                    :is="componentLookup[component.component].component"
-                    v-for="component in config.components"
-                    :key="componentLookup[component.component].key"
-                    :component
-                    :resource-instance-id
-                />
-            </div>
-        </SplitterPanel>
-
-        <SplitterPanel
-            v-show="shouldShowEditor"
-            style="
-                overflow: hidden;
-                display: flex;
-                flex-direction: column;
-                min-height: 0;
-            "
-            :size="30"
+    <div class="modular-report">
+        <Message
+            v-if="fetchError"
+            severity="error"
         >
-            <Panel class="editor-panel">
-                <template #header>
-                    <div
-                        style="
-                            width: 100%;
-                            display: flex;
-                            align-items: center;
-                            justify-content: space-between;
-                        "
-                    >
-                        <div class="editor-panel-header">
-                            <span>{{ EDITOR }}</span>
-                            <Button
-                                icon="pi pi-history"
-                                as="a"
-                                variant="link"
-                                :href="
-                                    `${arches.urls.resource_edit_log}`.replace(
-                                        '//',
-                                        `/${resourceInstanceId}/`,
-                                    )
-                                "
-                                target="_blank"
-                                rel="noopener"
-                                rounded
-                                :aria-label="EDIT_HISTORY"
-                            />
-                        </div>
-
-                        <Button
-                            severity="secondary"
-                            variant="text"
-                            icon="pi pi-times"
-                            size="large"
-                            :aria-label="CLOSE_EDITOR"
-                            @click="closeEditor"
-                        />
-                    </div>
-                </template>
-
-                <ResourceEditor
-                    v-if="userCanEditResourceInstance"
-                    @save="reportKey++"
-                />
-            </Panel>
-        </SplitterPanel>
-    </Splitter>
-
-    <Toast />
+            <span>
+                {{
+                    $gettext(
+                        "Unable to load the report: %{message}",
+                        { message: fetchError.message },
+                        true,
+                    )
+                }}
+            </span>
+        </Message>
+        <template v-else-if="config">
+            <component
+                :is="componentLookup[sectionContent.component].component"
+                v-for="(sectionContent, sectionIndex) in config.components"
+                :key="sectionIndex"
+                :component="sectionContent"
+                :resource-instance-id="resourceInstanceId"
+            />
+        </template>
+    </div>
 </template>
 
 <style scoped>
-.editor-panel {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    border: none;
-}
-
-.editor-panel-header {
-    font-size: 2.2rem;
-    font-weight: 600;
-}
-
-:deep(.editor-panel-header .p-button-icon) {
-    font-size: 1.4rem;
-}
-
-.p-splitter {
-    height: 100%;
-    width: 100%;
-    display: flex;
-    border: 0;
-    border-radius: 0;
-}
-
-:deep(.p-splitter-gutter) {
-    visibility: v-bind(gutterVisibility);
-}
-
-:deep(.editor-panel > .p-panel-header) {
-    background-color: var(--p-editor-panel-header-background);
-    border-bottom: 0.125rem solid var(--p-content-border-color) !important;
-}
-
-:deep(.editor-panel) {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-}
-
-:deep(.editor-panel .p-toggleable-content:not(:where(.map-component *))) {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-}
-
-:deep(.editor-panel .p-panel-content-container:not(:where(.map-component *))) {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-}
-
-:deep(.editor-panel .p-panel-content:not(:where(.map-component *))) {
-    flex: 1;
-    min-height: 0;
-    padding: 0;
-}
-
-@media print {
-    .p-splitter {
-        position: unset;
-    }
-    button,
-    :deep(svg),
-    :deep(button) {
-        display: none;
-    }
+.modular-report {
+    block-size: 100%;
 }
 </style>
