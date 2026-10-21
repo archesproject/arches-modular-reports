@@ -1,4 +1,5 @@
 import re
+from functools import cached_property
 
 from django.core.exceptions import ValidationError
 from django.utils import translation
@@ -39,11 +40,13 @@ def configured_graph_ids(node):
 class ResourceReportGraph:
     def __init__(self, graph):
         self.graph = graph
-        graph_nodes = list(graph.node_set.select_related("nodegroup"))
-        self.nodes_by_alias = {node.alias: node for node in graph_nodes if node.alias}
+        self.graph_nodes = list(graph.node_set.select_related("nodegroup"))
+        self.nodes_by_alias = {
+            node.alias: node for node in self.graph_nodes if node.alias
+        }
         self.grouping_nodes_by_nodegroup_id = {
             node.nodegroup_id: node
-            for node in graph_nodes
+            for node in self.graph_nodes
             if node.nodegroup_id == node.pk
         }
         self.grouping_nodes_by_alias = {
@@ -51,26 +54,29 @@ class ResourceReportGraph:
         }
         self.parent_nodegroup_ids_by_nodegroup_id = {
             node.nodegroup_id: node.nodegroup.parentnodegroup_id
-            for node in graph_nodes
+            for node in self.graph_nodes
             if node.nodegroup_id
         }
-        self.node_aliases_by_nodegroup_id_and_name = {}
-        for node in graph_nodes:
-            if node.nodegroup_id and node.datatype != "semantic":
-                self.node_aliases_by_nodegroup_id_and_name[
-                    (str(node.nodegroup_id), node.name)
-                ] = node.alias
         self.visible_cards = graph.cardmodel_set.filter(visible=True).order_by(
             "sortorder"
         )
+
+    @cached_property
+    def node_aliases_by_nodegroup_id_and_name(self):
+        return {
+            (str(node.nodegroup_id), node.name): node.alias
+            for node in self.graph_nodes
+            if node.nodegroup_id and node.datatype != "semantic"
+        }
+
+    @cached_property
+    def descriptor_types(self):
         descriptor_function = FunctionXGraph.objects.filter(
-            graph=graph, function__functiontype="primarydescriptors"
+            graph=self.graph, function__functiontype="primarydescriptors"
         ).first()
-        self.descriptor_types = {}
         if descriptor_function and descriptor_function.config:
-            self.descriptor_types = descriptor_function.config.get(
-                "descriptor_types", {}
-            )
+            return descriptor_function.config.get("descriptor_types", {})
+        return {}
 
     def top_level_nodegroup_aliases(self):
         return [
@@ -85,12 +91,12 @@ class ResourceReportGraph:
             if node.datatype in RESOURCE_INSTANCE_DATATYPES:
                 linked_graph_ids.update(configured_graph_ids(node))
         linked_graph_ids.update(
-            str(node.graph_id)
-            for node in Node.objects.filter(
+            str(graph_id)
+            for graph_id in Node.objects.filter(
                 datatype__in=RESOURCE_INSTANCE_DATATYPES,
                 source_identifier__isnull=True,
-            ).only("graph_id", "config")
-            if str(self.graph.pk) in configured_graph_ids(node)
+                config__contains={"graphs": [{"graphid": str(self.graph.pk)}]},
+            ).values_list("graph_id", flat=True)
         )
         related_graphs = GraphModel.objects.filter(
             pk__in=linked_graph_ids, isresource=True, source_identifier__isnull=True
