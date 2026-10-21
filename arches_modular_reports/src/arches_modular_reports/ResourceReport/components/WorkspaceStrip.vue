@@ -6,6 +6,10 @@ import Tabs from "openvue/tabs";
 import type { ResolvedWorkspace } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const SELECT_WORKSPACE = "select-workspace" as const;
+const WORKSPACE_STRIP_TOKENS = {
+    tablist: { background: "{resource.report.strip.background}" },
+    tab: { padding: "0.9rem 1.6rem", fontWeight: "500" },
+};
 
 const { workspaces, activeWorkspaceId } = defineProps<{
     workspaces: ResolvedWorkspace[];
@@ -26,6 +30,7 @@ function onTabChange(workspaceId: string | number): void {
         class="workspace-strip"
         :value="activeWorkspaceId"
         :show-navigators="false"
+        :dt="WORKSPACE_STRIP_TOKENS"
         @update:value="onTabChange"
     >
         <TabList>
@@ -41,21 +46,9 @@ function onTabChange(workspaceId: string | number): void {
 </template>
 
 <style scoped>
-.workspace-strip :deep(.p-tablist-tab-list) {
-    background: var(--p-resource-report-strip-background);
-}
-
 .workspace-strip :deep(.p-tab) {
-    padding-block: 0.9rem;
-    padding-inline: 1.6rem;
-    color: var(--p-text-muted-color);
     font-size: 1.3rem;
-    font-weight: 500;
     letter-spacing: 0.08rem;
     text-transform: uppercase;
-}
-
-.workspace-strip :deep(.p-tab-active) {
-    color: var(--p-primary-color);
 }
 </style>

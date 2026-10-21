@@ -15,11 +15,11 @@ import type {
 
 const {
     graphSlug,
-    resourceInstanceId = "",
+    resourceInstanceId,
     reportConfigSlug = "default",
 } = defineProps<{
     graphSlug: string;
-    resourceInstanceId?: string;
+    resourceInstanceId: string;
     reportConfigSlug?: string;
 }>();
 
@@ -32,9 +32,6 @@ const config = ref<NamedSection | null>(null);
 const fetchError = ref<Error | null>(null);
 
 watchEffect(async () => {
-    if (!resourceInstanceId) {
-        return;
-    }
     try {
         const reportConfig = await fetchReportConfig(
             resourceInstanceId,
@@ -51,15 +48,7 @@ watchEffect(async () => {
 <template>
     <div class="modular-report">
         <Message
-            v-if="!resourceInstanceId"
-            severity="info"
-        >
-            <span>
-                {{ $gettext("Open a resource to see its report.") }}
-            </span>
-        </Message>
-        <Message
-            v-else-if="fetchError"
+            v-if="fetchError"
             severity="error"
         >
             <span>
