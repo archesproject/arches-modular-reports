@@ -228,7 +228,7 @@ python manage.py report_configs generate --slug default --overwrite
 
 ## Other report components
 
-Other configs, like search result details, can use `DataSection`.
+`DataSection` is kept for hosts that provide the state it injects, such as arches-search's search result details. It no longer works inside `ModularReport`.
 
 ### `DataSection`
 
