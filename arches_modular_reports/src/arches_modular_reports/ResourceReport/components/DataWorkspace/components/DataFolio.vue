@@ -6,6 +6,13 @@ import Badge from "openvue/badge";
 import Button from "openvue/button";
 import Tag from "openvue/tag";
 
+import HighlightedText from "@/arches_modular_reports/ResourceReport/components/DataWorkspace/components/HighlightedText.vue";
+
+import {
+    folioMatches,
+    nodegroupMatches,
+    ownLabelsMatch,
+} from "@/arches_modular_reports/ResourceReport/utils/data-filter.ts";
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import {
     aliasedNodeDataOf,
@@ -32,7 +39,8 @@ const {
     tiles,
     parentTileId,
     changeSet,
-    filterText,
+    query,
+    matchedByAncestor,
     selectedTileId,
 } = defineProps<{
     nodegroupAlias: string;
@@ -40,7 +48,8 @@ const {
     tiles: AliasedTileData[];
     parentTileId: string | null;
     changeSet: ResourceChangeSet;
-    filterText: string;
+    query: string;
+    matchedByAncestor: boolean;
     selectedTileId: string | null;
 }>();
 
@@ -86,36 +95,46 @@ const cardinalityLabel = computed(() => {
     return "0..1";
 });
 
-const normalizedFilterText = computed(() =>
-    filterText.trim().toLocaleLowerCase(),
+const isFiltering = computed(() => query !== "");
+
+const childrenMatchedByAncestor = computed(
+    () =>
+        matchedByAncestor ||
+        (isFiltering.value &&
+            ownLabelsMatch(nodegroupWidgetConfig.value, query)),
 );
 
 const tileRows = computed(() =>
-    tiles.map((tile, tileIndex) => {
-        const tileId = tile.tileid ?? "";
-        const isMarkedForDeletion =
-            changeSet.changeTypeForTile(tileId) === "delete";
-        const isPendingDelete = changeSet.isPendingDelete(tileId);
-        return {
-            tile,
-            tileId,
-            tileIndex,
-            label: tileLabel(tile),
-            changeTag: changeTag(tileId),
-            isMarkedForDeletion,
-            isPendingDelete,
-            isLocked:
-                !nodegroupWidgetConfig.value.is_writable ||
-                (isPendingDelete && !isMarkedForDeletion),
-            isHighlighted: matchesFilter(tile),
-            isExpanded: isExpanded(tileId, tile),
-        };
-    }),
+    tiles
+        .map((tile, tileIndex) => {
+            const tileId = tile.tileid ?? "";
+            const isMarkedForDeletion =
+                changeSet.changeTypeForTile(tileId) === "delete";
+            const isPendingDelete = changeSet.isPendingDelete(tileId);
+            return {
+                tile,
+                tileId,
+                tileIndex,
+                label: tileLabel(tile),
+                changeTag: changeTag(tileId),
+                isMarkedForDeletion,
+                isPendingDelete,
+                isLocked:
+                    !nodegroupWidgetConfig.value.is_writable ||
+                    (isPendingDelete && !isMarkedForDeletion),
+                isExpanded: isExpanded(tileId),
+                childFolios: visibleChildFolios(tile),
+            };
+        })
+        .filter((tileRow) => isTileVisible(tileRow.tile)),
 );
 
-watch(normalizedFilterText, () => {
-    collapsedTileIds.value = new Set();
-});
+watch(
+    () => query,
+    () => {
+        collapsedTileIds.value = new Set();
+    },
+);
 
 function displayValue(tile: AliasedTileData, nodeAlias: string): string {
     return aliasedNodeDataOf(tile, nodeAlias)?.display_value ?? "";
@@ -145,28 +164,47 @@ function changeTag(
     return null;
 }
 
-function matchesFilter(tile: AliasedTileData): boolean {
-    if (!normalizedFilterText.value) {
-        return false;
+function isTileVisible(tile: AliasedTileData): boolean {
+    if (!isFiltering.value || childrenMatchedByAncestor.value) {
+        return true;
     }
-    return visibleWidgets.value.some((widget) =>
-        displayValue(tile, widget.node.alias)
-            .toLocaleLowerCase()
-            .includes(normalizedFilterText.value),
+    return (
+        tileSearchText(tile).includes(query) ||
+        childAliases.value.some((childAlias) =>
+            nodegroupMatches(nodegroupWidgetConfigs, childAlias, query),
+        )
     );
 }
 
-function isExpanded(tileId: string, tile: AliasedTileData): boolean {
+function visibleChildFolios(
+    tile: AliasedTileData,
+): { nodegroupAlias: string; tiles: AliasedTileData[] }[] {
+    return childAliases.value
+        .map((childAlias) => ({
+            nodegroupAlias: childAlias,
+            tiles: nodegroupTiles(tile.aliased_data[childAlias]),
+        }))
+        .filter(
+            (childFolio) =>
+                !isFiltering.value ||
+                childrenMatchedByAncestor.value ||
+                folioMatches(
+                    nodegroupWidgetConfigs,
+                    childFolio.nodegroupAlias,
+                    childFolio.tiles,
+                    query,
+                ),
+        );
+}
+
+function isExpanded(tileId: string): boolean {
     if (collapsedTileIds.value.has(tileId)) {
         return false;
     }
     if (expandedTileIds.value.has(tileId)) {
         return true;
     }
-    return (
-        normalizedFilterText.value !== "" &&
-        tileSearchText(tile).includes(normalizedFilterText.value)
-    );
+    return isFiltering.value;
 }
 
 function expandIcon(isTileExpanded: boolean): string {
@@ -206,7 +244,7 @@ function undoDelete(tileId: string): void {
 }
 
 function moveTileTo(tileId: string, targetIndex: number): void {
-    const orderedTileIds = tileRows.value.map((tileRow) => tileRow.tileId);
+    const orderedTileIds = tiles.map((tile) => tile.tileid ?? "");
     const currentIndex = orderedTileIds.indexOf(tileId);
     if (
         currentIndex === targetIndex ||
@@ -247,7 +285,12 @@ function onDragEnd(): void {
 <template>
     <section class="data-folio">
         <header class="data-folio-header">
-            <span class="data-folio-name">{{ cardName }}</span>
+            <span class="data-folio-name">
+                <HighlightedText
+                    :text="cardName"
+                    :query="query"
+                />
+            </span>
             <Badge
                 v-if="tiles.length > 0"
                 severity="secondary"
@@ -275,14 +318,17 @@ function onDragEnd(): void {
                     'data-folio-tile-deleted': tileRow.isPendingDelete,
                     'data-folio-tile-selected':
                         selectedTileId === tileRow.tileId,
-                    'data-folio-tile-match': tileRow.isHighlighted,
                 }"
                 @dragover="onDragOver"
                 @drop="onDrop($event, tileRow.tileIndex)"
             >
                 <div
                     class="data-folio-tile-row"
-                    :draggable="!tileRow.isLocked && !changeSet.isBusy.value"
+                    :draggable="
+                        !tileRow.isLocked &&
+                        !isFiltering &&
+                        !changeSet.isBusy.value
+                    "
                     @dragstart="onDragStart($event, tileRow.tileId)"
                     @dragend="onDragEnd"
                 >
@@ -303,7 +349,7 @@ function onDragEnd(): void {
                         @click="toggleTile(tileRow.tileId, tileRow.isExpanded)"
                     />
                     <div
-                        v-if="!tileRow.isLocked"
+                        v-if="!tileRow.isLocked && !isFiltering"
                         class="data-folio-reorder"
                     >
                         <i
@@ -360,7 +406,10 @@ function onDragEnd(): void {
                         />
                     </div>
                     <span class="data-folio-summary">
-                        {{ tileRow.label }}
+                        <HighlightedText
+                            :text="tileRow.label"
+                            :query="query"
+                        />
                     </span>
                     <Tag
                         v-if="tileRow.changeTag"
@@ -437,30 +486,35 @@ function onDragEnd(): void {
                             :key="widget.node.alias"
                             class="data-folio-field"
                         >
-                            <dt>{{ widget.label }}</dt>
+                            <dt>
+                                <HighlightedText
+                                    :text="widget.label"
+                                    :query="query"
+                                />
+                            </dt>
                             <dd>
-                                {{
-                                    displayValue(
-                                        tileRow.tile,
-                                        widget.node.alias,
-                                    )
-                                }}
+                                <HighlightedText
+                                    :text="
+                                        displayValue(
+                                            tileRow.tile,
+                                            widget.node.alias,
+                                        )
+                                    "
+                                    :query="query"
+                                />
                             </dd>
                         </div>
                     </dl>
                     <DataFolio
-                        v-for="childAlias in childAliases"
-                        :key="childAlias"
-                        :nodegroup-alias="childAlias"
+                        v-for="childFolio in tileRow.childFolios"
+                        :key="childFolio.nodegroupAlias"
+                        :nodegroup-alias="childFolio.nodegroupAlias"
                         :nodegroup-widget-configs="nodegroupWidgetConfigs"
-                        :tiles="
-                            nodegroupTiles(
-                                tileRow.tile.aliased_data[childAlias],
-                            )
-                        "
+                        :tiles="childFolio.tiles"
                         :parent-tile-id="tileRow.tileId"
                         :change-set="changeSet"
-                        :filter-text="filterText"
+                        :query="query"
+                        :matched-by-ancestor="childrenMatchedByAncestor"
                         :selected-tile-id="selectedTileId"
                         @edit-tile="emit(EDIT_TILE, $event)"
                     />
@@ -521,10 +575,6 @@ function onDragEnd(): void {
 
 .data-folio-tile-selected {
     border-color: var(--p-primary-color);
-}
-
-.data-folio-tile-match {
-    border-inline-start: 0.4rem solid var(--p-primary-color);
 }
 
 .data-folio-tile-row {

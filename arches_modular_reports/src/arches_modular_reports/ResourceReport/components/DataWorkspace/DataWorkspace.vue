@@ -12,13 +12,11 @@ import DataFolio from "@/arches_modular_reports/ResourceReport/components/DataWo
 import EditorPanel from "@/arches_modular_reports/ResourceReport/components/EditorPanel.vue";
 import ReportPlaceholder from "@/arches_modular_reports/ResourceReport/components/ReportPlaceholder.vue";
 
+import { folioMatches } from "@/arches_modular_reports/ResourceReport/utils/data-filter.ts";
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
-import type {
-    ReportData,
-    ReportWorkspaceConfig,
-} from "@/arches_modular_reports/ResourceReport/types.ts";
+import type { ReportData } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const SPLITTER_STATE_KEY = "arches-modular-reports-data-workspace";
 const MINIMUM_PANE_SIZE = 20;
@@ -26,7 +24,7 @@ const BROWSER_PANE_SIZE = 40;
 const EDITOR_PANE_SIZE = 60;
 
 const { reportData } = defineProps<{
-    workspaceConfig: ReportWorkspaceConfig;
+    workspaceConfig: Record<string, unknown>;
     reportData: ReportData;
 }>();
 
@@ -34,15 +32,26 @@ const { $gettext } = useGettext();
 
 const filterText = ref("");
 
+const query = computed(() => filterText.value.trim().toLocaleLowerCase());
+
 const folios = computed(() =>
-    childNodegroupAliases(reportData.nodegroupWidgetConfigs, null).map(
-        (nodegroupAlias) => ({
+    childNodegroupAliases(reportData.nodegroupWidgetConfigs, null)
+        .map((nodegroupAlias) => ({
             nodegroupAlias,
             tiles: nodegroupTiles(
                 reportData.resource.aliased_data[nodegroupAlias],
             ),
-        }),
-    ),
+        }))
+        .filter(
+            (folio) =>
+                query.value === "" ||
+                folioMatches(
+                    reportData.nodegroupWidgetConfigs,
+                    folio.nodegroupAlias,
+                    folio.tiles,
+                    query.value,
+                ),
+        ),
 );
 </script>
 
@@ -66,6 +75,18 @@ const folios = computed(() =>
                     :aria-label="$gettext('Filter the data')"
                 />
             </IconField>
+            <p
+                v-if="query !== '' && folios.length === 0"
+                class="data-workspace-no-results"
+            >
+                {{
+                    $gettext(
+                        "No results for “%{query}”",
+                        { query: filterText.trim() },
+                        true,
+                    )
+                }}
+            </p>
             <DataFolio
                 v-for="folio in folios"
                 :key="folio.nodegroupAlias"
@@ -74,7 +95,8 @@ const folios = computed(() =>
                 :tiles="folio.tiles"
                 :parent-tile-id="null"
                 :change-set="reportData.changeSet"
-                :filter-text="filterText"
+                :query="query"
+                :matched-by-ancestor="false"
                 :selected-tile-id="reportData.editor.target?.tileId ?? null"
                 @edit-tile="reportData.editor.open"
             />
@@ -122,6 +144,12 @@ const folios = computed(() =>
 
 .data-workspace-filter {
     inline-size: 100%;
+}
+
+.data-workspace-no-results {
+    margin: 0;
+    color: var(--p-text-muted-color);
+    font-style: italic;
 }
 
 .data-workspace-editor {

@@ -125,7 +125,7 @@ const RESOURCE: AliasedResourceData = {
 
 async function mountEditor(
     nodegroupAlias: string,
-    filterText = "",
+    query = "",
 ): Promise<{ changeSet: ResourceChangeSet; wrapper: VueWrapper }> {
     const changeSet = effectScope().run(() =>
         useResourceChangeSet("pigment", "resource"),
@@ -141,7 +141,8 @@ async function mountEditor(
             tiles: workingTiles(changeSet, nodegroupAlias),
             parentTileId: null,
             changeSet,
-            filterText,
+            query,
+            matchedByAncestor: false,
             selectedTileId: null,
         },
         global: { plugins: [[OpenVue, { theme: "none" }]] },
@@ -166,6 +167,14 @@ function tileRow(wrapper: VueWrapper, summary: string): DOMWrapper<Element> {
         throw new Error(`No tile row for ${summary}`);
     }
     return row;
+}
+
+function topLevelSummaries(wrapper: VueWrapper): string[] {
+    return [...wrapper.find(".data-folio-tiles").element.children].map(
+        (tile) =>
+            tile.querySelector(".data-folio-summary")?.textContent?.trim() ??
+            "",
+    );
 }
 
 describe("DataFolio", () => {
@@ -193,5 +202,14 @@ describe("DataFolio", () => {
         expect(
             tileRow(wrapper, "Cobalt").find(".data-folio-tile-body").exists(),
         ).toBe(false);
+    });
+
+    it("hides entries without a match unless a field label matches", async () => {
+        const { wrapper: valueMatch } = await mountEditor("names", "glass");
+        expect(topLevelSummaries(valueMatch)).toEqual(["Cobalt"]);
+        expect(valueMatch.find("mark").text()).toBe("Glass");
+
+        const { wrapper: labelMatch } = await mountEditor("names", "name");
+        expect(topLevelSummaries(labelMatch)).toEqual(["Smalt", "Cobalt"]);
     });
 });
