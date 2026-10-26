@@ -107,7 +107,7 @@ Once you've installed the Arches Modular Report Application into your project yo
 
 ## Editing the structure of the report configuration
 
-A report config is a name and a list of components. The default config has one component, `ResourceReport`:
+Every level of a report config is a component: a `component` path and the `config` that runs it. The path names a Vue component under an app's `src` folder and is loaded when the report needs it. A component's children are lists of components inside its config, usually under `components`.
 
 ```json
 {
@@ -116,112 +116,116 @@ A report config is a name and a list of components. The default config has one c
         {
             "component": "arches_modular_reports/ResourceReport/ResourceReport",
             "config": {
-                "header": { ... },
-                "workspaces": [ ... ]
+                "components": [ ... ]
             }
         }
     ]
 }
 ```
 
-Labels are a string or an object keyed by language, e.g. `{"en": "Report"}`.
+`ResourceReport` loads the resource and renders its `components` in order. With `"config": {}` it renders an empty report. Nothing below it is fixed: a report can have tabs or none, one pane or two, sections or a plain list of folios.
 
-Every key shown below is required, except `lifecycle_severities`. Use `null` where a value can be empty. Any component whose config has `workspaces` is treated as a `ResourceReport` config, whatever its path.
+Labels are a string or an object keyed by language, e.g. `{"en": "Report"}`. A missing child list means no children. A component that is missing config it needs shows an error where it would appear.
 
-Configs are validated against the graph on save: only `header` and `workspaces` are allowed, folios must be top-level nodegroups, summaries must name nodes that hold a value, related models must be resource models, and image sources must be `file-list` nodes. Folios and summary entries the user can't read are removed when the report loads.
+Configs are validated against the graph on save, without looking at component names:
 
----
+-   every component has exactly `component` (a string) and `config` (an object)
+-   `nodegroup_alias` names a node in one of the graph's nodegroups
+-   `node_alias` names a node that holds a value
+-   `graphs` lists resource models, and `images` lists `file-list` nodes
+-   inside a config with `graph_slug`, aliases belong to that other graph and are not checked
 
-### `header`
-
-```json
-"header": {
-    "summary": [{ "node_alias": "description_content", "label": { "en": "Description" } }],
-    "export_formats": ["json-ld", "json", "csv"],
-    "lifecycle_severities": { "<lifecycle state id>": "warn" }
-}
-```
-
--   `summary`: nodes shown under the resource name (first value only), each with its label. The generator writes each node's widget label.
--   `export_formats`: any of `json-ld`, `json` and `csv`.
--   `lifecycle_severities`: optional tag colours by lifecycle state id: `info`, `success`, `warn`, `danger`, `secondary` or `contrast`.
+When the report loads, nodegroups and summary entries the user can't read are removed. A section, stack or tab set that loses all its folios is removed too.
 
 ---
 
-### `workspaces`
-
-Each workspace is a tab at the top of the report.
+### The default config
 
 ```json
 {
-    "id": "report",
-    "component": "ReportWorkspace",
-    "label": { "en": "Report" },
-    "description": { "en": "A curated summary of this resource's data" },
-    "config": { ... }
-}
-```
-
--   `ReportWorkspace`: the report itself, see below.
--   `DataWorkspace`: every nodegroup in a tree, with an editor. Editors only.
--   `GraphWorkspace`: placeholder.
-
-Any other `component` is loaded by path, e.g. `my_app/Report/CustomWorkspace`, and gets `workspaceConfig` and `reportData` props. `config` is `{}` for workspaces that take no settings.
-
----
-
-### `ReportWorkspace`
-
-```json
-"config": {
-    "tabs": [
-        {
-            "label": { "en": "Overview" },
-            "sections": [
-                {
-                    "label": { "en": "Identification" },
-                    "icon": "pi pi-tag",
-                    "folios": [{ "nodegroup_alias": "names" }]
+    "component": "arches_modular_reports/ResourceReport/components/WorkspaceTabs",
+    "config": {
+        "banner": [
+            { "component": ".../ReportHeader", "config": { "summary": [], "export_formats": ["json-ld", "json", "csv"] } }
+        ],
+        "components": [
+            {
+                "component": ".../SplitPane",
+                "config": {
+                    "label": { "en": "Report" },
+                    "description": { "en": "A curated summary of this resource's data" },
+                    "main": [
+                        {
+                            "component": ".../ReportTabs",
+                            "config": {
+                                "components": [
+                                    {
+                                        "component": ".../ReportStack",
+                                        "config": {
+                                            "label": { "en": "Overview" },
+                                            "components": [
+                                                { "component": ".../FieldFolio", "config": { "nodegroup_alias": "object_type" } },
+                                                { "component": ".../ReportFolio", "config": { "nodegroup_alias": "names" } },
+                                                { "component": ".../MapFolio", "config": { "nodegroup_alias": "production", "node_alias": "production_location_geo" } }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "aside": [
+                        { "component": ".../EditorPanel/EditorPanel", "config": {} },
+                        { "component": ".../ReportDrawer", "config": { "components": [ ... ], "panels": [ ... ] } }
+                    ]
                 }
-            ]
-        }
-    ],
-    "home": {
-        "summary": [{ "node_alias": "name_content", "label": { "en": "Name" } }],
-        "drawer": [ ... ]
+            },
+            { "component": ".../SplitPane", "config": { "label": { "en": "Data" }, "requires_edit": true, "main": [ ... ], "aside": [ ... ] } },
+            { "component": ".../ReportPlaceholder", "config": { "label": { "en": "Graph" }, "icon": "pi pi-sitemap", "message": { "en": "Graph view — coming soon" } } }
+        ]
     }
 }
 ```
 
--   `tabs`: each tab has `sections`, each section has `folios`. Section `label` and `icon` can be `null`.
--   `folios`: a top-level nodegroup. Child nodegroups render inside it.
--   `home.summary`: the Key Data Summary. Clicking a label jumps to its folio.
--   `home.drawer`: panels that open over the Key Data Summary.
--   `home` can be `null` for a report with no home pane.
+`...` stands for `arches_modular_reports/ResourceReport/components`. The config's last top-level component is `EditListTray`.
 
-#### Drawer panels
+---
 
-```json
-{
-    "component": "RelatedResourcesPanel",
-    "label": { "en": "Related Resources" },
-    "icon": "pi pi-link",
-    "config": { "graphs": ["person", "place"] }
-}
-```
+### Layout components
 
--   `EditHistoryPanel`: edit history. Editors only.
--   `ImagesPanel`: images from `file-list` nodes. `config.images` is a list of `{"model": "<graph slug>", "node": "<node alias>"}`. Sources on other models show images from related resources.
--   `RelatedResourcesPanel`: related resources by model. `config.graphs` lists the models, in order.
--   `ManagePanel`: copy, delete and print.
+Paths are under `arches_modular_reports/ResourceReport/components/`.
 
-`config` is `{}` for panels that take no settings. Any other `component` is loaded by path, e.g. `my_app/Report/CustomPanel`, and gets `panelConfig` and `reportData` props.
+-   `WorkspaceTabs`: the tab strip at the top of the report. Each of its `components` is a tab, named by its `label`, with its `description` shown under the strip. `banner` lists components shown under the strip above every tab.
+-   `ReportTabs`: tabs inside a pane, with a tab bar that stays in view while the pane scrolls. Each of its `components` is a tab, named by its `label`.
+-   `SplitPane`: `main` and `aside` lists side by side. Without an `aside`, `main` takes the full width.
+-   `ReportStack`: its `components` in a column.
+-   `ReportSection`: a heading (`label`, optional `icon`) over its `components`.
+-   `ReportDrawer`: its `components`, with `panels` as buttons that open over them.
+
+A tab or drawer panel with `"requires_edit": true` is hidden from people who can't edit the resource.
+
+### Content components
+
+-   `ReportHeader`: the resource name and lifecycle. `summary` lists nodes shown under the name, each `{"node_alias": ..., "label": ...}`; `export_formats` is any of `json-ld`, `json` and `csv`; `lifecycle_severities` optionally sets tag colours by lifecycle state id (`info`, `success`, `warn`, `danger`, `secondary` or `contrast`).
+-   `KeyDataSummary`: `summary` in the same form. Clicking a label jumps to its folio, switching tabs if needed.
+-   `ReportFolio`: `nodegroup_alias`. One card per entry, with child nodegroups inside it.
+-   `FieldFolio`: `nodegroup_alias`. One row: label, value and its Edit, Delete or Add.
+-   `MapFolio`: `nodegroup_alias` and `node_alias`, the geometry node. The map first, then the entry's other fields and child nodegroups, with a pager when there are several entries.
+-   `EditorPanel/EditorPanel`: the edit form. It covers the area it's placed in while an entry is being edited. Edit, Add and Delete only appear when the report has one.
+-   `EditListTray`: pending edits, with Apply and Cancel. Hidden when nothing is pending.
+-   `DataBrowser/DataBrowser`: every nodegroup in a tree, with a filter.
+-   `ReportPlaceholder`: an `icon` and a `message`.
+-   Drawer panels, each with a `label` and `icon`: `EditHistoryPanel`; `ImagesPanel`, whose `images` lists `{"model": "<graph slug>", "node": "<node alias>"}` sources; `RelatedResourcesPanel`, whose `graphs` lists models in order; `ManagePanel` for copy, delete and print.
+
+### Custom components
+
+Any other path is loaded the same way, e.g. `my_app/Report/CustomPanel`. A component receives one prop, `component` (its own `{component, config}`), and reads the resource, permissions and editing state with `useReportData()` from `arches_modular_reports/ResourceReport/composables/useReportData.ts`.
 
 ---
 
 ## Regenerating the default report configuration
 
-The default config is generated from the graph: visible top-level nodegroups as folios, summaries from the descriptors, and panels for related models. Regenerate it after upgrading or changing a graph:
+The default config is generated from the graph. Each visible top-level nodegroup becomes a folio: a `MapFolio` when it has a geometry node, a `FieldFolio` when it holds a single value and has no child nodegroups, and a `ReportFolio` otherwise. Summaries come from the descriptors and the drawer's panels from related models. Regenerate it after upgrading or changing a graph:
 
 ```bash
 python manage.py report_configs generate --slug default --overwrite
