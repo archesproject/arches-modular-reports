@@ -1,7 +1,6 @@
 import { ref, watchEffect } from "vue";
 
 import { useNodegroupWidgetConfigStore } from "@/arches_vue_components/stores/useNodegroupWidgetConfigStore.ts";
-import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type { Ref } from "vue";
 import type { NodegroupWidgetConfig } from "@/arches_vue_components/types.ts";
@@ -28,7 +27,7 @@ export function useGraphWidgetConfigs(
                     graphSlug,
                 );
         } catch (error) {
-            fetchError.value = toError(error);
+            fetchError.value = error as Error;
         }
     });
 

@@ -9,7 +9,6 @@ import Skeleton from "openvue/skeleton";
 
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { fetchResourceImages } from "@/arches_modular_reports/ResourceReport/api.ts";
-import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type {
     ComponentNode,
@@ -48,7 +47,7 @@ watchEffect(async () => {
         images.value = imagesPage.images;
         nextCursor.value = imagesPage.next_cursor;
     } catch (error) {
-        loadError.value = toError(error);
+        loadError.value = error as Error;
     } finally {
         isLoading.value = false;
     }
@@ -66,7 +65,7 @@ async function loadMore(): Promise<void> {
         images.value = [...images.value, ...imagesPage.images];
         nextCursor.value = imagesPage.next_cursor;
     } catch (error) {
-        loadError.value = toError(error);
+        loadError.value = error as Error;
     } finally {
         isLoadingMore.value = false;
     }

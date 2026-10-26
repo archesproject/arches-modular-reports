@@ -16,7 +16,6 @@ import {
     replayResourceChanges,
     siblingTiles,
 } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
-import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type {
     AliasedData,
@@ -77,7 +76,7 @@ export function useResourceChangeSet(
         try {
             resource.value = await fetchResource(graphSlug, resourceInstanceId);
         } catch (error) {
-            fetchError.value = toError(error);
+            fetchError.value = error as Error;
         }
     });
 
@@ -125,7 +124,7 @@ export function useResourceChangeSet(
         try {
             blankTile = await fetchTileData(graphSlug, nodegroupAlias);
         } catch (error) {
-            addError.value = toError(error);
+            addError.value = error as Error;
             return null;
         } finally {
             isAdding.value = false;
@@ -329,7 +328,7 @@ export function useResourceChangeSet(
             );
             return true;
         } catch (error) {
-            saveError.value = toError(error);
+            saveError.value = error as Error;
             return false;
         } finally {
             isSaving.value = false;

@@ -15,7 +15,6 @@ import {
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { useFilterQuery } from "@/arches_modular_reports/ResourceReport/composables/useFilterQuery.ts";
 import { DEFAULT_GRAPH_ICON_CLASS } from "@/arches_modular_reports/ResourceReport/constants.ts";
-import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type {
     ComponentNode,
@@ -66,7 +65,7 @@ async function loadGroups(searchText: string): Promise<void> {
         }
     } catch (error) {
         if (groupsRequestNumber === latestGroupsRequestNumber) {
-            loadError.value = toError(error);
+            loadError.value = error as Error;
         }
     }
 }
@@ -96,7 +95,7 @@ async function loadMore(group: RelatedResourceGroup): Promise<void> {
         });
     } catch (error) {
         if (groupsRequestNumber === latestGroupsRequestNumber) {
-            loadError.value = toError(error);
+            loadError.value = error as Error;
         }
     } finally {
         if (loadingGraphSlug.value === group.graph_slug) {

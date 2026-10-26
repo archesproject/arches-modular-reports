@@ -6,7 +6,6 @@ import Message from "openvue/message";
 
 import { fetchReportConfig } from "@/arches_modular_reports/ModularReport/api.ts";
 import { importComponents } from "@/arches_modular_reports/ModularReport/utils.ts";
-import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type {
     ComponentLookup,
@@ -40,7 +39,7 @@ watchEffect(async () => {
         await importComponents([reportConfig], componentLookup);
         config.value = reportConfig;
     } catch (error) {
-        fetchError.value = toError(error);
+        fetchError.value = error as Error;
     }
 });
 </script>

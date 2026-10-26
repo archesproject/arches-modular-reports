@@ -15,10 +15,3 @@ export function compileGlobalCss(
     }
     return ret;
 }
-
-export function toError(caughtValue: unknown): Error {
-    if (caughtValue instanceof Error) {
-        return caughtValue;
-    }
-    return new Error(String(caughtValue));
-}

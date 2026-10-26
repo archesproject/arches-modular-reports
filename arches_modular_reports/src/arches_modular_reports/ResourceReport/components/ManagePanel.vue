@@ -14,7 +14,6 @@ import {
     searchUrl,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
-import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type {
     ComponentNode,
@@ -47,7 +46,7 @@ async function createCopy(): Promise<void> {
             reportData.value.resource.resourceinstanceid,
         );
     } catch (error) {
-        actionError.value = toError(error);
+        actionError.value = error as Error;
     } finally {
         isCopying.value = false;
     }
@@ -79,7 +78,7 @@ async function deleteThisResource(): Promise<void> {
         reportData.value.changeSet.discardAll();
         window.location.assign(searchUrl());
     } catch (error) {
-        actionError.value = toError(error);
+        actionError.value = error as Error;
     } finally {
         isDeleting.value = false;
     }

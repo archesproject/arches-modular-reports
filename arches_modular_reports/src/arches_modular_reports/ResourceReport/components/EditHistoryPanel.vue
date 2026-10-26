@@ -12,7 +12,6 @@ import Tag from "openvue/tag";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { fetchEditHistory } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { useFilterQuery } from "@/arches_modular_reports/ResourceReport/composables/useFilterQuery.ts";
-import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type {
     ComponentNode,
@@ -72,7 +71,7 @@ async function loadHistory(
         nextCursor.value = historyPage.next_cursor;
     } catch (error) {
         if (historyRequestNumber === latestHistoryRequestNumber) {
-            loadError.value = toError(error);
+            loadError.value = error as Error;
         }
     } finally {
         if (historyRequestNumber === latestHistoryRequestNumber) {

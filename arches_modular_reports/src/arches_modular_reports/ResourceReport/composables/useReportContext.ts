@@ -4,7 +4,6 @@ import {
     fetchReportContext,
     updateLifecycleState,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
-import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type { Ref } from "vue";
 import type { ReportContext } from "@/arches_modular_reports/ResourceReport/types.ts";
@@ -30,7 +29,7 @@ export function useReportContext(
             context.value = await fetchReportContext(resourceInstanceId);
             fetchError.value = null;
         } catch (error) {
-            fetchError.value = toError(error);
+            fetchError.value = error as Error;
         }
     }
 
@@ -43,7 +42,7 @@ export function useReportContext(
             await updateLifecycleState(resourceInstanceId, lifecycleStateId);
             await reloadContext();
         } catch (error) {
-            transitionError.value = toError(error);
+            transitionError.value = error as Error;
         } finally {
             isTransitioning.value = false;
         }
