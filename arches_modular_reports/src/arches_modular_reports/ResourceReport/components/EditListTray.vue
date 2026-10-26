@@ -220,6 +220,7 @@ async function applyAll(): Promise<void> {
     padding-inline: 1.6rem;
     border-block-start: 0.1rem solid var(--p-content-border-color);
     background: var(--p-content-hover-background);
+    color: var(--p-text-color);
 }
 
 .edit-list-tray-header {
