@@ -7,8 +7,9 @@ from arches import __version__ as _arches_version_str
 from arches.app.models.models import GraphModel, Node, NodeGroup
 from arches.app.models.system_settings import settings
 from arches_modular_reports.app.utils.resource_report_config import (
+    ResourceReportGraph,
     generate_resource_report_config,
-    validate_resource_report_config,
+    validate_report_config_tree,
 )
 from arches_modular_reports.utils import PrettyJSONEncoder
 from packaging.version import Version
@@ -146,13 +147,10 @@ class ReportConfig(models.Model):
                         raise ValidationError(f"Invalid key in components: {key}")
                 component = self.get_or_raise(item, "component", "")
                 config = self.get_or_raise(item, "config", "")
-                if "workspaces" in config:
-                    validate_resource_report_config(config, self.graph)
-                else:
-                    component_name = Path(component).stem.lower()
-                    method = getattr(self, "validate_" + component_name, lambda _: None)
-                    # example method: validate_datasection
-                    method(config)
+                component_name = Path(component).stem.lower()
+                method = getattr(self, "validate_" + component_name, lambda _: None)
+                # example method: validate_datasection
+                method(config)
 
         def validate_components_config(config_dict):
             for val in config_dict.values():
@@ -166,6 +164,7 @@ class ReportConfig(models.Model):
                             validate_dict(list_item)
 
         validate_dict(self.config)
+        validate_report_config_tree(self.config, ResourceReportGraph(self.graph))
 
     def validate_datasection(self, card_config):
         nodegroup_alias = self.get_or_raise(card_config, "nodegroup_alias", "Data")

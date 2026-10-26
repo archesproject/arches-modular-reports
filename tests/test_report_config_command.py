@@ -81,7 +81,14 @@ class ReportConfigCommandTests(TestCase):
                         "components": [
                             {
                                 "component": "arches_modular_reports/ResourceReport/ResourceReport",
-                                "config": {"workspaces": [{"id": "report"}]},
+                                "config": {
+                                    "components": [
+                                        {
+                                            "component": "arches_modular_reports/ResourceReport/components/ReportFolio",
+                                            "config": {"nodegroup_alias": "missing"},
+                                        }
+                                    ]
+                                },
                             }
                         ],
                     },
@@ -259,25 +266,10 @@ class GenerateReportConfigCommandTests(TestCase):
                     {
                         "component": "arches_modular_reports/ResourceReport/ResourceReport",
                         "config": {
-                            "workspaces": [
+                            "components": [
                                 {
-                                    "id": "report",
-                                    "component": "ReportWorkspace",
-                                    "config": {
-                                        "tabs": [
-                                            {
-                                                "sections": [
-                                                    {
-                                                        "folios": [
-                                                            {
-                                                                "nodegroup_alias": "missing"
-                                                            }
-                                                        ]
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    },
+                                    "component": "arches_modular_reports/ResourceReport/components/ReportFolio",
+                                    "config": {"nodegroup_alias": "missing"},
                                 }
                             ]
                         },

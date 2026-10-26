@@ -4,8 +4,9 @@ from arches.app.utils.permission_backend import get_nodegroups_by_perm
 
 from arches_modular_reports.app.utils.resource_report_config import (
     extract_substrings,
-    prune_resource_report_config,
 )
+
+LEGACY_CHILD_KEYS = ["tabs", "sections", "components", "node_aliases"]
 
 
 def update_report_configuration_with_nodegroup_permissions(
@@ -23,13 +24,9 @@ def update_report_configuration_with_nodegroup_permissions(
 
     def filter_node(node):
         if isinstance(node, dict):
-            if "workspaces" in node.get("config", {}):
-                prune_resource_report_config(
-                    node.get("config", {}),
-                    report_nodegroup_ids_with_user_read_permission,
-                    nodegroup_uuids_by_node_alias,
-                )
-                return node
+            node_alias = node.get("node_alias")
+            if isinstance(node_alias, str) and filter_node(node_alias) is None:
+                return None
 
             config = node.get("config", {})
 
@@ -50,7 +47,7 @@ def update_report_configuration_with_nodegroup_permissions(
                     else False
                 )
 
-                for key in ["tabs", "sections", "components", "node_aliases"]:
+                for key in LEGACY_CHILD_KEYS:
                     if key in config:
                         filtered = filter_list(config[key])
 
@@ -59,6 +56,10 @@ def update_report_configuration_with_nodegroup_permissions(
                         looks_like_data_section = "graph_slug" not in config
                         if not filtered and looks_like_data_section:
                             return None
+
+                for key, value in config.items():
+                    if key not in LEGACY_CHILD_KEYS and isinstance(value, list):
+                        config[key] = filter_dict_items(value)
 
                 if descriptor := config.get("descriptor"):
                     config["descriptor"] = filter_descriptor(descriptor)
@@ -97,6 +98,18 @@ def update_report_configuration_with_nodegroup_permissions(
 
             if result:
                 filtered.append(result)
+
+        return filtered
+
+    def filter_dict_items(items):
+        filtered = []
+
+        for item in items:
+            if isinstance(item, dict):
+                item = filter_node(item)
+
+            if item is not None:
+                filtered.append(item)
 
         return filtered
 

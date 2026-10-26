@@ -15,7 +15,8 @@ from arches.app.models.system_settings import settings
 
 RESOURCE_REPORT_COMPONENT = "arches_modular_reports/ResourceReport/ResourceReport"
 RESOURCE_INSTANCE_DATATYPES = ["resource-instance", "resource-instance-list"]
-RESOURCE_REPORT_CONFIG_KEYS = {"header", "workspaces"}
+REPORT_COMPONENTS_PATH = "arches_modular_reports/ResourceReport/components"
+COMPONENT_NODE_KEYS = {"component", "config"}
 
 
 def extract_substrings(template_string):
@@ -161,80 +162,136 @@ def summary_entries(report_graph, node_aliases):
     return entries
 
 
-def workspace_entry(workspace_id, component, label, description, config):
+def report_component(component_name, config):
     return {
-        "id": workspace_id,
-        "component": component,
-        "label": translated_labels(label),
-        "description": translated_labels(description),
+        "component": f"{REPORT_COMPONENTS_PATH}/{component_name}",
         "config": config,
     }
 
 
-def drawer_entry(component, label, icon, config):
-    return {
-        "component": component,
-        "label": translated_labels(label),
-        "icon": icon,
-        "config": config,
-    }
+def drawer_panel(component_name, label, icon, **config):
+    return report_component(
+        component_name,
+        {"label": translated_labels(label), "icon": icon, **config},
+    )
 
 
 def generate_resource_report_config(graph):
     report_graph = ResourceReportGraph(graph)
     related_graph_slugs = report_graph.related_graph_slugs()
-    report_workspace = workspace_entry(
-        "report",
-        "ReportWorkspace",
-        gettext_noop("Report"),
-        gettext_noop("A curated summary of this resource's data"),
+    report_workspace = report_component(
+        "SplitPane",
         {
-            "tabs": [
-                {
-                    "label": translated_labels(gettext_noop("Overview")),
-                    "sections": [
-                        {
-                            "label": None,
-                            "icon": None,
-                            "folios": [
-                                {"nodegroup_alias": nodegroup_alias}
-                                for nodegroup_alias in report_graph.top_level_nodegroup_aliases()
-                            ],
-                        }
-                    ],
-                }
+            "label": translated_labels(gettext_noop("Report")),
+            "description": translated_labels(
+                gettext_noop("A curated summary of this resource's data")
+            ),
+            "main": [
+                report_component(
+                    "ReportTabs",
+                    {
+                        "components": [
+                            report_component(
+                                "ReportStack",
+                                {
+                                    "label": translated_labels(
+                                        gettext_noop("Overview")
+                                    ),
+                                    "components": [
+                                        report_component(
+                                            "ReportFolio",
+                                            {"nodegroup_alias": nodegroup_alias},
+                                        )
+                                        for nodegroup_alias in report_graph.top_level_nodegroup_aliases()
+                                    ],
+                                },
+                            )
+                        ]
+                    },
+                )
             ],
-            "home": {
-                "summary": summary_entries(
-                    report_graph,
-                    report_graph.descriptor_node_aliases(
-                        "name", "description", "map_popup"
-                    ),
+            "aside": [
+                report_component("EditorPanel/EditorPanel", {}),
+                report_component(
+                    "ReportDrawer",
+                    {
+                        "components": [
+                            report_component(
+                                "KeyDataSummary",
+                                {
+                                    "summary": summary_entries(
+                                        report_graph,
+                                        report_graph.descriptor_node_aliases(
+                                            "name", "description", "map_popup"
+                                        ),
+                                    )
+                                },
+                            )
+                        ],
+                        "panels": [
+                            drawer_panel(
+                                "EditHistoryPanel",
+                                gettext_noop("Edit History"),
+                                "pi pi-clock",
+                                requires_edit=True,
+                            ),
+                            drawer_panel(
+                                "ImagesPanel",
+                                gettext_noop("Images"),
+                                "pi pi-image",
+                                images=report_graph.image_sources(related_graph_slugs),
+                            ),
+                            drawer_panel(
+                                "RelatedResourcesPanel",
+                                gettext_noop("Related Resources"),
+                                "pi pi-link",
+                                graphs=related_graph_slugs,
+                            ),
+                            drawer_panel(
+                                "ManagePanel", gettext_noop("Manage"), "pi pi-cog"
+                            ),
+                        ],
+                    },
                 ),
-                "drawer": [
-                    drawer_entry(
-                        "EditHistoryPanel",
-                        gettext_noop("Edit History"),
-                        "pi pi-clock",
-                        {},
-                    ),
-                    drawer_entry(
-                        "ImagesPanel",
-                        gettext_noop("Images"),
-                        "pi pi-image",
-                        {"images": report_graph.image_sources(related_graph_slugs)},
-                    ),
-                    drawer_entry(
-                        "RelatedResourcesPanel",
-                        gettext_noop("Related Resources"),
-                        "pi pi-link",
-                        {"graphs": related_graph_slugs},
-                    ),
-                    drawer_entry(
-                        "ManagePanel", gettext_noop("Manage"), "pi pi-cog", {}
-                    ),
-                ],
-            },
+            ],
+        },
+    )
+    data_workspace = report_component(
+        "SplitPane",
+        {
+            "label": translated_labels(gettext_noop("Data")),
+            "description": translated_labels(
+                gettext_noop("Browse and edit every field recorded on this resource")
+            ),
+            "requires_edit": True,
+            "main": [report_component("DataBrowser/DataBrowser", {})],
+            "aside": [
+                report_component("EditorPanel/EditorPanel", {}),
+                report_component(
+                    "ReportPlaceholder",
+                    {
+                        "icon": "pi pi-pencil",
+                        "message": translated_labels(
+                            gettext_noop(
+                                "Select an entry in the data browser to begin editing."
+                            )
+                        ),
+                    },
+                ),
+            ],
+        },
+    )
+    graph_workspace = report_component(
+        "ReportPlaceholder",
+        {
+            "label": translated_labels(gettext_noop("Graph")),
+            "description": translated_labels(
+                gettext_noop(
+                    "A visual overview of how this resource connects to its data"
+                )
+            ),
+            "icon": "pi pi-sitemap",
+            "message": translated_labels(gettext_noop("Graph view — coming soon")),
         },
     )
     return {
@@ -243,34 +300,37 @@ def generate_resource_report_config(graph):
             {
                 "component": RESOURCE_REPORT_COMPONENT,
                 "config": {
-                    "header": {
-                        "summary": summary_entries(
-                            report_graph,
-                            report_graph.descriptor_node_aliases("description"),
+                    "components": [
+                        report_component(
+                            "WorkspaceTabs",
+                            {
+                                "banner": [
+                                    report_component(
+                                        "ReportHeader",
+                                        {
+                                            "summary": summary_entries(
+                                                report_graph,
+                                                report_graph.descriptor_node_aliases(
+                                                    "description"
+                                                ),
+                                            ),
+                                            "export_formats": [
+                                                "json-ld",
+                                                "json",
+                                                "csv",
+                                            ],
+                                        },
+                                    )
+                                ],
+                                "components": [
+                                    report_workspace,
+                                    data_workspace,
+                                    graph_workspace,
+                                ],
+                            },
                         ),
-                        "export_formats": ["json-ld", "json", "csv"],
-                    },
-                    "workspaces": [
-                        report_workspace,
-                        workspace_entry(
-                            "data",
-                            "DataWorkspace",
-                            gettext_noop("Data"),
-                            gettext_noop(
-                                "Browse and edit every field recorded on this resource"
-                            ),
-                            {},
-                        ),
-                        workspace_entry(
-                            "graph",
-                            "GraphWorkspace",
-                            gettext_noop("Graph"),
-                            gettext_noop(
-                                "A visual overview of how this resource connects to its data"
-                            ),
-                            {},
-                        ),
-                    ],
+                        report_component("EditListTray", {}),
+                    ]
                 },
             }
         ],
@@ -283,121 +343,59 @@ def require_keys(entry, keys, location):
         raise ValidationError(f"{location} is missing: {', '.join(missing_keys)}")
 
 
-def validate_resource_report_config(resource_report_config, graph):
-    unknown_keys = set(resource_report_config) - RESOURCE_REPORT_CONFIG_KEYS
-    if unknown_keys:
+def validate_report_config_tree(value, report_graph, refers_to_report_graph=True):
+    if isinstance(value, list):
+        for item in value:
+            validate_report_config_tree(item, report_graph, refers_to_report_graph)
+        return
+    if not isinstance(value, dict):
+        return
+    if "component" in value:
+        validate_component_node(value)
+    refers_to_report_graph = refers_to_report_graph and "graph_slug" not in value
+    if refers_to_report_graph:
+        validate_report_graph_references(value, report_graph)
+    validate_other_graph_references(value)
+    for child_value in value.values():
+        validate_report_config_tree(child_value, report_graph, refers_to_report_graph)
+
+
+def validate_component_node(component_node):
+    if set(component_node) != COMPONENT_NODE_KEYS:
         raise ValidationError(
-            f"Report config has unknown keys: {', '.join(sorted(unknown_keys))}"
+            f"Components need exactly a component path and a config: {sorted(component_node)}"
         )
-    require_keys(resource_report_config, RESOURCE_REPORT_CONFIG_KEYS, "Report config")
-    header = resource_report_config["header"]
-    require_keys(header, ["summary", "export_formats"], "Header")
-
-    all_summary_entries = list(header["summary"])
-    folios = []
-    panel_configs = []
-    for workspace in resource_report_config["workspaces"]:
-        require_keys(
-            workspace,
-            ["id", "component", "label", "description", "config"],
-            "Workspace",
+    if not isinstance(component_node["component"], str):
+        raise ValidationError(
+            f"Component is not a string: {component_node['component']}"
         )
-        workspace_config = workspace["config"]
-        if "tabs" not in workspace_config:
-            continue
-        require_keys(workspace_config, ["tabs", "home"], "Report workspace")
-        for tab in workspace_config["tabs"]:
-            require_keys(tab, ["label", "sections"], "Tab")
-            for section in tab["sections"]:
-                require_keys(section, ["label", "icon", "folios"], "Section")
-                folios.extend(section["folios"])
-        home = workspace_config["home"]
-        if home is not None:
-            require_keys(home, ["summary", "drawer"], "Home")
-            all_summary_entries.extend(home["summary"])
-            for panel in home["drawer"]:
-                require_keys(
-                    panel, ["component", "label", "icon", "config"], "Drawer panel"
-                )
-                panel_configs.append(panel["config"])
-
-    report_graph = ResourceReportGraph(graph)
-    for folio in folios:
-        require_keys(folio, ["nodegroup_alias"], "Folio")
-        nodegroup_alias = folio["nodegroup_alias"]
-        grouping_node = report_graph.grouping_nodes_by_alias.get(nodegroup_alias)
-        if grouping_node is None:
-            raise ValidationError(
-                f"Folio refers to an unknown nodegroup: {nodegroup_alias}"
-            )
-        if report_graph.parent_nodegroup_ids_by_nodegroup_id[
-            grouping_node.nodegroup_id
-        ]:
-            raise ValidationError(
-                f"Folio {nodegroup_alias} is not a top-level nodegroup; its folio renders inside its parent's"
-            )
-    for summary_entry in all_summary_entries:
-        require_keys(summary_entry, ["node_alias", "label"], "Summary entry")
-        node_alias = summary_entry["node_alias"]
-        summary_node = report_graph.nodes_by_alias.get(node_alias)
-        if summary_node is None or summary_node.datatype == "semantic":
-            raise ValidationError(
-                f"Summary must name a node that holds a value: {node_alias}"
-            )
-    for panel_config in panel_configs:
-        for graph_slug in panel_config.get("graphs", []):
-            if not GraphModel.objects.filter(slug=graph_slug, isresource=True).exists():
-                raise ValidationError(
-                    f"Drawer panel refers to an unknown resource model: {graph_slug}"
-                )
-        for image_source in panel_config.get("images", []):
-            require_keys(image_source, ["model", "node"], "Image source")
-            if not Node.objects.filter(
-                graph__slug=image_source["model"],
-                graph__isresource=True,
-                alias=image_source["node"],
-                datatype="file-list",
-            ).exists():
-                raise ValidationError(
-                    f"Drawer panel refers to an unknown file node: {image_source}"
-                )
+    if not isinstance(component_node["config"], dict):
+        raise ValidationError(f"Config is not a dict: {component_node['config']}")
 
 
-def prune_resource_report_config(
-    resource_report_config, readable_nodegroup_ids, nodegroup_ids_by_node_alias
-):
-    def is_readable(node_alias):
-        return nodegroup_ids_by_node_alias.get(node_alias) in readable_nodegroup_ids
+def validate_report_graph_references(entry, report_graph):
+    nodegroup_alias = entry.get("nodegroup_alias")
+    if nodegroup_alias is not None:
+        nodegroup_node = report_graph.nodes_by_alias.get(nodegroup_alias)
+        if nodegroup_node is None or nodegroup_node.nodegroup_id is None:
+            raise ValidationError(f"Unknown nodegroup: {nodegroup_alias}")
+    node_alias = entry.get("node_alias")
+    if node_alias is not None:
+        node = report_graph.nodes_by_alias.get(node_alias)
+        if node is None or node.datatype == "semantic":
+            raise ValidationError(f"Must name a node that holds a value: {node_alias}")
 
-    def prune_summary(configured_summary_entries):
-        return [
-            summary_entry
-            for summary_entry in configured_summary_entries
-            if is_readable(summary_entry["node_alias"])
-        ]
 
-    header = resource_report_config["header"]
-    header["summary"] = prune_summary(header["summary"])
-
-    for workspace in resource_report_config["workspaces"]:
-        workspace_config = workspace["config"]
-        if "tabs" not in workspace_config:
-            continue
-        readable_tabs = []
-        for tab in workspace_config["tabs"]:
-            readable_sections = []
-            for section in tab["sections"]:
-                section["folios"] = [
-                    folio
-                    for folio in section["folios"]
-                    if is_readable(folio["nodegroup_alias"])
-                ]
-                if section["folios"]:
-                    readable_sections.append(section)
-            tab["sections"] = readable_sections
-            if readable_sections:
-                readable_tabs.append(tab)
-        workspace_config["tabs"] = readable_tabs
-        home = workspace_config["home"]
-        if home is not None:
-            home["summary"] = prune_summary(home["summary"])
+def validate_other_graph_references(entry):
+    for graph_slug in entry.get("graphs", []):
+        if not GraphModel.objects.filter(slug=graph_slug, isresource=True).exists():
+            raise ValidationError(f"Unknown resource model: {graph_slug}")
+    for image_source in entry.get("images", []):
+        require_keys(image_source, ["model", "node"], "Image source")
+        if not Node.objects.filter(
+            graph__slug=image_source["model"],
+            graph__isresource=True,
+            alias=image_source["node"],
+            datatype="file-list",
+        ).exists():
+            raise ValidationError(f"Unknown file node: {image_source}")
