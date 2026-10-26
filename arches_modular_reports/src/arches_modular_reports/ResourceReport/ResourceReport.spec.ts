@@ -671,4 +671,38 @@ describe("ResourceReport", () => {
         expect(wrapper.find(".map-folio-actions").text()).toContain("Edit");
         expect(wrapper.find(".map-folio-pager").exists()).toBe(false);
     });
+
+    it("hides models with no matches while filtering related resources", async () => {
+        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
+            PIGMENTS_GROUP,
+            {
+                ...PIGMENTS_GROUP,
+                graph_slug: "places",
+                graph_name: "Places",
+                next_cursor: null,
+                items: [],
+            },
+        ]);
+        const wrapper = mountReport(drawerConfig());
+        await flushPromises();
+        await buttonWithText(
+            wrapper,
+            ".report-drawer-triggers",
+            "Related Resources",
+        ).trigger("click");
+        await flushPromises();
+        expect(wrapper.findAll(".related-resources-group")).toHaveLength(2);
+
+        vi.useFakeTimers();
+        await wrapper.find(".related-resources-filter").setValue("smalt");
+        await vi.advanceTimersByTimeAsync(300);
+        vi.useRealTimers();
+        await flushPromises();
+
+        expect(
+            wrapper
+                .findAll(".related-resources-group-label")
+                .map((label) => label.text()),
+        ).toEqual(["Pigments"]);
+    });
 });

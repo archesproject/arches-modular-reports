@@ -40,6 +40,13 @@ const resourceInstanceId = computed(
     () => reportData.value.resource.resourceinstanceid,
 );
 
+const visibleGroups = computed(() => {
+    if (query.value === "") {
+        return groups.value;
+    }
+    return groups.value.filter((group) => group.items.length > 0);
+});
+
 watchEffect(() => {
     loadGroups(query.value);
 });
@@ -126,8 +133,14 @@ async function loadMore(group: RelatedResourceGroup): Promise<void> {
                 }}
             </span>
         </Message>
+        <p
+            v-if="query !== '' && !loadError && visibleGroups.length === 0"
+            class="related-resources-empty"
+        >
+            {{ $gettext("No results for “%{query}”", { query }, true) }}
+        </p>
         <section
-            v-for="group in groups"
+            v-for="group in visibleGroups"
             :key="group.graph_slug"
             class="related-resources-group"
         >
