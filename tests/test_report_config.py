@@ -84,7 +84,6 @@ def curated_config():
                                 "summary": [
                                     {"node_alias": "name_content", "label": "Name"}
                                 ],
-                                "export_formats": ["json-ld", "csv"],
                             },
                         ),
                         report_component(

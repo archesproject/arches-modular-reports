@@ -12,12 +12,7 @@
                                 {
                                     "component": "arches_modular_reports/ResourceReport/components/ReportHeader",
                                     "config": {
-                                        "summary": [],
-                                        "export_formats": [
-                                            "json-ld",
-                                            "json",
-                                            "csv"
-                                        ]
+                                        "summary": []
                                     }
                                 }
                             ],

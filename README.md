@@ -146,7 +146,7 @@ When the report loads, nodegroups and summary entries the user can't read are re
     "component": "arches_modular_reports/ResourceReport/components/WorkspaceTabs",
     "config": {
         "banner": [
-            { "component": ".../ReportHeader", "config": { "summary": [], "export_formats": ["json-ld", "json", "csv"] } }
+            { "component": ".../ReportHeader", "config": { "summary": [] } }
         ],
         "components": [
             {
@@ -206,7 +206,7 @@ A tab or drawer panel with `"requires_edit": true` is hidden from people who can
 
 ### Content components
 
--   `ReportHeader`: the resource name and lifecycle. `summary` lists nodes shown under the name, each `{"node_alias": ..., "label": ...}`; `export_formats` is any of `json-ld`, `json` and `csv`; `lifecycle_severities` optionally sets tag colours by lifecycle state id (`info`, `success`, `warn`, `danger`, `secondary` or `contrast`).
+-   `ReportHeader`: the resource name, lifecycle state and transitions, and JSON-LD, JSON and CSV exports. `summary` lists nodes shown under the name, each `{"node_alias": ..., "label": ...}`.
 -   `KeyDataSummary`: `summary` in the same form. Clicking a label jumps to its folio, switching tabs if needed.
 -   `ReportFolio`: `nodegroup_alias`. One card per entry, with child nodegroups inside it.
 -   `FieldFolio`: `nodegroup_alias`. One row: label, value and its Edit, Delete or Add.

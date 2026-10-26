@@ -5,11 +5,7 @@ import type {
 
 export function lifecycleSeverity(
     lifecycleState: LifecycleStateSummary,
-    configuredSeverities: Record<string, TagSeverity> = {},
 ): TagSeverity {
-    if (lifecycleState.id in configuredSeverities) {
-        return configuredSeverities[lifecycleState.id];
-    }
     if (lifecycleState.is_initial_state) {
         return "info";
     }

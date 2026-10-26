@@ -360,11 +360,6 @@ def generate_resource_report_config(graph):
                                                     "description"
                                                 ),
                                             ),
-                                            "export_formats": [
-                                                "json-ld",
-                                                "json",
-                                                "csv",
-                                            ],
                                         },
                                     )
                                 ],

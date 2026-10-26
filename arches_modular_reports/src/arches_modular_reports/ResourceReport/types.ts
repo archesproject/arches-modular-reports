@@ -43,8 +43,6 @@ export type ResourceReportConfig = ContainerConfig;
 
 export interface ReportHeaderConfig {
     summary?: SummaryEntryConfig[];
-    export_formats?: ExportFormat[];
-    lifecycle_severities?: Record<string, TagSeverity>;
 }
 
 export interface WorkspaceTabsConfig {

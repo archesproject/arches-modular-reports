@@ -23,6 +23,8 @@ import type {
     TagSeverity,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
+const EXPORT_FORMATS: ExportFormat[] = ["json-ld", "json", "csv"];
+
 const { component } = defineProps<{
     component: ComponentNode<ReportHeaderConfig>;
 }>();
@@ -35,8 +37,6 @@ const exportFormatLabels: Record<ExportFormat, string> = {
     json: $gettext("JSON"),
     csv: $gettext("CSV"),
 };
-
-const exportFormats = computed(() => component.config.export_formats ?? []);
 
 const currentLifecycleState = computed(
     () => reportData.value.context.lifecycle_state,
@@ -64,10 +64,7 @@ const graphIconClass = computed(() => {
 });
 
 const lifecycleTagSeverity = computed(() =>
-    lifecycleSeverity(
-        currentLifecycleState.value,
-        component.config.lifecycle_severities,
-    ),
+    lifecycleSeverity(currentLifecycleState.value),
 );
 
 const previousStates = computed(
@@ -153,10 +150,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                 </div>
             </dl>
         </div>
-        <div
-            v-if="hasTransitions || exportFormats.length > 0"
-            class="report-header-actions"
-        >
+        <div class="report-header-actions">
             <div
                 v-if="hasTransitions"
                 class="report-header-lifecycle-actions"
@@ -186,12 +180,11 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                 />
             </div>
             <nav
-                v-if="exportFormats.length > 0"
                 class="report-header-exports"
                 :aria-label="$gettext('Export')"
             >
                 <Button
-                    v-for="exportFormat in exportFormats"
+                    v-for="exportFormat in EXPORT_FORMATS"
                     :key="exportFormat"
                     as="a"
                     variant="link"

@@ -259,12 +259,7 @@ function reportNode(
 
 function workspaceTabs(...workspaces: ComponentNode[]): ComponentNode {
     return reportNode("WorkspaceTabs", {
-        banner: [
-            reportNode("ReportHeader", {
-                summary: [],
-                export_formats: ["json-ld"],
-            }),
-        ],
+        banner: [reportNode("ReportHeader", { summary: [] })],
         components: workspaces,
     });
 }
