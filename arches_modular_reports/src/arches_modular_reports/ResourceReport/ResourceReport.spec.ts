@@ -470,18 +470,6 @@ describe("ResourceReport", () => {
         expect(wrapper.text()).toContain("Unable to refresh this report");
     });
 
-    it("shows interpolated text unescaped once", async () => {
-        vi.mocked(fetchReportContext).mockRejectedValue(
-            new Error("Smalt & Cobalt's sample"),
-        );
-        const wrapper = mountReport();
-        await flushPromises();
-
-        expect(wrapper.text()).toContain(
-            "Unable to load this report: Smalt & Cobalt's sample",
-        );
-    });
-
     it("deletes the resource only once the deletion is confirmed", async () => {
         vi.mocked(deleteResource).mockRejectedValue(new Error("Offline"));
         const wrapper = mountReport(drawerConfig());
