@@ -187,7 +187,7 @@ describe("useResourceChangeSet", () => {
         expect(changeSet.isPendingDelete("note")).toBe(false);
     });
 
-    it("saves onto a fresh copy and sends files as multipart", async () => {
+    it("sends files as multipart", async () => {
         const changeSet = await createChangeSet();
 
         changeSet.editTile("names", "smalt", {

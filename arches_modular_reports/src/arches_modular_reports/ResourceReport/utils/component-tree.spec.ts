@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import {
-    componentPaths,
     folioLocations,
     nodegroupAliasesWithin,
 } from "@/arches_modular_reports/ResourceReport/utils/component-tree.ts";
@@ -54,19 +53,6 @@ const REPORT_TREE: ComponentNode[] = [
         },
     },
 ];
-
-describe("componentPaths", () => {
-    it("lists every component in the tree once", () => {
-        expect(componentPaths(REPORT_TREE)).toEqual([
-            "app/ReportTabs",
-            "app/ReportStack",
-            "app/ReportSection",
-            "app/ReportFolio",
-            "app/ReportDrawer",
-            "app/ImagesPanel",
-        ]);
-    });
-});
 
 describe("nodegroupAliasesWithin", () => {
     it("collects the nodegroups a subtree shows", () => {

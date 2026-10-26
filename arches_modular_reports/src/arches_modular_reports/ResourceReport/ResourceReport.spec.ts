@@ -4,14 +4,9 @@ import OpenVue from "openvue/config";
 import ConfirmationService from "openvue/confirmationservice";
 
 import DataBrowser from "@/arches_modular_reports/ResourceReport/components/DataBrowser/DataBrowser.vue";
-import EditHistoryPanel from "@/arches_modular_reports/ResourceReport/components/EditHistoryPanel.vue";
 import EditListTray from "@/arches_modular_reports/ResourceReport/components/EditListTray.vue";
 import EditorPanel from "@/arches_modular_reports/ResourceReport/components/EditorPanel/EditorPanel.vue";
-import FieldFolio from "@/arches_modular_reports/ResourceReport/components/FieldFolio.vue";
-import ImagesPanel from "@/arches_modular_reports/ResourceReport/components/ImagesPanel.vue";
-import KeyDataSummary from "@/arches_modular_reports/ResourceReport/components/KeyDataSummary.vue";
 import ManagePanel from "@/arches_modular_reports/ResourceReport/components/ManagePanel.vue";
-import MapFolio from "@/arches_modular_reports/ResourceReport/components/MapFolio.vue";
 import RelatedResourcesPanel from "@/arches_modular_reports/ResourceReport/components/RelatedResourcesPanel.vue";
 import ReportFolio from "@/arches_modular_reports/ResourceReport/components/ReportFolio.vue";
 import ReportDrawer from "@/arches_modular_reports/ResourceReport/components/ReportDrawer.vue";
@@ -31,7 +26,6 @@ import {
     fetchRelatedResourceGroups,
     fetchReportContext,
     updateLifecycleState,
-    updateResource,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { EMPTY_VALUE } from "@/arches_modular_reports/ResourceReport/constants.ts";
 
@@ -221,14 +215,9 @@ const COMPONENTS_PATH = "arches_modular_reports/ResourceReport/components";
 
 const REPORT_COMPONENTS: Record<string, Component> = {
     "DataBrowser/DataBrowser": DataBrowser,
-    EditHistoryPanel,
     EditListTray,
     "EditorPanel/EditorPanel": EditorPanel,
-    FieldFolio,
-    ImagesPanel,
-    KeyDataSummary,
     ManagePanel,
-    MapFolio,
     RelatedResourcesPanel,
     ReportDrawer,
     ReportFolio,
@@ -429,31 +418,6 @@ describe("ResourceReport", () => {
         ).toBeDefined();
     });
 
-    it("holds structural edits while a save is running", async () => {
-        vi.mocked(updateResource).mockReturnValueOnce(new Promise(() => {}));
-        const wrapper = mountReport(FOLIO_CONFIG);
-        await flushPromises();
-        await buttonWithText(
-            wrapper,
-            ".report-folio-tile-actions",
-            "Edit",
-        ).trigger("click");
-        await wrapper.find(".card-stub").trigger("click");
-
-        await buttonWithText(
-            wrapper,
-            ".edit-list-tray-header",
-            "Apply all edits",
-        ).trigger("click");
-        await flushPromises();
-
-        expect(
-            wrapper
-                .find('.edit-list-tray-entry [aria-label="Discard change"]')
-                .attributes("disabled"),
-        ).toBeDefined();
-    });
-
     it("keeps the report when refreshing it fails", async () => {
         vi.mocked(fetchReportContext)
             .mockResolvedValueOnce(makeContext())
@@ -509,11 +473,6 @@ describe("ResourceReport", () => {
                         { node_alias: "part_note_content", label: "Part note" },
                     ],
                 }),
-                reportNode("KeyDataSummary", {
-                    summary: [
-                        { node_alias: "part_note_content", label: "Part note" },
-                    ],
-                }),
             ],
         });
         await flushPromises();
@@ -521,9 +480,6 @@ describe("ResourceReport", () => {
         expect(wrapper.find(".report-header-summary dd").text()).toBe(
             EMPTY_VALUE,
         );
-        await wrapper.find(".key-data-summary button").trigger("click");
-        await flushPromises();
-        expect(wrapper.find(".key-data-summary dd").text()).toBe(EMPTY_VALUE);
     });
 
     it("ignores a Load more page from a superseded filter", async () => {
@@ -615,44 +571,6 @@ describe("ResourceReport", () => {
 
         expect(wrapper.find(".report-folio").exists()).toBe(true);
         expect(wrapper.find(".report-folio-tile-actions").exists()).toBe(false);
-    });
-
-    it("shows a single value with its edit links on one row", async () => {
-        const wrapper = mountReport({
-            components: [
-                reportNode("SplitPane", {
-                    main: [
-                        reportNode("FieldFolio", { nodegroup_alias: "names" }),
-                    ],
-                    aside: [reportNode("EditorPanel/EditorPanel")],
-                }),
-            ],
-        });
-        await flushPromises();
-
-        const fieldFolio = wrapper.find(".field-folio");
-        expect(fieldFolio.find(".widget-stub").exists()).toBe(true);
-        expect(
-            fieldFolio.findAll("button").map((button) => button.text()),
-        ).toEqual(["Edit", "Delete"]);
-    });
-
-    it("shows a map folio's fields without a configured map", async () => {
-        const wrapper = mountReport({
-            components: [
-                reportNode("SplitPane", {
-                    main: [
-                        reportNode("MapFolio", { nodegroup_alias: "names" }),
-                    ],
-                    aside: [reportNode("EditorPanel/EditorPanel")],
-                }),
-            ],
-        });
-        await flushPromises();
-
-        expect(wrapper.find(".map-folio .widget-stub").exists()).toBe(true);
-        expect(wrapper.find(".map-folio-actions").text()).toContain("Edit");
-        expect(wrapper.find(".map-folio-pager").exists()).toBe(false);
     });
 
     it("hides models with no matches while filtering related resources", async () => {

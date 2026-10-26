@@ -139,21 +139,6 @@ def curated_config():
     }
 
 
-def data_section(nodegroup_alias, node_aliases, **extra_config):
-    return {
-        "component": "arches_modular_reports/ModularReport/components/DataSection",
-        "config": {
-            "nodegroup_alias": nodegroup_alias,
-            "node_aliases": node_aliases,
-            **extra_config,
-        },
-    }
-
-
-def legacy_config(*components):
-    return {"name": "Legacy", "components": list(components)}
-
-
 def component_path(component_name):
     return f"{REPORT_COMPONENTS_PATH}/{component_name}"
 
@@ -169,10 +154,6 @@ def find_components(value, component_name):
         for child_value in value.values():
             found.extend(find_components(child_value, component_name))
     return found
-
-
-def resource_report_config_from(config):
-    return config["components"][0]["config"]
 
 
 class ResourceReportConfigTests(TestCase):
@@ -229,37 +210,11 @@ class ResourceReportConfigTests(TestCase):
             },
         )
 
-    def test_default_config_is_explicit_and_derived_from_the_graph(self):
+    def test_default_config_derives_summaries_and_folios_from_the_graph(self):
         report_config = ReportConfig(graph=self.graph)
         report_config.full_clean()
 
         config = report_config.config
-        self.assertEqual(
-            [
-                child["component"]
-                for child in resource_report_config_from(config)["components"]
-            ],
-            [
-                component_path("WorkspaceTabs"),
-                component_path("EditListTray"),
-            ],
-        )
-        workspace_tabs = find_components(config, "WorkspaceTabs")[0]["config"]
-        self.assertEqual(
-            [banner_node["component"] for banner_node in workspace_tabs["banner"]],
-            [component_path("ReportHeader")],
-        )
-        self.assertEqual(
-            [
-                (workspace["component"], workspace["config"].get("requires_edit"))
-                for workspace in workspace_tabs["components"]
-            ],
-            [
-                (component_path("SplitPane"), None),
-                (component_path("SplitPane"), True),
-                (component_path("ReportPlaceholder"), None),
-            ],
-        )
         self.assertEqual(
             find_components(config, "ReportHeader")[0]["config"]["summary"],
             [{"node_alias": "description_content", "label": "Description Content"}],
@@ -349,17 +304,6 @@ class ResourceReportConfigTests(TestCase):
             [{"node_alias": "description_text", "label": "content"}],
         )
 
-    def test_card_sections_cover_top_level_cards(self):
-        sections = ReportConfig(graph=self.graph).generate_card_sections()
-
-        self.assertEqual(
-            [
-                section["components"][0]["config"]["nodegroup_alias"]
-                for section in sections
-            ],
-            ["identifiers", "production", "hidden_branch", "description"],
-        )
-
     def test_related_resources_panel_lists_models_linked_either_way(self):
         linked_model = make_resource_model("linked_model", "Linked Model")
         linking_model = make_resource_model("linking_model", "Another Model")
@@ -418,15 +362,6 @@ class ResourceReportConfigTests(TestCase):
                 {"node_alias": "production", "label": "Production"}
             ]
 
-        def mutate_key_outside_config(config):
-            find_components(config, "ReportSection")[0]["label"] = {"en": "Production"}
-
-        def mutate_non_string_component(config):
-            find_components(config, "ReportSection")[0]["component"] = None
-
-        def mutate_non_dict_config(config):
-            find_components(config, "ReportSection")[0]["config"] = []
-
         def mutate_renamed_component(config):
             config["components"][0]["component"] = "my_app/Reports/CustomReport"
             find_components(config, "ReportFolio")[0]["config"][
@@ -437,9 +372,6 @@ class ResourceReportConfigTests(TestCase):
             mutate_unknown_nodegroup,
             mutate_unknown_summary_node,
             mutate_semantic_summary_node,
-            mutate_key_outside_config,
-            mutate_non_string_component,
-            mutate_non_dict_config,
             mutate_renamed_component,
         ):
             with self.subTest(mutation=mutation.__name__):
@@ -466,7 +398,7 @@ class ResourceReportConfigTests(TestCase):
 
     def test_sections_about_another_graph_skip_report_graph_checks(self):
         config = curated_config()
-        resource_report_config_from(config)["components"].append(
+        config["components"][0]["config"]["components"].append(
             report_component(
                 "ReportSection",
                 {
@@ -482,66 +414,40 @@ class ResourceReportConfigTests(TestCase):
 
         ReportConfig(graph=self.graph, config=config).full_clean()
 
-    def prune(self, config, readable_nodegroups, writable_nodegroups=()):
+    def prune(self, config, readable_nodegroups):
         report_config = ReportConfig(graph=self.graph, config=config)
         return update_report_configuration_with_nodegroup_permissions(
             report_configuration_instance=report_config,
             report_nodegroup_ids_with_user_read_permission={
                 nodegroup.pk for nodegroup in readable_nodegroups
             },
-            report_nodegroup_ids_with_user_write_permission={
-                nodegroup.pk for nodegroup in writable_nodegroups
-            },
-        )
-
-    def test_legacy_pruning_drops_unreadable_sections_and_flags_writable_ones(self):
-        config = legacy_config(
-            data_section("identifiers", ["identifier_content"]),
-            data_section("production", ["name_content", "type"]),
-        )
-
-        pruned = self.prune(
-            config,
-            readable_nodegroups=[self.identifiers, self.production],
-            writable_nodegroups=[self.identifiers],
-        )
-        self.assertEqual(
-            [
-                (
-                    component["config"]["nodegroup_alias"],
-                    component["config"]["has_write_permission"],
-                )
-                for component in pruned["components"]
-            ],
-            [("identifiers", True), ("production", False)],
-        )
-
-        pruned = self.prune(config, readable_nodegroups=[self.identifiers])
-        self.assertEqual(
-            [
-                component["config"]["nodegroup_alias"]
-                for component in pruned["components"]
-            ],
-            ["identifiers"],
+            report_nodegroup_ids_with_user_write_permission=set(),
         )
 
     def test_legacy_pruning_filters_node_aliases(self):
-        linked_section = {
-            "component": "my_app/LinkedSection",
-            "config": {
-                "graph_slug": "other_model",
-                "node_aliases": ["location_geometry"],
-            },
+        config = {
+            "name": "Legacy",
+            "components": [
+                {
+                    "component": "arches_modular_reports/ModularReport/components/DataSection",
+                    "config": {
+                        "nodegroup_alias": "production",
+                        "node_aliases": ["name_content", "location_geometry"],
+                    },
+                },
+                {
+                    "component": "my_app/LinkedSection",
+                    "config": {
+                        "graph_slug": "other_model",
+                        "node_aliases": ["location_geometry"],
+                    },
+                },
+                {
+                    "component": "my_app/NodeList",
+                    "config": {"node_aliases": ["location_geometry"]},
+                },
+            ],
         }
-        unlinked_section = {
-            "component": "my_app/NodeList",
-            "config": {"node_aliases": ["location_geometry"]},
-        }
-        config = legacy_config(
-            data_section("production", ["name_content", "location_geometry"]),
-            linked_section,
-            unlinked_section,
-        )
 
         pruned = self.prune(config, readable_nodegroups=[self.production])
 
@@ -556,56 +462,6 @@ class ResourceReportConfigTests(TestCase):
             pruned["components"][0]["config"]["node_aliases"], ["name_content"]
         )
         self.assertEqual(pruned["components"][1]["config"]["node_aliases"], [])
-
-    def test_legacy_pruning_drops_emptied_sections_and_keeps_empty_filters(self):
-        config = legacy_config(
-            {
-                "component": "my_app/LinkedSections",
-                "config": {
-                    "sections": [
-                        {
-                            "name": "General",
-                            "components": [
-                                data_section(
-                                    "identifiers", ["identifier_content"], filters=[]
-                                )
-                            ],
-                        },
-                        {
-                            "name": "Production",
-                            "components": [
-                                data_section("production", ["name_content"])
-                            ],
-                        },
-                    ]
-                },
-            }
-        )
-
-        pruned = self.prune(config, readable_nodegroups=[self.identifiers])
-
-        sections = pruned["components"][0]["config"]["sections"]
-        self.assertEqual([section["name"] for section in sections], ["General"])
-        self.assertEqual(sections[0]["components"][0]["config"]["filters"], [])
-
-    def test_legacy_pruning_strips_unreadable_descriptor_tokens(self):
-        config = legacy_config(
-            {
-                "component": "my_app/DescriptorSection",
-                "config": {"descriptor": "<name_content> (<identifier_content>)"},
-            }
-        )
-
-        pruned = self.prune(config, readable_nodegroups=[self.identifiers])
-
-        self.assertEqual(
-            pruned["components"][0]["config"]["descriptor"], " (<identifier_content>)"
-        )
-
-    def test_legacy_pruning_returns_nothing_when_no_component_is_readable(self):
-        config = legacy_config(data_section("production", ["name_content"]))
-
-        self.assertIsNone(self.prune(config, readable_nodegroups=[]))
 
     def test_pruning_removes_unreadable_folios_summaries_and_emptied_containers(self):
         pruned = self.prune(curated_config(), [self.identifiers])

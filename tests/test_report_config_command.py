@@ -18,6 +18,23 @@ from arches_modular_reports.config_generator_registry import register
 
 arches_version = Version(_arches_version_str)
 
+BROKEN_CONFIG = {
+    "name": "Broken",
+    "components": [
+        {
+            "component": "arches_modular_reports/ResourceReport/ResourceReport",
+            "config": {
+                "components": [
+                    {
+                        "component": "arches_modular_reports/ResourceReport/components/ReportFolio",
+                        "config": {"nodegroup_alias": "missing"},
+                    }
+                ]
+            },
+        }
+    ],
+}
+
 
 def _make_graph(slug):
     """Create a non-draft resource graph with the given slug."""
@@ -75,25 +92,7 @@ class ReportConfigCommandTests(TestCase):
             graph_dir = os.path.join(reports_dir, self.graph.slug)
             os.makedirs(graph_dir)
             with open(os.path.join(graph_dir, "broken.json"), "w") as config_file:
-                json.dump(
-                    {
-                        "name": "Broken",
-                        "components": [
-                            {
-                                "component": "arches_modular_reports/ResourceReport/ResourceReport",
-                                "config": {
-                                    "components": [
-                                        {
-                                            "component": "arches_modular_reports/ResourceReport/components/ReportFolio",
-                                            "config": {"nodegroup_alias": "missing"},
-                                        }
-                                    ]
-                                },
-                            }
-                        ],
-                    },
-                    config_file,
-                )
+                json.dump(BROKEN_CONFIG, config_file)
 
             management.call_command("report_configs", "load", source=graph_dir)
 
@@ -258,25 +257,7 @@ class GenerateReportConfigCommandTests(TestCase):
         self.assertIn("totally_nonexistent_slug", stderr.getvalue())
 
     def test_generate_skips_invalid_generated_config(self):
-        register(
-            "broken_gen",
-            lambda graph: {
-                "name": "Broken",
-                "components": [
-                    {
-                        "component": "arches_modular_reports/ResourceReport/ResourceReport",
-                        "config": {
-                            "components": [
-                                {
-                                    "component": "arches_modular_reports/ResourceReport/components/ReportFolio",
-                                    "config": {"nodegroup_alias": "missing"},
-                                }
-                            ]
-                        },
-                    }
-                ],
-            },
-        )
+        register("broken_gen", lambda graph: BROKEN_CONFIG)
         management.call_command(
             "report_configs",
             "generate",

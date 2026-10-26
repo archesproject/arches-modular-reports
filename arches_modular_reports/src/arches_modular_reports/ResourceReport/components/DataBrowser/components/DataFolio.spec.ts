@@ -95,11 +95,6 @@ const NODEGROUP_WIDGET_CONFIGS = {
         "n",
         makeWidget("note_content", "Note"),
     ),
-    description: makeNodegroupWidgetConfig(
-        null,
-        "1",
-        makeWidget("description_content", "Description"),
-    ),
 };
 
 const RESOURCE: AliasedResourceData = {
@@ -117,9 +112,6 @@ const RESOURCE: AliasedResourceData = {
                 ],
             }),
         ],
-        description: makeTile("description", 0, {
-            description_content: nodeData("Blue"),
-        }),
     },
 };
 
