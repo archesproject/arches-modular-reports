@@ -39,6 +39,17 @@ const nodegroupWidgetConfig = computed(
 
 const cardName = computed(() => nodegroupWidgetConfig.value.card?.name ?? "");
 
+const selectedNodeAlias = computed(() => {
+    if (target.nodeAlias) {
+        return target.nodeAlias;
+    }
+    const firstVisibleWidget =
+        nodegroupWidgetConfig.value.card_x_node_x_widgets.find(
+            (widget) => widget.visible,
+        );
+    return firstVisibleWidget?.node.alias ?? null;
+});
+
 const caption = computed(() => {
     const topLevelAlias = nodegroupLineage(
         reportData.value.nodegroupWidgetConfigs,
@@ -183,7 +194,7 @@ function undoDelete(): void {
                 :nodegroup-alias="target.nodegroupAlias"
                 :tile-data="liveTile"
                 :resource-instance-id="reportData.resource.resourceinstanceid"
-                :selected-node-alias="target.nodeAlias ?? null"
+                :selected-node-alias="selectedNodeAlias"
                 :should-show-form-buttons="false"
                 :should-show-card-name="false"
                 @update:tile-data="onUpdateTileData"
