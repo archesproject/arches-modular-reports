@@ -8,4 +8,15 @@
     .sidenav {
         overflow: hidden !important;
     }
+    #main-content:has(> .modular-report-page) {
+        min-height: 0;
+    }
+    .modular-report-page,
+    .modular-report-page > .resource-report-abstract-container,
+    .modular-report-page > .resource-report-abstract-container > .resource-component-abstract {
+        height: 100%;
+    }
+    .resource-report-abstract-container:has(.modular-report-mounting-point) > footer {
+        display: none !important;
+    }
 </style>
