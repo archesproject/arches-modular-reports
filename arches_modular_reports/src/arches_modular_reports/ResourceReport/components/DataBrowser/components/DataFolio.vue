@@ -101,6 +101,8 @@ const cardinalityLabel = computed(() => {
 
 const isFiltering = computed(() => query !== "");
 
+const isReorderable = computed(() => !isFiltering.value && tiles.length > 1);
+
 const childrenMatchedByAncestor = computed(
     () =>
         matchedByAncestor ||
@@ -331,7 +333,7 @@ function onDragEnd(): void {
                     class="data-folio-tile-row"
                     :draggable="
                         !tileRow.isLocked &&
-                        !isFiltering &&
+                        isReorderable &&
                         !changeSet.isBusy.value
                     "
                     @dragstart="onDragStart($event, tileRow.tileId)"
@@ -354,7 +356,7 @@ function onDragEnd(): void {
                         @click="toggleTile(tileRow.tileId, tileRow.isExpanded)"
                     />
                     <div
-                        v-if="!tileRow.isLocked && !isFiltering"
+                        v-if="!tileRow.isLocked && isReorderable"
                         class="data-folio-reorder"
                     >
                         <i
