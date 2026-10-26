@@ -7,6 +7,7 @@ from django.utils.translation import gettext, gettext_noop
 
 from arches.app.models.models import (
     CardXNodeXWidget,
+    DDataType,
     FunctionXGraph,
     GraphModel,
     Node,
@@ -78,6 +79,54 @@ class ResourceReportGraph:
         if descriptor_function and descriptor_function.config:
             return descriptor_function.config.get("descriptor_types", {})
         return {}
+
+    @cached_property
+    def hidden_node_ids(self):
+        return set(
+            CardXNodeXWidget.objects.filter(
+                node__graph=self.graph, visible=False
+            ).values_list("node_id", flat=True)
+        )
+
+    @cached_property
+    def geometric_datatypes(self):
+        return set(
+            DDataType.objects.filter(isgeometric=True).values_list(
+                "datatype", flat=True
+            )
+        )
+
+    def folio_component(self, nodegroup_alias):
+        grouping_node = self.grouping_nodes_by_alias[nodegroup_alias]
+        value_nodes = [
+            node
+            for node in self.graph_nodes
+            if node.nodegroup_id == grouping_node.nodegroup_id
+            and node.datatype != "semantic"
+            and node.pk not in self.hidden_node_ids
+        ]
+        geometric_nodes = [
+            node for node in value_nodes if node.datatype in self.geometric_datatypes
+        ]
+        if geometric_nodes:
+            return report_component(
+                "MapFolio",
+                {
+                    "nodegroup_alias": nodegroup_alias,
+                    "node_alias": geometric_nodes[0].alias,
+                },
+            )
+        has_child_nodegroups = (
+            grouping_node.nodegroup_id
+            in self.parent_nodegroup_ids_by_nodegroup_id.values()
+        )
+        if (
+            grouping_node.nodegroup.cardinality == "1"
+            and len(value_nodes) == 1
+            and not has_child_nodegroups
+        ):
+            return report_component("FieldFolio", {"nodegroup_alias": nodegroup_alias})
+        return report_component("ReportFolio", {"nodegroup_alias": nodegroup_alias})
 
     def top_level_nodegroup_aliases(self):
         return [
@@ -198,10 +247,7 @@ def generate_resource_report_config(graph):
                                         gettext_noop("Overview")
                                     ),
                                     "components": [
-                                        report_component(
-                                            "ReportFolio",
-                                            {"nodegroup_alias": nodegroup_alias},
-                                        )
+                                        report_graph.folio_component(nodegroup_alias)
                                         for nodegroup_alias in report_graph.top_level_nodegroup_aliases()
                                     ],
                                 },

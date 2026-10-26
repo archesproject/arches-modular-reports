@@ -282,8 +282,22 @@ class ResourceReportConfigTests(TestCase):
             [
                 (component_path("ReportFolio"), "identifiers"),
                 (component_path("ReportFolio"), "production"),
-                (component_path("ReportFolio"), "description"),
+                (component_path("FieldFolio"), "description"),
             ],
+        )
+
+    def test_nodegroups_with_geometry_get_a_map_folio(self):
+        site = make_nodegroup(self.graph, "site")
+        make_node(self.graph, site, "site_name", "string")
+        make_node(self.graph, site, "site_geometry", "geojson-feature-collection")
+        make_card(self.graph, site, sortorder=4)
+
+        report_config = ReportConfig(graph=self.graph)
+        report_config.full_clean()
+
+        self.assertEqual(
+            find_components(report_config.config, "MapFolio")[0]["config"],
+            {"nodegroup_alias": "site", "node_alias": "site_geometry"},
         )
 
     def test_summary_labels_come_from_widgets(self):

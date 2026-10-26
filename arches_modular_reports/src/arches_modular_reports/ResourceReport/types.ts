@@ -69,6 +69,10 @@ export interface FolioConfig {
     nodegroup_alias?: string;
 }
 
+export interface MapFolioConfig extends FolioConfig {
+    node_alias?: string;
+}
+
 export interface DrawerConfig extends ContainerConfig {
     panels?: ComponentNode<LabelledConfig>[];
 }

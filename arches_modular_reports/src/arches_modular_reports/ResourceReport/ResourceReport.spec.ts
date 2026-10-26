@@ -7,9 +7,11 @@ import DataBrowser from "@/arches_modular_reports/ResourceReport/components/Data
 import EditHistoryPanel from "@/arches_modular_reports/ResourceReport/components/EditHistoryPanel.vue";
 import EditListTray from "@/arches_modular_reports/ResourceReport/components/EditListTray.vue";
 import EditorPanel from "@/arches_modular_reports/ResourceReport/components/EditorPanel/EditorPanel.vue";
+import FieldFolio from "@/arches_modular_reports/ResourceReport/components/FieldFolio.vue";
 import ImagesPanel from "@/arches_modular_reports/ResourceReport/components/ImagesPanel.vue";
 import KeyDataSummary from "@/arches_modular_reports/ResourceReport/components/KeyDataSummary.vue";
 import ManagePanel from "@/arches_modular_reports/ResourceReport/components/ManagePanel.vue";
+import MapFolio from "@/arches_modular_reports/ResourceReport/components/MapFolio.vue";
 import RelatedResourcesPanel from "@/arches_modular_reports/ResourceReport/components/RelatedResourcesPanel.vue";
 import ReportFolio from "@/arches_modular_reports/ResourceReport/components/ReportFolio.vue";
 import ReportDrawer from "@/arches_modular_reports/ResourceReport/components/ReportDrawer.vue";
@@ -222,9 +224,11 @@ const REPORT_COMPONENTS: Record<string, Component> = {
     EditHistoryPanel,
     EditListTray,
     "EditorPanel/EditorPanel": EditorPanel,
+    FieldFolio,
     ImagesPanel,
     KeyDataSummary,
     ManagePanel,
+    MapFolio,
     RelatedResourcesPanel,
     ReportDrawer,
     ReportFolio,
@@ -628,5 +632,43 @@ describe("ResourceReport", () => {
 
         expect(wrapper.find(".report-folio").exists()).toBe(true);
         expect(wrapper.find(".report-folio-tile-actions").exists()).toBe(false);
+    });
+
+    it("shows a single value with its edit links on one row", async () => {
+        const wrapper = mountReport({
+            components: [
+                reportNode("SplitPane", {
+                    main: [
+                        reportNode("FieldFolio", { nodegroup_alias: "names" }),
+                    ],
+                    aside: [reportNode("EditorPanel/EditorPanel")],
+                }),
+            ],
+        });
+        await flushPromises();
+
+        const fieldFolio = wrapper.find(".field-folio");
+        expect(fieldFolio.find(".widget-stub").exists()).toBe(true);
+        expect(
+            fieldFolio.findAll("button").map((button) => button.text()),
+        ).toEqual(["Edit", "Delete"]);
+    });
+
+    it("shows a map folio's fields without a configured map", async () => {
+        const wrapper = mountReport({
+            components: [
+                reportNode("SplitPane", {
+                    main: [
+                        reportNode("MapFolio", { nodegroup_alias: "names" }),
+                    ],
+                    aside: [reportNode("EditorPanel/EditorPanel")],
+                }),
+            ],
+        });
+        await flushPromises();
+
+        expect(wrapper.find(".map-folio .widget-stub").exists()).toBe(true);
+        expect(wrapper.find(".map-folio-actions").text()).toContain("Edit");
+        expect(wrapper.find(".map-folio-pager").exists()).toBe(false);
     });
 });

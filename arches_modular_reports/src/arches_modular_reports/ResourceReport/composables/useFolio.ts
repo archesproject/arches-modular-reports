@@ -36,7 +36,7 @@ export interface Folio {
     isPendingDelete: (tile: AliasedTileData) => boolean;
     tileLabel: (tile: AliasedTileData) => string;
     addTile: () => Promise<void>;
-    editTile: (tileId: string) => void;
+    editTile: (tileId: string, nodeAlias?: string) => void;
     deleteTile: (tileId: string) => void;
     undoDelete: (tileId: string) => void;
     clearFlash: () => void;
@@ -165,10 +165,11 @@ export function useFolio(
         }
     }
 
-    function editTile(tileId: string): void {
+    function editTile(tileId: string, nodeAlias?: string): void {
         reportData.value.editor.open({
             nodegroupAlias: nodegroupAlias.value,
             tileId,
+            nodeAlias,
         });
     }
 
