@@ -13,18 +13,22 @@ import {
     resourceReportUrl,
     searchUrl,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
+import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { toError } from "@/arches_modular_reports/utils.ts";
 
-import type { ReportData } from "@/arches_modular_reports/ResourceReport/types.ts";
+import type {
+    ComponentNode,
+    LabelledConfig,
+} from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const CONFIRM_GROUP = "manage-panel";
 
-const { reportData } = defineProps<{
-    reportData: ReportData;
-    panelConfig: Record<string, unknown>;
+defineProps<{
+    component: ComponentNode<LabelledConfig>;
 }>();
 
 const { $gettext } = useGettext();
+const reportData = useReportData();
 const confirm = useConfirm();
 
 const copiedResourceId = ref<string | null>(null);
@@ -32,15 +36,15 @@ const isCopying = ref(false);
 const isDeleting = ref(false);
 const actionError = ref<Error | null>(null);
 
-const permissions = computed(() => reportData.context.permissions);
-const lifecycleState = computed(() => reportData.context.lifecycle_state);
+const permissions = computed(() => reportData.value.context.permissions);
+const lifecycleState = computed(() => reportData.value.context.lifecycle_state);
 
 async function createCopy(): Promise<void> {
     isCopying.value = true;
     actionError.value = null;
     try {
         copiedResourceId.value = await copyResource(
-            reportData.resource.resourceinstanceid,
+            reportData.value.resource.resourceinstanceid,
         );
     } catch (error) {
         actionError.value = toError(error);
@@ -51,7 +55,7 @@ async function createCopy(): Promise<void> {
 
 function confirmDelete(): void {
     let message = $gettext("Deleting this resource cannot be undone.");
-    if (reportData.changeSet.pendingChanges.value.length > 0) {
+    if (reportData.value.changeSet.pendingChanges.value.length > 0) {
         message = $gettext(
             "Deleting this resource cannot be undone, and your pending edits will be discarded.",
         );
@@ -71,8 +75,8 @@ async function deleteThisResource(): Promise<void> {
     isDeleting.value = true;
     actionError.value = null;
     try {
-        await deleteResource(reportData.resource.resourceinstanceid);
-        reportData.changeSet.discardAll();
+        await deleteResource(reportData.value.resource.resourceinstanceid);
+        reportData.value.changeSet.discardAll();
         window.location.assign(searchUrl());
     } catch (error) {
         actionError.value = toError(error);

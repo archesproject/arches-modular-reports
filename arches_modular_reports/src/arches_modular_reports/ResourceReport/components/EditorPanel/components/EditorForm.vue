@@ -12,6 +12,7 @@ import {
     childNodegroupAliases,
     nodegroupLineage,
 } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
+import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { findTile } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
 import {
     canAddTile,
@@ -19,38 +20,35 @@ import {
 } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
 import type { AliasedTileData } from "@/arches_vue_components/types.ts";
-import type {
-    EditTileRequest,
-    ReportData,
-} from "@/arches_modular_reports/ResourceReport/types.ts";
+import type { EditTileRequest } from "@/arches_modular_reports/ResourceReport/types.ts";
 
-const { target, reportData } = defineProps<{
+const { target } = defineProps<{
     target: EditTileRequest;
-    reportData: ReportData;
 }>();
 
 const { $gettext } = useGettext();
+const reportData = useReportData();
 
 const liveTile = computed(() =>
-    findTile(reportData.resource.aliased_data, target.tileId),
+    findTile(reportData.value.resource.aliased_data, target.tileId),
 );
 
 const nodegroupWidgetConfig = computed(
-    () => reportData.nodegroupWidgetConfigs[target.nodegroupAlias],
+    () => reportData.value.nodegroupWidgetConfigs[target.nodegroupAlias],
 );
 
 const cardName = computed(() => nodegroupWidgetConfig.value.card?.name ?? "");
 
 const caption = computed(() => {
     const topLevelAlias = nodegroupLineage(
-        reportData.nodegroupWidgetConfigs,
+        reportData.value.nodegroupWidgetConfigs,
         target.nodegroupAlias,
     ).at(-1);
-    if (topLevelAlias && reportData.folioLocations[topLevelAlias]) {
+    if (topLevelAlias && reportData.value.folioLocations[topLevelAlias]) {
         return $gettext(
             "Editor · %{location}",
             {
-                location: reportData.folioLocations[topLevelAlias],
+                location: reportData.value.folioLocations[topLevelAlias],
             },
             true,
         );
@@ -59,11 +57,13 @@ const caption = computed(() => {
 });
 
 const isMarkedForDeletion = computed(
-    () => reportData.changeSet.changeTypeForTile(target.tileId) === "delete",
+    () =>
+        reportData.value.changeSet.changeTypeForTile(target.tileId) ===
+        "delete",
 );
 
 const isPendingDelete = computed(() =>
-    reportData.changeSet.isPendingDelete(target.tileId),
+    reportData.value.changeSet.isPendingDelete(target.tileId),
 );
 
 const cardMode = computed(() => {
@@ -75,7 +75,7 @@ const cardMode = computed(() => {
 
 const childAliases = computed(() =>
     childNodegroupAliases(
-        reportData.nodegroupWidgetConfigs,
+        reportData.value.nodegroupWidgetConfigs,
         target.nodegroupAlias,
     ),
 );
@@ -83,10 +83,10 @@ const childAliases = computed(() =>
 const addableChildAliases = computed(() =>
     childAliases.value.filter((childAlias) =>
         canAddTile(
-            reportData.nodegroupWidgetConfigs[childAlias],
+            reportData.value.nodegroupWidgetConfigs[childAlias],
             nodegroupTiles(liveTile.value?.aliased_data[childAlias]).length,
             target.tileId,
-            reportData.changeSet,
+            reportData.value.changeSet,
         ),
     ),
 );
@@ -105,11 +105,11 @@ const deletionMessage = computed(() => {
 });
 
 function childCardName(childAlias: string): string {
-    return reportData.nodegroupWidgetConfigs[childAlias].card?.name ?? "";
+    return reportData.value.nodegroupWidgetConfigs[childAlias].card?.name ?? "";
 }
 
 function onUpdateTileData(tileData: AliasedTileData): void {
-    reportData.changeSet.editTile(
+    reportData.value.changeSet.editTile(
         target.nodegroupAlias,
         target.tileId,
         tileData.aliased_data,
@@ -117,21 +117,21 @@ function onUpdateTileData(tileData: AliasedTileData): void {
 }
 
 async function addChild(childAlias: string): Promise<void> {
-    const tileId = await reportData.changeSet.addTile(
+    const tileId = await reportData.value.changeSet.addTile(
         childAlias,
         target.tileId,
     );
     if (tileId !== null) {
-        reportData.editor.open({ nodegroupAlias: childAlias, tileId });
+        reportData.value.editor.open({ nodegroupAlias: childAlias, tileId });
     }
 }
 
 function deleteTile(): void {
-    reportData.changeSet.deleteTile(target.nodegroupAlias, target.tileId);
+    reportData.value.changeSet.deleteTile(target.nodegroupAlias, target.tileId);
 }
 
 function undoDelete(): void {
-    reportData.changeSet.undoDelete(target.tileId);
+    reportData.value.changeSet.undoDelete(target.tileId);
 }
 </script>
 

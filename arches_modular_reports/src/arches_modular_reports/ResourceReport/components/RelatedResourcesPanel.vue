@@ -12,22 +12,23 @@ import {
     fetchRelatedResourceGroup,
     fetchRelatedResourceGroups,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
+import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { useFilterQuery } from "@/arches_modular_reports/ResourceReport/composables/useFilterQuery.ts";
 import { DEFAULT_GRAPH_ICON_CLASS } from "@/arches_modular_reports/ResourceReport/constants.ts";
 import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type {
+    ComponentNode,
     RelatedResourceGroup,
     RelatedResourcesPanelConfig,
-    ReportData,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
-const { reportData, panelConfig } = defineProps<{
-    reportData: ReportData;
-    panelConfig: RelatedResourcesPanelConfig;
+const { component } = defineProps<{
+    component: ComponentNode<RelatedResourcesPanelConfig>;
 }>();
 
 const { $gettext } = useGettext();
+const reportData = useReportData();
 const { filterText, query } = useFilterQuery();
 
 const groups = ref<RelatedResourceGroup[]>([]);
@@ -36,7 +37,7 @@ const loadError = ref<Error | null>(null);
 let latestGroupsRequestNumber = 0;
 
 const resourceInstanceId = computed(
-    () => reportData.resource.resourceinstanceid,
+    () => reportData.value.resource.resourceinstanceid,
 );
 
 watchEffect(() => {
@@ -50,7 +51,7 @@ async function loadGroups(searchText: string): Promise<void> {
     try {
         const loadedGroups = await fetchRelatedResourceGroups(
             resourceInstanceId.value,
-            panelConfig.graphs,
+            component.config.graphs ?? [],
             searchText,
         );
         if (groupsRequestNumber === latestGroupsRequestNumber) {

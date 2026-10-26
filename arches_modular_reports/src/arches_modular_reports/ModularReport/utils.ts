@@ -16,8 +16,33 @@ export function uniqueId(_unused: unknown) {
     return Math.floor(Math.random() * Date.now());
 }
 
+const componentModules = new Map<string, Promise<Component>>();
+const loadedComponents = new Map<string, Component>();
+
+function importComponent(componentPath: string): Promise<Component> {
+    let componentModule = componentModules.get(componentPath);
+    if (componentModule === undefined) {
+        componentModule = import(`@/${componentPath}.vue`);
+        componentModules.set(componentPath, componentModule);
+    }
+    return componentModule;
+}
+
 export function loadComponent(componentPath: string): Component {
-    return defineAsyncComponent(() => import(`@/${componentPath}.vue`));
+    let loadedComponent = loadedComponents.get(componentPath);
+    if (loadedComponent === undefined) {
+        loadedComponent = defineAsyncComponent(() =>
+            importComponent(componentPath),
+        );
+        loadedComponents.set(componentPath, loadedComponent);
+    }
+    return loadedComponent;
+}
+
+export function preloadComponents(componentPaths: string[]): void {
+    for (const componentPath of componentPaths) {
+        importComponent(componentPath).catch(() => undefined);
+    }
 }
 
 export async function importComponents(

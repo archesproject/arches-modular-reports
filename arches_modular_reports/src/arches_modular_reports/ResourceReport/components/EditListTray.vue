@@ -7,33 +7,41 @@ import ConfirmDialog from "openvue/confirmdialog";
 import Message from "openvue/message";
 import { useConfirm } from "openvue/useconfirm";
 
+import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { findTile } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
 import { tileSummary } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
 import type {
-    ReportData,
+    ComponentNode,
     ResourceChange,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const CONFIRM_GROUP = "edit-list-tray";
 
-const { reportData } = defineProps<{
-    reportData: ReportData;
+defineProps<{
+    component: ComponentNode;
 }>();
 
 const { $gettext } = useGettext();
+const reportData = useReportData();
 const confirm = useConfirm();
 
+const hasPendingChanges = computed(
+    () => reportData.value.changeSet.pendingChanges.value.length > 0,
+);
+
 const entries = computed(() =>
-    reportData.changeSet.pendingChanges.value.map((change) => ({
+    reportData.value.changeSet.pendingChanges.value.map((change) => ({
         change,
         changeTypeLabel: changeTypeLabel(change),
         cardName:
-            reportData.nodegroupWidgetConfigs[change.nodegroupAlias].card?.name,
+            reportData.value.nodegroupWidgetConfigs[change.nodegroupAlias].card
+                ?.name,
         tileSummary: changedTileSummary(change),
-        isConflicting: reportData.changeSet.conflictingChangeIds.value.includes(
-            change.id,
-        ),
+        isConflicting:
+            reportData.value.changeSet.conflictingChangeIds.value.includes(
+                change.id,
+            ),
     })),
 );
 
@@ -65,20 +73,20 @@ function changedTileSummary(change: ResourceChange): string {
     if (tileId === null) {
         return "";
     }
-    const tile = findTile(reportData.resource.aliased_data, tileId);
+    const tile = findTile(reportData.value.resource.aliased_data, tileId);
     if (tile === null) {
         return "";
     }
     return tileSummary(
         tile,
-        reportData.nodegroupWidgetConfigs[change.nodegroupAlias],
+        reportData.value.nodegroupWidgetConfigs[change.nodegroupAlias],
     );
 }
 
 function openChange(change: ResourceChange): void {
     const tileId = changedTileId(change);
     if (tileId) {
-        reportData.editor.open({
+        reportData.value.editor.open({
             nodegroupAlias: change.nodegroupAlias,
             tileId,
         });
@@ -95,22 +103,28 @@ function confirmCancelAll(): void {
         acceptLabel: $gettext("Discard all"),
         rejectLabel: $gettext("Keep editing"),
         accept: () => {
-            reportData.changeSet.discardAll();
-            reportData.editor.close();
+            reportData.value.changeSet.discardAll();
+            reportData.value.editor.close();
         },
     });
 }
 
 async function applyAll(): Promise<void> {
-    const isSaved = await reportData.changeSet.save();
-    if (isSaved && reportData.changeSet.pendingChanges.value.length === 0) {
-        reportData.editor.close();
+    const isSaved = await reportData.value.changeSet.save();
+    if (
+        isSaved &&
+        reportData.value.changeSet.pendingChanges.value.length === 0
+    ) {
+        reportData.value.editor.close();
     }
 }
 </script>
 
 <template>
-    <section class="edit-list-tray">
+    <section
+        v-if="hasPendingChanges"
+        class="edit-list-tray"
+    >
         <ConfirmDialog :group="CONFIRM_GROUP" />
         <header class="edit-list-tray-header">
             <h3 class="edit-list-tray-title">

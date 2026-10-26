@@ -6,7 +6,7 @@ import Badge from "openvue/badge";
 import Button from "openvue/button";
 import Tag from "openvue/tag";
 
-import HighlightedText from "@/arches_modular_reports/ResourceReport/components/DataWorkspace/components/HighlightedText.vue";
+import HighlightedText from "@/arches_modular_reports/ResourceReport/components/DataBrowser/components/HighlightedText.vue";
 
 import {
     folioMatches,
@@ -42,6 +42,7 @@ const {
     query,
     matchedByAncestor,
     selectedTileId,
+    isEditable,
 } = defineProps<{
     nodegroupAlias: string;
     nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>;
@@ -51,6 +52,7 @@ const {
     query: string;
     matchedByAncestor: boolean;
     selectedTileId: string | null;
+    isEditable: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -79,13 +81,15 @@ const childAliases = computed(() =>
     childNodegroupAliases(nodegroupWidgetConfigs, nodegroupAlias),
 );
 
-const isAddable = computed(() =>
-    canAddTile(
-        nodegroupWidgetConfig.value,
-        tiles.length,
-        parentTileId,
-        changeSet,
-    ),
+const isAddable = computed(
+    () =>
+        isEditable &&
+        canAddTile(
+            nodegroupWidgetConfig.value,
+            tiles.length,
+            parentTileId,
+            changeSet,
+        ),
 );
 
 const cardinalityLabel = computed(() => {
@@ -120,6 +124,7 @@ const tileRows = computed(() =>
                 isMarkedForDeletion,
                 isPendingDelete,
                 isLocked:
+                    !isEditable ||
                     !nodegroupWidgetConfig.value.is_writable ||
                     (isPendingDelete && !isMarkedForDeletion),
                 isExpanded: isExpanded(tileId),
@@ -516,6 +521,7 @@ function onDragEnd(): void {
                         :query="query"
                         :matched-by-ancestor="childrenMatchedByAncestor"
                         :selected-tile-id="selectedTileId"
+                        :is-editable="isEditable"
                         @edit-tile="emit(EDIT_TILE, $event)"
                     />
                 </div>

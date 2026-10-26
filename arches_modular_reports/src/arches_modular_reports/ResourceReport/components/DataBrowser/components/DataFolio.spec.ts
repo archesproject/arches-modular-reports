@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import OpenVue from "openvue/config";
 
-import DataFolio from "@/arches_modular_reports/ResourceReport/components/DataWorkspace/components/DataFolio.vue";
+import DataFolio from "@/arches_modular_reports/ResourceReport/components/DataBrowser/components/DataFolio.vue";
 import { useResourceChangeSet } from "@/arches_modular_reports/ResourceReport/composables/useResourceChangeSet.ts";
 import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
@@ -144,6 +144,7 @@ async function mountEditor(
             query,
             matchedByAncestor: false,
             selectedTileId: null,
+            isEditable: true,
         },
         global: { plugins: [[OpenVue, { theme: "none" }]] },
     });

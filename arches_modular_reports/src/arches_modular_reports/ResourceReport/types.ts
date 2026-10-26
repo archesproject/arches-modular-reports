@@ -23,63 +23,62 @@ export interface SummaryEntryConfig {
     label: LocalizedLabel;
 }
 
-export interface HeaderConfig {
-    summary: SummaryEntryConfig[];
-    export_formats: ExportFormat[];
+export interface ComponentNode<TConfig = Record<string, unknown>> {
+    component: string;
+    config: TConfig;
+}
+
+export interface LabelledConfig {
+    label?: LocalizedLabel | null;
+    description?: LocalizedLabel | null;
+    icon?: string | null;
+    requires_edit?: boolean;
+}
+
+export interface ContainerConfig {
+    components?: ComponentNode[];
+}
+
+export type ResourceReportConfig = ContainerConfig;
+
+export interface ReportHeaderConfig {
+    summary?: SummaryEntryConfig[];
+    export_formats?: ExportFormat[];
     lifecycle_severities?: Record<string, TagSeverity>;
 }
 
+export interface WorkspaceTabsConfig {
+    banner?: ComponentNode[];
+    components?: ComponentNode<LabelledConfig>[];
+}
+
+export interface ReportTabsConfig {
+    components?: ComponentNode<LabelledConfig>[];
+}
+
+export interface SplitPaneConfig extends LabelledConfig {
+    main?: ComponentNode[];
+    aside?: ComponentNode[];
+}
+
+export interface StackConfig extends LabelledConfig, ContainerConfig {}
+
+export interface SectionConfig extends LabelledConfig, ContainerConfig {}
+
 export interface FolioConfig {
-    nodegroup_alias: string;
+    nodegroup_alias?: string;
 }
 
-export interface SectionConfig {
-    label: LocalizedLabel | null;
-    icon: string | null;
-    folios: FolioConfig[];
+export interface DrawerConfig extends ContainerConfig {
+    panels?: ComponentNode<LabelledConfig>[];
 }
 
-export interface TabConfig {
-    label: LocalizedLabel;
-    sections: SectionConfig[];
+export interface KeyDataSummaryConfig {
+    summary?: SummaryEntryConfig[];
 }
 
-export interface DrawerPanelConfig {
-    component: string;
-    label: LocalizedLabel;
-    icon: string;
-    config: Record<string, unknown>;
-}
-
-export interface HomeConfig {
-    summary: SummaryEntryConfig[];
-    drawer: DrawerPanelConfig[];
-}
-
-export interface ReportWorkspaceConfig {
-    tabs: TabConfig[];
-    home: HomeConfig | null;
-}
-
-export interface WorkspaceConfig {
-    id: string;
-    label: LocalizedLabel;
-    description: LocalizedLabel;
-    component: string;
-    config: Partial<ReportWorkspaceConfig>;
-}
-
-export interface ResourceReportConfig {
-    header: HeaderConfig;
-    workspaces: WorkspaceConfig[];
-}
-
-export interface ResolvedWorkspace {
-    id: string;
-    label: string;
-    description: string;
-    component: string;
-    config: Partial<ReportWorkspaceConfig>;
+export interface PlaceholderConfig extends LabelledConfig {
+    message?: LocalizedLabel | null;
 }
 
 export interface LifecycleStateSummary {
@@ -218,8 +217,29 @@ export interface EditTileRequest {
 
 export interface ReportEditor {
     target: EditTileRequest | null;
+    isAvailable: boolean;
     open: (target: EditTileRequest) => void;
     close: () => void;
+    register: () => () => void;
+}
+
+export interface ReportLifecycle {
+    isTransitioning: boolean;
+    transitionError: Error | null;
+    transition: (lifecycleStateId: string) => Promise<void>;
+}
+
+export interface FolioRevealer {
+    contains: (nodegroupAlias: string) => boolean;
+    reveal: (nodegroupAlias: string) => void;
+}
+
+export interface FolioNavigation {
+    flashedNodegroupAlias: Ref<string | null>;
+    registerFolio: (nodegroupAlias: string, element: HTMLElement) => () => void;
+    registerRevealer: (revealer: FolioRevealer) => () => void;
+    jumpToNode: (nodeAlias: string) => Promise<void>;
+    clearFlash: () => void;
 }
 
 export interface ReportData {
@@ -231,6 +251,8 @@ export interface ReportData {
     canEdit: boolean;
     changeSet: ResourceChangeSet;
     editor: ReportEditor;
+    lifecycle: ReportLifecycle;
+    folioNavigation: FolioNavigation;
 }
 
 export interface EditHistoryValue {
@@ -270,8 +292,8 @@ export interface RelatedResourceGroup {
     items: RelatedResourceItem[];
 }
 
-export interface RelatedResourcesPanelConfig {
-    graphs: string[];
+export interface RelatedResourcesPanelConfig extends LabelledConfig {
+    graphs?: string[];
 }
 
 export interface ImageSource {
@@ -279,8 +301,8 @@ export interface ImageSource {
     node: string;
 }
 
-export interface ImagesPanelConfig {
-    images: ImageSource[];
+export interface ImagesPanelConfig extends LabelledConfig {
+    images?: ImageSource[];
 }
 
 export interface ResourceImagesPage {

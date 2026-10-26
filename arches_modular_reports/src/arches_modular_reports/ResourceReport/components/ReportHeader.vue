@@ -3,8 +3,10 @@ import { computed } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
+import Message from "openvue/message";
 import Tag from "openvue/tag";
 
+import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { buildExportUrl } from "@/arches_modular_reports/ResourceReport/api.ts";
 import {
     DEFAULT_GRAPH_ICON_CLASS,
@@ -14,26 +16,19 @@ import { lifecycleSeverity } from "@/arches_modular_reports/ResourceReport/utils
 import { summaryRows } from "@/arches_modular_reports/ResourceReport/utils/summary-rows.ts";
 
 import type {
+    ComponentNode,
     ExportFormat,
-    HeaderConfig,
     LifecycleStateSummary,
-    ReportData,
+    ReportHeaderConfig,
     TagSeverity,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
-const TRANSITION_LIFECYCLE = "transition-lifecycle" as const;
-
-const { reportData, headerConfig, isTransitioning } = defineProps<{
-    reportData: ReportData;
-    headerConfig: HeaderConfig;
-    isTransitioning: boolean;
-}>();
-
-const emit = defineEmits<{
-    (event: typeof TRANSITION_LIFECYCLE, lifecycleStateId: string): void;
+const { component } = defineProps<{
+    component: ComponentNode<ReportHeaderConfig>;
 }>();
 
 const { $gettext } = useGettext();
+const reportData = useReportData();
 
 const exportFormatLabels: Record<ExportFormat, string> = {
     "json-ld": $gettext("JSON-LD"),
@@ -41,27 +36,29 @@ const exportFormatLabels: Record<ExportFormat, string> = {
     csv: $gettext("CSV"),
 };
 
+const exportFormats = computed(() => component.config.export_formats ?? []);
+
 const currentLifecycleState = computed(
-    () => reportData.context.lifecycle_state,
+    () => reportData.value.context.lifecycle_state,
 );
 
 const displayName = computed(() => {
-    const resourceName = reportData.resource.name?.trim();
+    const resourceName = reportData.value.resource.name?.trim();
     if (resourceName) {
         return resourceName;
     }
     return $gettext(
         "New %{graphName}",
         {
-            graphName: reportData.context.graph.name,
+            graphName: reportData.value.context.graph.name,
         },
         true,
     );
 });
 
 const graphIconClass = computed(() => {
-    if (reportData.context.graph.iconclass) {
-        return reportData.context.graph.iconclass;
+    if (reportData.value.context.graph.iconclass) {
+        return reportData.value.context.graph.iconclass;
     }
     return DEFAULT_GRAPH_ICON_CLASS;
 });
@@ -69,7 +66,7 @@ const graphIconClass = computed(() => {
 const lifecycleTagSeverity = computed(() =>
     lifecycleSeverity(
         currentLifecycleState.value,
-        headerConfig.lifecycle_severities,
+        component.config.lifecycle_severities,
     ),
 );
 
@@ -84,22 +81,22 @@ const nextStates = computed(
 
 const hasTransitions = computed(
     () =>
-        reportData.context.permissions.is_reviewer &&
+        reportData.value.context.permissions.is_reviewer &&
         (previousStates.value.length > 0 || nextStates.value.length > 0),
 );
 
 const summaryLines = computed(() =>
     summaryRows(
-        headerConfig.summary,
-        reportData.resource.aliased_data,
-        reportData.context.language,
+        component.config.summary ?? [],
+        reportData.value.resource.aliased_data,
+        reportData.value.context.language,
     ),
 );
 
 const isHoldingTransitions = computed(
     () =>
-        reportData.changeSet.pendingChanges.value.length > 0 ||
-        reportData.changeSet.isSaving.value,
+        reportData.value.changeSet.pendingChanges.value.length > 0 ||
+        reportData.value.changeSet.isSaving.value,
 );
 
 function transitionSeverity(
@@ -157,7 +154,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
             </dl>
         </div>
         <div
-            v-if="hasTransitions || headerConfig.export_formats.length > 0"
+            v-if="hasTransitions || exportFormats.length > 0"
             class="report-header-actions"
         >
             <div
@@ -171,9 +168,9 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                     size="small"
                     :label="lifecycleState.action_label"
                     :severity="transitionSeverity(lifecycleState)"
-                    :loading="isTransitioning"
+                    :loading="reportData.lifecycle.isTransitioning"
                     :disabled="isHoldingTransitions"
-                    @click="emit(TRANSITION_LIFECYCLE, lifecycleState.id)"
+                    @click="reportData.lifecycle.transition(lifecycleState.id)"
                 />
                 <Button
                     v-for="lifecycleState in nextStates"
@@ -183,18 +180,18 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                     size="small"
                     :label="lifecycleState.action_label"
                     :severity="transitionSeverity(lifecycleState)"
-                    :loading="isTransitioning"
+                    :loading="reportData.lifecycle.isTransitioning"
                     :disabled="isHoldingTransitions"
-                    @click="emit(TRANSITION_LIFECYCLE, lifecycleState.id)"
+                    @click="reportData.lifecycle.transition(lifecycleState.id)"
                 />
             </div>
             <nav
-                v-if="headerConfig.export_formats.length > 0"
+                v-if="exportFormats.length > 0"
                 class="report-header-exports"
                 :aria-label="$gettext('Export')"
             >
                 <Button
-                    v-for="exportFormat in headerConfig.export_formats"
+                    v-for="exportFormat in exportFormats"
                     :key="exportFormat"
                     as="a"
                     variant="link"
@@ -213,6 +210,22 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
             </nav>
         </div>
     </header>
+    <Message
+        v-if="reportData.lifecycle.transitionError"
+        severity="error"
+    >
+        <span>
+            {{
+                $gettext(
+                    "Unable to change the lifecycle state: %{message}",
+                    {
+                        message: reportData.lifecycle.transitionError.message,
+                    },
+                    true,
+                )
+            }}
+        </span>
+    </Message>
 </template>
 
 <style scoped>

@@ -9,13 +9,15 @@ import InputText from "openvue/inputtext";
 import Message from "openvue/message";
 import Tag from "openvue/tag";
 
+import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { fetchEditHistory } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { useFilterQuery } from "@/arches_modular_reports/ResourceReport/composables/useFilterQuery.ts";
 import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type {
+    ComponentNode,
     EditHistoryEntry,
-    ReportData,
+    LabelledConfig,
     TagSeverity,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
@@ -23,12 +25,12 @@ const TILE_CREATE = "tile create";
 const TILE_EDIT = "tile edit";
 const TILE_DELETE = "tile delete";
 
-const { reportData } = defineProps<{
-    reportData: ReportData;
-    panelConfig: Record<string, unknown>;
+defineProps<{
+    component: ComponentNode<LabelledConfig>;
 }>();
 
 const { $gettext } = useGettext();
+const reportData = useReportData();
 const { filterText, query } = useFilterQuery();
 
 const entries = ref<EditHistoryEntry[]>([]);
@@ -38,7 +40,7 @@ const loadError = ref<Error | null>(null);
 let latestHistoryRequestNumber = 0;
 
 const resourceInstanceId = computed(
-    () => reportData.resource.resourceinstanceid,
+    () => reportData.value.resource.resourceinstanceid,
 );
 
 watchEffect(() => {
@@ -110,11 +112,13 @@ function editTypeSeverity(entry: EditHistoryEntry): TagSeverity {
 }
 
 function formatTimestamp(timestamp: string): string {
-    return new Date(timestamp).toLocaleString(reportData.context.language);
+    return new Date(timestamp).toLocaleString(
+        reportData.value.context.language,
+    );
 }
 
 function fieldLabel(nodeAlias: string): string {
-    return reportData.graphNodesByAlias[nodeAlias].label;
+    return reportData.value.graphNodesByAlias[nodeAlias].label;
 }
 </script>
 

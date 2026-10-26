@@ -4,32 +4,27 @@ import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
 
+import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { EMPTY_VALUE } from "@/arches_modular_reports/ResourceReport/constants.ts";
 import { summaryRows } from "@/arches_modular_reports/ResourceReport/utils/summary-rows.ts";
 
 import type {
-    ReportData,
-    SummaryEntryConfig,
+    ComponentNode,
+    KeyDataSummaryConfig,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
-const JUMP_TO_NODE = "jump-to-node" as const;
-
-const { summary, reportData } = defineProps<{
-    summary: SummaryEntryConfig[];
-    reportData: ReportData;
-}>();
-
-const emit = defineEmits<{
-    (event: typeof JUMP_TO_NODE, nodeAlias: string): void;
+const { component } = defineProps<{
+    component: ComponentNode<KeyDataSummaryConfig>;
 }>();
 
 const { $gettext } = useGettext();
+const reportData = useReportData();
 
 const rows = computed(() =>
     summaryRows(
-        summary,
-        reportData.resource.aliased_data,
-        reportData.context.language,
+        component.config.summary ?? [],
+        reportData.value.resource.aliased_data,
+        reportData.value.context.language,
     ).map((summaryRow) => ({
         nodeAlias: summaryRow.nodeAlias,
         label: summaryRow.label,
@@ -62,7 +57,11 @@ const rows = computed(() =>
                     <Button
                         variant="link"
                         :label="summaryRow.label"
-                        @click="emit(JUMP_TO_NODE, summaryRow.nodeAlias)"
+                        @click="
+                            reportData.folioNavigation.jumpToNode(
+                                summaryRow.nodeAlias,
+                            )
+                        "
                     />
                 </dt>
                 <dd>{{ summaryRow.value }}</dd>

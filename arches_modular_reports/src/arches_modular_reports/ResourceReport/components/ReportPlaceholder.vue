@@ -1,16 +1,35 @@
 <script setup lang="ts">
-const { icon, message } = defineProps<{
-    icon: string;
-    message: string;
+import { computed } from "vue";
+
+import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
+import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
+
+import type {
+    ComponentNode,
+    PlaceholderConfig,
+} from "@/arches_modular_reports/ResourceReport/types.ts";
+
+const { component } = defineProps<{
+    component: ComponentNode<PlaceholderConfig>;
 }>();
+
+const reportData = useReportData();
+
+const message = computed(() =>
+    localizeLabel(
+        component.config.message ?? null,
+        reportData.value.context.language,
+    ),
+);
 </script>
 
 <template>
     <div class="report-placeholder">
         <div class="report-placeholder-message">
             <i
+                v-if="component.config.icon"
                 aria-hidden="true"
-                :class="icon"
+                :class="component.config.icon"
             />
             <span>{{ message }}</span>
         </div>

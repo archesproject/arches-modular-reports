@@ -7,23 +7,24 @@ import Galleria from "openvue/galleria";
 import Message from "openvue/message";
 import Skeleton from "openvue/skeleton";
 
+import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { fetchResourceImages } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { toError } from "@/arches_modular_reports/utils.ts";
 
 import type {
+    ComponentNode,
     ImagesPanelConfig,
-    ReportData,
     ResourceImage,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const VISIBLE_THUMBNAIL_COUNT = 5;
 
-const { reportData, panelConfig } = defineProps<{
-    reportData: ReportData;
-    panelConfig: ImagesPanelConfig;
+const { component } = defineProps<{
+    component: ComponentNode<ImagesPanelConfig>;
 }>();
 
 const { $gettext } = useGettext();
+const reportData = useReportData();
 
 const images = ref<ResourceImage[]>([]);
 const nextCursor = ref<string | null>(null);
@@ -32,7 +33,7 @@ const isLoadingMore = ref(false);
 const loadError = ref<Error | null>(null);
 
 const resourceInstanceId = computed(
-    () => reportData.resource.resourceinstanceid,
+    () => reportData.value.resource.resourceinstanceid,
 );
 
 watchEffect(async () => {
@@ -41,7 +42,7 @@ watchEffect(async () => {
     try {
         const imagesPage = await fetchResourceImages(
             resourceInstanceId.value,
-            panelConfig.images,
+            component.config.images ?? [],
             null,
         );
         images.value = imagesPage.images;
@@ -59,7 +60,7 @@ async function loadMore(): Promise<void> {
     try {
         const imagesPage = await fetchResourceImages(
             resourceInstanceId.value,
-            panelConfig.images,
+            component.config.images ?? [],
             nextCursor.value,
         );
         images.value = [...images.value, ...imagesPage.images];

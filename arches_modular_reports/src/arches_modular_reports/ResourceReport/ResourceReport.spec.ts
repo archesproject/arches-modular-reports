@@ -3,6 +3,23 @@ import { flushPromises, mount } from "@vue/test-utils";
 import OpenVue from "openvue/config";
 import ConfirmationService from "openvue/confirmationservice";
 
+import DataBrowser from "@/arches_modular_reports/ResourceReport/components/DataBrowser/DataBrowser.vue";
+import EditHistoryPanel from "@/arches_modular_reports/ResourceReport/components/EditHistoryPanel.vue";
+import EditListTray from "@/arches_modular_reports/ResourceReport/components/EditListTray.vue";
+import EditorPanel from "@/arches_modular_reports/ResourceReport/components/EditorPanel/EditorPanel.vue";
+import ImagesPanel from "@/arches_modular_reports/ResourceReport/components/ImagesPanel.vue";
+import KeyDataSummary from "@/arches_modular_reports/ResourceReport/components/KeyDataSummary.vue";
+import ManagePanel from "@/arches_modular_reports/ResourceReport/components/ManagePanel.vue";
+import RelatedResourcesPanel from "@/arches_modular_reports/ResourceReport/components/RelatedResourcesPanel.vue";
+import ReportFolio from "@/arches_modular_reports/ResourceReport/components/ReportFolio.vue";
+import ReportDrawer from "@/arches_modular_reports/ResourceReport/components/ReportDrawer.vue";
+import ReportHeader from "@/arches_modular_reports/ResourceReport/components/ReportHeader.vue";
+import ReportPlaceholder from "@/arches_modular_reports/ResourceReport/components/ReportPlaceholder.vue";
+import ReportSection from "@/arches_modular_reports/ResourceReport/components/ReportSection.vue";
+import ReportStack from "@/arches_modular_reports/ResourceReport/components/ReportStack.vue";
+import ReportTabs from "@/arches_modular_reports/ResourceReport/components/ReportTabs.vue";
+import SplitPane from "@/arches_modular_reports/ResourceReport/components/SplitPane.vue";
+import WorkspaceTabs from "@/arches_modular_reports/ResourceReport/components/WorkspaceTabs.vue";
 import ResourceReport from "@/arches_modular_reports/ResourceReport/ResourceReport.vue";
 
 import {
@@ -16,12 +33,14 @@ import {
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { EMPTY_VALUE } from "@/arches_modular_reports/ResourceReport/constants.ts";
 
+import type { Component } from "vue";
 import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import type {
     CardXNodeXWidgetData,
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
 import type {
+    ComponentNode,
     LifecycleStateSummary,
     RelatedResourceGroup,
     ReportContext,
@@ -29,12 +48,18 @@ import type {
     ResourceReportConfig,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
+const { componentsByPath } = vi.hoisted(() => ({
+    componentsByPath: new Map<string, Component>(),
+}));
+
 vi.mock("@/arches_vue_components/application/generate-arches-url.ts", () => ({
     generateArchesURL: (urlName: string) => urlName,
 }));
 
 vi.mock("@/arches_modular_reports/ModularReport/utils.ts", () => ({
-    loadComponent: vi.fn(),
+    loadComponent: (componentPath: string) =>
+        componentsByPath.get(componentPath),
+    preloadComponents: () => undefined,
 }));
 
 vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
@@ -190,30 +215,83 @@ const RESOURCE = {
     },
 };
 
+const COMPONENTS_PATH = "arches_modular_reports/ResourceReport/components";
+
+const REPORT_COMPONENTS: Record<string, Component> = {
+    "DataBrowser/DataBrowser": DataBrowser,
+    EditHistoryPanel,
+    EditListTray,
+    "EditorPanel/EditorPanel": EditorPanel,
+    ImagesPanel,
+    KeyDataSummary,
+    ManagePanel,
+    RelatedResourcesPanel,
+    ReportDrawer,
+    ReportFolio,
+    ReportHeader,
+    ReportPlaceholder,
+    ReportSection,
+    ReportStack,
+    ReportTabs,
+    SplitPane,
+    WorkspaceTabs,
+};
+
+for (const [componentName, reportComponent] of Object.entries(
+    REPORT_COMPONENTS,
+)) {
+    componentsByPath.set(
+        `${COMPONENTS_PATH}/${componentName}`,
+        reportComponent,
+    );
+}
+
+function reportNode(
+    componentName: string,
+    config: Record<string, unknown> = {},
+): ComponentNode {
+    return { component: `${COMPONENTS_PATH}/${componentName}`, config };
+}
+
+function workspaceTabs(...workspaces: ComponentNode[]): ComponentNode {
+    return reportNode("WorkspaceTabs", {
+        banner: [
+            reportNode("ReportHeader", {
+                summary: [],
+                export_formats: ["json-ld"],
+            }),
+        ],
+        components: workspaces,
+    });
+}
+
 const REPORT_CONFIG: ResourceReportConfig = {
-    header: { summary: [], export_formats: ["json-ld"] },
-    workspaces: [
-        {
-            id: "report",
-            component: "ReportWorkspace",
-            label: { en: "Report" },
-            description: { en: "A curated summary of this resource's data" },
-            config: { tabs: [], home: { summary: [], drawer: [] } },
-        },
-        {
-            id: "data",
-            component: "DataWorkspace",
-            label: { en: "Data" },
-            description: "",
-            config: {},
-        },
-        {
-            id: "graph",
-            component: "GraphWorkspace",
-            label: { en: "Graph" },
-            description: "",
-            config: {},
-        },
+    components: [
+        workspaceTabs(
+            reportNode("SplitPane", {
+                label: { en: "Report" },
+                description: {
+                    en: "A curated summary of this resource's data",
+                },
+                main: [reportNode("ReportTabs", { components: [] })],
+                aside: [
+                    reportNode("EditorPanel/EditorPanel"),
+                    reportNode("ReportDrawer", { components: [], panels: [] }),
+                ],
+            }),
+            reportNode("SplitPane", {
+                label: { en: "Data" },
+                requires_edit: true,
+                main: [reportNode("DataBrowser/DataBrowser")],
+                aside: [reportNode("EditorPanel/EditorPanel")],
+            }),
+            reportNode("ReportPlaceholder", {
+                label: { en: "Graph" },
+                icon: "pi pi-sitemap",
+                message: "Graph view — coming soon",
+            }),
+        ),
+        reportNode("EditListTray"),
     ],
 };
 
@@ -233,63 +311,59 @@ const PIGMENTS_GROUP: RelatedResourceGroup = {
     ],
 };
 
-const FOLIO_CONFIG: ResourceReportConfig = {
-    header: { summary: [], export_formats: [] },
-    workspaces: [
-        {
-            id: "report",
-            component: "ReportWorkspace",
-            label: "Report",
-            description: "",
-            config: {
-                tabs: [
-                    {
-                        label: "Overview",
-                        sections: [
-                            {
-                                label: null,
-                                icon: null,
-                                folios: [{ nodegroup_alias: "names" }],
-                            },
-                        ],
-                    },
-                ],
-                home: { summary: [], drawer: [] },
-            },
-        },
-    ],
-};
+function folioConfig(aside: ComponentNode[]): ResourceReportConfig {
+    return {
+        components: [
+            workspaceTabs(
+                reportNode("SplitPane", {
+                    label: "Report",
+                    main: [
+                        reportNode("ReportTabs", {
+                            components: [
+                                reportNode("ReportStack", {
+                                    label: "Overview",
+                                    components: [
+                                        reportNode("ReportFolio", {
+                                            nodegroup_alias: "names",
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                    ],
+                    aside,
+                }),
+            ),
+            reportNode("EditListTray"),
+        ],
+    };
+}
+
+const FOLIO_CONFIG = folioConfig([reportNode("EditorPanel/EditorPanel")]);
 
 function drawerConfig(): ResourceReportConfig {
     return {
-        header: { summary: [], export_formats: [] },
-        workspaces: [
-            {
-                id: "report",
-                component: "ReportWorkspace",
-                label: "Report",
-                description: "",
-                config: {
-                    tabs: [],
-                    home: {
-                        summary: [],
-                        drawer: [
-                            {
-                                component: "RelatedResourcesPanel",
-                                label: "Related Resources",
-                                icon: "pi pi-link",
-                                config: { graphs: ["pigments"] },
-                            },
-                            {
-                                component: "ManagePanel",
-                                label: "Manage",
-                                icon: "pi pi-cog",
-                                config: {},
-                            },
-                        ],
-                    },
-                },
-            },
+        components: [
+            workspaceTabs(
+                reportNode("SplitPane", {
+                    label: "Report",
+                    aside: [
+                        reportNode("ReportDrawer", {
+                            panels: [
+                                reportNode("RelatedResourcesPanel", {
+                                    label: "Related Resources",
+                                    icon: "pi pi-link",
+                                    graphs: ["pigments"],
+                                }),
+                                reportNode("ManagePanel", {
+                                    label: "Manage",
+                                    icon: "pi pi-cog",
+                                }),
+                            ],
+                        }),
+                    ],
+                }),
+            ),
         ],
     };
 }
@@ -342,9 +416,11 @@ describe("ResourceReport", () => {
         const wrapper = mountReport(FOLIO_CONFIG);
         await flushPromises();
 
-        await buttonWithText(wrapper, ".report-folio-field", "Edit").trigger(
-            "click",
-        );
+        await buttonWithText(
+            wrapper,
+            ".report-folio-tile-actions",
+            "Edit",
+        ).trigger("click");
         await wrapper.find(".card-stub").trigger("click");
 
         expect(
@@ -358,9 +434,11 @@ describe("ResourceReport", () => {
         vi.mocked(updateResource).mockReturnValueOnce(new Promise(() => {}));
         const wrapper = mountReport(FOLIO_CONFIG);
         await flushPromises();
-        await buttonWithText(wrapper, ".report-folio-field", "Edit").trigger(
-            "click",
-        );
+        await buttonWithText(
+            wrapper,
+            ".report-folio-tile-actions",
+            "Edit",
+        ).trigger("click");
         await wrapper.find(".card-stub").trigger("click");
 
         await buttonWithText(
@@ -411,7 +489,7 @@ describe("ResourceReport", () => {
         await flushPromises();
         await buttonWithText(
             wrapper,
-            ".home-drawer-triggers",
+            ".report-drawer-triggers",
             "Manage",
         ).trigger("click");
 
@@ -438,31 +516,17 @@ describe("ResourceReport", () => {
 
     it("shows a summary node under an unreadable parent as empty", async () => {
         const wrapper = mountReport({
-            header: {
-                summary: [
-                    { node_alias: "part_note_content", label: "Part note" },
-                ],
-                export_formats: [],
-            },
-            workspaces: [
-                {
-                    id: "report",
-                    component: "ReportWorkspace",
-                    label: "Report",
-                    description: "",
-                    config: {
-                        tabs: [],
-                        home: {
-                            summary: [
-                                {
-                                    node_alias: "part_note_content",
-                                    label: "Part note",
-                                },
-                            ],
-                            drawer: [],
-                        },
-                    },
-                },
+            components: [
+                reportNode("ReportHeader", {
+                    summary: [
+                        { node_alias: "part_note_content", label: "Part note" },
+                    ],
+                }),
+                reportNode("KeyDataSummary", {
+                    summary: [
+                        { node_alias: "part_note_content", label: "Part note" },
+                    ],
+                }),
             ],
         });
         await flushPromises();
@@ -490,7 +554,7 @@ describe("ResourceReport", () => {
         await flushPromises();
         await buttonWithText(
             wrapper,
-            ".home-drawer-triggers",
+            ".report-drawer-triggers",
             "Related Resources",
         ).trigger("click");
         await flushPromises();
@@ -516,5 +580,53 @@ describe("ResourceReport", () => {
         await flushPromises();
 
         expect(wrapper.findAll(".related-resources-item")).toHaveLength(1);
+    });
+
+    it("renders an empty report from an empty config", async () => {
+        const wrapper = mountReport({});
+        await flushPromises();
+
+        expect(wrapper.find(".resource-report").exists()).toBe(true);
+        expect(wrapper.find(".resource-report").text()).toBe("");
+    });
+
+    it("renders a report without tabs", async () => {
+        const wrapper = mountReport({
+            components: [
+                reportNode("ReportSection", {
+                    label: "Names",
+                    icon: "pi pi-id-card",
+                    components: [
+                        reportNode("ReportFolio", { nodegroup_alias: "names" }),
+                    ],
+                }),
+            ],
+        });
+        await flushPromises();
+
+        expect(wrapper.find(".report-section-label").text()).toBe("Names");
+        expect(wrapper.find(".report-folio").exists()).toBe(true);
+        expect(wrapper.find(".report-tabs-list").exists()).toBe(false);
+    });
+
+    it("hides edit-only workspaces from people who cannot edit", async () => {
+        vi.mocked(fetchReportContext).mockResolvedValue(
+            makeContext({ can_edit: false }),
+        );
+        const wrapper = mountReport();
+        await flushPromises();
+
+        expect(wrapper.findAll(".workspace-tabs-strip .p-tab")).toHaveLength(2);
+        expect(wrapper.find(".workspace-tabs-strip").text()).not.toContain(
+            "Data",
+        );
+    });
+
+    it("offers editing only when an editor is declared", async () => {
+        const wrapper = mountReport(folioConfig([]));
+        await flushPromises();
+
+        expect(wrapper.find(".report-folio").exists()).toBe(true);
+        expect(wrapper.find(".report-folio-tile-actions").exists()).toBe(false);
     });
 });
