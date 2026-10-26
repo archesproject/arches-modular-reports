@@ -5,6 +5,7 @@ import { useGettext } from "vue3-gettext";
 import Badge from "openvue/badge";
 import Button from "openvue/button";
 import Message from "openvue/message";
+import Tag from "openvue/tag";
 
 import GenericWidget from "@/arches_vue_components/generics/GenericWidget/GenericWidget.vue";
 
@@ -37,10 +38,13 @@ const {
     isAddable,
     isFlashed,
     isEditableTile,
+    isMarkedForDeletion,
+    isPendingDelete,
     tileLabel,
     addTile,
     editTile,
     deleteTile,
+    undoDelete,
     clearFlash,
 } = useFolio(
     () => component,
@@ -112,6 +116,11 @@ const tileClass = computed(() => {
     }
     return "report-folio-tile";
 });
+
+function hasValue(tile: AliasedTileData, nodeAlias: string): boolean {
+    const nodeData = aliasedNodeDataOf(tile, nodeAlias);
+    return nodeData !== null && nodeData.display_value !== "";
+}
 
 function toggleOpen(): void {
     isOpen.value = !isOpen.value;
@@ -215,6 +224,32 @@ function toggleOpen(): void {
                             @click="deleteTile(singleTile.tileid)"
                         />
                     </template>
+                    <template
+                        v-else-if="
+                            singleTile !== null &&
+                            isMarkedForDeletion(singleTile)
+                        "
+                    >
+                        <Tag
+                            severity="danger"
+                            :value="$gettext('Deleted')"
+                        />
+                        <Button
+                            icon="pi pi-undo"
+                            variant="link"
+                            size="small"
+                            :label="$gettext('Undo delete')"
+                            :aria-label="
+                                $gettext(
+                                    'Undo deleting %{entry}',
+                                    { entry: tileLabel(singleTile) },
+                                    true,
+                                )
+                            "
+                            :disabled="reportData.changeSet.isBusy.value"
+                            @click="undoDelete(singleTile.tileid)"
+                        />
+                    </template>
                 </div>
             </div>
             <div
@@ -241,20 +276,38 @@ function toggleOpen(): void {
                 <div
                     v-for="(tile, tileIndex) in tiles"
                     :key="tile.tileid ?? tileIndex"
-                    :class="tileClass"
+                    :class="[
+                        tileClass,
+                        { 'report-folio-tile-deleted': isPendingDelete(tile) },
+                    ]"
                 >
                     <div class="report-folio-fields">
-                        <GenericWidget
+                        <template
                             v-for="widget in visibleWidgets"
                             :key="widget.id"
-                            :aliased-node-data="
-                                aliasedNodeDataOf(tile, widget.node.alias)
-                            "
-                            :card-x-node-x-widget-data="widget"
-                            :graph-slug="reportData.context.graph.slug"
-                            :mode="VIEW"
-                            :node-alias="widget.node.alias"
-                        />
+                        >
+                            <GenericWidget
+                                v-if="hasValue(tile, widget.node.alias)"
+                                :aliased-node-data="
+                                    aliasedNodeDataOf(tile, widget.node.alias)
+                                "
+                                :card-x-node-x-widget-data="widget"
+                                :graph-slug="reportData.context.graph.slug"
+                                :mode="VIEW"
+                                :node-alias="widget.node.alias"
+                            />
+                            <div
+                                v-else
+                                class="report-folio-empty-field"
+                            >
+                                <span class="report-folio-empty-field-label">
+                                    {{ widget.label }}
+                                </span>
+                                <span class="report-folio-empty-message">
+                                    {{ $gettext("No value recorded.") }}
+                                </span>
+                            </div>
+                        </template>
                     </div>
                     <div
                         v-if="!isSingleTileCard && isEditableTile(tile)"
@@ -287,6 +340,32 @@ function toggleOpen(): void {
                             "
                             :disabled="reportData.changeSet.isBusy.value"
                             @click="deleteTile(tile.tileid)"
+                        />
+                    </div>
+                    <div
+                        v-else-if="
+                            !isSingleTileCard && isMarkedForDeletion(tile)
+                        "
+                        class="report-folio-tile-actions"
+                    >
+                        <Tag
+                            severity="danger"
+                            :value="$gettext('Deleted')"
+                        />
+                        <Button
+                            icon="pi pi-undo"
+                            variant="link"
+                            size="small"
+                            :label="$gettext('Undo delete')"
+                            :aria-label="
+                                $gettext(
+                                    'Undo deleting %{entry}',
+                                    { entry: tileLabel(tile) },
+                                    true,
+                                )
+                            "
+                            :disabled="reportData.changeSet.isBusy.value"
+                            @click="undoDelete(tile.tileid)"
                         />
                     </div>
                     <div
@@ -407,6 +486,20 @@ function toggleOpen(): void {
     display: flex;
     flex-direction: column;
     gap: 1.4rem;
+}
+
+.report-folio-tile-deleted > .report-folio-fields {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+.report-folio-empty-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.report-folio-empty-field-label {
+    font-weight: 600;
 }
 
 .report-folio-tile-actions {

@@ -32,10 +32,13 @@ export interface Folio {
     isAddable: ComputedRef<boolean>;
     isFlashed: ComputedRef<boolean>;
     isEditableTile: (tile: AliasedTileData) => tile is SavedTile;
+    isMarkedForDeletion: (tile: AliasedTileData) => tile is SavedTile;
+    isPendingDelete: (tile: AliasedTileData) => boolean;
     tileLabel: (tile: AliasedTileData) => string;
     addTile: () => Promise<void>;
     editTile: (tileId: string) => void;
     deleteTile: (tileId: string) => void;
+    undoDelete: (tileId: string) => void;
     clearFlash: () => void;
 }
 
@@ -125,6 +128,22 @@ export function useFolio(
         );
     }
 
+    function isMarkedForDeletion(tile: AliasedTileData): tile is SavedTile {
+        return (
+            canEditEntries.value &&
+            tile.tileid !== null &&
+            reportData.value.changeSet.changeTypeForTile(tile.tileid) ===
+                "delete"
+        );
+    }
+
+    function isPendingDelete(tile: AliasedTileData): boolean {
+        return (
+            tile.tileid !== null &&
+            reportData.value.changeSet.isPendingDelete(tile.tileid)
+        );
+    }
+
     function tileLabel(tile: AliasedTileData): string {
         const summary = tileSummary(tile, nodegroupWidgetConfig.value);
         if (summary === "") {
@@ -157,6 +176,10 @@ export function useFolio(
         reportData.value.changeSet.deleteTile(nodegroupAlias.value, tileId);
     }
 
+    function undoDelete(tileId: string): void {
+        reportData.value.changeSet.undoDelete(tileId);
+    }
+
     function clearFlash(): void {
         reportData.value.folioNavigation.clearFlash();
     }
@@ -173,10 +196,13 @@ export function useFolio(
         isAddable,
         isFlashed,
         isEditableTile,
+        isMarkedForDeletion,
+        isPendingDelete,
         tileLabel,
         addTile,
         editTile,
         deleteTile,
+        undoDelete,
         clearFlash,
     };
 }
