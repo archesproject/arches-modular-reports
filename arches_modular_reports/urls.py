@@ -3,15 +3,16 @@ from django.urls import include, path, re_path
 from arches.app.models.system_settings import settings
 
 from arches_modular_reports.app.views.modular_report import (
+    EditHistoryView,
     ModularReportAwareResourceReportView,
     GraphSlugFromIdView,
     NodegroupTileDataView,
     NodePresentationView,
-    NodeTileDataView,
     ModularReportConfigView,
-    RelatedResourceView,
+    RelatedResourceGroupsView,
+    ReportContextView,
+    ResourceImagesView,
     UserPermissionsView,
-    LanguageSettingsView,
 )
 
 uuid_regex = settings.UUID_REGEX
@@ -40,9 +41,24 @@ urlpatterns = [
         name="api_graph_slug",
     ),
     path(
-        "api/related_resources/<uuid:resourceid>/<slug:related_graph_slug>",
-        RelatedResourceView.as_view(),
-        name="api_related_resources",
+        "api/report_context/<uuid:resourceid>",
+        ReportContextView.as_view(),
+        name="api_report_context",
+    ),
+    path(
+        "api/edit_history/<uuid:resourceid>",
+        EditHistoryView.as_view(),
+        name="api_edit_history",
+    ),
+    path(
+        "api/related_resource_groups/<uuid:resourceid>",
+        RelatedResourceGroupsView.as_view(),
+        name="api_related_resource_groups",
+    ),
+    path(
+        "api/resource_images/<uuid:resourceid>",
+        ResourceImagesView.as_view(),
+        name="api_resource_images",
     ),
     path(
         "api/node_presentation/<uuid:resourceid>",
@@ -55,19 +71,9 @@ urlpatterns = [
         name="api_nodegroup_tile_data",
     ),
     path(
-        "api/node_tile_data/<uuid:resourceid>",
-        NodeTileDataView.as_view(),
-        name="api_node_tile_data",
-    ),
-    path(
         "api/has_permissions",
         UserPermissionsView.as_view(),
         name="api_has_permissions",
-    ),
-    path(
-        "api/client_language_settings",
-        LanguageSettingsView.as_view(),
-        name="api_client_language_settings",
     ),
     path("", include("arches.extensions.querysets.urls")),
     path("", include("arches.extensions.vue_components.urls")),

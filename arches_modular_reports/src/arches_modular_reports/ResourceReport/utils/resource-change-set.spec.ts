@@ -1,0 +1,97 @@
+import { describe, expect, it } from "vitest";
+
+import { replayResourceChanges } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
+import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
+
+import type {
+    AliasedData,
+    AliasedNodeData,
+    AliasedTileData,
+} from "@/arches_vue_components/types.ts";
+import type { AliasedResourceData } from "@/arches_modular_reports/ResourceReport/types.ts";
+
+function nodeData(value: string): AliasedNodeData {
+    return { display_value: value, node_value: value, details: [] };
+}
+
+function makeTile(
+    tileid: string,
+    sortorder: number,
+    aliasedData: AliasedData,
+): AliasedTileData & { tileid: string } {
+    return {
+        aliased_data: aliasedData,
+        nodegroup: "nodegroup",
+        parenttile: null,
+        provisionaledits: null,
+        resourceinstance: "resource",
+        sortorder,
+        tileid,
+    };
+}
+
+const RESOURCE: AliasedResourceData = {
+    resourceinstanceid: "resource",
+    aliased_data: {
+        names: [
+            makeTile("smalt", 0, { name_content: nodeData("Smalt") }),
+            makeTile("cobalt", 1, { name_content: nodeData("Cobalt") }),
+        ],
+        description: makeTile("description", 0, {
+            description_content: nodeData("Blue"),
+        }),
+    },
+};
+
+describe("resource change set replay", () => {
+    it("removes deleted tiles and reports changes whose tiles have vanished", () => {
+        const { resource, conflictingChanges } = replayResourceChanges(
+            RESOURCE,
+            [
+                {
+                    id: "delete",
+                    type: "delete",
+                    nodegroupAlias: "names",
+                    tileId: "smalt",
+                },
+                {
+                    id: "stale",
+                    type: "edit",
+                    nodegroupAlias: "names",
+                    tileId: "removed-elsewhere",
+                    aliasedData: {},
+                },
+            ],
+            RESOURCE,
+        );
+
+        expect(
+            nodegroupTiles(resource.aliased_data.names).map(
+                (tile) => tile.tileid,
+            ),
+        ).toEqual(["cobalt"]);
+        expect(conflictingChanges.map((change) => change.id)).toEqual([
+            "stale",
+        ]);
+    });
+
+    it("flags an add into a single-tile slot that is already filled", () => {
+        const { conflictingChanges } = replayResourceChanges(
+            RESOURCE,
+            [
+                {
+                    id: "add",
+                    type: "add",
+                    nodegroupAlias: "description",
+                    parentTileId: null,
+                    tile: makeTile("second-description", 0, {
+                        description_content: nodeData("Green"),
+                    }),
+                },
+            ],
+            RESOURCE,
+        );
+
+        expect(conflictingChanges.map((change) => change.id)).toEqual(["add"]);
+    });
+});

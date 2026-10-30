@@ -107,110 +107,141 @@ Once you've installed the Arches Modular Report Application into your project yo
 
 ## Editing the structure of the report configuration
 
-This document explains the structure and purpose of a JSON configuration used to define custom reports in Arches. It breaks down key components and their configuration properties to help you understand how to control the layout and display of resource data.
-
-### Top-Level Structure
-
-At a high level, the configuration defines a report with a name and a list of UI components that will be rendered in the report interface.
+Every level of a report config is a component: a `component` path and the `config` that runs it. The path names a Vue component under an app's `src` folder and is loaded when the report needs it. A component's children are lists of components inside its config, usually under `components`.
 
 ```json
 {
-  "name": "Untitled Report",
-  "components": [ ... ]
-}
-```
-
-Each entry in the `components` array defines a section of the report interface, such as the header, toolbar, tombstone (summary), or tabs.
-
----
-
-### Key Components
-
-#### `ReportHeader`
-
-Displays the report title or descriptor. The descriptor can include references to node values by referencing the node_alias from within `<>` brackets.
-Additionally, if a node in brackets contains more than 1 entry (eg: concept-list or resource-instance-list) then the number of those values can be limited via the `node_alias_options` property and a separator character can be specified.
-
-```json
-{
-    "component": "ReportHeader",
-    "config": {
-        "descriptor": "<name_node> - born on <date_of_birth>",
-        "node_alias_options": {
-            "name_node": {
-                "limit": 3,
-                "separator": "|"
+    "name": "Default",
+    "components": [
+        {
+            "component": "arches_modular_reports/ResourceReport/ResourceReport",
+            "config": {
+                "components": [ ... ]
             }
         }
-    }
+    ]
 }
 ```
 
+`ResourceReport` loads the resource and renders its `components` in order. With `"config": {}` it renders an empty report. Nothing below it is fixed: a report can have tabs or none, one pane or two, sections or a plain list of folios.
+
+Labels are a string or an object keyed by language, e.g. `{"en": "Report"}`. A missing child list means no children. A component that is missing config it needs shows an error where it would appear.
+
+Configs are validated against the graph on save, without looking at component names:
+
+-   every component has exactly `component` (a string) and `config` (an object)
+-   `nodegroup_alias` names a node in one of the graph's nodegroups
+-   `node_alias` names a node that holds a value
+-   `graphs` lists resource models, and `images` lists `file-list` nodes
+-   inside a config with `graph_slug`, aliases belong to that other graph and are not checked
+
+When the report loads, nodegroups and summary entries the user can't read are removed. A section, stack or tab set that loses all its folios is removed too.
+
 ---
 
-#### `ReportToolbar`
-
-Adds export buttons and list tools to the report.
+### The default config
 
 ```json
 {
-    "component": "ReportToolbar",
+    "component": "arches_modular_reports/ResourceReport/components/WorkspaceTabs",
     "config": {
-        "lists": true,
-        "export_formats": ["csv", "json-ld", "json"]
+        "banner": [
+            { "component": ".../ReportHeader", "config": { "summary": [] } }
+        ],
+        "components": [
+            {
+                "component": ".../SplitPane",
+                "config": {
+                    "label": { "en": "Report" },
+                    "description": { "en": "A curated summary of this resource's data" },
+                    "main": [
+                        {
+                            "component": ".../ReportTabs",
+                            "config": {
+                                "components": [
+                                    {
+                                        "component": ".../ReportStack",
+                                        "config": {
+                                            "label": { "en": "Overview" },
+                                            "components": [
+                                                { "component": ".../FieldFolio", "config": { "nodegroup_alias": "object_type" } },
+                                                { "component": ".../ReportFolio", "config": { "nodegroup_alias": "names" } },
+                                                { "component": ".../MapFolio", "config": { "nodegroup_alias": "production", "node_alias": "production_location_geo" } }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "aside": [
+                        { "component": ".../EditorPanel/EditorPanel", "config": {} },
+                        { "component": ".../ReportDrawer", "config": { "components": [ ... ], "panels": [ ... ] } }
+                    ]
+                }
+            },
+            { "component": ".../SplitPane", "config": { "label": { "en": "Data" }, "requires_edit": true, "main": [ ... ], "aside": [ ... ] } },
+            { "component": ".../ReportPlaceholder", "config": { "label": { "en": "Graph" }, "icon": "pi pi-sitemap", "message": { "en": "Graph view — coming soon" } } }
+        ]
     }
 }
 ```
 
+`...` stands for `arches_modular_reports/ResourceReport/components`. The config's last top-level component is `EditListTray`.
+
 ---
 
-#### `ReportTombstone`
+### Layout components
 
-Displays a summary or key metadata for the resource.
+Paths are under `arches_modular_reports/ResourceReport/components/`.
 
-```json
-{
-  "component": "ReportTombstone",
-  "config": {
-    "node_aliases": [],
-    "custom_labels": {},
-    "image_node_alias": null <-- unused
-  }
-}
+-   `WorkspaceTabs`: the tab strip at the top of the report. Each of its `components` is a tab, named by its `label`, with its `description` shown under the strip. `banner` lists components shown under the strip above every tab.
+-   `ReportTabs`: tabs inside a pane, with a tab bar that stays in view while the pane scrolls. Each of its `components` is a tab, named by its `label`.
+-   `SplitPane`: `main` and `aside` lists side by side. Without an `aside`, `main` takes the full width.
+-   `ReportStack`: its `components` in a column.
+-   `ReportSection`: a heading (`label`, optional `icon`) over its `components`.
+-   `ReportDrawer`: its `components`, with `panels` as buttons that open over them.
+
+A tab or drawer panel with `"requires_edit": true` is hidden from people who can't edit the resource.
+
+### Content components
+
+-   `ReportHeader`: the resource name, lifecycle state and transitions, and JSON-LD, JSON and CSV exports. `summary` lists nodes shown under the name, each `{"node_alias": ..., "label": ...}`.
+-   `KeyDataSummary`: `summary` in the same form. Clicking a label jumps to its folio, switching tabs if needed.
+-   `ReportFolio`: `nodegroup_alias`. One card per entry, with child nodegroups inside it.
+-   `FieldFolio`: `nodegroup_alias`. One row: label, value and its Edit, Delete or Add.
+-   `MapFolio`: `nodegroup_alias` and `node_alias`, the geometry node. The map first, then the entry's other fields and child nodegroups, with a pager when there are several entries.
+-   `EditorPanel/EditorPanel`: the edit form. It covers the area it's placed in while an entry is being edited. Edit, Add and Delete only appear when the report has one.
+-   `EditListTray`: pending edits, with Apply and Cancel. Hidden when nothing is pending.
+-   `DataBrowser/DataBrowser`: every nodegroup in a tree, with a filter.
+-   `ReportPlaceholder`: an `icon` and a `message`.
+-   Drawer panels, each with a `label` and `icon`: `EditHistoryPanel`; `ImagesPanel`, whose `images` lists `{"model": "<graph slug>", "node": "<node alias>"}` sources; `RelatedResourcesPanel`, whose `graphs` lists models in order; `ManagePanel` for copy, delete and print.
+
+### Custom components
+
+Any other path is loaded the same way, e.g. `my_app/Report/CustomPanel`. A component receives one prop, `component` (its own `{component, config}`), and reads the resource, permissions and editing state with `useReportData()` from `arches_modular_reports/ResourceReport/composables/useReportData.ts`.
+
+---
+
+## Regenerating the default report configuration
+
+The default config is generated from the graph. Each visible top-level nodegroup becomes a folio: a `MapFolio` when it has a geometry node, a `FieldFolio` when it holds a single value and has no child nodegroups, and a `ReportFolio` otherwise. Summaries come from the descriptors and the drawer's panels from related models. Regenerate it after upgrading or changing a graph:
+
+```bash
+python manage.py report_configs generate --slug default --overwrite
 ```
 
----
-
-#### `ReportTabs`
-
-Defines tabs for organizing the main content of the report.
-
-```json
-{
-  "component": "ReportTabs",
-  "config": {
-    "tabs": [ ... ]
-  }
-}
-```
-
-Each tab contains components — typically `LinkedSections` — that organize content into visual sections.
+`--graph <graph slug>` limits it to one graph. `--overwrite` replaces existing configs, including your edits, and asks first.
 
 ---
 
-### LinkedSections and Subcomponents
+## Other report components
 
-#### `LinkedSections`
+`DataSection` is kept for hosts that provide the state it injects, such as arches-search's search result details. It no longer works inside `ModularReport`.
 
-Used within tabs to group and render multiple content sections.
+### `DataSection`
 
-Each `section` has a name and an array of components like `DataSection` or `RelatedResourcesSection`.
-
----
-
-#### `DataSection`
-
-Displays a group of nodes from the main resource graph. DataSection objects can be grouped together under a common name within LinkedSection components. By default, top-level node groups will appear as individual sections each with its own DataSection in the "Data" tab. For cardinality-n tiles, reports can optionally be filtered to limit the tile(s) displayed in the report.
+Displays a group of nodes from the main resource graph. For cardinality-n tiles, reports can optionally be filtered to limit the tile(s) displayed in the report.
 
 ```json
 {
@@ -243,24 +274,6 @@ OR
         "custom_labels": {},
         "nodegroup_alias": "physical_characteristics",
         "custom_card_name": "Physical Description"
-    }
-}
-```
-
----
-
-#### `RelatedResourcesSection`
-
-Displays resources related to this resource instance based on the related resource graph slug. By default the resource instance name and relationship is displayed. Other nodes from that related resource can be displayed by adding entries in the "node_aliases" array and those node names can be overwritten with the "custom_labels" object.
-RelatedResourcesSection objects can be grouped together under a common name within LinkedSection components.
-
-```json
-{
-    "component": "RelatedResourcesSection",
-    "config": {
-        "graph_slug": "digital",
-        "node_aliases": [],
-        "custom_labels": {}
     }
 }
 ```

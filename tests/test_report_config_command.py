@@ -1,5 +1,6 @@
 import json
 import os
+import tempfile
 import uuid
 from io import StringIO
 from unittest.mock import patch
@@ -16,6 +17,23 @@ import arches_modular_reports.config_generator_registry as registry_module
 from arches_modular_reports.config_generator_registry import register
 
 arches_version = Version(_arches_version_str)
+
+BROKEN_CONFIG = {
+    "name": "Broken",
+    "components": [
+        {
+            "component": "arches_modular_reports/ResourceReport/ResourceReport",
+            "config": {
+                "components": [
+                    {
+                        "component": "arches_modular_reports/ResourceReport/components/ReportFolio",
+                        "config": {"nodegroup_alias": "missing"},
+                    }
+                ]
+            },
+        }
+    ],
+}
 
 
 def _make_graph(slug):
@@ -68,6 +86,17 @@ class ReportConfigCommandTests(TestCase):
             with open(file_path) as f:
                 d = json.load(f)
                 self.assertTrue(d["name"] == report_config.config["name"])
+
+    def test_load_skips_configs_that_fail_validation(self):
+        with tempfile.TemporaryDirectory() as reports_dir:
+            graph_dir = os.path.join(reports_dir, self.graph.slug)
+            os.makedirs(graph_dir)
+            with open(os.path.join(graph_dir, "broken.json"), "w") as config_file:
+                json.dump(BROKEN_CONFIG, config_file)
+
+            management.call_command("report_configs", "load", source=graph_dir)
+
+        self.assertFalse(ReportConfig.objects.filter(slug="broken").exists())
 
 
 class GenerateReportConfigCommandTests(TestCase):
@@ -226,6 +255,19 @@ class GenerateReportConfigCommandTests(TestCase):
         )
         self.assertFalse(ReportConfig.objects.filter(slug="test_gen").exists())
         self.assertIn("totally_nonexistent_slug", stderr.getvalue())
+
+    def test_generate_skips_invalid_generated_config(self):
+        register("broken_gen", lambda graph: BROKEN_CONFIG)
+        management.call_command(
+            "report_configs",
+            "generate",
+            graph="gen_test_graph",
+            slug="broken_gen",
+            stderr=StringIO(),
+        )
+        self.assertFalse(
+            ReportConfig.objects.filter(graph=self.graph, slug="broken_gen").exists()
+        )
 
     # --- no generators registered ---
 

@@ -54,6 +54,14 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--slug",
+            action="store",
+            dest="slug",
+            default=None,
+            help="Report config slug to operate on (generate and write operations). Defaults to all slugs.",
+        )
+
+        parser.add_argument(
             "--overwrite",
             action="store_true",
             dest="overwrite",
@@ -73,15 +81,20 @@ class Command(BaseCommand):
 
         elif options["operation"] == "write":
             if options["dest"]:
-                self.write_report_configs(options["dest"], graph_slug=graph_slug)
+                self.write_report_configs(
+                    options["dest"], slug=options["slug"], graph_slug=graph_slug
+                )
             elif os.path.exists(os.path.join(settings.APP_ROOT, "report_configs")):
                 dest = os.path.join(settings.APP_ROOT, "report_configs")
-                self.write_report_configs(dest=dest, graph_slug=graph_slug)
+                self.write_report_configs(
+                    dest=dest, slug=options["slug"], graph_slug=graph_slug
+                )
 
         elif options["operation"] == "generate":
             self.generate_registered_configs(
                 graph_slug=graph_slug,
                 overwrite=options["overwrite"],
+                slug=options["slug"],
             )
 
     def write_report_configs(self, dest, slug=None, graph_slug=None):
@@ -97,11 +110,19 @@ class Command(BaseCommand):
             with open(file_path, "w") as f:
                 json.dump(config.config, f, indent=2)
 
-    def generate_registered_configs(self, graph_slug=None, overwrite=False):
+    def generate_registered_configs(self, graph_slug=None, overwrite=False, slug=None):
         generators = get_all()
         if not generators:
             self.stdout.write("No config generators registered.")
             return
+
+        if slug:
+            if slug not in generators:
+                self.stderr.write(
+                    self.style.ERROR(f'No config generator registered for "{slug}".')
+                )
+                return
+            generators = {slug: generators[slug]}
 
         eligible_graphs = models.GraphModel.objects.filter(
             isresource=True,
@@ -136,22 +157,34 @@ class Command(BaseCommand):
                     return
 
         for graph in eligible_graphs:
-            for slug, factory in generators.items():
-                if overwrite:
-                    _, created = ReportConfig.objects.update_or_create(
-                        graph=graph,
-                        slug=slug,
-                        defaults={"config": factory(graph)},
+            for generator_slug, factory in generators.items():
+                already_exists = ReportConfig.objects.filter(
+                    graph=graph, slug=generator_slug
+                ).exists()
+                if already_exists and not overwrite:
+                    self.stdout.write(f"\tSkipped [{generator_slug}]: {graph.slug}")
+                    continue
+
+                generated_config = ReportConfig(
+                    graph=graph, slug=generator_slug, config=factory(graph)
+                )
+                try:
+                    generated_config.clean()
+                except ValidationError as validation_error:
+                    self.stderr.write(
+                        self.style.ERROR(
+                            f"\tInvalid [{generator_slug}]: {graph.slug}: {validation_error}"
+                        )
                     )
-                    status = "Created" if created else "Overwritten"
-                else:
-                    _, created = ReportConfig.objects.get_or_create(
-                        graph=graph,
-                        slug=slug,
-                        defaults={"config": factory(graph)},
-                    )
-                    status = "Created" if created else "Skipped"
-                self.stdout.write(f"\t{status} [{slug}]: {graph.slug}")
+                    continue
+
+                ReportConfig.objects.update_or_create(
+                    graph=graph,
+                    slug=generator_slug,
+                    defaults={"config": generated_config.config},
+                )
+                status = "Overwritten" if already_exists else "Created"
+                self.stdout.write(f"\t{status} [{generator_slug}]: {graph.slug}")
 
     def load_report_configs(self, reports_dir, graph_slug=None):
         editable_report_template = models.ReportTemplate.objects.get(
@@ -168,14 +201,14 @@ class Command(BaseCommand):
                     if dir_graph_slug:
                         try:
                             graph = models.GraphModel.objects.get(slug=dir_graph_slug)
+                            config = ReportConfig.objects.filter(
+                                graph=graph, slug=Path(file).stem
+                            ).first() or ReportConfig(graph=graph, slug=Path(file).stem)
+                            config.config = data
+                            config.clean()
                             graph.template = editable_report_template
                             graph.save()
-                            config, created = ReportConfig.objects.update_or_create(
-                                graph=graph,
-                                slug=Path(file).stem,
-                                defaults={"config": data},
-                            )
-                            config.clean()
+                            config.save()
 
                             print(
                                 f'\n\n\tReport {Path(file).name} for graph "{dir_graph_slug}" was successfully loaded'

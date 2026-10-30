@@ -35,7 +35,7 @@ const cssOverrides = {
     //     margin: "0 4.5rem 3rem !important",
     //     "grid-template-columns": "repeat(4, 1fr) !important",
     // },
-    ".p-button, .p-inputtext, .p-select-options, .p-select-label, .p-select-overlay, .p-toast-detail":
+    ".p-button:not(.p-button-sm):not(.p-button-lg), .p-inputtext, .p-select-options, .p-select-label, .p-select-overlay, .p-toast-detail":
         {
             "font-size": "1.4rem !important",
         },
@@ -70,25 +70,25 @@ const DEFAULT_THEME = {
 const ModularReportPreset = definePreset(Aura, {
     semantic: {
         primary: {
-            50: "{sky.50}",
-            100: "{sky.100}",
-            200: "{sky.200}",
-            300: "{sky.300}",
-            400: "{sky.400}",
-            500: "{sky.500}",
-            600: "{sky.600}",
-            700: "{sky.700}",
-            800: "{sky.800}",
-            900: "{sky.900}",
-            950: "{sky.950}",
+            50: "{teal.50}",
+            100: "{teal.100}",
+            200: "{teal.200}",
+            300: "{teal.300}",
+            400: "{teal.400}",
+            500: "{teal.500}",
+            600: "{teal.600}",
+            700: "{teal.700}",
+            800: "{teal.800}",
+            900: "{teal.900}",
+            950: "{teal.950}",
         },
         colorScheme: {
             light: {
                 primary: {
-                    color: "{sky.700}",
-                    inverseColor: "#ffffff",
-                    hoverColor: "{sky.900}",
-                    activeColor: "{sky.800}",
+                    color: "{primary.600}",
+                    contrastColor: "#ffffff",
+                    hoverColor: "{primary.700}",
+                    activeColor: "{primary.800}",
                 },
                 editor: {
                     panel: {
@@ -96,19 +96,32 @@ const ModularReportPreset = definePreset(Aura, {
                         headerBackground: "{surface-200}",
                     },
                 },
-                highlight: {
-                    background: "{sky.300}",
-                    focusBackground: "{sky.700}",
-                    color: "#ffffff",
-                    focusColor: "#ffffff",
+                resourceReport: {
+                    strip: {
+                        background: "{surface.200}",
+                    },
+                    caption: {
+                        background: "{surface.100}",
+                    },
+                    aside: {
+                        background: "{surface.50}",
+                    },
                 },
             },
             dark: {
-                primary: {
-                    color: "{sky.300}",
-                    inverseColor: "{sky.950}",
-                    hoverColor: "{sky.100}",
-                    activeColor: "{sky.200}",
+                surface: {
+                    0: "#ffffff",
+                    50: "{slate.50}",
+                    100: "{slate.100}",
+                    200: "{slate.200}",
+                    300: "{slate.300}",
+                    400: "{slate.400}",
+                    500: "{slate.500}",
+                    600: "{slate.600}",
+                    700: "{slate.700}",
+                    800: "{slate.800}",
+                    900: "{slate.900}",
+                    950: "{slate.950}",
                 },
                 editor: {
                     panel: {
@@ -116,17 +129,45 @@ const ModularReportPreset = definePreset(Aura, {
                         headerBackground: "transparent",
                     },
                 },
-                highlight: {
-                    background: "rgba(250, 250, 250, .16)",
-                    focusBackground: "rgba(250, 250, 250, .24)",
-                    color: "rgba(255,255,255,.87)",
-                    focusColor: "rgba(255,255,255,.87)",
+                resourceReport: {
+                    strip: {
+                        background: "{surface.950}",
+                    },
+                    caption: {
+                        background: "{surface.950}",
+                    },
+                    aside: {
+                        background: "{surface.950}",
+                    },
                 },
             },
         },
     },
     css: compileGlobalCss(cssOverrides),
     components: {
+        button: {
+            root: {
+                paddingX: "1.2rem",
+                paddingY: "0.8rem",
+                sm: {
+                    fontSize: "1.3rem",
+                    paddingX: "1rem",
+                    paddingY: "0.5rem",
+                },
+                lg: {
+                    fontSize: "1.8rem",
+                    paddingX: "1.4rem",
+                    paddingY: "1rem",
+                },
+            },
+        },
+        tag: {
+            root: {
+                fontSize: "1.2rem",
+                padding: "0.3rem 0.8rem",
+                gap: "0.4rem",
+            },
+        },
         datatable: {
             rowToggleButton: {
                 size: "2.5rem",
@@ -142,20 +183,6 @@ const ModularReportPreset = definePreset(Aura, {
                     headerCell: {
                         background: "{surface-800}",
                         hoverBackground: "{surface-700}",
-                    },
-                },
-            },
-        },
-        tabs: {
-            colorScheme: {
-                light: {
-                    tabpanel: {
-                        background: "{surface-100}",
-                    },
-                },
-                dark: {
-                    tabpanel: {
-                        background: "{surface-800}",
                     },
                 },
             },
