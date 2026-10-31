@@ -61,6 +61,7 @@ const emit = defineEmits<{
 
 const { $gettext } = useGettext();
 
+const isFolioToggledOpen = ref<boolean | null>(null);
 const expandedTileIds = ref(new Set<string>());
 const collapsedTileIds = ref(new Set<string>());
 const draggedTileId = ref<string | null>(null);
@@ -101,6 +102,10 @@ const cardinalityLabel = computed(() => {
 
 const isFiltering = computed(() => query !== "");
 
+const isFolioExpanded = computed(
+    () => isFolioToggledOpen.value ?? isFiltering.value,
+);
+
 const isReorderable = computed(() => !isFiltering.value && tiles.length > 1);
 
 const childrenMatchedByAncestor = computed(
@@ -139,6 +144,7 @@ const tileRows = computed(() =>
 watch(
     () => query,
     () => {
+        isFolioToggledOpen.value = null;
         collapsedTileIds.value = new Set();
     },
 );
@@ -231,9 +237,14 @@ function toggleTile(tileId: string, isTileExpanded: boolean): void {
     }
 }
 
+function toggleFolio(): void {
+    isFolioToggledOpen.value = !isFolioExpanded.value;
+}
+
 async function addTile(): Promise<void> {
     const newTileId = await changeSet.addTile(nodegroupAlias, parentTileId);
     if (newTileId !== null) {
+        isFolioToggledOpen.value = true;
         emit(EDIT_TILE, { nodegroupAlias, tileId: newTileId });
     }
 }
@@ -292,6 +303,23 @@ function onDragEnd(): void {
 <template>
     <section class="data-folio">
         <header class="data-folio-header">
+            <Button
+                variant="text"
+                size="small"
+                :icon="expandIcon(isFolioExpanded)"
+                :aria-expanded="isFolioExpanded"
+                :aria-label="
+                    $gettext(
+                        'Show entries for %{card}',
+                        {
+                            card: cardName,
+                        },
+                        true,
+                    )
+                "
+                :disabled="tiles.length === 0"
+                @click="toggleFolio"
+            />
             <span class="data-folio-name">
                 <HighlightedText
                     :text="cardName"
@@ -315,7 +343,10 @@ function onDragEnd(): void {
                 @click="addTile"
             />
         </header>
-        <ul class="data-folio-tiles">
+        <ul
+            v-if="isFolioExpanded"
+            class="data-folio-tiles"
+        >
             <li
                 v-for="tileRow in tileRows"
                 :key="tileRow.tileId"
@@ -536,13 +567,17 @@ function onDragEnd(): void {
 .data-folio {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+}
+
+.data-folio + .data-folio {
+    border-block-start: 0.1rem solid var(--p-content-border-color);
 }
 
 .data-folio-header {
     display: flex;
     align-items: center;
     gap: 0.8rem;
+    padding-block: 0.4rem;
 }
 
 .data-folio-name {
@@ -561,15 +596,10 @@ function onDragEnd(): void {
 .data-folio-tiles {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
     margin: 0;
-    padding: 0;
+    padding-block: 0 0.4rem;
+    padding-inline: 1.8rem 0;
     list-style: none;
-}
-
-.data-folio-tile {
-    border: 0.1rem solid var(--p-content-border-color);
-    border-radius: var(--p-content-border-radius);
 }
 
 .data-folio-tile-pending {
@@ -582,7 +612,7 @@ function onDragEnd(): void {
 }
 
 .data-folio-tile-selected {
-    border-color: var(--p-primary-color);
+    box-shadow: inset 0.3rem 0 0 var(--p-primary-color);
 }
 
 .data-folio-tile-row {

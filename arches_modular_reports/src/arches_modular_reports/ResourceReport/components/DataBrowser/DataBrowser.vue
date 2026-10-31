@@ -75,20 +75,22 @@ const folios = computed(() =>
                 )
             }}
         </p>
-        <DataFolio
-            v-for="folio in folios"
-            :key="folio.nodegroupAlias"
-            :nodegroup-alias="folio.nodegroupAlias"
-            :nodegroup-widget-configs="reportData.nodegroupWidgetConfigs"
-            :tiles="folio.tiles"
-            :parent-tile-id="null"
-            :change-set="reportData.changeSet"
-            :query="query"
-            :matched-by-ancestor="false"
-            :selected-tile-id="reportData.editor.target?.tileId ?? null"
-            :is-editable="isEditable"
-            @edit-tile="reportData.editor.open"
-        />
+        <div class="data-browser-folios">
+            <DataFolio
+                v-for="folio in folios"
+                :key="folio.nodegroupAlias"
+                :nodegroup-alias="folio.nodegroupAlias"
+                :nodegroup-widget-configs="reportData.nodegroupWidgetConfigs"
+                :tiles="folio.tiles"
+                :parent-tile-id="null"
+                :change-set="reportData.changeSet"
+                :query="query"
+                :matched-by-ancestor="false"
+                :selected-tile-id="reportData.editor.target?.tileId ?? null"
+                :is-editable="isEditable"
+                @edit-tile="reportData.editor.open"
+            />
+        </div>
     </div>
 </template>
 
@@ -98,6 +100,11 @@ const folios = computed(() =>
     flex-direction: column;
     gap: 1.2rem;
     padding: 1.6rem;
+}
+
+.data-browser-folios {
+    display: flex;
+    flex-direction: column;
 }
 
 .data-browser-filter {
