@@ -177,6 +177,7 @@ function toggleOpen(): void {
                 </span>
                 <Badge
                     v-if="tiles.length > 1"
+                    class="report-folio-count"
                     severity="secondary"
                     :value="tiles.length"
                 />
@@ -409,7 +410,7 @@ function toggleOpen(): void {
 .report-folio {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 0.2rem;
 }
 
 .report-folio-header {
@@ -430,6 +431,13 @@ function toggleOpen(): void {
     font-size: 1.2rem;
     font-weight: 700;
     text-transform: uppercase;
+}
+
+.report-folio-count {
+    min-inline-size: 2rem;
+    block-size: 2rem;
+    font-size: 1.2rem;
+    line-height: 2rem;
 }
 
 .report-folio-header-actions {
@@ -468,11 +476,13 @@ function toggleOpen(): void {
 .report-folio-entry {
     display: flex;
     flex-direction: column;
+}
+
+.report-folio-entry {
     gap: 1.2rem;
 }
 
 .report-folio-tile {
-    padding-block: 0.4rem 0.8rem;
     padding-inline: 1.2rem;
     border-inline-start: 0.3rem solid var(--p-primary-color);
 }
@@ -485,7 +495,17 @@ function toggleOpen(): void {
 .report-folio-fields {
     display: flex;
     flex-direction: column;
-    gap: 1.4rem;
+}
+
+.report-folio-fields > .widget {
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+}
+
+.report-folio-fields :deep(.widget-label) {
+    font-weight: 400;
 }
 
 .report-folio-tile-deleted > .report-folio-fields {
@@ -495,17 +515,23 @@ function toggleOpen(): void {
 
 .report-folio-empty-field {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
 }
 
 .report-folio-empty-field-label {
-    font-weight: 600;
+    font-weight: 400;
 }
 
 .report-folio-tile-actions {
     display: flex;
     align-items: center;
     gap: 0.8rem;
+}
+
+.report-folio-tile-actions > .p-button {
+    padding-inline: 0.2rem;
 }
 
 .report-folio-delete,

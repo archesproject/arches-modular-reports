@@ -53,7 +53,14 @@ const childNodes = computed(() => component.config.components ?? []);
 .report-section {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+}
+
+.report-section > * + * {
+    margin-block-start: 0.8rem;
+}
+
+.report-section > .field-folio + .field-folio {
+    margin-block-start: 0;
 }
 
 .report-section:not(:first-child) {

@@ -115,6 +115,8 @@ const isDeleted = computed(
                         {{ $gettext("No value recorded.") }}
                     </span>
                 </span>
+            </div>
+            <div class="field-folio-actions">
                 <template v-if="tile !== null && isEditableTile(tile)">
                     <Button
                         variant="link"
@@ -184,7 +186,6 @@ const isDeleted = computed(
 <style scoped>
 .field-folio {
     display: flex;
-    flex-wrap: wrap;
     align-items: baseline;
     gap: 0.8rem;
     isolation: isolate;
@@ -198,12 +199,22 @@ const isDeleted = computed(
 
 .field-folio-value {
     display: flex;
-    flex: 1;
     flex-wrap: wrap;
     align-items: baseline;
     gap: 0.8rem;
     min-inline-size: 0;
-    font-weight: 500;
+    font-weight: 600;
+}
+
+.field-folio-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: baseline;
+    gap: 0.2rem;
+}
+
+.field-folio-actions > .p-button {
+    padding-inline: 0.2rem;
 }
 
 .field-folio-empty {

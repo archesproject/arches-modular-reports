@@ -306,11 +306,12 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
 }
 
 .report-header-summary dt {
-    font-weight: 600;
+    font-weight: 400;
 }
 
 .report-header-summary dd {
     margin: 0;
+    font-weight: 600;
 }
 
 .report-header-exports {

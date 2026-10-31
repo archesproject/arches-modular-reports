@@ -393,8 +393,16 @@ function showNextTile(): void {
     flex-direction: column;
 }
 
-.map-folio-empty-field-label {
+.map-folio-fields > .widget {
     font-weight: 600;
+}
+
+.map-folio-fields :deep(.widget-label) {
+    font-weight: 400;
+}
+
+.map-folio-empty-field-label {
+    font-weight: 400;
 }
 
 .map-folio-actions {
