@@ -182,6 +182,17 @@ describe("DataFolio", () => {
         );
     });
 
+    it("starts collapsed and expands to show its entries", async () => {
+        const { wrapper } = await mountEditor("names");
+        expect(wrapper.find(".data-folio-tiles").exists()).toBe(false);
+
+        await wrapper
+            .find(".data-folio-header [aria-expanded]")
+            .trigger("click");
+
+        expect(topLevelSummaries(wrapper)).toEqual(["Smalt", "Cobalt"]);
+    });
+
     it("collapses a tile that the filter expanded", async () => {
         const { wrapper } = await mountEditor("names", "glass");
         expect(
