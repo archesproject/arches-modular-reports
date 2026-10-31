@@ -95,6 +95,11 @@ const NODEGROUP_WIDGET_CONFIGS = {
         "n",
         makeWidget("note_content", "Note"),
     ),
+    origin: makeNodegroupWidgetConfig(
+        null,
+        "1",
+        makeWidget("origin_place", "Place"),
+    ),
 };
 
 const RESOURCE: AliasedResourceData = {
@@ -112,6 +117,7 @@ const RESOURCE: AliasedResourceData = {
                 ],
             }),
         ],
+        origin: makeTile("origin", 0, { origin_place: nodeData("Saxony") }),
     },
 };
 
@@ -191,6 +197,32 @@ describe("DataFolio", () => {
             .trigger("click");
 
         expect(topLevelSummaries(wrapper)).toEqual(["Smalt", "Cobalt"]);
+    });
+
+    it("shows a nested card's fields open even without entries", async () => {
+        const { wrapper } = await mountEditor("name_notes");
+        expect(
+            wrapper.find(".data-folio-header [aria-expanded]").exists(),
+        ).toBe(false);
+
+        const field = wrapper.find(".data-folio-placeholder .data-folio-field");
+        expect(field.find("dt").text()).toBe("Note");
+        expect(field.find("dd").text()).toBe("—");
+    });
+
+    it("lists a single entry's fields with its actions in the header", async () => {
+        const { wrapper } = await mountEditor("origin");
+        await wrapper
+            .find(".data-folio-header [aria-expanded]")
+            .trigger("click");
+
+        expect(wrapper.find(".data-folio-tile-row").exists()).toBe(false);
+        expect(wrapper.find(".data-folio-field dd").text()).toBe("Saxony");
+        expect(
+            wrapper
+                .find(".data-folio-header .data-folio-tile-actions")
+                .exists(),
+        ).toBe(true);
     });
 
     it("collapses a tile that the filter expanded", async () => {

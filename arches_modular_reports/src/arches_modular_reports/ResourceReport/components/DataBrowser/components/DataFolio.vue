@@ -6,6 +6,7 @@ import Badge from "openvue/badge";
 import Button from "openvue/button";
 import Tag from "openvue/tag";
 
+import DataFolioTileActions from "@/arches_modular_reports/ResourceReport/components/DataBrowser/components/DataFolioTileActions.vue";
 import HighlightedText from "@/arches_modular_reports/ResourceReport/components/DataBrowser/components/HighlightedText.vue";
 
 import {
@@ -32,6 +33,7 @@ import type {
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const EDIT_TILE = "edit-tile" as const;
+const EMPTY_VALUE = "—";
 
 const {
     nodegroupAlias,
@@ -102,8 +104,16 @@ const cardinalityLabel = computed(() => {
 
 const isFiltering = computed(() => query !== "");
 
+const isSingle = computed(
+    () => nodegroupWidgetConfig.value.cardinality !== "n",
+);
+
+const isTopLevel = computed(
+    () => nodegroupWidgetConfig.value.parent_nodegroup_alias === null,
+);
+
 const isFolioExpanded = computed(
-    () => isFolioToggledOpen.value ?? isFiltering.value,
+    () => !isTopLevel.value || (isFolioToggledOpen.value ?? isFiltering.value),
 );
 
 const isReorderable = computed(() => !isFiltering.value && tiles.length > 1);
@@ -134,12 +144,18 @@ const tileRows = computed(() =>
                     !isEditable ||
                     !nodegroupWidgetConfig.value.is_writable ||
                     (isPendingDelete && !isMarkedForDeletion),
-                isExpanded: isExpanded(tileId),
+                isExpanded: isSingle.value || isExpanded(tileId),
                 childFolios: visibleChildFolios(tile),
             };
         })
         .filter((tileRow) => isTileVisible(tileRow.tile)),
 );
+
+const singleTileRow = computed(() =>
+    isSingle.value ? tileRows.value[0] ?? null : null,
+);
+
+const placeholderChildFolios = computed(() => visibleChildFolios(null));
 
 watch(
     () => query,
@@ -149,7 +165,10 @@ watch(
     },
 );
 
-function displayValue(tile: AliasedTileData, nodeAlias: string): string {
+function displayValue(tile: AliasedTileData | null, nodeAlias: string): string {
+    if (tile === null) {
+        return "";
+    }
     return aliasedNodeDataOf(tile, nodeAlias)?.display_value ?? "";
 }
 
@@ -190,12 +209,15 @@ function isTileVisible(tile: AliasedTileData): boolean {
 }
 
 function visibleChildFolios(
-    tile: AliasedTileData,
+    tile: AliasedTileData | null,
 ): { nodegroupAlias: string; tiles: AliasedTileData[] }[] {
     return childAliases.value
         .map((childAlias) => ({
             nodegroupAlias: childAlias,
-            tiles: nodegroupTiles(tile.aliased_data[childAlias]),
+            tiles:
+                tile === null
+                    ? []
+                    : nodegroupTiles(tile.aliased_data[childAlias]),
         }))
         .filter(
             (childFolio) =>
@@ -304,6 +326,7 @@ function onDragEnd(): void {
     <section class="data-folio">
         <header class="data-folio-header">
             <Button
+                v-if="isTopLevel"
                 variant="text"
                 size="small"
                 :icon="expandIcon(isFolioExpanded)"
@@ -317,7 +340,6 @@ function onDragEnd(): void {
                         true,
                     )
                 "
-                :disabled="tiles.length === 0"
                 @click="toggleFolio"
             />
             <span class="data-folio-name">
@@ -327,11 +349,28 @@ function onDragEnd(): void {
                 />
             </span>
             <Badge
-                v-if="tiles.length > 0"
+                v-if="!isSingle && tiles.length > 0"
                 severity="secondary"
                 :value="tiles.length"
             />
             <span class="data-folio-cardinality">{{ cardinalityLabel }}</span>
+            <template v-if="singleTileRow">
+                <Tag
+                    v-if="singleTileRow.changeTag"
+                    :value="singleTileRow.changeTag.label"
+                    :severity="singleTileRow.changeTag.severity"
+                />
+                <DataFolioTileActions
+                    v-if="!singleTileRow.isLocked"
+                    class="data-folio-header-actions"
+                    :label="singleTileRow.label"
+                    :is-marked-for-deletion="singleTileRow.isMarkedForDeletion"
+                    :is-busy="changeSet.isBusy.value"
+                    @edit="editTile(singleTileRow.tileId)"
+                    @delete="deleteTile(singleTileRow.tileId)"
+                    @undo-delete="undoDelete(singleTileRow.tileId)"
+                />
+            </template>
             <Button
                 v-if="isAddable"
                 class="data-folio-add"
@@ -344,7 +383,7 @@ function onDragEnd(): void {
             />
         </header>
         <ul
-            v-if="isFolioExpanded"
+            v-if="isFolioExpanded && tiles.length > 0"
             class="data-folio-tiles"
         >
             <li
@@ -361,6 +400,7 @@ function onDragEnd(): void {
                 @drop="onDrop($event, tileRow.tileIndex)"
             >
                 <div
+                    v-if="!isSingle"
                     class="data-folio-tile-row"
                     :draggable="
                         !tileRow.isLocked &&
@@ -454,65 +494,15 @@ function onDragEnd(): void {
                         :value="tileRow.changeTag.label"
                         :severity="tileRow.changeTag.severity"
                     />
-                    <div
+                    <DataFolioTileActions
                         v-if="!tileRow.isLocked"
-                        class="data-folio-tile-actions"
-                    >
-                        <Button
-                            v-if="tileRow.isMarkedForDeletion"
-                            icon="pi pi-undo"
-                            variant="text"
-                            size="small"
-                            :label="$gettext('Undo delete')"
-                            :aria-label="
-                                $gettext(
-                                    'Undo deleting %{entry}',
-                                    {
-                                        entry: tileRow.label,
-                                    },
-                                    true,
-                                )
-                            "
-                            :disabled="changeSet.isBusy.value"
-                            @click="undoDelete(tileRow.tileId)"
-                        />
-                        <template v-else>
-                            <Button
-                                icon="pi pi-pencil"
-                                variant="text"
-                                size="small"
-                                :label="$gettext('Edit')"
-                                :aria-label="
-                                    $gettext(
-                                        'Edit %{entry}',
-                                        {
-                                            entry: tileRow.label,
-                                        },
-                                        true,
-                                    )
-                                "
-                                @click="editTile(tileRow.tileId)"
-                            />
-                            <Button
-                                icon="pi pi-trash"
-                                variant="text"
-                                size="small"
-                                severity="danger"
-                                :label="$gettext('Delete')"
-                                :aria-label="
-                                    $gettext(
-                                        'Delete %{entry}',
-                                        {
-                                            entry: tileRow.label,
-                                        },
-                                        true,
-                                    )
-                                "
-                                :disabled="changeSet.isBusy.value"
-                                @click="deleteTile(tileRow.tileId)"
-                            />
-                        </template>
-                    </div>
+                        :label="tileRow.label"
+                        :is-marked-for-deletion="tileRow.isMarkedForDeletion"
+                        :is-busy="changeSet.isBusy.value"
+                        @edit="editTile(tileRow.tileId)"
+                        @delete="deleteTile(tileRow.tileId)"
+                        @undo-delete="undoDelete(tileRow.tileId)"
+                    />
                 </div>
                 <div
                     v-if="tileRow.isExpanded"
@@ -530,7 +520,18 @@ function onDragEnd(): void {
                                     :query="query"
                                 />
                             </dt>
-                            <dd>
+                            <dd
+                                v-if="
+                                    displayValue(
+                                        tileRow.tile,
+                                        widget.node.alias,
+                                    ) === ''
+                                "
+                                class="data-folio-field-empty"
+                            >
+                                {{ EMPTY_VALUE }}
+                            </dd>
+                            <dd v-else>
                                 <HighlightedText
                                     :text="
                                         displayValue(
@@ -560,6 +561,40 @@ function onDragEnd(): void {
                 </div>
             </li>
         </ul>
+        <div
+            v-if="isFolioExpanded && tiles.length === 0"
+            class="data-folio-tile-body data-folio-placeholder"
+        >
+            <dl class="data-folio-fields">
+                <div
+                    v-for="widget in visibleWidgets"
+                    :key="widget.node.alias"
+                    class="data-folio-field"
+                >
+                    <dt>
+                        <HighlightedText
+                            :text="widget.label"
+                            :query="query"
+                        />
+                    </dt>
+                    <dd class="data-folio-field-empty">{{ EMPTY_VALUE }}</dd>
+                </div>
+            </dl>
+            <DataFolio
+                v-for="childFolio in placeholderChildFolios"
+                :key="childFolio.nodegroupAlias"
+                :nodegroup-alias="childFolio.nodegroupAlias"
+                :nodegroup-widget-configs="nodegroupWidgetConfigs"
+                :tiles="childFolio.tiles"
+                :parent-tile-id="null"
+                :change-set="changeSet"
+                :query="query"
+                :matched-by-ancestor="childrenMatchedByAncestor"
+                :selected-tile-id="selectedTileId"
+                :is-editable="false"
+                @edit-tile="emit(EDIT_TILE, $event)"
+            />
+        </div>
     </section>
 </template>
 
@@ -589,7 +624,8 @@ function onDragEnd(): void {
     font-size: 1.2rem;
 }
 
-.data-folio-add {
+.data-folio-add,
+.data-folio-header-actions {
     margin-inline-start: auto;
 }
 
@@ -606,7 +642,8 @@ function onDragEnd(): void {
     background: var(--p-highlight-background);
 }
 
-.data-folio-tile-deleted .data-folio-summary {
+.data-folio-tile-deleted .data-folio-summary,
+.data-folio-tile-deleted .data-folio-fields {
     color: var(--p-text-muted-color);
     text-decoration: line-through;
 }
@@ -640,11 +677,6 @@ function onDragEnd(): void {
     white-space: nowrap;
 }
 
-.data-folio-tile-actions {
-    display: flex;
-    gap: 0.2rem;
-}
-
 .data-folio-tile-body {
     display: flex;
     flex-direction: column;
@@ -666,11 +698,23 @@ function onDragEnd(): void {
 }
 
 .data-folio-field dt {
-    min-inline-size: 14rem;
+    flex: 1;
+    min-inline-size: 0;
     color: var(--p-text-muted-color);
 }
 
 .data-folio-field dd {
+    max-inline-size: 55%;
     margin: 0;
+    text-align: end;
+}
+
+.data-folio-field .data-folio-field-empty {
+    color: var(--p-text-muted-color);
+    font-style: italic;
+}
+
+.data-folio-placeholder {
+    padding-inline-start: 3.6rem;
 }
 </style>
