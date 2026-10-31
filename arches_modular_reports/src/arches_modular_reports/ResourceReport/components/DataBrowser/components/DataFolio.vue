@@ -14,6 +14,7 @@ import {
     nodegroupMatches,
     ownLabelsMatch,
 } from "@/arches_modular_reports/ResourceReport/utils/data-filter.ts";
+import { datatypeIcon } from "@/arches_modular_reports/ResourceReport/utils/datatype-icon.ts";
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import {
     aliasedNodeDataOf,
@@ -515,6 +516,13 @@ function onDragEnd(): void {
                             class="data-folio-field"
                         >
                             <dt>
+                                <i
+                                    :class="[
+                                        datatypeIcon(widget.node.datatype),
+                                        'data-folio-field-icon',
+                                    ]"
+                                    aria-hidden="true"
+                                />
                                 <HighlightedText
                                     :text="widget.label"
                                     :query="query"
@@ -572,6 +580,13 @@ function onDragEnd(): void {
                     class="data-folio-field"
                 >
                     <dt>
+                        <i
+                            :class="[
+                                datatypeIcon(widget.node.datatype),
+                                'data-folio-field-icon',
+                            ]"
+                            aria-hidden="true"
+                        />
                         <HighlightedText
                             :text="widget.label"
                             :query="query"
@@ -698,20 +713,31 @@ function onDragEnd(): void {
 }
 
 .data-folio-field dt {
+    display: flex;
     flex: 1;
+    align-items: center;
+    gap: 0.6rem;
     min-inline-size: 0;
     color: var(--p-text-muted-color);
+    font-weight: 500;
+}
+
+.data-folio-field-icon {
+    flex-shrink: 0;
+    font-size: 1.2rem;
 }
 
 .data-folio-field dd {
     max-inline-size: 55%;
     margin: 0;
+    font-weight: 600;
     text-align: end;
 }
 
 .data-folio-field .data-folio-field-empty {
     color: var(--p-text-muted-color);
     font-style: italic;
+    font-weight: normal;
 }
 
 .data-folio-placeholder {
