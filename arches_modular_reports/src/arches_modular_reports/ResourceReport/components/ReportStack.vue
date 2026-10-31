@@ -30,6 +30,13 @@ const childNodes = computed(() => component.config.components ?? []);
 .report-stack {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+}
+
+.report-stack > * + * {
+    margin-block-start: 0.8rem;
+}
+
+.report-stack > .field-folio + .field-folio {
+    margin-block-start: 0;
 }
 </style>

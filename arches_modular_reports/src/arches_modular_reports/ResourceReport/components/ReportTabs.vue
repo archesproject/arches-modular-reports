@@ -66,6 +66,5 @@ const { tabs, activeTabIndex } = useTabbedComponents(
 
 .report-tabs-panel {
     max-inline-size: 120rem;
-    padding-block-start: 2.4rem;
 }
 </style>
