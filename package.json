@@ -21,7 +21,7 @@
     },
     "dependencies": {
         "arches": "archesproject/arches#semver:^v8.2.0-alpha.12",
-        "es-toolkit": "^1.39.10",
+        "es-toolkit": "^1.53.0",
         "numeral": "^2.0.6"
     },
     "nodeModulesPaths": {},
