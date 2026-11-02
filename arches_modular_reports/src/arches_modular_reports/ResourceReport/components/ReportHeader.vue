@@ -226,6 +226,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     display: flex;
     align-items: stretch;
     min-block-size: 9rem;
+    padding-inline-start: 1.6rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
     background: var(--p-content-background);
 }
