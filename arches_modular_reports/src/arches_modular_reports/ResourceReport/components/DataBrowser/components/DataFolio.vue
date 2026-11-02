@@ -654,7 +654,7 @@ function onDragEnd(): void {
 }
 
 .data-folio-tile-pending {
-    background: var(--p-highlight-background);
+    background: var(--p-content-hover-background);
 }
 
 .data-folio-tile-deleted .data-folio-summary,

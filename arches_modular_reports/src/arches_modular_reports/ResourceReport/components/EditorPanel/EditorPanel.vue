@@ -39,6 +39,9 @@ onUnmounted(() => {
     inset: 0;
     z-index: 1;
     overflow: auto;
-    background: var(--p-resource-report-aside-background);
+    background: var(
+        --p-resource-report-aside-background,
+        var(--p-content-background)
+    );
 }
 </style>
