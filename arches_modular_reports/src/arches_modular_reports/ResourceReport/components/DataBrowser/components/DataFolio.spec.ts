@@ -124,6 +124,7 @@ const RESOURCE: AliasedResourceData = {
 async function mountEditor(
     nodegroupAlias: string,
     query = "",
+    selectedTileId: string | null = null,
 ): Promise<{ changeSet: ResourceChangeSet; wrapper: VueWrapper }> {
     const changeSet = effectScope().run(() =>
         useResourceChangeSet("pigment", "resource"),
@@ -141,7 +142,7 @@ async function mountEditor(
             changeSet,
             query,
             matchedByAncestor: false,
-            selectedTileId: null,
+            selectedTileId,
             isEditable: true,
         },
         global: { plugins: [[OpenVue, { theme: "none" }]] },
@@ -195,6 +196,33 @@ describe("DataFolio", () => {
         await wrapper
             .find(".data-folio-header [aria-expanded]")
             .trigger("click");
+
+        expect(topLevelSummaries(wrapper)).toEqual(["Smalt", "Cobalt"]);
+    });
+
+    it("opens the branch holding the selected tile", async () => {
+        const { wrapper } = await mountEditor("names", "", "note");
+
+        expect(topLevelSummaries(wrapper)).toEqual(["Smalt", "Cobalt"]);
+        expect(
+            tileRow(wrapper, "Smalt").find(".data-folio-tile-body").exists(),
+        ).toBe(false);
+        expect(
+            tileRow(wrapper, "Cobalt").find(".data-folio-tile-body").exists(),
+        ).toBe(true);
+        expect(wrapper.find(".data-folio-tile-selected").text()).toContain(
+            "Glass",
+        );
+    });
+
+    it("keeps a folio opened by hand open when the filter changes", async () => {
+        const { wrapper } = await mountEditor("names");
+        await wrapper
+            .find(".data-folio-header [aria-expanded]")
+            .trigger("click");
+
+        await wrapper.setProps({ query: "smalt" });
+        await wrapper.setProps({ query: "" });
 
         expect(topLevelSummaries(wrapper)).toEqual(["Smalt", "Cobalt"]);
     });

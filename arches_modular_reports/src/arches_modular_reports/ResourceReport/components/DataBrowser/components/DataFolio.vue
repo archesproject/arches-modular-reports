@@ -19,6 +19,7 @@ import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/u
 import {
     aliasedNodeDataOf,
     canAddTile,
+    containsTile,
     nodegroupTiles,
     tileSearchText,
     tileSummary,
@@ -158,12 +159,35 @@ const singleTileRow = computed(() =>
 
 const placeholderChildFolios = computed(() => visibleChildFolios(null));
 
+const selectedBranchTileId = computed(() => {
+    if (selectedTileId === null) {
+        return null;
+    }
+    const branchTile = tiles.find((tile) => containsTile(tile, selectedTileId));
+    return branchTile?.tileid ?? null;
+});
+
 watch(
     () => query,
     () => {
-        isFolioToggledOpen.value = null;
+        if (isFolioToggledOpen.value === false) {
+            isFolioToggledOpen.value = null;
+        }
         collapsedTileIds.value = new Set();
     },
+);
+
+watch(
+    selectedBranchTileId,
+    (branchTileId) => {
+        if (branchTileId === null) {
+            return;
+        }
+        isFolioToggledOpen.value = true;
+        collapsedTileIds.value.delete(branchTileId);
+        expandedTileIds.value.add(branchTileId);
+    },
+    { immediate: true },
 );
 
 function displayValue(tile: AliasedTileData | null, nodeAlias: string): string {
