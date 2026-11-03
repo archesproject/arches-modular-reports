@@ -36,6 +36,17 @@ export function nodegroupTiles(
     return [];
 }
 
+export function containsTile(tile: AliasedTileData, tileId: string): boolean {
+    if (tile.tileid === tileId) {
+        return true;
+    }
+    return Object.values(tile.aliased_data).some((value) =>
+        nodegroupTiles(value).some((childTile) =>
+            containsTile(childTile, tileId),
+        ),
+    );
+}
+
 export function tileSearchText(tile: AliasedTileData): string {
     const displayValues: string[] = [];
 
