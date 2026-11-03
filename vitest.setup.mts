@@ -1,4 +1,4 @@
-import { beforeAll, vi } from 'vitest';
+import { vi } from 'vitest';
 
 class ResizeObserverStub {
     observe(): void {}
@@ -8,14 +8,12 @@ class ResizeObserverStub {
 
 vi.stubGlobal('ResizeObserver', ResizeObserverStub);
 
-beforeAll(() => {
-    vi.mock('arches', () => ({
-        default: '',
-    }));
+vi.mock('arches', () => ({
+    default: '',
+}));
 
-    vi.mock('vue3-gettext', () => ({
-        useGettext: () => ({
-            $gettext: (text: string) => (text)
-        })
-    }));
-});
+vi.mock('vue3-gettext', () => ({
+    useGettext: () => ({
+        $gettext: (text: string) => (text)
+    })
+}));
