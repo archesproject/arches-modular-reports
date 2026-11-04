@@ -192,6 +192,10 @@ const isDeleted = computed(
     border-radius: var(--p-content-border-radius);
 }
 
+.field-folio + .field-folio {
+    margin-block-start: 0;
+}
+
 .field-folio-label {
     min-inline-size: 16rem;
     color: var(--p-text-muted-color);
