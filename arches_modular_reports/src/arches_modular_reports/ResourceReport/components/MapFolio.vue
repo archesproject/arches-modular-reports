@@ -187,35 +187,39 @@ function showNextTile(): void {
                     }"
                 >
                     <div class="map-folio-fields">
-                        <template
+                        <div
                             v-for="widget in fieldWidgets"
                             :key="widget.id"
+                            class="map-folio-field"
                         >
-                            <GenericWidget
-                                v-if="hasValue(currentTile, widget.node.alias)"
-                                :aliased-node-data="
-                                    aliasedNodeDataOf(
-                                        currentTile,
-                                        widget.node.alias,
-                                    )
-                                "
-                                :card-x-node-x-widget-data="widget"
-                                :graph-slug="reportData.context.graph.slug"
-                                :mode="VIEW"
-                                :node-alias="widget.node.alias"
-                            />
+                            <span class="map-folio-field-label">
+                                {{ widget.label }}
+                            </span>
                             <div
-                                v-else
-                                class="map-folio-empty-field"
+                                v-if="hasValue(currentTile, widget.node.alias)"
+                                class="map-folio-field-value"
                             >
-                                <span class="map-folio-empty-field-label">
-                                    {{ widget.label }}
-                                </span>
-                                <span class="map-folio-empty-message">
-                                    {{ $gettext("No value recorded.") }}
-                                </span>
+                                <GenericWidget
+                                    :aliased-node-data="
+                                        aliasedNodeDataOf(
+                                            currentTile,
+                                            widget.node.alias,
+                                        )
+                                    "
+                                    :card-x-node-x-widget-data="widget"
+                                    :graph-slug="reportData.context.graph.slug"
+                                    :mode="VIEW"
+                                    :node-alias="widget.node.alias"
+                                    :should-show-label="false"
+                                />
                             </div>
-                        </template>
+                            <span
+                                v-else
+                                class="map-folio-empty-message"
+                            >
+                                {{ $gettext("No value recorded.") }}
+                            </span>
+                        </div>
                     </div>
                     <div
                         v-if="isEditableTile(currentTile)"
@@ -388,21 +392,13 @@ function showNextTile(): void {
     gap: 1.4rem;
 }
 
-.map-folio-empty-field {
+.map-folio-field {
     display: flex;
     flex-direction: column;
 }
 
-.map-folio-fields > .widget {
+.map-folio-field-value {
     font-weight: 600;
-}
-
-.map-folio-fields :deep(.widget-label) {
-    font-weight: 400;
-}
-
-.map-folio-empty-field-label {
-    font-weight: 400;
 }
 
 .map-folio-actions {

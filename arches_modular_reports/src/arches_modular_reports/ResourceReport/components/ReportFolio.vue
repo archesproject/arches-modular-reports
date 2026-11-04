@@ -283,32 +283,39 @@ function toggleOpen(): void {
                     ]"
                 >
                     <div class="report-folio-fields">
-                        <template
+                        <div
                             v-for="widget in visibleWidgets"
                             :key="widget.id"
+                            class="report-folio-field"
                         >
-                            <GenericWidget
-                                v-if="hasValue(tile, widget.node.alias)"
-                                :aliased-node-data="
-                                    aliasedNodeDataOf(tile, widget.node.alias)
-                                "
-                                :card-x-node-x-widget-data="widget"
-                                :graph-slug="reportData.context.graph.slug"
-                                :mode="VIEW"
-                                :node-alias="widget.node.alias"
-                            />
+                            <span class="report-folio-field-label">
+                                {{ widget.label }}
+                            </span>
                             <div
-                                v-else
-                                class="report-folio-empty-field"
+                                v-if="hasValue(tile, widget.node.alias)"
+                                class="report-folio-field-value"
                             >
-                                <span class="report-folio-empty-field-label">
-                                    {{ widget.label }}
-                                </span>
-                                <span class="report-folio-empty-message">
-                                    {{ $gettext("No value recorded.") }}
-                                </span>
+                                <GenericWidget
+                                    :aliased-node-data="
+                                        aliasedNodeDataOf(
+                                            tile,
+                                            widget.node.alias,
+                                        )
+                                    "
+                                    :card-x-node-x-widget-data="widget"
+                                    :graph-slug="reportData.context.graph.slug"
+                                    :mode="VIEW"
+                                    :node-alias="widget.node.alias"
+                                    :should-show-label="false"
+                                />
                             </div>
-                        </template>
+                            <span
+                                v-else
+                                class="report-folio-empty-message"
+                            >
+                                {{ $gettext("No value recorded.") }}
+                            </span>
+                        </div>
                     </div>
                     <div
                         v-if="!isSingleTileCard && isEditableTile(tile)"
@@ -497,31 +504,20 @@ function toggleOpen(): void {
     flex-direction: column;
 }
 
-.report-folio-fields > .widget {
-    flex-direction: row;
-    align-items: center;
-    gap: 5px;
-    font-weight: 600;
+.report-folio-field {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
 }
 
-.report-folio-fields :deep(.widget-label) {
-    font-weight: 400;
+.report-folio-field-value {
+    font-weight: 600;
 }
 
 .report-folio-tile-deleted > .report-folio-fields {
     opacity: 0.6;
     text-decoration: line-through;
-}
-
-.report-folio-empty-field {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 5px;
-}
-
-.report-folio-empty-field-label {
-    font-weight: 400;
 }
 
 .report-folio-tile-actions {
