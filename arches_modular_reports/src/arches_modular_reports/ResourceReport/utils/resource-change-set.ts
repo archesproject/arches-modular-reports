@@ -11,7 +11,6 @@ import type {
     AliasedTileData,
 } from "@/arches_vue_components/types.ts";
 import type {
-    AddTileChange,
     AliasedResourceData,
     EditTileChange,
     ReorderTilesChange,
@@ -45,7 +44,6 @@ function reorderTiles(
 function applyToTile(
     tile: AliasedTileData,
     changes: ResourceChange[],
-    shouldRemoveDeletedTiles: boolean,
 ): AliasedTileData {
     const edit = changes.find(
         (change) => change.type === "edit" && change.tileId === tile.tileid,
@@ -58,7 +56,6 @@ function applyToTile(
         editedAliasedData,
         tile.tileid,
         changes,
-        shouldRemoveDeletedTiles,
     );
     if (nextAliasedData === tile.aliased_data) {
         return tile;
@@ -70,7 +67,6 @@ function applyToAliasedData(
     aliasedData: AliasedData,
     parentTileId: string | null,
     changes: ResourceChange[],
-    shouldRemoveDeletedTiles: boolean,
 ): AliasedData {
     const addedTilesByNodegroupAlias = new Map<string, AliasedTileData[]>();
     const orderedTileIdsByNodegroupAlias = new Map<string, string[]>();
@@ -89,12 +85,6 @@ function applyToAliasedData(
             );
         }
     }
-    const deletedTileIds = new Set(
-        changes.flatMap((change) =>
-            change.type === "delete" ? [change.tileId] : [],
-        ),
-    );
-
     let updatedAliasedData: AliasedData | null = null;
     const nodegroupAliases = new Set([
         ...Object.keys(aliasedData),
@@ -106,19 +96,11 @@ function applyToAliasedData(
             continue;
         }
         const tiles = nodegroupTiles(value);
-        let keptTiles = tiles;
-        if (shouldRemoveDeletedTiles) {
-            keptTiles = tiles.filter(
-                (tile) => !deletedTileIds.has(tile.tileid ?? ""),
-            );
-        }
         const nextTiles = reorderTiles(
             [
-                ...keptTiles,
+                ...tiles,
                 ...(addedTilesByNodegroupAlias.get(nodegroupAlias) ?? []),
-            ].map((tile) =>
-                applyToTile(tile, changes, shouldRemoveDeletedTiles),
-            ),
+            ].map((tile) => applyToTile(tile, changes)),
             orderedTileIdsByNodegroupAlias.get(nodegroupAlias),
         );
         if (
@@ -145,7 +127,6 @@ export function applyResourceChanges(
         resource.aliased_data,
         null,
         changes,
-        false,
     );
     if (nextAliasedData === resource.aliased_data) {
         return resource;
@@ -204,6 +185,37 @@ export function siblingTiles(
     );
 }
 
+export function loadedNodeValues(
+    tile: AliasedTileData | null,
+    nodeAliases: string[],
+): Record<string, unknown> {
+    const nodeValues: Record<string, unknown> = {};
+    for (const nodeAlias of nodeAliases) {
+        const nodeData = tile?.aliased_data[nodeAlias];
+        nodeValues[nodeAlias] = isAliasedNodeData(nodeData)
+            ? nodeData.node_value
+            : null;
+    }
+    return nodeValues;
+}
+
+// Re-anchors an edit's originals to a freshly loaded resource.
+export function withLoadedOriginals(
+    change: ResourceChange,
+    resource: AliasedResourceData,
+): ResourceChange {
+    if (change.type !== "edit") {
+        return change;
+    }
+    return {
+        ...change,
+        original: loadedNodeValues(
+            findTile(resource.aliased_data, change.tileId),
+            Object.keys(change.aliasedData),
+        ),
+    };
+}
+
 function withChangedNodesOnly(
     editChange: EditTileChange,
     resource: AliasedResourceData,
@@ -229,9 +241,15 @@ function withChangedNodesOnly(
     ) {
         return editChange;
     }
+    const changedAliasedData = Object.fromEntries(changedNodeEntries);
     return {
         ...editChange,
-        aliasedData: Object.fromEntries(changedNodeEntries),
+        aliasedData: changedAliasedData,
+        original: Object.fromEntries(
+            Object.entries(editChange.original).filter(
+                ([nodeAlias]) => nodeAlias in changedAliasedData,
+            ),
+        ),
     };
 }
 
@@ -263,14 +281,19 @@ export function rebaseChanges(
     for (const change of changes) {
         let rebasedChange: ResourceChange | null = change;
         if (change.type === "add" && existingTileIds.has(change.tile.tileid)) {
+            const aliasedData = extractAliasedNodeDataEntries(
+                change.tile.aliased_data,
+            );
             rebasedChange = withChangedNodesOnly(
                 {
                     id: change.id,
                     type: "edit",
                     nodegroupAlias: change.nodegroupAlias,
                     tileId: change.tile.tileid,
-                    aliasedData: extractAliasedNodeDataEntries(
-                        change.tile.aliased_data,
+                    aliasedData,
+                    original: loadedNodeValues(
+                        findTile(resource.aliased_data, change.tile.tileid),
+                        Object.keys(aliasedData),
                     ),
                 },
                 resource,
@@ -287,96 +310,4 @@ export function rebaseChanges(
             change.type !== "reorder" ||
             !keepsCurrentOrder(change, resource, rebasedChanges),
     );
-}
-
-function changedSinceLoad(
-    editChange: EditTileChange,
-    freshResource: AliasedResourceData,
-    loadedResource: AliasedResourceData,
-): boolean {
-    const freshTile = findTile(freshResource.aliased_data, editChange.tileId);
-    const loadedTile = findTile(loadedResource.aliased_data, editChange.tileId);
-    if (freshTile === null || loadedTile === null) {
-        return false;
-    }
-    return Object.keys(editChange.aliasedData).some((nodeAlias) => {
-        const freshNodeData = freshTile.aliased_data[nodeAlias];
-        const loadedNodeData = loadedTile.aliased_data[nodeAlias];
-        return (
-            isAliasedNodeData(freshNodeData) &&
-            isAliasedNodeData(loadedNodeData) &&
-            !isEqual(freshNodeData.node_value, loadedNodeData.node_value)
-        );
-    });
-}
-
-function fillsTakenSlot(
-    addChange: AddTileChange,
-    freshResource: AliasedResourceData,
-): boolean {
-    let slot: AliasedData[string] | undefined =
-        freshResource.aliased_data[addChange.nodegroupAlias];
-    if (addChange.parentTileId !== null) {
-        slot = findTile(freshResource.aliased_data, addChange.parentTileId)
-            ?.aliased_data[addChange.nodegroupAlias];
-    }
-    if (!slot || Array.isArray(slot) || isAliasedNodeData(slot)) {
-        return false;
-    }
-    return slot.tileid !== addChange.tile.tileid;
-}
-
-export function replayResourceChanges(
-    freshResource: AliasedResourceData,
-    changes: ResourceChange[],
-    loadedResource: AliasedResourceData,
-): { resource: AliasedResourceData; conflictingChanges: ResourceChange[] } {
-    const existingTileIds = new Set(
-        parentTileIdsByTileId(freshResource.aliased_data).keys(),
-    );
-    const addedTileIds = new Set(
-        changes.flatMap((change) =>
-            change.type === "add" ? [change.tile.tileid] : [],
-        ),
-    );
-
-    function isPresent(tileId: string | null): boolean {
-        return (
-            tileId === null ||
-            existingTileIds.has(tileId) ||
-            addedTileIds.has(tileId)
-        );
-    }
-
-    const conflictingChanges = changes.filter((change) => {
-        if (change.type === "add") {
-            return (
-                !isPresent(change.parentTileId) ||
-                fillsTakenSlot(change, freshResource)
-            );
-        }
-        if (change.type === "reorder") {
-            return !isPresent(change.parentTileId);
-        }
-        if (!existingTileIds.has(change.tileId)) {
-            return true;
-        }
-        return (
-            change.type === "edit" &&
-            changedSinceLoad(change, freshResource, loadedResource)
-        );
-    });
-
-    return {
-        resource: {
-            ...freshResource,
-            aliased_data: applyToAliasedData(
-                freshResource.aliased_data,
-                null,
-                rebaseChanges(changes, freshResource),
-                true,
-            ),
-        },
-        conflictingChanges,
-    };
 }

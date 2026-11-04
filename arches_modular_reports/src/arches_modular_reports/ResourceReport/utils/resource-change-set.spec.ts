@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { replayResourceChanges } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
-import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
+import {
+    loadedNodeValues,
+    rebaseChanges,
+    withLoadedOriginals,
+} from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
 
 import type {
     AliasedData,
@@ -37,61 +40,83 @@ const RESOURCE: AliasedResourceData = {
             makeTile("smalt", 0, { name_content: nodeData("Smalt") }),
             makeTile("cobalt", 1, { name_content: nodeData("Cobalt") }),
         ],
-        description: makeTile("description", 0, {
-            description_content: nodeData("Blue"),
-        }),
     },
 };
 
-describe("resource change set replay", () => {
-    it("removes deleted tiles and reports changes whose tiles have vanished", () => {
-        const { resource, conflictingChanges } = replayResourceChanges(
-            RESOURCE,
-            [
-                {
-                    id: "delete",
-                    type: "delete",
-                    nodegroupAlias: "names",
-                    tileId: "smalt",
-                },
-                {
-                    id: "stale",
-                    type: "edit",
-                    nodegroupAlias: "names",
-                    tileId: "removed-elsewhere",
-                    aliasedData: {},
-                },
-            ],
+describe("resource change set originals", () => {
+    it("reads loaded node values, using null for missing nodes", () => {
+        expect(
+            loadedNodeValues(makeTile("smalt", 0, { a: nodeData("A") }), [
+                "a",
+                "b",
+            ]),
+        ).toEqual({ a: "A", b: null });
+        expect(loadedNodeValues(null, ["a"])).toEqual({ a: null });
+    });
+
+    it("re-anchors an edit's originals to a fresh resource", () => {
+        const change = withLoadedOriginals(
+            {
+                id: "edit",
+                type: "edit",
+                nodegroupAlias: "names",
+                tileId: "smalt",
+                aliasedData: { name_content: nodeData("Smalt blue") },
+                original: { name_content: "stale" },
+            },
             RESOURCE,
         );
 
-        expect(
-            nodegroupTiles(resource.aliased_data.names).map(
-                (tile) => tile.tileid,
-            ),
-        ).toEqual(["cobalt"]);
-        expect(conflictingChanges.map((change) => change.id)).toEqual([
-            "stale",
-        ]);
+        expect(change).toMatchObject({ original: { name_content: "Smalt" } });
     });
 
-    it("flags an add into a single-tile slot that is already filled", () => {
-        const { conflictingChanges } = replayResourceChanges(
-            RESOURCE,
+    it("turns an add of an existing tile into an edit with originals", () => {
+        const [change] = rebaseChanges(
             [
                 {
                     id: "add",
                     type: "add",
-                    nodegroupAlias: "description",
+                    nodegroupAlias: "names",
                     parentTileId: null,
-                    tile: makeTile("second-description", 0, {
-                        description_content: nodeData("Green"),
+                    tile: makeTile("smalt", 0, {
+                        name_content: nodeData("Smalt blue"),
                     }),
                 },
             ],
             RESOURCE,
         );
 
-        expect(conflictingChanges.map((change) => change.id)).toEqual(["add"]);
+        expect(change).toMatchObject({
+            type: "edit",
+            tileId: "smalt",
+            original: { name_content: "Smalt" },
+        });
+    });
+
+    it("drops nodes, and their originals, that match the resource", () => {
+        const [change] = rebaseChanges(
+            [
+                {
+                    id: "edit",
+                    type: "edit",
+                    nodegroupAlias: "names",
+                    tileId: "smalt",
+                    aliasedData: {
+                        name_content: nodeData("Smalt"),
+                        name_notes: nodeData("Glaze"),
+                    },
+                    original: { name_content: "Smalt", name_notes: null },
+                },
+            ],
+            RESOURCE,
+        );
+
+        expect(change).toMatchObject({
+            aliasedData: { name_notes: nodeData("Glaze") },
+            original: { name_notes: null },
+        });
+        expect(Object.keys((change as { original: object }).original)).toEqual([
+            "name_notes",
+        ]);
     });
 });

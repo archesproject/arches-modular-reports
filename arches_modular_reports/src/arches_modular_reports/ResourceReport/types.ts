@@ -155,6 +155,8 @@ export interface EditTileChange {
     nodegroupAlias: string;
     tileId: string;
     aliasedData: Record<string, AliasedNodeData>;
+    // node_value of each edited node as first loaded, for server conflict detection
+    original: Record<string, unknown>;
 }
 
 export interface DeleteTileChange {
@@ -180,10 +182,34 @@ export type ResourceChange =
 
 export type TileChangeType = "add" | "edit" | "delete";
 
+export type ConflictReason =
+    | "modified"
+    | "deleted"
+    | "parent_deleted"
+    | "slot_taken";
+
+export interface ConflictNode {
+    current: unknown;
+    currentDisplay: string | null;
+    original: unknown;
+}
+
+export interface ChangeConflict {
+    changeId: string;
+    reason: ConflictReason;
+    nodegroupAlias: string;
+    tileId: string | null;
+    nodes?: Record<string, ConflictNode>;
+    // The user's tile as it was before the server's data replaced it; only
+    // kept for deleted conflicts so the tile can be restored.
+    tileSnapshot?: AliasedTileData & { tileid: string };
+}
+
 export interface ResourceChangeSet {
     workingResource: ComputedRef<AliasedResourceData | null>;
     pendingChanges: ShallowRef<ResourceChange[]>;
-    conflictingChangeIds: Ref<string[]>;
+    conflicts: Ref<ChangeConflict[]>;
+    conflictsResolved: ComputedRef<boolean>;
     fetchError: Ref<Error | null>;
     isSaving: Ref<boolean>;
     isBusy: ComputedRef<boolean>;
@@ -207,6 +233,10 @@ export interface ResourceChangeSet {
     ) => void;
     discardChange: (changeId: string) => void;
     discardAll: () => void;
+    keepMine: (changeId: string) => void;
+    useTheirs: (changeId: string) => void;
+    keepAllMine: () => void;
+    discardAllConflicting: () => void;
     changeTypeForTile: (tileId: string) => TileChangeType | null;
     isPendingDelete: (tileId: string) => boolean;
     save: () => Promise<boolean>;
