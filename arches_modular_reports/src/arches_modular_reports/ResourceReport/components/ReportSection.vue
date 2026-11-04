@@ -59,10 +59,6 @@ const childNodes = computed(() => component.config.components ?? []);
     margin-block-start: 0.8rem;
 }
 
-.report-section > .field-folio + .field-folio {
-    margin-block-start: 0;
-}
-
 .report-section:not(:first-child) {
     padding-block-start: 3.2rem;
 }
