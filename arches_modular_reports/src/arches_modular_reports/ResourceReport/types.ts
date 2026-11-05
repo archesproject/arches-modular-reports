@@ -57,6 +57,7 @@ export interface ReportTabsConfig {
 export interface SplitPaneConfig extends LabelledConfig {
     main?: ComponentNode[];
     aside?: ComponentNode[];
+    aside_footer?: ComponentNode[];
 }
 
 export interface StackConfig extends LabelledConfig, ContainerConfig {}

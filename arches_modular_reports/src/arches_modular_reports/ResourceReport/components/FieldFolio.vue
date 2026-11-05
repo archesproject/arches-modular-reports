@@ -187,7 +187,9 @@ const isDeleted = computed(
 .field-folio {
     display: flex;
     align-items: baseline;
-    gap: 0.8rem;
+    gap: 1rem;
+    padding-block: 0.2rem;
+    font-size: 1.3rem;
     isolation: isolate;
     border-radius: var(--p-content-border-radius);
 }
@@ -197,7 +199,7 @@ const isDeleted = computed(
 }
 
 .field-folio-label {
-    min-inline-size: 16rem;
+    min-inline-size: 12.8rem;
     color: var(--p-text-muted-color);
 }
 
@@ -207,24 +209,34 @@ const isDeleted = computed(
     align-items: baseline;
     gap: 0.8rem;
     min-inline-size: 0;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .field-folio-actions {
     display: flex;
     flex-shrink: 0;
     align-items: baseline;
-    gap: 0.2rem;
+    gap: 0.4rem;
 }
 
 .field-folio-actions > .p-button {
-    padding-inline: 0.2rem;
+    --p-button-label-font-weight: 400;
+    padding: 0;
+    border: none;
+    font-size: 1.3rem;
+    line-height: inherit;
+}
+
+.field-folio-actions > .p-button :deep(.p-button-label) {
+    text-decoration: underline;
+    text-underline-offset: 0.2rem;
 }
 
 .field-folio-empty {
     color: var(--p-text-muted-color);
     font-style: italic;
     font-weight: 400;
+    opacity: 0.75;
 }
 
 .field-folio-deleted {
@@ -235,7 +247,7 @@ const isDeleted = computed(
 .field-folio-delete,
 .field-folio-delete:not(:disabled):hover,
 .field-folio-delete:not(:disabled):active {
-    color: var(--p-button-text-danger-color);
+    color: var(--resource-report-deleted-color);
 }
 
 .field-folio-flash {

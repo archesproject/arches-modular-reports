@@ -215,6 +215,51 @@ describe("DataFolio", () => {
         );
     });
 
+    it("highlights an edited entry's own rows but not its child cards", async () => {
+        const { changeSet, wrapper } = await mountEditor("names");
+        await wrapper
+            .find(".data-folio-header [aria-expanded]")
+            .trigger("click");
+        await tileRow(wrapper, "Cobalt")
+            .find(".data-folio-tile-row [aria-expanded]")
+            .trigger("click");
+
+        changeSet.editTile("names", "cobalt", {
+            name_content: nodeData("Cobalt blue"),
+        });
+        await flushPromises();
+
+        const cobalt = tileRow(wrapper, "Cobalt");
+        expect(cobalt.find(".data-folio-tile-row").classes()).toContain(
+            "data-folio-tile-pending",
+        );
+        expect(cobalt.find(".data-folio-fields").classes()).toContain(
+            "data-folio-tile-pending",
+        );
+        expect(
+            cobalt
+                .find(".data-folio-children .data-folio-tile-pending")
+                .exists(),
+        ).toBe(false);
+    });
+
+    it("marks a collapsed card that holds a pending change", async () => {
+        const { changeSet, wrapper } = await mountEditor("names");
+
+        changeSet.deleteTile("names", "smalt");
+        await flushPromises();
+        expect(wrapper.find(".data-folio-header").classes()).toContain(
+            "data-folio-header-pending",
+        );
+
+        await wrapper
+            .find(".data-folio-header [aria-expanded]")
+            .trigger("click");
+        expect(wrapper.find(".data-folio-header").classes()).not.toContain(
+            "data-folio-header-pending",
+        );
+    });
+
     it("keeps a folio opened by hand open when the filter changes", async () => {
         const { wrapper } = await mountEditor("names");
         await wrapper

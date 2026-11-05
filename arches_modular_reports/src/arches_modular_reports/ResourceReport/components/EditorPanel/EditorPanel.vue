@@ -38,10 +38,9 @@ onUnmounted(() => {
     position: absolute;
     inset: 0;
     z-index: 1;
-    overflow: auto;
-    background: var(
-        --p-resource-report-aside-background,
-        var(--p-content-background)
-    );
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--resource-report-aside-background);
 }
 </style>

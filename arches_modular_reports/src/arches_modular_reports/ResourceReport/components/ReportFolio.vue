@@ -400,7 +400,7 @@ function toggleOpen(): void {
 }
 
 .report-folio-separated:not(:first-child) {
-    padding-block-start: 0.8rem;
+    padding-block-start: 0.6rem;
 }
 
 .report-folio-flash {
@@ -417,7 +417,8 @@ function toggleOpen(): void {
 .report-folio {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.6rem;
+    font-size: 1.3rem;
 }
 
 .report-folio-header {
@@ -427,7 +428,8 @@ function toggleOpen(): void {
 }
 
 .report-folio-name {
-    font-size: 1.5rem;
+    color: var(--p-text-color);
+    font-size: 1.4rem;
     font-weight: 600;
 }
 
@@ -440,10 +442,15 @@ function toggleOpen(): void {
     text-transform: uppercase;
 }
 
-.report-folio-count {
+.report-folio-header .report-folio-count {
     min-inline-size: 2rem;
     block-size: 2rem;
+    padding-inline: 0.6rem;
+    border-radius: 1rem;
+    background: var(--resource-report-accent-background);
+    color: var(--resource-report-accent-color);
     font-size: 1.2rem;
+    font-weight: 700;
     line-height: 2rem;
 }
 
@@ -451,6 +458,19 @@ function toggleOpen(): void {
     display: flex;
     align-items: center;
     gap: 0.4rem;
+}
+
+.report-folio-header-actions > .p-button {
+    --p-button-label-font-weight: 400;
+    padding: 0;
+    border: none;
+    font-size: 1.3rem;
+    line-height: inherit;
+}
+
+.report-folio-header-actions > .p-button :deep(.p-button-label) {
+    text-decoration: underline;
+    text-underline-offset: 0.2rem;
 }
 
 .report-folio-header-actions-end {
@@ -477,6 +497,7 @@ function toggleOpen(): void {
 .report-folio-empty-message {
     color: var(--p-text-muted-color);
     font-style: italic;
+    opacity: 0.75;
 }
 
 .report-folio-tile,
@@ -490,8 +511,10 @@ function toggleOpen(): void {
 }
 
 .report-folio-tile {
+    padding-block: 0.2rem 0.5rem;
     padding-inline: 1.2rem;
     border-inline-start: 0.3rem solid var(--p-primary-color);
+    background: var(--p-content-background);
 }
 
 .report-folio-entry + .report-folio-entry {
@@ -502,17 +525,23 @@ function toggleOpen(): void {
 .report-folio-fields {
     display: flex;
     flex-direction: column;
+    gap: 0.3rem;
 }
 
 .report-folio-field {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: 0.5rem;
+    gap: 0.8rem;
+}
+
+.report-folio-field-label {
+    color: var(--p-text-muted-color);
 }
 
 .report-folio-field-value {
-    font-weight: 600;
+    color: var(--p-text-color);
+    font-weight: 500;
 }
 
 .report-folio-tile-deleted > .report-folio-fields {
@@ -523,17 +552,27 @@ function toggleOpen(): void {
 .report-folio-tile-actions {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.4rem;
+    margin-block-start: 0.4rem;
 }
 
 .report-folio-tile-actions > .p-button {
-    padding-inline: 0.2rem;
+    --p-button-label-font-weight: 400;
+    padding: 0;
+    border: none;
+    font-size: 1.3rem;
+    line-height: inherit;
+}
+
+.report-folio-tile-actions > .p-button :deep(.p-button-label) {
+    text-decoration: underline;
+    text-underline-offset: 0.2rem;
 }
 
 .report-folio-delete,
 .report-folio-delete:not(:disabled):hover,
 .report-folio-delete:not(:disabled):active {
-    color: var(--p-button-text-danger-color);
+    color: var(--resource-report-deleted-color);
 }
 
 .report-folio-children {

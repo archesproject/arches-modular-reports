@@ -60,19 +60,22 @@ const childNodes = computed(() => component.config.components ?? []);
 }
 
 .report-section:not(:first-child) {
-    padding-block-start: 3.2rem;
+    padding-block-start: 2.8rem;
 }
 
 .report-section-label {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.7rem;
     margin: 0;
-    padding-block-end: 0.8rem;
+    padding-block-end: 0.6rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
-    color: var(--p-text-color);
-    font-size: 1.7rem;
+    color: var(--p-text-muted-color);
+    font-size: 1.4rem;
     font-weight: 700;
+    letter-spacing: 0.1rem;
+    line-height: 1.3;
+    text-transform: uppercase;
 }
 
 .report-section-icon {

@@ -54,15 +54,17 @@ const folios = computed(() =>
 
 <template>
     <div class="data-browser">
-        <IconField>
-            <InputIcon class="pi pi-search" />
-            <InputText
-                v-model="filterText"
-                class="data-browser-filter"
-                :placeholder="$gettext('Filter branches, groups, fields…')"
-                :aria-label="$gettext('Filter the data')"
-            />
-        </IconField>
+        <div class="data-browser-filter-bar">
+            <IconField>
+                <InputIcon class="pi pi-search" />
+                <InputText
+                    v-model="filterText"
+                    class="data-browser-filter"
+                    :placeholder="$gettext('Filter branches, groups, fields…')"
+                    :aria-label="$gettext('Filter the data')"
+                />
+            </IconField>
+        </div>
         <p
             v-if="query !== '' && folios.length === 0"
             class="data-browser-no-results"
@@ -98,22 +100,44 @@ const folios = computed(() =>
 .data-browser {
     display: flex;
     flex-direction: column;
-    gap: 1.2rem;
-    padding: 1.6rem;
+}
+
+.data-browser-filter-bar {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+    padding-block: 0.8rem 0.6rem;
+    padding-inline: 2rem;
+    border-block-end: 0.1rem solid var(--p-content-border-color);
+    background: var(--resource-report-aside-background);
+}
+
+.data-browser-filter-bar .p-iconfield .data-browser-filter {
+    inline-size: 100%;
+    padding-block: 0.45rem;
+    padding-inline-start: 3.1rem;
+    border-color: var(--p-content-border-color);
+    border-radius: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.data-browser-filter-bar .p-inputicon {
+    color: var(--p-text-muted-color);
+    font-size: 1.1rem;
 }
 
 .data-browser-folios {
     display: flex;
     flex-direction: column;
-}
-
-.data-browser-filter {
-    inline-size: 100%;
+    padding: 1.6rem;
 }
 
 .data-browser-no-results {
     margin: 0;
+    padding-block: 3.2rem;
+    padding-inline: 1.6rem;
     color: var(--p-text-muted-color);
-    font-style: italic;
+    font-size: 1.2rem;
+    text-align: center;
 }
 </style>
