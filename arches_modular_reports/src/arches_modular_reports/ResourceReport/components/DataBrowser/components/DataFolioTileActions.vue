@@ -3,6 +3,10 @@ import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
 
+const EDIT = "edit" as const;
+const DELETE = "delete" as const;
+const UNDO_DELETE = "undo-delete" as const;
+
 const { label, isMarkedForDeletion, isBusy } = defineProps<{
     label: string;
     isMarkedForDeletion: boolean;
@@ -10,9 +14,9 @@ const { label, isMarkedForDeletion, isBusy } = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (event: "edit"): void;
-    (event: "delete"): void;
-    (event: "undo-delete"): void;
+    (event: typeof EDIT): void;
+    (event: typeof DELETE): void;
+    (event: typeof UNDO_DELETE): void;
 }>();
 
 const { $gettext } = useGettext();
@@ -22,8 +26,8 @@ const { $gettext } = useGettext();
     <div class="data-folio-tile-actions">
         <Button
             v-if="isMarkedForDeletion"
-            icon="pi pi-undo"
-            variant="text"
+            class="data-folio-action"
+            variant="outlined"
             size="small"
             :label="$gettext('Undo delete')"
             :aria-label="
@@ -36,12 +40,12 @@ const { $gettext } = useGettext();
                 )
             "
             :disabled="isBusy"
-            @click="emit('undo-delete')"
+            @click="emit(UNDO_DELETE)"
         />
         <template v-else>
             <Button
-                icon="pi pi-pencil"
-                variant="text"
+                class="data-folio-action"
+                variant="outlined"
                 size="small"
                 :label="$gettext('Edit')"
                 :aria-label="
@@ -53,11 +57,11 @@ const { $gettext } = useGettext();
                         true,
                     )
                 "
-                @click="emit('edit')"
+                @click="emit(EDIT)"
             />
             <Button
-                icon="pi pi-trash"
-                variant="text"
+                class="data-folio-action data-folio-action-danger"
+                variant="outlined"
                 size="small"
                 severity="danger"
                 :label="$gettext('Delete')"
@@ -71,7 +75,7 @@ const { $gettext } = useGettext();
                     )
                 "
                 :disabled="isBusy"
-                @click="emit('delete')"
+                @click="emit(DELETE)"
             />
         </template>
     </div>
@@ -80,6 +84,35 @@ const { $gettext } = useGettext();
 <style scoped>
 .data-folio-tile-actions {
     display: flex;
-    gap: 0.2rem;
+    gap: 0.3rem;
+}
+
+.data-folio-tile-actions .data-folio-action {
+    --p-button-label-font-weight: 600;
+    min-block-size: 2.4rem;
+    padding-block: 0.1rem;
+    padding-inline: 0.6rem;
+    border-color: var(--resource-report-bar-border-color);
+    border-radius: 0.3rem;
+    background: var(--resource-report-row-entry-background);
+    color: var(--p-text-muted-color);
+    font-size: 1.1rem;
+}
+
+.data-folio-tile-actions .data-folio-action:not(:disabled):hover {
+    border-color: var(--p-text-muted-color);
+    background: var(--resource-report-bar-border-color);
+    color: var(--p-text-color);
+}
+
+.data-folio-tile-actions .data-folio-action-danger,
+.data-folio-tile-actions .data-folio-action-danger:not(:disabled):hover {
+    border-color: var(--resource-report-deleted-color);
+    background: var(--resource-report-deleted-background);
+    color: var(--resource-report-deleted-color);
+}
+
+.data-folio-tile-actions .data-folio-action:disabled {
+    opacity: 0.35;
 }
 </style>

@@ -25,7 +25,11 @@ const mainNodes = computed(() => component.config.main ?? []);
 
 const asideNodes = computed(() => component.config.aside ?? []);
 
-const hasAside = computed(() => asideNodes.value.length > 0);
+const asideFooterNodes = computed(() => component.config.aside_footer ?? []);
+
+const hasAside = computed(
+    () => asideNodes.value.length > 0 || asideFooterNodes.value.length > 0,
+);
 
 const mainPaneSize = computed(() => {
     if (hasAside.value) {
@@ -66,16 +70,29 @@ const splitterStateKey = computed(() => {
         </SplitterPanel>
         <SplitterPanel
             v-if="hasAside"
-            class="split-pane-region split-pane-aside"
+            class="split-pane-aside"
             :size="ASIDE_PANE_SIZE"
             :min-size="MINIMUM_PANE_SIZE"
         >
-            <component
-                :is="loadComponent(childNode.component)"
-                v-for="(childNode, childIndex) in asideNodes"
-                :key="childIndex"
-                :component="childNode"
-            />
+            <div class="split-pane-region split-pane-aside-stage">
+                <component
+                    :is="loadComponent(childNode.component)"
+                    v-for="(childNode, childIndex) in asideNodes"
+                    :key="childIndex"
+                    :component="childNode"
+                />
+            </div>
+            <div
+                v-if="asideFooterNodes.length > 0"
+                class="split-pane-aside-footer"
+            >
+                <component
+                    :is="loadComponent(childNode.component)"
+                    v-for="(childNode, childIndex) in asideFooterNodes"
+                    :key="childIndex"
+                    :component="childNode"
+                />
+            </div>
         </SplitterPanel>
     </Splitter>
 </template>
@@ -88,6 +105,20 @@ const splitterStateKey = computed(() => {
     border-radius: 0;
 }
 
+.split-pane :deep(.p-splitter-gutter) {
+    border-inline-start: 0.1rem solid var(--p-content-border-color);
+    background: var(--resource-report-aside-background);
+}
+
+.split-pane :deep(.p-splitter-gutter-handle) {
+    background: transparent;
+}
+
+.split-pane :deep(.p-splitter-gutter:hover .p-splitter-gutter-handle),
+.split-pane :deep(.p-splitter-gutter-handle:focus-visible) {
+    background: var(--p-content-border-color);
+}
+
 .split-pane-region {
     position: relative;
     display: flex;
@@ -97,7 +128,19 @@ const splitterStateKey = computed(() => {
 }
 
 .split-pane-aside {
-    background: var(--p-resource-report-aside-background);
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+    background: var(--resource-report-aside-background);
+}
+
+.split-pane-aside-stage {
+    flex: 1;
+    min-block-size: 0;
+}
+
+.split-pane-aside-footer {
+    flex-shrink: 0;
 }
 
 @media (prefers-reduced-motion: no-preference) {

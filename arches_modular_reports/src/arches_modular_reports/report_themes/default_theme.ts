@@ -96,17 +96,6 @@ const ModularReportPreset = definePreset(Aura, {
                         headerBackground: "{surface-200}",
                     },
                 },
-                resourceReport: {
-                    strip: {
-                        background: "{surface.200}",
-                    },
-                    caption: {
-                        background: "{surface.100}",
-                    },
-                    aside: {
-                        background: "{surface.50}",
-                    },
-                },
             },
             dark: {
                 surface: {
@@ -127,17 +116,6 @@ const ModularReportPreset = definePreset(Aura, {
                     panel: {
                         background: "transparent",
                         headerBackground: "transparent",
-                    },
-                },
-                resourceReport: {
-                    strip: {
-                        background: "{surface.950}",
-                    },
-                    caption: {
-                        background: "{surface.950}",
-                    },
-                    aside: {
-                        background: "{surface.950}",
                     },
                 },
             },

@@ -300,6 +300,7 @@ def generate_resource_report_config(graph):
                     },
                 ),
             ],
+            "aside_footer": [report_component("EditListTray", {})],
         },
     )
     data_workspace = report_component(
@@ -316,7 +317,7 @@ def generate_resource_report_config(graph):
                 report_component(
                     "ReportPlaceholder",
                     {
-                        "icon": "pi pi-pencil",
+                        "icon": "pi pi-sitemap",
                         "message": translated_labels(
                             gettext_noop(
                                 "Select an entry in the data browser to begin editing."
@@ -325,6 +326,7 @@ def generate_resource_report_config(graph):
                     },
                 ),
             ],
+            "aside_footer": [report_component("EditListTray", {})],
         },
     )
     graph_workspace = report_component(
@@ -370,7 +372,6 @@ def generate_resource_report_config(graph):
                                 ],
                             },
                         ),
-                        report_component("EditListTray", {}),
                     ]
                 },
             }

@@ -14,8 +14,18 @@ import type {
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const WORKSPACE_STRIP_TOKENS = {
-    tablist: { background: "{resource.report.strip.background}" },
-    tab: { padding: "0.9rem 1.6rem", fontWeight: "500" },
+    tablist: {
+        background: "var(--resource-report-strip-background)",
+        borderColor: "var(--resource-report-strip-border-color)",
+    },
+    tab: {
+        padding: "0.9rem 1rem",
+        fontWeight: "500",
+        borderColor: "transparent",
+        hoverBorderColor: "transparent",
+        activeBorderColor: "transparent",
+    },
+    activeBar: { height: "0.2rem" },
 };
 
 const { component } = defineProps<{
@@ -77,6 +87,10 @@ const bannerNodes = computed(() => component.config.banner ?? []);
     min-block-size: 0;
 }
 
+.workspace-tabs-strip :deep(.p-tablist-tab-list) {
+    padding-inline: 0.4rem;
+}
+
 .workspace-tabs-strip :deep(.p-tab) {
     font-size: 1.3rem;
     letter-spacing: 0.08rem;
@@ -88,7 +102,7 @@ const bannerNodes = computed(() => component.config.banner ?? []);
     padding-block: 0.5rem;
     padding-inline: 1.6rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
-    background: var(--p-resource-report-caption-background);
+    background: var(--resource-report-caption-background);
     color: var(--p-text-muted-color);
     font-size: 1.15rem;
 }

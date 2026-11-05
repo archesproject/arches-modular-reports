@@ -128,6 +128,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
             <div class="report-header-title">
                 <h2 class="report-header-name">{{ displayName }}</h2>
                 <Tag
+                    class="report-header-state"
                     :value="currentLifecycleState.name"
                     :severity="lifecycleTagSeverity"
                     :rounded="true"
@@ -158,6 +159,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                 <Button
                     v-for="lifecycleState in previousStates"
                     :key="lifecycleState.id"
+                    class="report-header-transition"
                     icon="pi pi-arrow-left"
                     size="small"
                     :label="lifecycleState.action_label"
@@ -169,6 +171,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                 <Button
                     v-for="lifecycleState in nextStates"
                     :key="lifecycleState.id"
+                    class="report-header-transition"
                     icon="pi pi-arrow-right"
                     icon-pos="right"
                     size="small"
@@ -186,6 +189,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                 <Button
                     v-for="exportFormat in EXPORT_FORMATS"
                     :key="exportFormat"
+                    class="report-header-export"
                     as="a"
                     variant="link"
                     size="small"
@@ -226,7 +230,6 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     display: flex;
     align-items: stretch;
     min-block-size: 9rem;
-    padding-inline-start: 1.6rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
     background: var(--p-content-background);
 }
@@ -236,10 +239,9 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    min-inline-size: 9rem;
-    padding-inline: 2.4rem;
-    background: var(--p-highlight-background);
-    color: var(--p-highlight-color);
+    inline-size: 9rem;
+    background: var(--resource-report-accent-background);
+    color: var(--resource-report-accent-color);
     font-size: 2.4rem;
 }
 
@@ -250,6 +252,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     justify-content: center;
     gap: 0.2rem;
     min-inline-size: 0;
+    line-height: 1.2;
     padding-block: 1.2rem;
     padding-inline: 1.6rem;
 }
@@ -267,6 +270,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     color: var(--p-text-color);
     font-size: 1.6rem;
     font-weight: 700;
+    line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -285,6 +289,79 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     display: flex;
     align-self: start;
     gap: 0.8rem;
+}
+
+.report-header-title .report-header-state {
+    gap: 0.4rem;
+    padding-block: 0.3rem;
+    padding-inline: 0.8rem;
+    border: 0.1rem solid var(--p-blue-200);
+    border-radius: 2rem;
+    background: var(--p-blue-50);
+    color: var(--p-blue-700);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.report-header-title .report-header-state.p-tag-success {
+    border-color: var(--p-green-200);
+    background: var(--p-green-50);
+    color: var(--p-green-800);
+}
+
+.report-header-title .report-header-state.p-tag-danger {
+    border-color: var(--p-red-200);
+    background: var(--resource-report-deleted-background);
+    color: var(--resource-report-deleted-color);
+}
+
+.report-header-lifecycle-actions .report-header-transition {
+    --p-button-label-font-weight: 400;
+    gap: 0.7rem;
+    padding-block: 0.6rem;
+    padding-inline: 1.2rem;
+    border-color: var(--p-sky-600);
+    border-radius: 0.2rem;
+    background: var(--p-sky-600);
+    color: var(--p-surface-0);
+    font-size: 1.3rem;
+    line-height: 1.2;
+}
+
+.report-header-lifecycle-actions
+    .report-header-transition:not(:disabled):hover {
+    border-color: var(--p-sky-700);
+    background: var(--p-sky-700);
+    color: var(--p-surface-0);
+}
+
+.report-header-lifecycle-actions .report-header-transition.p-button-danger {
+    border-color: var(--p-red-600);
+    background: var(--p-red-600);
+}
+
+.report-header-lifecycle-actions
+    .report-header-transition.p-button-danger:not(:disabled):hover {
+    border-color: var(--p-red-700);
+    background: var(--p-red-700);
+}
+
+.report-header-exports .report-header-export {
+    --p-button-label-font-weight: 600;
+    padding: 0;
+    border: none;
+    color: var(--p-primary-color);
+    font-size: 1.2rem;
+    line-height: 1.2;
+}
+
+.report-header-exports .report-header-export :deep(.p-button-label) {
+    text-decoration: underline;
+    text-underline-offset: 0.2rem;
+}
+
+.report-header-exports .report-header-export:not(:disabled):hover {
+    color: var(--p-primary-hover-color);
 }
 
 .report-header-type {
@@ -318,6 +395,6 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
 .report-header-exports {
     display: flex;
     grid-row: 2;
-    gap: 0.4rem;
+    gap: 0.8rem;
 }
 </style>

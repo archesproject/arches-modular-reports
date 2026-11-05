@@ -2,7 +2,6 @@
 import { computed, ref, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
-import Badge from "openvue/badge";
 import Button from "openvue/button";
 import Tag from "openvue/tag";
 
@@ -15,7 +14,10 @@ import {
     ownLabelsMatch,
 } from "@/arches_modular_reports/ResourceReport/utils/data-filter.ts";
 import { datatypeIcon } from "@/arches_modular_reports/ResourceReport/utils/datatype-icon.ts";
-import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
+import {
+    childNodegroupAliases,
+    nodegroupLineage,
+} from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import {
     aliasedNodeDataOf,
     canAddTile,
@@ -32,10 +34,12 @@ import type {
 import type {
     EditTileRequest,
     ResourceChangeSet,
+    TileChangeType,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const EDIT_TILE = "edit-tile" as const;
 const EMPTY_VALUE = "—";
+const MAXIMUM_INDENT_DEPTH = 4;
 
 const {
     nodegroupAlias,
@@ -81,6 +85,12 @@ const visibleWidgets = computed(() =>
         (widget) => widget.visible,
     ),
 );
+
+const depthClass = computed(() => {
+    const depth =
+        nodegroupLineage(nodegroupWidgetConfigs, nodegroupAlias).length - 1;
+    return `data-folio-depth-${Math.min(depth, MAXIMUM_INDENT_DEPTH)}`;
+});
 
 const childAliases = computed(() =>
     childNodegroupAliases(nodegroupWidgetConfigs, nodegroupAlias),
@@ -131,17 +141,26 @@ const tileRows = computed(() =>
     tiles
         .map((tile, tileIndex) => {
             const tileId = tile.tileid ?? "";
-            const isMarkedForDeletion =
-                changeSet.changeTypeForTile(tileId) === "delete";
+            const changeType = changeSet.changeTypeForTile(tileId);
+            const isMarkedForDeletion = changeType === "delete";
             const isPendingDelete = changeSet.isPendingDelete(tileId);
+            const isSelected = selectedTileId === tileId;
             return {
                 tile,
                 tileId,
                 tileIndex,
                 label: tileLabel(tile),
-                changeTag: changeTag(tileId),
+                changeTag: changeTag(changeType),
                 isMarkedForDeletion,
                 isPendingDelete,
+                stateClasses: {
+                    "data-folio-tile-pending":
+                        changeType !== null && !isPendingDelete,
+                    "data-folio-tile-deleted": isPendingDelete,
+                    "data-folio-tile-selected": isSelected,
+                    "data-folio-tile-selected-added":
+                        isSelected && changeType === "add",
+                },
                 isLocked:
                     !isEditable ||
                     !nodegroupWidgetConfig.value.is_writable ||
@@ -158,6 +177,37 @@ const singleTileRow = computed(() =>
 );
 
 const placeholderChildFolios = computed(() => visibleChildFolios(null));
+
+const hasPendingChange = computed(() => {
+    if (isTopLevel.value) {
+        return changeSet.pendingChanges.value.some((change) =>
+            nodegroupLineage(
+                nodegroupWidgetConfigs,
+                change.nodegroupAlias,
+            ).includes(nodegroupAlias),
+        );
+    }
+    return (
+        tileRows.value.some((tileRow) => tileRow.changeTag !== null) ||
+        changeSet.pendingChanges.value.some(
+            (change) =>
+                change.type === "reorder" &&
+                change.nodegroupAlias === nodegroupAlias &&
+                change.parentTileId === parentTileId,
+        )
+    );
+});
+
+const isHeaderPending = computed(() => {
+    if (isTopLevel.value) {
+        return hasPendingChange.value && !isFolioExpanded.value;
+    }
+    return hasPendingChange.value && !isSingle.value;
+});
+
+const isCountShown = computed(
+    () => tiles.length > 0 && (isTopLevel.value || !isSingle.value),
+);
 
 const selectedBranchTileId = computed(() => {
     if (selectedTileId === null) {
@@ -190,10 +240,7 @@ watch(
     { immediate: true },
 );
 
-function displayValue(tile: AliasedTileData | null, nodeAlias: string): string {
-    if (tile === null) {
-        return "";
-    }
+function displayValue(tile: AliasedTileData, nodeAlias: string): string {
     return aliasedNodeDataOf(tile, nodeAlias)?.display_value ?? "";
 }
 
@@ -206,9 +253,8 @@ function tileLabel(tile: AliasedTileData): string {
 }
 
 function changeTag(
-    tileId: string,
+    changeType: TileChangeType | null,
 ): { label: string; severity: "success" | "info" | "danger" } | null {
-    const changeType = changeSet.changeTypeForTile(tileId);
     if (changeType === "add") {
         return { label: $gettext("Added"), severity: "success" };
     }
@@ -239,10 +285,7 @@ function visibleChildFolios(
     return childAliases.value
         .map((childAlias) => ({
             nodegroupAlias: childAlias,
-            tiles:
-                tile === null
-                    ? []
-                    : nodegroupTiles(tile.aliased_data[childAlias]),
+            tiles: nodegroupTiles(tile?.aliased_data[childAlias]),
         }))
         .filter(
             (childFolio) =>
@@ -286,6 +329,12 @@ function toggleTile(tileId: string, isTileExpanded: boolean): void {
 
 function toggleFolio(): void {
     isFolioToggledOpen.value = !isFolioExpanded.value;
+}
+
+function onHeaderClick(): void {
+    if (isTopLevel.value) {
+        toggleFolio();
+    }
 }
 
 async function addTile(): Promise<void> {
@@ -348,10 +397,23 @@ function onDragEnd(): void {
 </script>
 
 <template>
-    <section class="data-folio">
-        <header class="data-folio-header">
+    <section
+        class="data-folio"
+        :class="depthClass"
+    >
+        <header
+            class="data-folio-header"
+            :class="{
+                'data-folio-header-top': isTopLevel,
+                'data-folio-header-nested': !isTopLevel,
+                'data-folio-header-open': isTopLevel && isFolioExpanded,
+                'data-folio-header-pending': isHeaderPending,
+            }"
+            @click="onHeaderClick"
+        >
             <Button
                 v-if="isTopLevel"
+                class="data-folio-toggle"
                 variant="text"
                 size="small"
                 :icon="expandIcon(isFolioExpanded)"
@@ -365,7 +427,12 @@ function onDragEnd(): void {
                         true,
                     )
                 "
-                @click="toggleFolio"
+                @click.stop="toggleFolio"
+            />
+            <i
+                v-else
+                class="pi pi-table data-folio-icon"
+                aria-hidden="true"
             />
             <span class="data-folio-name">
                 <HighlightedText
@@ -373,39 +440,59 @@ function onDragEnd(): void {
                     :query="query"
                 />
             </span>
-            <Badge
-                v-if="!isSingle && tiles.length > 0"
-                severity="secondary"
-                :value="tiles.length"
-            />
-            <span class="data-folio-cardinality">{{ cardinalityLabel }}</span>
-            <template v-if="singleTileRow">
-                <Tag
-                    v-if="singleTileRow.changeTag"
-                    :value="singleTileRow.changeTag.label"
-                    :severity="singleTileRow.changeTag.severity"
+            <span
+                v-if="isCountShown"
+                class="data-folio-count"
+            >
+                {{ tiles.length }}
+            </span>
+            <div
+                class="data-folio-actions"
+                @click.stop
+            >
+                <template v-if="singleTileRow">
+                    <Tag
+                        v-if="singleTileRow.changeTag"
+                        :value="singleTileRow.changeTag.label"
+                        :severity="singleTileRow.changeTag.severity"
+                    />
+                    <DataFolioTileActions
+                        v-if="!singleTileRow.isLocked"
+                        :label="singleTileRow.label"
+                        :is-marked-for-deletion="
+                            singleTileRow.isMarkedForDeletion
+                        "
+                        :is-busy="changeSet.isBusy.value"
+                        @edit="editTile(singleTileRow.tileId)"
+                        @delete="deleteTile(singleTileRow.tileId)"
+                        @undo-delete="undoDelete(singleTileRow.tileId)"
+                    />
+                </template>
+                <Button
+                    v-if="isAddable"
+                    class="data-folio-action"
+                    variant="outlined"
+                    size="small"
+                    :label="$gettext('Add')"
+                    :aria-label="
+                        $gettext(
+                            'Add to %{card}',
+                            {
+                                card: cardName,
+                            },
+                            true,
+                        )
+                    "
+                    :disabled="changeSet.isBusy.value"
+                    @click="addTile"
                 />
-                <DataFolioTileActions
-                    v-if="!singleTileRow.isLocked"
-                    class="data-folio-header-actions"
-                    :label="singleTileRow.label"
-                    :is-marked-for-deletion="singleTileRow.isMarkedForDeletion"
-                    :is-busy="changeSet.isBusy.value"
-                    @edit="editTile(singleTileRow.tileId)"
-                    @delete="deleteTile(singleTileRow.tileId)"
-                    @undo-delete="undoDelete(singleTileRow.tileId)"
-                />
-            </template>
-            <Button
-                v-if="isAddable"
-                class="data-folio-add"
-                icon="pi pi-plus"
-                variant="text"
-                size="small"
-                :label="$gettext('Add')"
-                :disabled="changeSet.isBusy.value"
-                @click="addTile"
-            />
+            </div>
+            <span
+                class="data-folio-cardinality"
+                :class="{ 'data-folio-cardinality-many': !isSingle }"
+            >
+                {{ cardinalityLabel }}
+            </span>
         </header>
         <ul
             v-if="isFolioExpanded && tiles.length > 0"
@@ -415,27 +502,29 @@ function onDragEnd(): void {
                 v-for="tileRow in tileRows"
                 :key="tileRow.tileId"
                 class="data-folio-tile"
-                :class="{
-                    'data-folio-tile-pending': tileRow.changeTag !== null,
-                    'data-folio-tile-deleted': tileRow.isPendingDelete,
-                    'data-folio-tile-selected':
-                        selectedTileId === tileRow.tileId,
-                }"
                 @dragover="onDragOver"
                 @drop="onDrop($event, tileRow.tileIndex)"
             >
                 <div
                     v-if="!isSingle"
                     class="data-folio-tile-row"
+                    :class="tileRow.stateClasses"
                     :draggable="
                         !tileRow.isLocked &&
                         isReorderable &&
                         !changeSet.isBusy.value
                     "
+                    @click="toggleTile(tileRow.tileId, tileRow.isExpanded)"
                     @dragstart="onDragStart($event, tileRow.tileId)"
                     @dragend="onDragEnd"
                 >
+                    <i
+                        v-if="!tileRow.isLocked && isReorderable"
+                        class="pi pi-bars data-folio-drag-handle"
+                        aria-hidden="true"
+                    />
                     <Button
+                        class="data-folio-toggle"
                         variant="text"
                         size="small"
                         :icon="expandIcon(tileRow.isExpanded)"
@@ -449,91 +538,101 @@ function onDragEnd(): void {
                                 true,
                             )
                         "
-                        @click="toggleTile(tileRow.tileId, tileRow.isExpanded)"
+                        @click.stop="
+                            toggleTile(tileRow.tileId, tileRow.isExpanded)
+                        "
                     />
-                    <div
-                        v-if="!tileRow.isLocked && isReorderable"
-                        class="data-folio-reorder"
-                    >
-                        <i
-                            class="pi pi-bars data-folio-drag-handle"
-                            aria-hidden="true"
-                        />
-                        <Button
-                            icon="pi pi-arrow-up"
-                            variant="text"
-                            size="small"
-                            :aria-label="
-                                $gettext(
-                                    'Move %{entry} up',
-                                    {
-                                        entry: tileRow.label,
-                                    },
-                                    true,
-                                )
-                            "
-                            :disabled="
-                                tileRow.tileIndex === 0 ||
-                                changeSet.isBusy.value
-                            "
-                            @click="
-                                moveTileTo(
-                                    tileRow.tileId,
-                                    tileRow.tileIndex - 1,
-                                )
-                            "
-                        />
-                        <Button
-                            icon="pi pi-arrow-down"
-                            variant="text"
-                            size="small"
-                            :aria-label="
-                                $gettext(
-                                    'Move %{entry} down',
-                                    {
-                                        entry: tileRow.label,
-                                    },
-                                    true,
-                                )
-                            "
-                            :disabled="
-                                tileRow.tileIndex === tiles.length - 1 ||
-                                changeSet.isBusy.value
-                            "
-                            @click="
-                                moveTileTo(
-                                    tileRow.tileId,
-                                    tileRow.tileIndex + 1,
-                                )
-                            "
-                        />
-                    </div>
+                    <span class="data-folio-tile-number">
+                        #{{ tileRow.tileIndex + 1 }}
+                    </span>
                     <span class="data-folio-summary">
                         <HighlightedText
                             :text="tileRow.label"
                             :query="query"
                         />
                     </span>
-                    <Tag
-                        v-if="tileRow.changeTag"
-                        :value="tileRow.changeTag.label"
-                        :severity="tileRow.changeTag.severity"
-                    />
-                    <DataFolioTileActions
-                        v-if="!tileRow.isLocked"
-                        :label="tileRow.label"
-                        :is-marked-for-deletion="tileRow.isMarkedForDeletion"
-                        :is-busy="changeSet.isBusy.value"
-                        @edit="editTile(tileRow.tileId)"
-                        @delete="deleteTile(tileRow.tileId)"
-                        @undo-delete="undoDelete(tileRow.tileId)"
-                    />
+                    <div
+                        class="data-folio-actions"
+                        @click.stop
+                    >
+                        <Tag
+                            v-if="tileRow.changeTag"
+                            :value="tileRow.changeTag.label"
+                            :severity="tileRow.changeTag.severity"
+                        />
+                        <template v-if="!tileRow.isLocked && isReorderable">
+                            <Button
+                                class="data-folio-move"
+                                icon="pi pi-arrow-up"
+                                variant="text"
+                                size="small"
+                                :aria-label="
+                                    $gettext(
+                                        'Move %{entry} up',
+                                        {
+                                            entry: tileRow.label,
+                                        },
+                                        true,
+                                    )
+                                "
+                                :disabled="
+                                    tileRow.tileIndex === 0 ||
+                                    changeSet.isBusy.value
+                                "
+                                @click="
+                                    moveTileTo(
+                                        tileRow.tileId,
+                                        tileRow.tileIndex - 1,
+                                    )
+                                "
+                            />
+                            <Button
+                                class="data-folio-move"
+                                icon="pi pi-arrow-down"
+                                variant="text"
+                                size="small"
+                                :aria-label="
+                                    $gettext(
+                                        'Move %{entry} down',
+                                        {
+                                            entry: tileRow.label,
+                                        },
+                                        true,
+                                    )
+                                "
+                                :disabled="
+                                    tileRow.tileIndex === tiles.length - 1 ||
+                                    changeSet.isBusy.value
+                                "
+                                @click="
+                                    moveTileTo(
+                                        tileRow.tileId,
+                                        tileRow.tileIndex + 1,
+                                    )
+                                "
+                            />
+                        </template>
+                        <DataFolioTileActions
+                            v-if="!tileRow.isLocked"
+                            :label="tileRow.label"
+                            :is-marked-for-deletion="
+                                tileRow.isMarkedForDeletion
+                            "
+                            :is-busy="changeSet.isBusy.value"
+                            @edit="editTile(tileRow.tileId)"
+                            @delete="deleteTile(tileRow.tileId)"
+                            @undo-delete="undoDelete(tileRow.tileId)"
+                        />
+                    </div>
                 </div>
                 <div
                     v-if="tileRow.isExpanded"
                     class="data-folio-tile-body"
                 >
-                    <dl class="data-folio-fields">
+                    <dl
+                        class="data-folio-fields"
+                        :class="tileRow.stateClasses"
+                    >
                         <div
                             v-for="widget in visibleWidgets"
                             :key="widget.node.alias"
@@ -576,20 +675,25 @@ function onDragEnd(): void {
                             </dd>
                         </div>
                     </dl>
-                    <DataFolio
-                        v-for="childFolio in tileRow.childFolios"
-                        :key="childFolio.nodegroupAlias"
-                        :nodegroup-alias="childFolio.nodegroupAlias"
-                        :nodegroup-widget-configs="nodegroupWidgetConfigs"
-                        :tiles="childFolio.tiles"
-                        :parent-tile-id="tileRow.tileId"
-                        :change-set="changeSet"
-                        :query="query"
-                        :matched-by-ancestor="childrenMatchedByAncestor"
-                        :selected-tile-id="selectedTileId"
-                        :is-editable="isEditable"
-                        @edit-tile="emit(EDIT_TILE, $event)"
-                    />
+                    <div
+                        v-if="tileRow.childFolios.length > 0"
+                        class="data-folio-children"
+                    >
+                        <DataFolio
+                            v-for="childFolio in tileRow.childFolios"
+                            :key="childFolio.nodegroupAlias"
+                            :nodegroup-alias="childFolio.nodegroupAlias"
+                            :nodegroup-widget-configs="nodegroupWidgetConfigs"
+                            :tiles="childFolio.tiles"
+                            :parent-tile-id="tileRow.tileId"
+                            :change-set="changeSet"
+                            :query="query"
+                            :matched-by-ancestor="childrenMatchedByAncestor"
+                            :selected-tile-id="selectedTileId"
+                            :is-editable="isEditable"
+                            @edit-tile="emit(EDIT_TILE, $event)"
+                        />
+                    </div>
                 </div>
             </li>
         </ul>
@@ -619,20 +723,25 @@ function onDragEnd(): void {
                     <dd class="data-folio-field-empty">{{ EMPTY_VALUE }}</dd>
                 </div>
             </dl>
-            <DataFolio
-                v-for="childFolio in placeholderChildFolios"
-                :key="childFolio.nodegroupAlias"
-                :nodegroup-alias="childFolio.nodegroupAlias"
-                :nodegroup-widget-configs="nodegroupWidgetConfigs"
-                :tiles="childFolio.tiles"
-                :parent-tile-id="null"
-                :change-set="changeSet"
-                :query="query"
-                :matched-by-ancestor="childrenMatchedByAncestor"
-                :selected-tile-id="selectedTileId"
-                :is-editable="false"
-                @edit-tile="emit(EDIT_TILE, $event)"
-            />
+            <div
+                v-if="placeholderChildFolios.length > 0"
+                class="data-folio-children"
+            >
+                <DataFolio
+                    v-for="childFolio in placeholderChildFolios"
+                    :key="childFolio.nodegroupAlias"
+                    :nodegroup-alias="childFolio.nodegroupAlias"
+                    :nodegroup-widget-configs="nodegroupWidgetConfigs"
+                    :tiles="childFolio.tiles"
+                    :parent-tile-id="null"
+                    :change-set="changeSet"
+                    :query="query"
+                    :matched-by-ancestor="childrenMatchedByAncestor"
+                    :selected-tile-id="selectedTileId"
+                    :is-editable="false"
+                    @edit-tile="emit(EDIT_TILE, $event)"
+                />
+            </div>
         </div>
     </section>
 </template>
@@ -643,72 +752,112 @@ function onDragEnd(): void {
     flex-direction: column;
 }
 
-.data-folio + .data-folio {
-    border-block-start: 0.1rem solid var(--p-content-border-color);
+.data-folio-depth-0 {
+    --data-folio-header-indent: 0.8rem;
+    --data-folio-entry-indent: 1.8rem;
+    --data-folio-field-indent: 2.6rem;
+    --data-folio-placeholder-indent: 1.8rem;
+}
+
+.data-folio-depth-1 {
+    --data-folio-header-indent: 3.2rem;
+    --data-folio-entry-indent: 3rem;
+    --data-folio-field-indent: 3.8rem;
+    --data-folio-placeholder-indent: 3.8rem;
+}
+
+.data-folio-depth-2 {
+    --data-folio-header-indent: 4.4rem;
+    --data-folio-entry-indent: 4.2rem;
+    --data-folio-field-indent: 5rem;
+    --data-folio-placeholder-indent: 5rem;
+}
+
+.data-folio-depth-3 {
+    --data-folio-header-indent: 5.6rem;
+    --data-folio-entry-indent: 5.4rem;
+    --data-folio-field-indent: 6.2rem;
+    --data-folio-placeholder-indent: 6.2rem;
+}
+
+.data-folio-depth-4 {
+    --data-folio-header-indent: 6.8rem;
+    --data-folio-entry-indent: 6.6rem;
+    --data-folio-field-indent: 7.4rem;
+    --data-folio-placeholder-indent: 7.4rem;
 }
 
 .data-folio-header {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.6rem;
+    min-block-size: 3.7rem;
     padding-block: 0.4rem;
+    padding-inline: var(--data-folio-header-indent) 0.8rem;
+    border-block-end: 0.1rem solid var(--p-content-border-color);
+    color: var(--p-text-color);
 }
 
-.data-folio-name {
+.data-folio-header-top {
+    cursor: pointer;
+    font-size: 1.3rem;
+    font-weight: 700;
+    user-select: none;
+}
+
+.data-folio-header-nested {
+    min-block-size: 3.3rem;
+    background: var(--resource-report-row-nested-background);
+    font-size: 1.15rem;
     font-weight: 600;
 }
 
-.data-folio-cardinality {
+.data-folio-header-open {
+    background: var(--resource-report-row-open-background);
+}
+
+.data-folio-header.data-folio-header-pending,
+.data-folio-tile-row.data-folio-tile-pending,
+.data-folio-fields.data-folio-tile-pending .data-folio-field {
+    background: var(--resource-report-pending-background);
+    color: var(--resource-report-pending-color);
+}
+
+.data-folio-header-pending .data-folio-toggle,
+.data-folio-header-pending .data-folio-icon,
+.data-folio-tile-pending .data-folio-toggle,
+.data-folio-tile-pending .data-folio-drag-handle,
+.data-folio-tile-pending .data-folio-tile-number,
+.data-folio-tile-pending .data-folio-move,
+.data-folio-tile-pending .data-folio-field dt,
+.data-folio-tile-pending .data-folio-field dd,
+.data-folio-tile-pending .data-folio-field-icon {
+    color: var(--resource-report-pending-color);
+}
+
+.data-folio-header .data-folio-toggle,
+.data-folio-tile-row .data-folio-toggle {
+    --p-button-sm-font-size: 0.9rem;
+    flex-shrink: 0;
+    inline-size: 1.4rem;
+    block-size: 2.4rem;
+    padding: 0;
+    color: var(--p-text-muted-color);
+}
+
+.data-folio-tile-row .data-folio-toggle {
+    --p-button-sm-font-size: 1rem;
+    inline-size: 1.5rem;
+    color: var(--p-text-color);
+}
+
+.data-folio-icon {
+    flex-shrink: 0;
     color: var(--p-text-muted-color);
     font-size: 1.2rem;
 }
 
-.data-folio-add,
-.data-folio-header-actions {
-    margin-inline-start: auto;
-}
-
-.data-folio-tiles {
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-    padding-block: 0 0.4rem;
-    padding-inline: 1.8rem 0;
-    list-style: none;
-}
-
-.data-folio-tile-pending {
-    background: var(--p-content-hover-background);
-}
-
-.data-folio-tile-deleted .data-folio-summary,
-.data-folio-tile-deleted .data-folio-fields {
-    color: var(--p-text-muted-color);
-    text-decoration: line-through;
-}
-
-.data-folio-tile-selected {
-    box-shadow: inset 0.3rem 0 0 var(--p-primary-color);
-}
-
-.data-folio-tile-row {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding-inline-end: 0.4rem;
-}
-
-.data-folio-reorder {
-    display: flex;
-    align-items: center;
-}
-
-.data-folio-drag-handle {
-    color: var(--p-text-muted-color);
-    cursor: grab;
-}
-
-.data-folio-summary {
+.data-folio-name {
     flex: 1;
     min-inline-size: 0;
     overflow: hidden;
@@ -716,24 +865,143 @@ function onDragEnd(): void {
     white-space: nowrap;
 }
 
+.data-folio-count {
+    flex-shrink: 0;
+    padding-block: 0.1rem;
+    padding-inline: 0.8rem;
+    border-radius: 0.8rem;
+    background: var(--resource-report-accent-background);
+    color: var(--resource-report-accent-color);
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.data-folio-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: default;
+}
+
+.data-folio-actions .data-folio-action {
+    --p-button-label-font-weight: 600;
+    min-block-size: 2.4rem;
+    padding-block: 0.1rem;
+    padding-inline: 0.6rem;
+    border-color: var(--resource-report-accent-color);
+    border-radius: 0.3rem;
+    background: var(--resource-report-accent-background);
+    color: var(--resource-report-accent-color);
+    font-size: 1.1rem;
+}
+
+.data-folio-actions .data-folio-action:not(:disabled):hover {
+    border-color: var(--resource-report-accent-color);
+    background: var(--resource-report-accent-color);
+    color: var(--p-primary-contrast-color);
+}
+
+.data-folio-actions .data-folio-move {
+    inline-size: 2.4rem;
+    block-size: 2.4rem;
+    padding: 0;
+    color: var(--p-text-muted-color);
+}
+
+.data-folio-cardinality {
+    flex-shrink: 0;
+    padding-block: 0.1rem;
+    padding-inline: 0.4rem;
+    border: 0.1rem solid var(--p-content-border-color);
+    border-radius: 0.3rem;
+    color: var(--p-text-muted-color);
+    font-family: monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.05rem;
+    opacity: 0.6;
+}
+
+.data-folio-cardinality-many {
+    border-color: var(--resource-report-accent-color);
+    background: var(--resource-report-accent-background);
+    color: var(--resource-report-accent-color);
+    opacity: 1;
+}
+
+.data-folio-tiles {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.data-folio-tile-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-block-size: 3.1rem;
+    padding-block: 0.4rem;
+    padding-inline: var(--data-folio-entry-indent) 0.8rem;
+    border-block-end: 0.1rem solid var(--p-content-border-color);
+    border-inline-start: 0.3rem solid transparent;
+    background: var(--resource-report-row-entry-background);
+    cursor: pointer;
+    font-size: 1.1rem;
+    user-select: none;
+}
+
+.data-folio-tile-row:hover {
+    background: var(--resource-report-row-hover-background);
+}
+
+.data-folio-drag-handle {
+    flex-shrink: 0;
+    color: var(--p-text-color);
+    cursor: grab;
+    font-size: 1.2rem;
+}
+
+.data-folio-tile-number {
+    flex-shrink: 0;
+    color: var(--p-primary-color);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.data-folio-summary {
+    flex: 1;
+    min-inline-size: 0;
+    overflow: hidden;
+    color: var(--p-text-color);
+    font-size: 1.2rem;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .data-folio-tile-body {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
-    padding-block: 0.4rem 0.8rem;
-    padding-inline: 1.8rem 0.8rem;
 }
 
 .data-folio-fields {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
     margin: 0;
 }
 
 .data-folio-field {
     display: flex;
-    gap: 0.8rem;
+    align-items: center;
+    gap: 0.6rem;
+    padding-block: 0.4rem;
+    padding-inline: var(--data-folio-field-indent) 0.8rem;
+    border-block-end: 0.1rem solid var(--p-content-border-color);
+    border-inline-start: 0.3rem solid transparent;
+    font-size: 1.2rem;
 }
 
 .data-folio-field dt {
@@ -742,8 +1010,11 @@ function onDragEnd(): void {
     align-items: center;
     gap: 0.6rem;
     min-inline-size: 0;
+    overflow: hidden;
     color: var(--p-text-muted-color);
-    font-weight: 500;
+    font-weight: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .data-folio-field-icon {
@@ -752,19 +1023,73 @@ function onDragEnd(): void {
 }
 
 .data-folio-field dd {
+    flex-shrink: 0;
     max-inline-size: 55%;
     margin: 0;
-    font-weight: 600;
+    overflow: hidden;
+    color: var(--p-text-color);
+    font-weight: 500;
     text-align: end;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .data-folio-field .data-folio-field-empty {
     color: var(--p-text-muted-color);
+    font-size: 1.1rem;
     font-style: italic;
     font-weight: normal;
+    opacity: 0.55;
 }
 
-.data-folio-placeholder {
-    padding-inline-start: 3.6rem;
+.data-folio-tile-row.data-folio-tile-deleted,
+.data-folio-fields.data-folio-tile-deleted .data-folio-field {
+    background: var(--resource-report-deleted-background);
+}
+
+.data-folio-tile-deleted .data-folio-summary,
+.data-folio-tile-deleted .data-folio-field dt,
+.data-folio-tile-deleted .data-folio-field dd {
+    opacity: 0.65;
+    text-decoration: line-through;
+}
+
+.data-folio-tile-deleted .data-folio-tile-number {
+    color: var(--resource-report-deleted-color);
+}
+
+.data-folio-tile-row.data-folio-tile-selected,
+.data-folio-fields.data-folio-tile-selected .data-folio-field {
+    border-inline-start-color: var(--resource-report-edited-color);
+}
+
+.data-folio-tile-row.data-folio-tile-selected:not(.data-folio-tile-pending):not(
+        .data-folio-tile-deleted
+    ),
+.data-folio-fields.data-folio-tile-selected:not(.data-folio-tile-pending):not(
+        .data-folio-tile-deleted
+    )
+    .data-folio-field {
+    background: var(--resource-report-edited-background);
+}
+
+.data-folio-tile-row.data-folio-tile-selected-added,
+.data-folio-fields.data-folio-tile-selected-added .data-folio-field {
+    border-inline-start-color: var(--resource-report-accent-color);
+}
+
+.data-folio-tile-row.data-folio-tile-selected.data-folio-tile-deleted,
+.data-folio-fields.data-folio-tile-selected.data-folio-tile-deleted
+    .data-folio-field {
+    border-inline-start-color: var(--resource-report-deleted-color);
+}
+
+.data-folio-children {
+    display: flex;
+    flex-direction: column;
+}
+
+.data-folio-placeholder > .data-folio-fields > .data-folio-field {
+    padding-inline-start: var(--data-folio-placeholder-indent);
 }
 </style>

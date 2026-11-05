@@ -148,8 +148,28 @@ function closeDrawer(): void {
     display: flex;
     flex-wrap: wrap;
     gap: 0.8rem;
-    padding: 1.6rem;
+    padding-block: 1.8rem;
+    padding-inline: 1.5rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
+    background: var(--resource-report-caption-background);
+}
+
+.report-drawer-triggers > .p-button {
+    --p-button-label-font-weight: 600;
+    gap: 0.6rem;
+    padding-block: 0.6rem;
+    padding-inline: 1.2rem;
+    border-color: var(--p-content-border-color);
+    background: var(--p-content-background);
+    color: var(--p-text-muted-color);
+    font-size: 1.2rem;
+    line-height: 1.2;
+}
+
+.report-drawer-triggers > .p-button:not(:disabled):hover {
+    border-color: var(--p-primary-color);
+    background: var(--p-content-background);
+    color: var(--p-primary-color);
 }
 
 .report-drawer-stage {
@@ -162,16 +182,16 @@ function closeDrawer(): void {
 .report-drawer-content {
     display: flex;
     flex-direction: column;
-    gap: 1.6rem;
+    gap: 1.2rem;
     block-size: 100%;
-    padding: 1.6rem;
+    padding: 2rem;
     overflow: auto;
 }
 
 .report-drawer-scrim {
     position: absolute;
     inset: 0;
-    background: var(--p-mask-background);
+    background: color-mix(in srgb, var(--p-surface-950) 28%, transparent);
 }
 
 .report-drawer-panel {
@@ -181,8 +201,8 @@ function closeDrawer(): void {
     display: flex;
     flex-direction: column;
     inline-size: 90%;
-    background: var(--p-content-background);
-    border-inline-start: 0.1rem solid var(--p-content-border-color);
+    background: var(--resource-report-aside-background);
+    border-inline-start: 0.1rem solid var(--resource-report-bar-border-color);
 }
 
 .report-drawer-header {
@@ -193,7 +213,22 @@ function closeDrawer(): void {
     padding-block: 1.4rem 1rem;
     padding-inline: 1.6rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
-    background: var(--p-content-hover-background);
+    background: var(--resource-report-caption-background);
+}
+
+.report-drawer-header > .p-button {
+    flex-shrink: 0;
+    inline-size: 2.8rem;
+    block-size: 2.8rem;
+    padding: 0;
+    border: none;
+    background: var(--resource-report-caption-background);
+    color: var(--p-text-muted-color);
+}
+
+.report-drawer-header > .p-button:not(:disabled):hover {
+    background: var(--resource-report-strip-background);
+    color: var(--p-text-color);
 }
 
 .report-drawer-crumb {
@@ -206,6 +241,7 @@ function closeDrawer(): void {
 
 .report-drawer-crumb-root {
     color: var(--p-text-muted-color);
+    font-weight: 500;
 }
 
 .report-drawer-crumb-leaf {

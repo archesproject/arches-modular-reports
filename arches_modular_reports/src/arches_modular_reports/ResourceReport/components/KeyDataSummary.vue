@@ -74,19 +74,21 @@ const rows = computed(() =>
 .key-data-summary {
     display: flex;
     flex-direction: column;
-    gap: 1.2rem;
-    padding: 1.6rem;
+    gap: 1rem;
+    padding-block: 1.4rem;
+    padding-inline: 1.6rem;
     border: 0.1rem solid var(--p-content-border-color);
-    border-radius: var(--p-content-border-radius);
+    border-radius: 0.4rem;
     background: var(--p-content-background);
 }
 
 .key-data-summary-title {
     margin: 0;
     color: var(--p-text-muted-color);
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     font-weight: 700;
-    letter-spacing: 0.08rem;
+    letter-spacing: 0.07rem;
+    line-height: 1.5;
     text-transform: uppercase;
 }
 
@@ -99,18 +101,39 @@ const rows = computed(() =>
 .key-data-summary-rows {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
     margin: 0;
 }
 
 .key-data-summary-row {
     display: flex;
     align-items: baseline;
-    gap: 0.8rem;
+    justify-content: space-between;
+    gap: 1.2rem;
+    padding-block: 0.7rem;
+    border-block-end: 0.1rem dashed var(--p-content-border-color);
     font-size: 1.3rem;
+}
+
+.key-data-summary-row:last-child {
+    border-block-end: none;
+}
+
+.key-data-summary-row .p-button {
+    --p-button-label-font-weight: 500;
+    padding: 0;
+    border: none;
+    color: var(--p-text-muted-color);
+    font-size: 1.3rem;
+    text-align: start;
+}
+
+.key-data-summary-row .p-button:not(:disabled):hover {
+    color: var(--p-primary-color);
 }
 
 .key-data-summary-row dd {
     margin: 0;
+    font-weight: 600;
+    text-align: end;
 }
 </style>

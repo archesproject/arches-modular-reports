@@ -177,17 +177,20 @@ When the report loads, nodegroups and summary entries the user can't read are re
                     "aside": [
                         { "component": ".../EditorPanel/EditorPanel", "config": {} },
                         { "component": ".../ReportDrawer", "config": { "components": [ ... ], "panels": [ ... ] } }
+                    ],
+                    "aside_footer": [
+                        { "component": ".../EditListTray", "config": {} }
                     ]
                 }
             },
-            { "component": ".../SplitPane", "config": { "label": { "en": "Data" }, "requires_edit": true, "main": [ ... ], "aside": [ ... ] } },
+            { "component": ".../SplitPane", "config": { "label": { "en": "Data" }, "requires_edit": true, "main": [ ... ], "aside": [ ... ], "aside_footer": [ ... ] } },
             { "component": ".../ReportPlaceholder", "config": { "label": { "en": "Graph" }, "icon": "pi pi-sitemap", "message": { "en": "Graph view — coming soon" } } }
         ]
     }
 }
 ```
 
-`...` stands for `arches_modular_reports/ResourceReport/components`. The config's last top-level component is `EditListTray`.
+`...` stands for `arches_modular_reports/ResourceReport/components`.
 
 ---
 
@@ -197,7 +200,7 @@ Paths are under `arches_modular_reports/ResourceReport/components/`.
 
 -   `WorkspaceTabs`: the tab strip at the top of the report. Each of its `components` is a tab, named by its `label`, with its `description` shown under the strip. `banner` lists components shown under the strip above every tab.
 -   `ReportTabs`: tabs inside a pane, with a tab bar that stays in view while the pane scrolls. Each of its `components` is a tab, named by its `label`.
--   `SplitPane`: `main` and `aside` lists side by side. Without an `aside`, `main` takes the full width.
+-   `SplitPane`: `main` and `aside` lists side by side. `aside_footer` lists components pinned to the bottom of the aside, below anything that covers it, such as an open `EditorPanel`. Without an `aside` or `aside_footer`, `main` takes the full width.
 -   `ReportStack`: its `components` in a column.
 -   `ReportSection`: a heading (`label`, optional `icon`) over its `components`.
 -   `ReportDrawer`: its `components`, with `panels` as buttons that open over them.
@@ -212,7 +215,7 @@ A tab or drawer panel with `"requires_edit": true` is hidden from people who can
 -   `FieldFolio`: `nodegroup_alias`. One row: label, value and its Edit, Delete or Add.
 -   `MapFolio`: `nodegroup_alias` and `node_alias`, the geometry node. The map first, then the entry's other fields and child nodegroups, with a pager when there are several entries.
 -   `EditorPanel/EditorPanel`: the edit form. It covers the area it's placed in while an entry is being edited. Edit, Add and Delete only appear when the report has one.
--   `EditListTray`: pending edits, with Apply and Cancel. Hidden when nothing is pending.
+-   `EditListTray`: pending edits, with Apply and Cancel. Hidden when nothing is pending. The default config puts it in each `SplitPane`'s `aside_footer`.
 -   `DataBrowser/DataBrowser`: every nodegroup in a tree, with a filter.
 -   `ReportPlaceholder`: an `icon` and a `message`.
 -   Drawer panels, each with a `label` and `icon`: `EditHistoryPanel`; `ImagesPanel`, whose `images` lists `{"model": "<graph slug>", "node": "<node alias>"}` sources; `RelatedResourcesPanel`, whose `graphs` lists models in order; `ManagePanel` for copy, delete and print.
