@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
@@ -12,6 +12,7 @@ import { findTile } from "@/arches_modular_reports/ResourceReport/utils/resource
 import { tileSummary } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
 import type {
+    ChangeConflict,
     ComponentNode,
     ResourceChange,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
@@ -22,12 +23,23 @@ defineProps<{
     component: ComponentNode;
 }>();
 
-const { $gettext } = useGettext();
+const { $gettext, $ngettext } = useGettext();
 const reportData = useReportData();
 const confirm = useConfirm();
 
+const conflictSummary = ref<HTMLElement | null>(null);
+
 const hasPendingChanges = computed(
     () => reportData.value.changeSet.pendingChanges.value.length > 0,
+);
+
+const conflictingChangeIds = computed(
+    () =>
+        new Set(
+            reportData.value.changeSet.conflicts.value.map(
+                (conflict) => conflict.changeId,
+            ),
+        ),
 );
 
 const entries = computed(() =>
@@ -35,12 +47,197 @@ const entries = computed(() =>
         change,
         changeTypeLabel: changeTypeLabel(change),
         description: changeDescription(change),
-        isConflicting:
-            reportData.value.changeSet.conflictingChangeIds.value.includes(
-                change.id,
-            ),
+        isConflicting: conflictingChangeIds.value.has(change.id),
     })),
 );
+
+const conflictItems = computed(() =>
+    reportData.value.changeSet.conflicts.value.map(describeConflict),
+);
+
+const hasKeepableConflict = computed(() =>
+    conflictItems.value.some((item) => item.canKeepMine),
+);
+
+const conflictHeading = computed(() =>
+    $ngettext(
+        "Nothing was saved. %{count} of your changes conflicts with newer data.",
+        "Nothing was saved. %{count} of your changes conflict with newer data.",
+        conflictItems.value.length,
+        { count: String(conflictItems.value.length) },
+    ),
+);
+
+const liveAnnouncement = computed(() => {
+    if (conflictItems.value.length > 0) {
+        return `${conflictHeading.value} ${$gettext("Review each one below, then apply your edits again.")}`;
+    }
+    if (reportData.value.changeSet.conflictsResolved.value) {
+        return $gettext(
+            "All conflicts are resolved. Apply all edits to save your changes.",
+        );
+    }
+    return "";
+});
+
+watch(
+    () => reportData.value.changeSet.conflicts.value,
+    async (conflicts, previousConflicts) => {
+        if (conflicts.length > 0 && previousConflicts.length === 0) {
+            await nextTick();
+            conflictSummary.value?.focus();
+        }
+    },
+);
+
+function nodeLabel(nodeAlias: string): string {
+    return reportData.value.graphNodesByAlias[nodeAlias]?.label ?? nodeAlias;
+}
+
+function nodegroupLabel(nodegroupAlias: string): string {
+    return (
+        reportData.value.nodegroupWidgetConfigs[nodegroupAlias]?.card?.name ??
+        nodegroupAlias
+    );
+}
+
+function displayOrEmpty(value: string | null | undefined): string {
+    return value ? value : $gettext("(empty)");
+}
+
+interface ConflictRow {
+    field: string;
+    mine: string;
+    theirs: string;
+}
+
+interface ConflictViewModel {
+    conflict: ChangeConflict;
+    nodegroup: string;
+    rows: ConflictRow[];
+    message: string;
+    keepLabel: string;
+    keepAriaLabel: string;
+    discardLabel: string;
+    discardAriaLabel: string;
+    canKeepMine: boolean;
+    note: string;
+}
+
+function describeConflict(conflict: ChangeConflict): ConflictViewModel {
+    const change = reportData.value.changeSet.pendingChanges.value.find(
+        (pendingChange) => pendingChange.id === conflict.changeId,
+    );
+    const nodegroup = nodegroupLabel(conflict.nodegroupAlias);
+    const keepLabel = $gettext("Keep mine");
+    const discardLabel = $gettext("Discard");
+    const base: ConflictViewModel = {
+        conflict,
+        nodegroup,
+        rows: [],
+        message: "",
+        keepLabel,
+        keepAriaLabel: "",
+        discardLabel,
+        discardAriaLabel: $gettext(
+            "Discard my change to %{nodegroup}",
+            { nodegroup },
+            true,
+        ),
+        canKeepMine: false,
+        note: "",
+    };
+
+    if (conflict.reason === "modified") {
+        const nodeAliases = Object.keys(conflict.nodes ?? {});
+        const fields = nodeAliases.map(nodeLabel).join(", ");
+        const rows = nodeAliases.map((nodeAlias) => ({
+            field: nodeLabel(nodeAlias),
+            mine: displayOrEmpty(
+                change?.type === "edit"
+                    ? change.aliasedData[nodeAlias]?.display_value
+                    : null,
+            ),
+            theirs: displayOrEmpty(conflict.nodes?.[nodeAlias].currentDisplay),
+        }));
+        return {
+            ...base,
+            rows,
+            message: $gettext(
+                "Someone else changed %{fields} in %{nodegroup} after you started editing.",
+                { fields, nodegroup },
+                true,
+            ),
+            keepLabel,
+            keepAriaLabel: $gettext(
+                "Keep my value for %{fields} and overwrite theirs",
+                { fields },
+                true,
+            ),
+            discardLabel: $gettext("Use theirs"),
+            discardAriaLabel: $gettext(
+                "Use their value for %{fields} and drop my change to it",
+                { fields },
+                true,
+            ),
+            canKeepMine: true,
+        };
+    }
+    if (conflict.reason === "deleted") {
+        const summary = conflict.tileSnapshot
+            ? tileSummary(
+                  conflict.tileSnapshot,
+                  reportData.value.nodegroupWidgetConfigs[
+                      conflict.nodegroupAlias
+                  ],
+              )
+            : "";
+        return {
+            ...base,
+            message: $gettext(
+                "This %{nodegroup} entry was deleted by someone else.",
+                { nodegroup },
+                true,
+            ),
+            note: summary,
+            keepLabel: $gettext("Restore with my changes"),
+            keepAriaLabel: $gettext(
+                "Restore the deleted %{nodegroup} entry with my changes",
+                { nodegroup },
+                true,
+            ),
+            canKeepMine: conflict.tileSnapshot !== undefined,
+        };
+    }
+    if (conflict.reason === "slot_taken") {
+        return {
+            ...base,
+            message: $gettext(
+                "Someone else already added %{nodegroup}.",
+                { nodegroup },
+                true,
+            ),
+            keepLabel: $gettext("Replace with mine"),
+            keepAriaLabel: $gettext(
+                "Replace the existing %{nodegroup} with my version",
+                { nodegroup },
+                true,
+            ),
+            canKeepMine: true,
+        };
+    }
+    return {
+        ...base,
+        message: $gettext(
+            "The entry this %{nodegroup} belonged to was deleted by someone else.",
+            { nodegroup },
+            true,
+        ),
+        note: $gettext(
+            "It can only be discarded. If you restore the deleted entry from this list, it becomes savable again.",
+        ),
+    };
+}
 
 function changeTypeLabel(change: ResourceChange): string {
     if (change.type === "add") {
@@ -136,16 +333,137 @@ async function applyAll(): Promise<void> {
             <h3 class="edit-list-tray-title">
                 {{ $gettext("Edit List") }}
             </h3>
+            <div
+                class="edit-list-tray-sr-only"
+                role="status"
+                aria-live="polite"
+            >
+                {{ liveAnnouncement }}
+            </div>
+            <section
+                v-if="conflictItems.length > 0"
+                class="edit-list-tray-conflicts"
+                aria-labelledby="edit-list-tray-conflict-heading"
+            >
+                <Message severity="error">
+                    <div
+                        ref="conflictSummary"
+                        class="edit-list-tray-conflict-summary"
+                        tabindex="-1"
+                    >
+                        <h4
+                            id="edit-list-tray-conflict-heading"
+                            class="edit-list-tray-conflict-heading"
+                        >
+                            {{ conflictHeading }}
+                        </h4>
+                        <p class="edit-list-tray-conflict-help">
+                            {{
+                                $gettext(
+                                    "Your changes are still in the list. Choose what to do with each conflict, then apply your edits again.",
+                                )
+                            }}
+                        </p>
+                    </div>
+                </Message>
+                <div
+                    v-if="conflictItems.length > 1"
+                    class="edit-list-tray-conflict-bulk"
+                >
+                    <Button
+                        v-if="hasKeepableConflict"
+                        size="small"
+                        :label="$gettext('Keep all mine')"
+                        :disabled="reportData.changeSet.isBusy.value"
+                        @click="reportData.changeSet.keepAllMine()"
+                    />
+                    <Button
+                        size="small"
+                        variant="outlined"
+                        :label="$gettext('Discard all conflicting')"
+                        :disabled="reportData.changeSet.isBusy.value"
+                        @click="reportData.changeSet.discardAllConflicting()"
+                    />
+                </div>
+                <ul class="edit-list-tray-conflict-list">
+                    <li
+                        v-for="item in conflictItems"
+                        :key="item.conflict.changeId"
+                        class="edit-list-tray-conflict"
+                    >
+                        <p class="edit-list-tray-conflict-message">
+                            <i
+                                class="pi pi-exclamation-triangle"
+                                aria-hidden="true"
+                            />
+                            <span>{{ item.message }}</span>
+                        </p>
+                        <p
+                            v-if="item.note"
+                            class="edit-list-tray-conflict-note"
+                        >
+                            {{ item.note }}
+                        </p>
+                        <dl
+                            v-for="row in item.rows"
+                            :key="row.field"
+                            class="edit-list-tray-conflict-values"
+                        >
+                            <dt>{{ row.field }}</dt>
+                            <dd>
+                                <span
+                                    class="edit-list-tray-conflict-value-label"
+                                >
+                                    {{ $gettext("Their value:") }}
+                                </span>
+                                {{ row.theirs }}
+                            </dd>
+                            <dd>
+                                <span
+                                    class="edit-list-tray-conflict-value-label"
+                                >
+                                    {{ $gettext("Your value:") }}
+                                </span>
+                                {{ row.mine }}
+                            </dd>
+                        </dl>
+                        <div class="edit-list-tray-conflict-actions">
+                            <Button
+                                v-if="item.canKeepMine"
+                                size="small"
+                                :label="item.keepLabel"
+                                :aria-label="item.keepAriaLabel"
+                                :disabled="reportData.changeSet.isBusy.value"
+                                @click="
+                                    reportData.changeSet.keepMine(
+                                        item.conflict.changeId,
+                                    )
+                                "
+                            />
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                :label="item.discardLabel"
+                                :aria-label="item.discardAriaLabel"
+                                :disabled="reportData.changeSet.isBusy.value"
+                                @click="
+                                    reportData.changeSet.useTheirs(
+                                        item.conflict.changeId,
+                                    )
+                                "
+                            />
+                        </div>
+                    </li>
+                </ul>
+            </section>
             <Message
-                v-if="
-                    reportData.changeSet.conflictingChangeIds.value.length > 0
-                "
-                severity="error"
+                v-else-if="reportData.changeSet.conflictsResolved.value"
+                severity="success"
             >
                 <span>
                     {{
                         $gettext(
-                            "Some changes conflict with newer data. Apply again to keep yours, or discard them.",
+                            "All conflicts are resolved. Apply all edits to save your changes.",
                         )
                     }}
                 </span>
@@ -189,12 +507,16 @@ async function applyAll(): Promise<void> {
                         :disabled="entry.change.type === 'reorder'"
                         @click="openChange(entry.change)"
                     >
-                        <i
+                        <span
                             v-if="entry.isConflicting"
-                            class="pi pi-exclamation-triangle"
-                            role="img"
-                            :aria-label="$gettext('Conflicts with newer data')"
-                        />
+                            class="edit-list-tray-entry-conflict-flag"
+                        >
+                            <i
+                                class="pi pi-exclamation-triangle"
+                                aria-hidden="true"
+                            />
+                            {{ $gettext("Conflict") }}
+                        </span>
                         <span class="edit-list-tray-entry-type">
                             {{ entry.changeTypeLabel }}
                         </span>
@@ -373,5 +695,103 @@ async function applyAll(): Promise<void> {
 .edit-list-tray-actions .edit-list-tray-cancel {
     border-color: var(--resource-report-bar-border-color);
     color: var(--p-text-color);
+}
+
+.edit-list-tray-entry-conflict-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--p-form-field-invalid-border-color);
+}
+
+.edit-list-tray-sr-only {
+    position: absolute;
+    inline-size: 0.1rem;
+    block-size: 0.1rem;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.edit-list-tray-conflicts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.edit-list-tray-conflict-summary:focus-visible {
+    outline: 0.2rem solid var(--p-focus-ring-color);
+    outline-offset: 0.2rem;
+}
+
+.edit-list-tray-conflict-heading {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.edit-list-tray-conflict-help {
+    margin: 0;
+    margin-block-start: 0.2rem;
+}
+
+.edit-list-tray-conflict-bulk,
+.edit-list-tray-conflict-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.edit-list-tray-conflict-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.edit-list-tray-conflict {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.8rem 1.2rem;
+    border: 0.1rem solid var(--p-form-field-invalid-border-color);
+    border-radius: var(--p-content-border-radius);
+    background: var(--p-content-background);
+}
+
+.edit-list-tray-conflict-message {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.edit-list-tray-conflict-note {
+    margin: 0;
+    color: var(--p-text-muted-color);
+}
+
+.edit-list-tray-conflict-values {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin: 0;
+}
+
+.edit-list-tray-conflict-values dt {
+    font-weight: 600;
+}
+
+.edit-list-tray-conflict-values dd {
+    margin: 0;
+}
+
+.edit-list-tray-conflict-value-label {
+    color: var(--p-text-muted-color);
 }
 </style>

@@ -6,13 +6,16 @@ import {
     extractFileEntriesFromAliasedData,
 } from "@/arches_vue_components/generics/GenericCard/utils.ts";
 
+import type { AliasedData, FileEntry } from "@/arches_vue_components/types.ts";
 import type {
     AliasedResourceData,
+    ChangeConflict,
     EditHistoryPage,
     ExportFormat,
     ImageSource,
     RelatedResourceGroup,
     ReportContext,
+    ResourceChange,
     ResourceImagesPage,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
@@ -44,27 +47,73 @@ export async function fetchResource(
     return parseResponse<AliasedResourceData>(response);
 }
 
-export async function updateResource(
+export class ResourceConflictError extends Error {
+    conflicts: ChangeConflict[];
+    resource: AliasedResourceData;
+
+    constructor(
+        message: string,
+        conflicts: ChangeConflict[],
+        resource: AliasedResourceData,
+    ) {
+        super(message);
+        this.name = "ResourceConflictError";
+        this.conflicts = conflicts;
+        this.resource = resource;
+    }
+}
+
+function fileEntriesForChanges(changes: ResourceChange[]): FileEntry[] {
+    return changes.flatMap((change) => {
+        if (change.type === "add") {
+            return extractFileEntriesFromAliasedData(
+                change.tile as unknown as AliasedData,
+            );
+        }
+        if (change.type === "edit") {
+            return extractFileEntriesFromAliasedData(
+                change.aliasedData as unknown as AliasedData,
+            ).map((fileEntry) => ({
+                ...fileEntry,
+                tileId: fileEntry.tileId ?? change.tileId,
+            }));
+        }
+        return [];
+    });
+}
+
+export async function saveResourceChanges(
     graphSlug: string,
-    resource: AliasedResourceData,
+    resourceInstanceId: string,
+    changes: ResourceChange[],
 ): Promise<AliasedResourceData> {
-    const fileEntries = extractFileEntriesFromAliasedData(
-        resource.aliased_data,
-    );
+    const fileEntries = fileEntriesForChanges(changes);
     const headers: Record<string, string> = {
         "X-CSRFToken": Cookies.get("csrftoken") ?? "",
     };
+    const payload = { changes };
     let body: BodyInit;
     if (fileEntries.length > 0) {
-        body = buildFileUploadFormData(resource, fileEntries);
+        body = buildFileUploadFormData(payload, fileEntries);
     } else {
         headers["Content-Type"] = "application/json";
-        body = JSON.stringify(resource);
+        body = JSON.stringify(payload);
     }
     const response = await fetch(
-        resourceUrl(graphSlug, resource.resourceinstanceid),
-        { method: "PUT", headers, body },
+        generateArchesURL("arches_querysets:api-resource-changes", {
+            graph: graphSlug,
+            pk: resourceInstanceId,
+        }),
+        { method: "POST", headers, body },
     );
+    if (response.status === 409) {
+        const parsed = await response.json();
+        throw new ResourceConflictError(
+            parsed.message || response.statusText,
+            parsed.conflicts ?? [],
+            parsed.resource,
+        );
+    }
     return parseResponse<AliasedResourceData>(response);
 }
 

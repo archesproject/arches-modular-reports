@@ -71,7 +71,7 @@ vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
     fetchRelatedResourceGroups: vi.fn(),
     fetchReportContext: vi.fn(),
     updateLifecycleState: vi.fn(),
-    updateResource: vi.fn(),
+    saveResourceChanges: vi.fn(),
     buildExportUrl: () => "/export",
 }));
 
