@@ -310,7 +310,7 @@ function undoDelete(): void {
 }
 
 .editor-panel-bar .editor-panel-close:not(:disabled):hover {
-    background: var(--resource-report-caption-background);
+    background: var(--resource-report-muted-background);
     color: var(--p-text-color);
 }
 
@@ -408,7 +408,7 @@ function undoDelete(): void {
     padding-block: 1.6rem;
     padding-inline: 2.4rem;
     border-block-start: 0.1rem solid var(--p-content-border-color);
-    background: var(--resource-report-aside-background);
+    background: var(--resource-report-panel-background);
 }
 
 .editor-panel-card-deleted .editor-panel-card-footer {
@@ -438,10 +438,10 @@ function undoDelete(): void {
     flex-shrink: 0;
     padding-block: 0.4rem;
     padding-inline: 1rem;
-    border-color: var(--resource-report-accent-color);
+    border-color: var(--p-primary-color);
     border-radius: 0.2rem;
     background: var(--resource-report-accent-background);
-    color: var(--resource-report-accent-color);
+    color: var(--p-primary-color);
     font-size: 1.3rem;
 }
 </style>

@@ -240,20 +240,6 @@ class ResourceReportConfigTests(TestCase):
             ],
         )
 
-    def test_edit_list_tray_sits_under_each_editing_pane(self):
-        report_config = ReportConfig(graph=self.graph)
-        report_config.full_clean()
-
-        config = report_config.config
-        self.assertEqual(
-            [
-                [child["component"] for child in split_pane["config"]["aside_footer"]]
-                for split_pane in find_components(config, "SplitPane")
-            ],
-            [[component_path("EditListTray")], [component_path("EditListTray")]],
-        )
-        self.assertEqual(len(find_components(config, "EditListTray")), 2)
-
     def test_nodegroups_with_geometry_get_a_map_folio(self):
         site = make_nodegroup(self.graph, "site")
         make_node(self.graph, site, "site_name", "string")

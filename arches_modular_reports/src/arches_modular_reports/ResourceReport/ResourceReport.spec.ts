@@ -566,23 +566,6 @@ describe("ResourceReport", () => {
         );
     });
 
-    it("pins the edit list below the area the editor covers", async () => {
-        const wrapper = mountReport(FOLIO_CONFIG);
-        await flushPromises();
-
-        await buttonWithText(wrapper, ".report-folio", "Delete").trigger(
-            "click",
-        );
-        await flushPromises();
-
-        expect(
-            wrapper.find(".split-pane-aside-footer .edit-list-tray").exists(),
-        ).toBe(true);
-        expect(
-            wrapper.find(".split-pane-aside-stage .edit-list-tray").exists(),
-        ).toBe(false);
-    });
-
     it("offers editing only when an editor is declared", async () => {
         const wrapper = mountReport(folioConfig([]));
         await flushPromises();

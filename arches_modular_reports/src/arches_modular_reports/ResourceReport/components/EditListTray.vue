@@ -279,7 +279,7 @@ async function applyAll(): Promise<void> {
     padding-inline: 0.8rem;
     border-radius: 1rem;
     background: var(--resource-report-accent-background);
-    color: var(--resource-report-accent-color);
+    color: var(--p-primary-color);
 }
 
 .edit-list-tray-entry:hover {
@@ -297,7 +297,7 @@ async function applyAll(): Promise<void> {
 }
 
 .edit-list-tray-entry-reorder {
-    background: var(--resource-report-caption-background);
+    background: var(--resource-report-muted-background);
     color: var(--p-text-muted-color);
 }
 

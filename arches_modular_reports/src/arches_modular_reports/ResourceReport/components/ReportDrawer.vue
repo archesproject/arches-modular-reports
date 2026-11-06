@@ -151,7 +151,7 @@ function closeDrawer(): void {
     padding-block: 1.8rem;
     padding-inline: 1.5rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
-    background: var(--resource-report-caption-background);
+    background: var(--resource-report-muted-background);
 }
 
 .report-drawer-triggers > .p-button {
@@ -201,7 +201,7 @@ function closeDrawer(): void {
     display: flex;
     flex-direction: column;
     inline-size: 90%;
-    background: var(--resource-report-aside-background);
+    background: var(--resource-report-panel-background);
     border-inline-start: 0.1rem solid var(--resource-report-bar-border-color);
 }
 
@@ -213,7 +213,7 @@ function closeDrawer(): void {
     padding-block: 1.4rem 1rem;
     padding-inline: 1.6rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
-    background: var(--resource-report-caption-background);
+    background: var(--resource-report-muted-background);
 }
 
 .report-drawer-header > .p-button {
@@ -222,12 +222,10 @@ function closeDrawer(): void {
     block-size: 2.8rem;
     padding: 0;
     border: none;
-    background: var(--resource-report-caption-background);
-    color: var(--p-text-muted-color);
 }
 
 .report-drawer-header > .p-button:not(:disabled):hover {
-    background: var(--resource-report-strip-background);
+    background: var(--resource-report-bar-background);
     color: var(--p-text-color);
 }
 

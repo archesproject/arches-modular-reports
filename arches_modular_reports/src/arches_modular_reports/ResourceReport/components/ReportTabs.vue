@@ -13,21 +13,6 @@ import type {
     ReportTabsConfig,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
-const REPORT_TABS_TOKENS = {
-    tablist: { background: "var(--resource-report-subtabs-background)" },
-    tab: {
-        padding: "0.8rem 1.4rem",
-        fontWeight: "500",
-        borderColor: "transparent",
-        hoverBorderColor: "transparent",
-        activeBorderColor: "transparent",
-        color: "{text.muted.color}",
-        hoverColor: "{text.color}",
-    },
-    activeBar: { height: "0.2rem" },
-    tabpanel: { padding: "1.6rem" },
-};
-
 const { component } = defineProps<{
     component: ComponentNode<ReportTabsConfig>;
 }>();
@@ -40,9 +25,9 @@ const { tabs, activeTabIndex } = useTabbedComponents(
 <template>
     <Tabs
         v-model:value="activeTabIndex"
+        class="report-tabs"
         :lazy="true"
         :show-navigators="false"
-        :dt="REPORT_TABS_TOKENS"
     >
         <TabList
             v-if="tabs.length > 1"
@@ -74,6 +59,15 @@ const { tabs, activeTabIndex } = useTabbedComponents(
 </template>
 
 <style scoped>
+.report-tabs {
+    --p-tabs-tablist-background: var(--resource-report-panel-background);
+    --p-tabs-tab-padding: 0.8rem 1.4rem;
+    --p-tabs-tab-font-weight: 500;
+    --p-tabs-tab-hover-color: var(--p-text-color);
+    --p-tabs-active-bar-height: 0.2rem;
+    --p-tabs-tabpanel-padding: 1.6rem;
+}
+
 .report-tabs-list {
     position: sticky;
     inset-block-start: 0;

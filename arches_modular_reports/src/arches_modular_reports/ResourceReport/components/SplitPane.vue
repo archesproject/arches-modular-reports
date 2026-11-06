@@ -107,7 +107,7 @@ const splitterStateKey = computed(() => {
 
 .split-pane :deep(.p-splitter-gutter) {
     border-inline-start: 0.1rem solid var(--p-content-border-color);
-    background: var(--resource-report-aside-background);
+    background: var(--resource-report-panel-background);
 }
 
 .split-pane :deep(.p-splitter-gutter-handle) {
@@ -131,7 +131,7 @@ const splitterStateKey = computed(() => {
     display: flex;
     flex-direction: column;
     min-inline-size: 0;
-    background: var(--resource-report-aside-background);
+    background: var(--resource-report-panel-background);
 }
 
 .split-pane-aside-stage {

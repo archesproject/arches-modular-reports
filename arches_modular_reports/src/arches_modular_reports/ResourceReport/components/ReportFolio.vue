@@ -448,7 +448,7 @@ function toggleOpen(): void {
     padding-inline: 0.6rem;
     border-radius: 1rem;
     background: var(--resource-report-accent-background);
-    color: var(--resource-report-accent-color);
+    color: var(--p-primary-color);
     font-size: 1.2rem;
     font-weight: 700;
     line-height: 2rem;
@@ -460,7 +460,8 @@ function toggleOpen(): void {
     gap: 0.4rem;
 }
 
-.report-folio-header-actions > .p-button {
+.report-folio-header-actions > .p-button,
+.report-folio-tile-actions > .p-button {
     --p-button-label-font-weight: 400;
     padding: 0;
     border: none;
@@ -468,7 +469,8 @@ function toggleOpen(): void {
     line-height: inherit;
 }
 
-.report-folio-header-actions > .p-button :deep(.p-button-label) {
+.report-folio-header-actions > .p-button :deep(.p-button-label),
+.report-folio-tile-actions > .p-button :deep(.p-button-label) {
     text-decoration: underline;
     text-underline-offset: 0.2rem;
 }
@@ -554,19 +556,6 @@ function toggleOpen(): void {
     align-items: center;
     gap: 0.4rem;
     margin-block-start: 0.4rem;
-}
-
-.report-folio-tile-actions > .p-button {
-    --p-button-label-font-weight: 400;
-    padding: 0;
-    border: none;
-    font-size: 1.3rem;
-    line-height: inherit;
-}
-
-.report-folio-tile-actions > .p-button :deep(.p-button-label) {
-    text-decoration: underline;
-    text-underline-offset: 0.2rem;
 }
 
 .report-folio-delete,

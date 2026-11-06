@@ -230,16 +230,10 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
 <style scoped>
 .resource-report {
     --p-text-color: var(--p-surface-800);
-    --resource-report-strip-background: var(--p-surface-200);
-    --resource-report-strip-border-color: var(--p-surface-300);
-    --resource-report-caption-background: var(--p-surface-100);
-    --resource-report-aside-background: var(--p-surface-50);
-    --resource-report-subtabs-background: var(--p-surface-50);
+    --resource-report-panel-background: var(--p-surface-50);
+    --resource-report-muted-background: var(--p-surface-100);
     --resource-report-bar-background: var(--p-surface-200);
     --resource-report-bar-border-color: var(--p-surface-300);
-    --resource-report-placeholder-background: var(--p-surface-100);
-    --resource-report-row-entry-background: var(--p-surface-100);
-    --resource-report-row-nested-background: var(--p-surface-50);
     --resource-report-row-open-background: var(--p-blue-100);
     --resource-report-row-hover-background: var(--p-blue-50);
     --resource-report-accent-background: color-mix(
@@ -247,9 +241,6 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
         var(--p-primary-color) 12%,
         transparent
     );
-    --resource-report-accent-color: var(--p-primary-color);
-    --resource-report-pending-background: var(--p-yellow-300);
-    --resource-report-pending-color: var(--p-surface-900);
     --resource-report-edited-background: color-mix(
         in srgb,
         var(--p-blue-500) 12%,
@@ -272,18 +263,12 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
 
 .arches-dark .resource-report {
     --p-text-color: var(--p-surface-0);
-    --resource-report-strip-background: var(--p-surface-950);
-    --resource-report-strip-border-color: var(--p-surface-700);
-    --resource-report-caption-background: var(--p-surface-950);
-    --resource-report-aside-background: var(--p-surface-950);
-    --resource-report-subtabs-background: var(--p-surface-900);
-    --resource-report-bar-background: var(--p-surface-900);
+    --resource-report-panel-background: var(--p-surface-900);
+    --resource-report-muted-background: var(--p-surface-800);
+    --resource-report-bar-background: var(--p-surface-950);
     --resource-report-bar-border-color: var(--p-surface-700);
-    --resource-report-placeholder-background: var(--p-surface-900);
-    --resource-report-row-entry-background: var(--p-surface-800);
-    --resource-report-row-nested-background: var(--p-surface-900);
     --resource-report-row-open-background: var(--p-blue-950);
-    --resource-report-row-hover-background: var(--p-surface-800);
+    --resource-report-row-hover-background: var(--p-surface-700);
     --resource-report-accent-background: color-mix(
         in srgb,
         var(--p-primary-color) 22%,

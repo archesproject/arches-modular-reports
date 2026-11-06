@@ -241,7 +241,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     justify-content: center;
     inline-size: 9rem;
     background: var(--resource-report-accent-background);
-    color: var(--resource-report-accent-color);
+    color: var(--p-primary-color);
     font-size: 2.4rem;
 }
 
@@ -350,7 +350,6 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     --p-button-label-font-weight: 600;
     padding: 0;
     border: none;
-    color: var(--p-primary-color);
     font-size: 1.2rem;
     line-height: 1.2;
 }

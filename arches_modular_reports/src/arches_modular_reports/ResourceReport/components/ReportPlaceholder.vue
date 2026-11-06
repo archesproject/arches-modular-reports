@@ -56,7 +56,7 @@ const message = computed(() =>
     padding-inline: 2.4rem;
     border: 0.1rem solid var(--p-content-border-color);
     border-radius: 0.4rem;
-    background: var(--resource-report-placeholder-background);
+    background: var(--resource-report-muted-background);
     color: var(--p-text-muted-color);
     font-size: 1.5rem;
     font-weight: 500;

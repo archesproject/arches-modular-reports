@@ -109,7 +109,7 @@ const folios = computed(() =>
     padding-block: 0.8rem 0.6rem;
     padding-inline: 2rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
-    background: var(--resource-report-aside-background);
+    background: var(--resource-report-panel-background);
 }
 
 .data-browser-filter-bar .p-iconfield .data-browser-filter {

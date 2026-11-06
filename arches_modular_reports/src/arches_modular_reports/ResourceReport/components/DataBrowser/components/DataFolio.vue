@@ -39,7 +39,6 @@ import type {
 
 const EDIT_TILE = "edit-tile" as const;
 const EMPTY_VALUE = "—";
-const MAXIMUM_INDENT_DEPTH = 4;
 
 const {
     nodegroupAlias,
@@ -86,11 +85,9 @@ const visibleWidgets = computed(() =>
     ),
 );
 
-const depthClass = computed(() => {
-    const depth =
-        nodegroupLineage(nodegroupWidgetConfigs, nodegroupAlias).length - 1;
-    return `data-folio-depth-${Math.min(depth, MAXIMUM_INDENT_DEPTH)}`;
-});
+const nestingDepth = computed(
+    () => nodegroupLineage(nodegroupWidgetConfigs, nodegroupAlias).length - 1,
+);
 
 const childAliases = computed(() =>
     childNodegroupAliases(nodegroupWidgetConfigs, nodegroupAlias),
@@ -397,10 +394,7 @@ function onDragEnd(): void {
 </script>
 
 <template>
-    <section
-        class="data-folio"
-        :class="depthClass"
-    >
+    <section class="data-folio">
         <header
             class="data-folio-header"
             :class="{
@@ -411,6 +405,13 @@ function onDragEnd(): void {
             }"
             @click="onHeaderClick"
         >
+            <span class="data-folio-indent">
+                <span
+                    v-for="level in nestingDepth"
+                    :key="level"
+                    class="data-folio-indent-step"
+                />
+            </span>
             <Button
                 v-if="isTopLevel"
                 class="data-folio-toggle"
@@ -470,7 +471,7 @@ function onDragEnd(): void {
                 </template>
                 <Button
                     v-if="isAddable"
-                    class="data-folio-action"
+                    class="data-folio-add"
                     variant="outlined"
                     size="small"
                     :label="$gettext('Add')"
@@ -518,6 +519,13 @@ function onDragEnd(): void {
                     @dragstart="onDragStart($event, tileRow.tileId)"
                     @dragend="onDragEnd"
                 >
+                    <span class="data-folio-indent">
+                        <span
+                            v-for="level in nestingDepth"
+                            :key="level"
+                            class="data-folio-indent-step"
+                        />
+                    </span>
                     <i
                         v-if="!tileRow.isLocked && isReorderable"
                         class="pi pi-bars data-folio-drag-handle"
@@ -639,12 +647,17 @@ function onDragEnd(): void {
                             class="data-folio-field"
                         >
                             <dt>
+                                <span class="data-folio-indent">
+                                    <span
+                                        v-for="level in nestingDepth"
+                                        :key="level"
+                                        class="data-folio-indent-step"
+                                    />
+                                </span>
                                 <i
-                                    :class="[
-                                        datatypeIcon(widget.node.datatype),
-                                        'data-folio-field-icon',
-                                    ]"
+                                    class="data-folio-field-icon"
                                     aria-hidden="true"
+                                    :class="datatypeIcon(widget.node.datatype)"
                                 />
                                 <HighlightedText
                                     :text="widget.label"
@@ -675,31 +688,27 @@ function onDragEnd(): void {
                             </dd>
                         </div>
                     </dl>
-                    <div
-                        v-if="tileRow.childFolios.length > 0"
-                        class="data-folio-children"
-                    >
-                        <DataFolio
-                            v-for="childFolio in tileRow.childFolios"
-                            :key="childFolio.nodegroupAlias"
-                            :nodegroup-alias="childFolio.nodegroupAlias"
-                            :nodegroup-widget-configs="nodegroupWidgetConfigs"
-                            :tiles="childFolio.tiles"
-                            :parent-tile-id="tileRow.tileId"
-                            :change-set="changeSet"
-                            :query="query"
-                            :matched-by-ancestor="childrenMatchedByAncestor"
-                            :selected-tile-id="selectedTileId"
-                            :is-editable="isEditable"
-                            @edit-tile="emit(EDIT_TILE, $event)"
-                        />
-                    </div>
+                    <DataFolio
+                        v-for="childFolio in tileRow.childFolios"
+                        :key="childFolio.nodegroupAlias"
+                        :nodegroup-alias="childFolio.nodegroupAlias"
+                        :nodegroup-widget-configs="nodegroupWidgetConfigs"
+                        :tiles="childFolio.tiles"
+                        :parent-tile-id="tileRow.tileId"
+                        :change-set="changeSet"
+                        :query="query"
+                        :matched-by-ancestor="childrenMatchedByAncestor"
+                        :selected-tile-id="selectedTileId"
+                        :is-editable="isEditable"
+                        @edit-tile="emit(EDIT_TILE, $event)"
+                    />
                 </div>
             </li>
         </ul>
         <div
             v-if="isFolioExpanded && tiles.length === 0"
             class="data-folio-tile-body data-folio-placeholder"
+            :class="{ 'data-folio-placeholder-top': isTopLevel }"
         >
             <dl class="data-folio-fields">
                 <div
@@ -708,12 +717,17 @@ function onDragEnd(): void {
                     class="data-folio-field"
                 >
                     <dt>
+                        <span class="data-folio-indent">
+                            <span
+                                v-for="level in nestingDepth"
+                                :key="level"
+                                class="data-folio-indent-step"
+                            />
+                        </span>
                         <i
-                            :class="[
-                                datatypeIcon(widget.node.datatype),
-                                'data-folio-field-icon',
-                            ]"
+                            class="data-folio-field-icon"
                             aria-hidden="true"
+                            :class="datatypeIcon(widget.node.datatype)"
                         />
                         <HighlightedText
                             :text="widget.label"
@@ -723,25 +737,20 @@ function onDragEnd(): void {
                     <dd class="data-folio-field-empty">{{ EMPTY_VALUE }}</dd>
                 </div>
             </dl>
-            <div
-                v-if="placeholderChildFolios.length > 0"
-                class="data-folio-children"
-            >
-                <DataFolio
-                    v-for="childFolio in placeholderChildFolios"
-                    :key="childFolio.nodegroupAlias"
-                    :nodegroup-alias="childFolio.nodegroupAlias"
-                    :nodegroup-widget-configs="nodegroupWidgetConfigs"
-                    :tiles="childFolio.tiles"
-                    :parent-tile-id="null"
-                    :change-set="changeSet"
-                    :query="query"
-                    :matched-by-ancestor="childrenMatchedByAncestor"
-                    :selected-tile-id="selectedTileId"
-                    :is-editable="false"
-                    @edit-tile="emit(EDIT_TILE, $event)"
-                />
-            </div>
+            <DataFolio
+                v-for="childFolio in placeholderChildFolios"
+                :key="childFolio.nodegroupAlias"
+                :nodegroup-alias="childFolio.nodegroupAlias"
+                :nodegroup-widget-configs="nodegroupWidgetConfigs"
+                :tiles="childFolio.tiles"
+                :parent-tile-id="null"
+                :change-set="changeSet"
+                :query="query"
+                :matched-by-ancestor="childrenMatchedByAncestor"
+                :selected-tile-id="selectedTileId"
+                :is-editable="false"
+                @edit-tile="emit(EDIT_TILE, $event)"
+            />
         </div>
     </section>
 </template>
@@ -752,39 +761,13 @@ function onDragEnd(): void {
     flex-direction: column;
 }
 
-.data-folio-depth-0 {
-    --data-folio-header-indent: 0.8rem;
-    --data-folio-entry-indent: 1.8rem;
-    --data-folio-field-indent: 2.6rem;
-    --data-folio-placeholder-indent: 1.8rem;
+.data-folio-indent {
+    display: flex;
+    flex-shrink: 0;
 }
 
-.data-folio-depth-1 {
-    --data-folio-header-indent: 3.2rem;
-    --data-folio-entry-indent: 3rem;
-    --data-folio-field-indent: 3.8rem;
-    --data-folio-placeholder-indent: 3.8rem;
-}
-
-.data-folio-depth-2 {
-    --data-folio-header-indent: 4.4rem;
-    --data-folio-entry-indent: 4.2rem;
-    --data-folio-field-indent: 5rem;
-    --data-folio-placeholder-indent: 5rem;
-}
-
-.data-folio-depth-3 {
-    --data-folio-header-indent: 5.6rem;
-    --data-folio-entry-indent: 5.4rem;
-    --data-folio-field-indent: 6.2rem;
-    --data-folio-placeholder-indent: 6.2rem;
-}
-
-.data-folio-depth-4 {
-    --data-folio-header-indent: 6.8rem;
-    --data-folio-entry-indent: 6.6rem;
-    --data-folio-field-indent: 7.4rem;
-    --data-folio-placeholder-indent: 7.4rem;
+.data-folio-indent-step {
+    inline-size: 1.2rem;
 }
 
 .data-folio-header {
@@ -793,7 +776,7 @@ function onDragEnd(): void {
     gap: 0.6rem;
     min-block-size: 3.7rem;
     padding-block: 0.4rem;
-    padding-inline: var(--data-folio-header-indent) 0.8rem;
+    padding-inline: 0.2rem 0.8rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
     color: var(--p-text-color);
 }
@@ -807,7 +790,8 @@ function onDragEnd(): void {
 
 .data-folio-header-nested {
     min-block-size: 3.3rem;
-    background: var(--resource-report-row-nested-background);
+    padding-inline-start: 1.4rem;
+    background: var(--resource-report-panel-background);
     font-size: 1.15rem;
     font-weight: 600;
 }
@@ -819,20 +803,16 @@ function onDragEnd(): void {
 .data-folio-header.data-folio-header-pending,
 .data-folio-tile-row.data-folio-tile-pending,
 .data-folio-fields.data-folio-tile-pending .data-folio-field {
-    background: var(--resource-report-pending-background);
-    color: var(--resource-report-pending-color);
+    background: var(--p-yellow-300);
+    color: var(--p-surface-900);
 }
 
-.data-folio-header-pending .data-folio-toggle,
 .data-folio-header-pending .data-folio-icon,
-.data-folio-tile-pending .data-folio-toggle,
 .data-folio-tile-pending .data-folio-drag-handle,
 .data-folio-tile-pending .data-folio-tile-number,
-.data-folio-tile-pending .data-folio-move,
 .data-folio-tile-pending .data-folio-field dt,
-.data-folio-tile-pending .data-folio-field dd,
-.data-folio-tile-pending .data-folio-field-icon {
-    color: var(--resource-report-pending-color);
+.data-folio-tile-pending .data-folio-field dd {
+    color: var(--p-surface-900);
 }
 
 .data-folio-header .data-folio-toggle,
@@ -871,7 +851,7 @@ function onDragEnd(): void {
     padding-inline: 0.8rem;
     border-radius: 0.8rem;
     background: var(--resource-report-accent-background);
-    color: var(--resource-report-accent-color);
+    color: var(--p-primary-color);
     font-size: 1.2rem;
     font-weight: 500;
 }
@@ -884,21 +864,21 @@ function onDragEnd(): void {
     cursor: default;
 }
 
-.data-folio-actions .data-folio-action {
+.data-folio-actions .data-folio-add {
     --p-button-label-font-weight: 600;
     min-block-size: 2.4rem;
     padding-block: 0.1rem;
     padding-inline: 0.6rem;
-    border-color: var(--resource-report-accent-color);
+    border-color: var(--p-primary-color);
     border-radius: 0.3rem;
     background: var(--resource-report-accent-background);
-    color: var(--resource-report-accent-color);
+    color: var(--p-primary-color);
     font-size: 1.1rem;
 }
 
-.data-folio-actions .data-folio-action:not(:disabled):hover {
-    border-color: var(--resource-report-accent-color);
-    background: var(--resource-report-accent-color);
+.data-folio-actions .data-folio-add:not(:disabled):hover {
+    border-color: var(--p-primary-color);
+    background: var(--p-primary-color);
     color: var(--p-primary-contrast-color);
 }
 
@@ -924,9 +904,9 @@ function onDragEnd(): void {
 }
 
 .data-folio-cardinality-many {
-    border-color: var(--resource-report-accent-color);
+    border-color: var(--p-primary-color);
     background: var(--resource-report-accent-background);
-    color: var(--resource-report-accent-color);
+    color: var(--p-primary-color);
     opacity: 1;
 }
 
@@ -944,10 +924,10 @@ function onDragEnd(): void {
     gap: 0.6rem;
     min-block-size: 3.1rem;
     padding-block: 0.4rem;
-    padding-inline: var(--data-folio-entry-indent) 0.8rem;
+    padding-inline: 1.2rem 0.8rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
     border-inline-start: 0.3rem solid transparent;
-    background: var(--resource-report-row-entry-background);
+    background: var(--resource-report-muted-background);
     cursor: pointer;
     font-size: 1.1rem;
     user-select: none;
@@ -998,7 +978,7 @@ function onDragEnd(): void {
     align-items: center;
     gap: 0.6rem;
     padding-block: 0.4rem;
-    padding-inline: var(--data-folio-field-indent) 0.8rem;
+    padding-inline: 2rem 0.8rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
     border-inline-start: 0.3rem solid transparent;
     font-size: 1.2rem;
@@ -1075,7 +1055,7 @@ function onDragEnd(): void {
 
 .data-folio-tile-row.data-folio-tile-selected-added,
 .data-folio-fields.data-folio-tile-selected-added .data-folio-field {
-    border-inline-start-color: var(--resource-report-accent-color);
+    border-inline-start-color: var(--p-primary-color);
 }
 
 .data-folio-tile-row.data-folio-tile-selected.data-folio-tile-deleted,
@@ -1084,12 +1064,7 @@ function onDragEnd(): void {
     border-inline-start-color: var(--resource-report-deleted-color);
 }
 
-.data-folio-children {
-    display: flex;
-    flex-direction: column;
-}
-
-.data-folio-placeholder > .data-folio-fields > .data-folio-field {
-    padding-inline-start: var(--data-folio-placeholder-indent);
+.data-folio-placeholder-top > .data-folio-fields > .data-folio-field {
+    padding-inline-start: 1.2rem;
 }
 </style>
