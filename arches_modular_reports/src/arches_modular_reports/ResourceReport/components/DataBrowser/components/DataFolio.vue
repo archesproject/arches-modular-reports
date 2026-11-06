@@ -471,7 +471,7 @@ function onDragEnd(): void {
                 </template>
                 <Button
                     v-if="isAddable"
-                    class="data-folio-action"
+                    class="data-folio-add"
                     variant="outlined"
                     size="small"
                     :label="$gettext('Add')"
@@ -655,11 +655,9 @@ function onDragEnd(): void {
                                     />
                                 </span>
                                 <i
-                                    :class="[
-                                        datatypeIcon(widget.node.datatype),
-                                        'data-folio-field-icon',
-                                    ]"
+                                    class="data-folio-field-icon"
                                     aria-hidden="true"
+                                    :class="datatypeIcon(widget.node.datatype)"
                                 />
                                 <HighlightedText
                                     :text="widget.label"
@@ -690,25 +688,20 @@ function onDragEnd(): void {
                             </dd>
                         </div>
                     </dl>
-                    <div
-                        v-if="tileRow.childFolios.length > 0"
-                        class="data-folio-children"
-                    >
-                        <DataFolio
-                            v-for="childFolio in tileRow.childFolios"
-                            :key="childFolio.nodegroupAlias"
-                            :nodegroup-alias="childFolio.nodegroupAlias"
-                            :nodegroup-widget-configs="nodegroupWidgetConfigs"
-                            :tiles="childFolio.tiles"
-                            :parent-tile-id="tileRow.tileId"
-                            :change-set="changeSet"
-                            :query="query"
-                            :matched-by-ancestor="childrenMatchedByAncestor"
-                            :selected-tile-id="selectedTileId"
-                            :is-editable="isEditable"
-                            @edit-tile="emit(EDIT_TILE, $event)"
-                        />
-                    </div>
+                    <DataFolio
+                        v-for="childFolio in tileRow.childFolios"
+                        :key="childFolio.nodegroupAlias"
+                        :nodegroup-alias="childFolio.nodegroupAlias"
+                        :nodegroup-widget-configs="nodegroupWidgetConfigs"
+                        :tiles="childFolio.tiles"
+                        :parent-tile-id="tileRow.tileId"
+                        :change-set="changeSet"
+                        :query="query"
+                        :matched-by-ancestor="childrenMatchedByAncestor"
+                        :selected-tile-id="selectedTileId"
+                        :is-editable="isEditable"
+                        @edit-tile="emit(EDIT_TILE, $event)"
+                    />
                 </div>
             </li>
         </ul>
@@ -732,11 +725,9 @@ function onDragEnd(): void {
                             />
                         </span>
                         <i
-                            :class="[
-                                datatypeIcon(widget.node.datatype),
-                                'data-folio-field-icon',
-                            ]"
+                            class="data-folio-field-icon"
                             aria-hidden="true"
+                            :class="datatypeIcon(widget.node.datatype)"
                         />
                         <HighlightedText
                             :text="widget.label"
@@ -746,25 +737,20 @@ function onDragEnd(): void {
                     <dd class="data-folio-field-empty">{{ EMPTY_VALUE }}</dd>
                 </div>
             </dl>
-            <div
-                v-if="placeholderChildFolios.length > 0"
-                class="data-folio-children"
-            >
-                <DataFolio
-                    v-for="childFolio in placeholderChildFolios"
-                    :key="childFolio.nodegroupAlias"
-                    :nodegroup-alias="childFolio.nodegroupAlias"
-                    :nodegroup-widget-configs="nodegroupWidgetConfigs"
-                    :tiles="childFolio.tiles"
-                    :parent-tile-id="null"
-                    :change-set="changeSet"
-                    :query="query"
-                    :matched-by-ancestor="childrenMatchedByAncestor"
-                    :selected-tile-id="selectedTileId"
-                    :is-editable="false"
-                    @edit-tile="emit(EDIT_TILE, $event)"
-                />
-            </div>
+            <DataFolio
+                v-for="childFolio in placeholderChildFolios"
+                :key="childFolio.nodegroupAlias"
+                :nodegroup-alias="childFolio.nodegroupAlias"
+                :nodegroup-widget-configs="nodegroupWidgetConfigs"
+                :tiles="childFolio.tiles"
+                :parent-tile-id="null"
+                :change-set="changeSet"
+                :query="query"
+                :matched-by-ancestor="childrenMatchedByAncestor"
+                :selected-tile-id="selectedTileId"
+                :is-editable="false"
+                @edit-tile="emit(EDIT_TILE, $event)"
+            />
         </div>
     </section>
 </template>
@@ -821,15 +807,11 @@ function onDragEnd(): void {
     color: var(--p-surface-900);
 }
 
-.data-folio-header-pending .data-folio-toggle,
 .data-folio-header-pending .data-folio-icon,
-.data-folio-tile-pending .data-folio-toggle,
 .data-folio-tile-pending .data-folio-drag-handle,
 .data-folio-tile-pending .data-folio-tile-number,
-.data-folio-tile-pending .data-folio-move,
 .data-folio-tile-pending .data-folio-field dt,
-.data-folio-tile-pending .data-folio-field dd,
-.data-folio-tile-pending .data-folio-field-icon {
+.data-folio-tile-pending .data-folio-field dd {
     color: var(--p-surface-900);
 }
 
@@ -882,7 +864,7 @@ function onDragEnd(): void {
     cursor: default;
 }
 
-.data-folio-actions .data-folio-action {
+.data-folio-actions .data-folio-add {
     --p-button-label-font-weight: 600;
     min-block-size: 2.4rem;
     padding-block: 0.1rem;
@@ -894,7 +876,7 @@ function onDragEnd(): void {
     font-size: 1.1rem;
 }
 
-.data-folio-actions .data-folio-action:not(:disabled):hover {
+.data-folio-actions .data-folio-add:not(:disabled):hover {
     border-color: var(--p-primary-color);
     background: var(--p-primary-color);
     color: var(--p-primary-contrast-color);
@@ -1080,11 +1062,6 @@ function onDragEnd(): void {
 .data-folio-fields.data-folio-tile-selected.data-folio-tile-deleted
     .data-folio-field {
     border-inline-start-color: var(--resource-report-deleted-color);
-}
-
-.data-folio-children {
-    display: flex;
-    flex-direction: column;
 }
 
 .data-folio-placeholder-top > .data-folio-fields > .data-folio-field {

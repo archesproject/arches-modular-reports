@@ -222,8 +222,6 @@ function closeDrawer(): void {
     block-size: 2.8rem;
     padding: 0;
     border: none;
-    background: var(--resource-report-muted-background);
-    color: var(--p-text-muted-color);
 }
 
 .report-drawer-header > .p-button:not(:disabled):hover {
