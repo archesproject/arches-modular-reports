@@ -39,7 +39,6 @@ import type {
 
 const EDIT_TILE = "edit-tile" as const;
 const EMPTY_VALUE = "—";
-const MAXIMUM_INDENT_DEPTH = 4;
 
 const {
     nodegroupAlias,
@@ -86,11 +85,9 @@ const visibleWidgets = computed(() =>
     ),
 );
 
-const depthClass = computed(() => {
-    const depth =
-        nodegroupLineage(nodegroupWidgetConfigs, nodegroupAlias).length - 1;
-    return `data-folio-depth-${Math.min(depth, MAXIMUM_INDENT_DEPTH)}`;
-});
+const nestingDepth = computed(
+    () => nodegroupLineage(nodegroupWidgetConfigs, nodegroupAlias).length - 1,
+);
 
 const childAliases = computed(() =>
     childNodegroupAliases(nodegroupWidgetConfigs, nodegroupAlias),
@@ -397,10 +394,7 @@ function onDragEnd(): void {
 </script>
 
 <template>
-    <section
-        class="data-folio"
-        :class="depthClass"
-    >
+    <section class="data-folio">
         <header
             class="data-folio-header"
             :class="{
@@ -411,6 +405,13 @@ function onDragEnd(): void {
             }"
             @click="onHeaderClick"
         >
+            <span class="data-folio-indent">
+                <span
+                    v-for="level in nestingDepth"
+                    :key="level"
+                    class="data-folio-indent-step"
+                />
+            </span>
             <Button
                 v-if="isTopLevel"
                 class="data-folio-toggle"
@@ -518,6 +519,13 @@ function onDragEnd(): void {
                     @dragstart="onDragStart($event, tileRow.tileId)"
                     @dragend="onDragEnd"
                 >
+                    <span class="data-folio-indent">
+                        <span
+                            v-for="level in nestingDepth"
+                            :key="level"
+                            class="data-folio-indent-step"
+                        />
+                    </span>
                     <i
                         v-if="!tileRow.isLocked && isReorderable"
                         class="pi pi-bars data-folio-drag-handle"
@@ -639,6 +647,13 @@ function onDragEnd(): void {
                             class="data-folio-field"
                         >
                             <dt>
+                                <span class="data-folio-indent">
+                                    <span
+                                        v-for="level in nestingDepth"
+                                        :key="level"
+                                        class="data-folio-indent-step"
+                                    />
+                                </span>
                                 <i
                                     :class="[
                                         datatypeIcon(widget.node.datatype),
@@ -700,6 +715,7 @@ function onDragEnd(): void {
         <div
             v-if="isFolioExpanded && tiles.length === 0"
             class="data-folio-tile-body data-folio-placeholder"
+            :class="{ 'data-folio-placeholder-top': isTopLevel }"
         >
             <dl class="data-folio-fields">
                 <div
@@ -708,6 +724,13 @@ function onDragEnd(): void {
                     class="data-folio-field"
                 >
                     <dt>
+                        <span class="data-folio-indent">
+                            <span
+                                v-for="level in nestingDepth"
+                                :key="level"
+                                class="data-folio-indent-step"
+                            />
+                        </span>
                         <i
                             :class="[
                                 datatypeIcon(widget.node.datatype),
@@ -752,39 +775,13 @@ function onDragEnd(): void {
     flex-direction: column;
 }
 
-.data-folio-depth-0 {
-    --data-folio-header-indent: 0.8rem;
-    --data-folio-entry-indent: 1.8rem;
-    --data-folio-field-indent: 2.6rem;
-    --data-folio-placeholder-indent: 1.8rem;
+.data-folio-indent {
+    display: flex;
+    flex-shrink: 0;
 }
 
-.data-folio-depth-1 {
-    --data-folio-header-indent: 3.2rem;
-    --data-folio-entry-indent: 3rem;
-    --data-folio-field-indent: 3.8rem;
-    --data-folio-placeholder-indent: 3.8rem;
-}
-
-.data-folio-depth-2 {
-    --data-folio-header-indent: 4.4rem;
-    --data-folio-entry-indent: 4.2rem;
-    --data-folio-field-indent: 5rem;
-    --data-folio-placeholder-indent: 5rem;
-}
-
-.data-folio-depth-3 {
-    --data-folio-header-indent: 5.6rem;
-    --data-folio-entry-indent: 5.4rem;
-    --data-folio-field-indent: 6.2rem;
-    --data-folio-placeholder-indent: 6.2rem;
-}
-
-.data-folio-depth-4 {
-    --data-folio-header-indent: 6.8rem;
-    --data-folio-entry-indent: 6.6rem;
-    --data-folio-field-indent: 7.4rem;
-    --data-folio-placeholder-indent: 7.4rem;
+.data-folio-indent-step {
+    inline-size: 1.2rem;
 }
 
 .data-folio-header {
@@ -793,7 +790,7 @@ function onDragEnd(): void {
     gap: 0.6rem;
     min-block-size: 3.7rem;
     padding-block: 0.4rem;
-    padding-inline: var(--data-folio-header-indent) 0.8rem;
+    padding-inline: 0.2rem 0.8rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
     color: var(--p-text-color);
 }
@@ -807,6 +804,7 @@ function onDragEnd(): void {
 
 .data-folio-header-nested {
     min-block-size: 3.3rem;
+    padding-inline-start: 1.4rem;
     background: var(--resource-report-row-nested-background);
     font-size: 1.15rem;
     font-weight: 600;
@@ -944,7 +942,7 @@ function onDragEnd(): void {
     gap: 0.6rem;
     min-block-size: 3.1rem;
     padding-block: 0.4rem;
-    padding-inline: var(--data-folio-entry-indent) 0.8rem;
+    padding-inline: 1.2rem 0.8rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
     border-inline-start: 0.3rem solid transparent;
     background: var(--resource-report-row-entry-background);
@@ -998,7 +996,7 @@ function onDragEnd(): void {
     align-items: center;
     gap: 0.6rem;
     padding-block: 0.4rem;
-    padding-inline: var(--data-folio-field-indent) 0.8rem;
+    padding-inline: 2rem 0.8rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
     border-inline-start: 0.3rem solid transparent;
     font-size: 1.2rem;
@@ -1089,7 +1087,7 @@ function onDragEnd(): void {
     flex-direction: column;
 }
 
-.data-folio-placeholder > .data-folio-fields > .data-folio-field {
-    padding-inline-start: var(--data-folio-placeholder-indent);
+.data-folio-placeholder-top > .data-folio-fields > .data-folio-field {
+    padding-inline-start: 1.2rem;
 }
 </style>
