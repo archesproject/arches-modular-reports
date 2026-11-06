@@ -13,21 +13,6 @@ import type {
     WorkspaceTabsConfig,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
-const WORKSPACE_STRIP_TOKENS = {
-    tablist: {
-        background: "var(--resource-report-strip-background)",
-        borderColor: "var(--resource-report-strip-border-color)",
-    },
-    tab: {
-        padding: "0.9rem 1rem",
-        fontWeight: "500",
-        borderColor: "transparent",
-        hoverBorderColor: "transparent",
-        activeBorderColor: "transparent",
-    },
-    activeBar: { height: "0.2rem" },
-};
-
 const { component } = defineProps<{
     component: ComponentNode<WorkspaceTabsConfig>;
 }>();
@@ -46,7 +31,6 @@ const bannerNodes = computed(() => component.config.banner ?? []);
             v-model:value="activeTabIndex"
             class="workspace-tabs-strip"
             :show-navigators="false"
-            :dt="WORKSPACE_STRIP_TOKENS"
         >
             <TabList>
                 <Tab
@@ -85,6 +69,16 @@ const bannerNodes = computed(() => component.config.banner ?? []);
     flex: 1;
     flex-direction: column;
     min-block-size: 0;
+}
+
+.workspace-tabs-strip {
+    --p-tabs-tablist-background: var(--resource-report-strip-background);
+    --p-tabs-tablist-border-color: var(--resource-report-strip-border-color);
+    --p-tabs-tab-padding: 0.9rem 1rem;
+    --p-tabs-tab-font-weight: 500;
+    --p-tabs-tab-border-color: transparent;
+    --p-tabs-tab-hover-border-color: transparent;
+    --p-tabs-active-bar-height: 0.2rem;
 }
 
 .workspace-tabs-strip :deep(.p-tablist-tab-list) {
