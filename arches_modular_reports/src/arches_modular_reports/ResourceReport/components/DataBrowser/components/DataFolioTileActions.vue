@@ -94,7 +94,7 @@ const { $gettext } = useGettext();
     padding-inline: 0.6rem;
     border-color: var(--resource-report-bar-border-color);
     border-radius: 0.3rem;
-    background: var(--resource-report-row-entry-background);
+    background: var(--resource-report-muted-background);
     color: var(--p-text-muted-color);
     font-size: 1.1rem;
 }

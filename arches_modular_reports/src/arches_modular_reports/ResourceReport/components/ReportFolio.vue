@@ -448,7 +448,7 @@ function toggleOpen(): void {
     padding-inline: 0.6rem;
     border-radius: 1rem;
     background: var(--resource-report-accent-background);
-    color: var(--resource-report-accent-color);
+    color: var(--p-primary-color);
     font-size: 1.2rem;
     font-weight: 700;
     line-height: 2rem;

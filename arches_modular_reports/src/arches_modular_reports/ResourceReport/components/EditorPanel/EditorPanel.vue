@@ -41,6 +41,6 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: var(--resource-report-aside-background);
+    background: var(--resource-report-panel-background);
 }
 </style>

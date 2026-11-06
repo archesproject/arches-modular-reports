@@ -72,8 +72,8 @@ const bannerNodes = computed(() => component.config.banner ?? []);
 }
 
 .workspace-tabs-strip {
-    --p-tabs-tablist-background: var(--resource-report-strip-background);
-    --p-tabs-tablist-border-color: var(--resource-report-strip-border-color);
+    --p-tabs-tablist-background: var(--resource-report-bar-background);
+    --p-tabs-tablist-border-color: var(--resource-report-bar-border-color);
     --p-tabs-tab-padding: 0.9rem 1rem;
     --p-tabs-tab-font-weight: 500;
     --p-tabs-tab-border-color: transparent;
@@ -96,7 +96,7 @@ const bannerNodes = computed(() => component.config.banner ?? []);
     padding-block: 0.5rem;
     padding-inline: 1.6rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
-    background: var(--resource-report-caption-background);
+    background: var(--resource-report-muted-background);
     color: var(--p-text-muted-color);
     font-size: 1.15rem;
 }

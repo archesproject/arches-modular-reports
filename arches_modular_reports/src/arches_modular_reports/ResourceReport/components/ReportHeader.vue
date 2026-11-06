@@ -241,7 +241,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     justify-content: center;
     inline-size: 9rem;
     background: var(--resource-report-accent-background);
-    color: var(--resource-report-accent-color);
+    color: var(--p-primary-color);
     font-size: 2.4rem;
 }
 

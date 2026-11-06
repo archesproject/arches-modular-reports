@@ -60,7 +60,7 @@ const { tabs, activeTabIndex } = useTabbedComponents(
 
 <style scoped>
 .report-tabs {
-    --p-tabs-tablist-background: var(--resource-report-subtabs-background);
+    --p-tabs-tablist-background: var(--resource-report-panel-background);
     --p-tabs-tab-padding: 0.8rem 1.4rem;
     --p-tabs-tab-font-weight: 500;
     --p-tabs-tab-hover-color: var(--p-text-color);

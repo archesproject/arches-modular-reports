@@ -805,7 +805,7 @@ function onDragEnd(): void {
 .data-folio-header-nested {
     min-block-size: 3.3rem;
     padding-inline-start: 1.4rem;
-    background: var(--resource-report-row-nested-background);
+    background: var(--resource-report-panel-background);
     font-size: 1.15rem;
     font-weight: 600;
 }
@@ -817,8 +817,8 @@ function onDragEnd(): void {
 .data-folio-header.data-folio-header-pending,
 .data-folio-tile-row.data-folio-tile-pending,
 .data-folio-fields.data-folio-tile-pending .data-folio-field {
-    background: var(--resource-report-pending-background);
-    color: var(--resource-report-pending-color);
+    background: var(--p-yellow-300);
+    color: var(--p-surface-900);
 }
 
 .data-folio-header-pending .data-folio-toggle,
@@ -830,7 +830,7 @@ function onDragEnd(): void {
 .data-folio-tile-pending .data-folio-field dt,
 .data-folio-tile-pending .data-folio-field dd,
 .data-folio-tile-pending .data-folio-field-icon {
-    color: var(--resource-report-pending-color);
+    color: var(--p-surface-900);
 }
 
 .data-folio-header .data-folio-toggle,
@@ -869,7 +869,7 @@ function onDragEnd(): void {
     padding-inline: 0.8rem;
     border-radius: 0.8rem;
     background: var(--resource-report-accent-background);
-    color: var(--resource-report-accent-color);
+    color: var(--p-primary-color);
     font-size: 1.2rem;
     font-weight: 500;
 }
@@ -887,16 +887,16 @@ function onDragEnd(): void {
     min-block-size: 2.4rem;
     padding-block: 0.1rem;
     padding-inline: 0.6rem;
-    border-color: var(--resource-report-accent-color);
+    border-color: var(--p-primary-color);
     border-radius: 0.3rem;
     background: var(--resource-report-accent-background);
-    color: var(--resource-report-accent-color);
+    color: var(--p-primary-color);
     font-size: 1.1rem;
 }
 
 .data-folio-actions .data-folio-action:not(:disabled):hover {
-    border-color: var(--resource-report-accent-color);
-    background: var(--resource-report-accent-color);
+    border-color: var(--p-primary-color);
+    background: var(--p-primary-color);
     color: var(--p-primary-contrast-color);
 }
 
@@ -922,9 +922,9 @@ function onDragEnd(): void {
 }
 
 .data-folio-cardinality-many {
-    border-color: var(--resource-report-accent-color);
+    border-color: var(--p-primary-color);
     background: var(--resource-report-accent-background);
-    color: var(--resource-report-accent-color);
+    color: var(--p-primary-color);
     opacity: 1;
 }
 
@@ -945,7 +945,7 @@ function onDragEnd(): void {
     padding-inline: 1.2rem 0.8rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
     border-inline-start: 0.3rem solid transparent;
-    background: var(--resource-report-row-entry-background);
+    background: var(--resource-report-muted-background);
     cursor: pointer;
     font-size: 1.1rem;
     user-select: none;
@@ -1073,7 +1073,7 @@ function onDragEnd(): void {
 
 .data-folio-tile-row.data-folio-tile-selected-added,
 .data-folio-fields.data-folio-tile-selected-added .data-folio-field {
-    border-inline-start-color: var(--resource-report-accent-color);
+    border-inline-start-color: var(--p-primary-color);
 }
 
 .data-folio-tile-row.data-folio-tile-selected.data-folio-tile-deleted,
