@@ -20,9 +20,13 @@
         "vitest": "vitest --run --coverage"
     },
     "dependencies": {
-        "arches": "archesproject/arches#semver:^v8.2.0-alpha.12",
+        "arches": "archesproject/arches#semver:^v8.2.0-alpha.24",
         "es-toolkit": "^1.39.10",
         "numeral": "^2.0.6"
+    },
+    "devDependencies": {
+        "@vitest/coverage-v8": "5.0.5",
+        "vitest": "5.0.5"
     },
     "nodeModulesPaths": {},
     "overrides": {}
