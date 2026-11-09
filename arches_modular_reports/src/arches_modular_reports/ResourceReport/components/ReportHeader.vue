@@ -121,8 +121,12 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
         <div class="report-header-thumb">
             <i
                 aria-hidden="true"
+                class="report-header-icon"
                 :class="graphIconClass"
             />
+            <span class="report-header-type">{{
+                reportData.context.graph.name
+            }}</span>
         </div>
         <div class="report-header-content">
             <div class="report-header-title">
@@ -134,9 +138,6 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                     :rounded="true"
                 />
             </div>
-            <span class="report-header-type">{{
-                reportData.context.graph.name
-            }}</span>
             <dl
                 v-if="summaryLines.length > 0"
                 class="report-header-summary"
@@ -234,14 +235,23 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     background: var(--p-content-background);
 }
 
+/* Icon over model name, following the arches-search result card thumb. */
 .report-header-thumb {
     display: flex;
+    flex-direction: column;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
+    gap: 0.4rem;
     inline-size: 9rem;
+    padding-block: 1.2rem;
+    padding-inline: 0.6rem;
     background: var(--resource-report-accent-background);
     color: var(--p-primary-color);
+    text-align: center;
+}
+
+.report-header-icon {
     font-size: 2.4rem;
 }
 
@@ -364,8 +374,11 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
 }
 
 .report-header-type {
-    color: var(--p-text-muted-color);
-    font-size: 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.036rem;
+    line-height: 1.3;
+    text-transform: uppercase;
 }
 
 .report-header-summary {
