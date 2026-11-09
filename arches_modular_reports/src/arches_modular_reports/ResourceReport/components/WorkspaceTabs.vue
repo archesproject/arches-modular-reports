@@ -7,6 +7,7 @@ import Tabs from "openvue/tabs";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
 import { useTabbedComponents } from "@/arches_modular_reports/ResourceReport/composables/useTabbedComponents.ts";
+import { provideWorkspaceHeaderHost } from "@/arches_modular_reports/ResourceReport/composables/useWorkspaceHeaderHost.ts";
 
 import type {
     ComponentNode,
@@ -21,39 +22,50 @@ const { tabs, activeTabIndex, activeTab } = useTabbedComponents(
     () => component.config.components ?? [],
 );
 
+// A workspace with a main column (SplitPane) hosts the header there, so the
+// aside starts at the top of the page; otherwise it renders full width here.
+const headerHost = provideWorkspaceHeaderHost();
+
 const bannerNodes = computed(() => component.config.banner ?? []);
 </script>
 
 <template>
     <div class="workspace-tabs">
-        <Tabs
-            v-if="tabs.length > 1"
-            v-model:value="activeTabIndex"
-            class="workspace-tabs-strip"
-            :show-navigators="false"
+        <Teleport
+            :to="headerHost ?? 'body'"
+            :disabled="headerHost === null"
         >
-            <TabList>
-                <Tab
-                    v-for="(tab, tabIndex) in tabs"
-                    :key="tabIndex"
-                    :value="tabIndex"
+            <div class="workspace-tabs-header">
+                <Tabs
+                    v-if="tabs.length > 1"
+                    v-model:value="activeTabIndex"
+                    class="workspace-tabs-strip"
+                    :show-navigators="false"
                 >
-                    <span>{{ tab.label }}</span>
-                </Tab>
-            </TabList>
-        </Tabs>
-        <p
-            v-if="activeTab?.description"
-            class="workspace-tabs-caption"
-        >
-            {{ activeTab.description }}
-        </p>
-        <component
-            :is="loadComponent(bannerNode.component)"
-            v-for="(bannerNode, bannerIndex) in bannerNodes"
-            :key="bannerIndex"
-            :component="bannerNode"
-        />
+                    <TabList>
+                        <Tab
+                            v-for="(tab, tabIndex) in tabs"
+                            :key="tabIndex"
+                            :value="tabIndex"
+                        >
+                            <span>{{ tab.label }}</span>
+                        </Tab>
+                    </TabList>
+                </Tabs>
+                <p
+                    v-if="activeTab?.description"
+                    class="workspace-tabs-caption"
+                >
+                    {{ activeTab.description }}
+                </p>
+                <component
+                    :is="loadComponent(bannerNode.component)"
+                    v-for="(bannerNode, bannerIndex) in bannerNodes"
+                    :key="bannerIndex"
+                    :component="bannerNode"
+                />
+            </div>
+        </Teleport>
         <component
             :is="loadComponent(activeTab.node.component)"
             v-if="activeTab"

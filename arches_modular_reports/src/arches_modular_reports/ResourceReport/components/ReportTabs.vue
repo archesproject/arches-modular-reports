@@ -70,7 +70,8 @@ const { tabs, activeTabIndex } = useTabbedComponents(
 
 .report-tabs-list {
     position: sticky;
-    inset-block-start: 0;
+    /* Set by SplitPane: stick just below the pinned workspace header. */
+    inset-block-start: var(--split-pane-main-header-block-size, 0);
     z-index: 1;
 }
 

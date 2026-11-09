@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onBeforeUnmount, ref, useTemplateRef, watch } from "vue";
 
 import Splitter from "openvue/splitter";
 import SplitterPanel from "openvue/splitterpanel";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
+import { useWorkspaceHeaderHost } from "@/arches_modular_reports/ResourceReport/composables/useWorkspaceHeaderHost.ts";
 
 import type {
     ComponentNode,
@@ -20,6 +21,11 @@ const FULL_PANE_SIZE = 100;
 const { component } = defineProps<{
     component: ComponentNode<SplitPaneConfig>;
 }>();
+
+const mainHeader = useTemplateRef<HTMLElement>("mainHeader");
+useWorkspaceHeaderHost(mainHeader);
+
+const mainHeaderBlockSize = ref(0);
 
 const mainNodes = computed(() => component.config.main ?? []);
 
@@ -47,6 +53,34 @@ const splitterStateKey = computed(() => {
     );
     return `${SPLITTER_STATE_KEY_PREFIX}:${regionPaths.join(",")}`;
 });
+
+// Sticky elements further down the main region (e.g. the report sub-tabs)
+// offset themselves by the pinned header's height via this custom property.
+const mainRegionStyle = computed(() => ({
+    "--split-pane-main-header-block-size": `${mainHeaderBlockSize.value}px`,
+}));
+
+let headerResizeObserver: ResizeObserver | null = null;
+
+watch(
+    mainHeader,
+    (headerElement) => {
+        headerResizeObserver?.disconnect();
+        headerResizeObserver = null;
+        if (headerElement === null) {
+            return;
+        }
+        headerResizeObserver = new ResizeObserver(([entry]) => {
+            mainHeaderBlockSize.value = entry.borderBoxSize[0].blockSize;
+        });
+        headerResizeObserver.observe(headerElement);
+    },
+    { flush: "post" },
+);
+
+onBeforeUnmount(() => {
+    headerResizeObserver?.disconnect();
+});
 </script>
 
 <template>
@@ -58,9 +92,14 @@ const splitterStateKey = computed(() => {
     >
         <SplitterPanel
             class="split-pane-region"
+            :style="mainRegionStyle"
             :size="mainPaneSize"
             :min-size="MINIMUM_PANE_SIZE"
         >
+            <div
+                ref="mainHeader"
+                class="split-pane-main-header"
+            ></div>
             <component
                 :is="loadComponent(childNode.component)"
                 v-for="(childNode, childIndex) in mainNodes"
@@ -125,6 +164,14 @@ const splitterStateKey = computed(() => {
     flex-direction: column;
     min-inline-size: 0;
     overflow: auto;
+}
+
+.split-pane-main-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 2;
+    flex-shrink: 0;
+    background: var(--p-content-background);
 }
 
 .split-pane-aside {
