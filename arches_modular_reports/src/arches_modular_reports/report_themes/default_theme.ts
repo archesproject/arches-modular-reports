@@ -165,7 +165,52 @@ const ModularReportPreset = definePreset(Aura, {
                 },
             },
         },
+        // Select, MultiSelect and TreeSelect dropdowns render on <body>, so
+        // these radii read variables that must be overridden at :root, not
+        // on the report.
+        multiselect: {
+            root: {
+                borderRadius:
+                    "var(--resource-report-multiselect-border-radius, 0.2rem)",
+            },
+            overlay: {
+                borderRadius:
+                    "var(--resource-report-multiselect-border-radius, 0.2rem)",
+            },
+            option: {
+                borderRadius:
+                    "var(--resource-report-multiselect-border-radius, 0.2rem)",
+            },
+        },
+        select: {
+            root: {
+                borderRadius:
+                    "var(--resource-report-select-border-radius, 0.2rem)",
+            },
+            overlay: {
+                borderRadius:
+                    "var(--resource-report-select-border-radius, 0.2rem)",
+            },
+            option: {
+                borderRadius:
+                    "var(--resource-report-select-border-radius, 0.2rem)",
+            },
+        },
+        treeselect: {
+            root: {
+                borderRadius:
+                    "var(--resource-report-treeselect-border-radius, 0.2rem)",
+            },
+            overlay: {
+                borderRadius:
+                    "var(--resource-report-treeselect-border-radius, 0.2rem)",
+            },
+        },
         tree: {
+            node: {
+                borderRadius:
+                    "var(--resource-report-treeselect-border-radius, 0.2rem)",
+            },
             colorScheme: {
                 light: {
                     node: {

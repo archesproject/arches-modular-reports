@@ -200,7 +200,7 @@ function transitionSeverity(
     align-items: center;
     justify-content: center;
     gap: 0.4rem;
-    inline-size: 9rem;
+    inline-size: 11rem;
     padding-block: 1.2rem;
     padding-inline: 0.6rem;
     background: var(--resource-report-accent-background);

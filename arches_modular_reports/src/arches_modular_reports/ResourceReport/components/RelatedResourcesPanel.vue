@@ -202,7 +202,7 @@ async function loadMore(group: RelatedResourceGroup): Promise<void> {
 .related-resources {
     display: flex;
     flex-direction: column;
-    gap: 1.6rem;
+    gap: 2.6rem;
     padding: 1.6rem;
 }
 

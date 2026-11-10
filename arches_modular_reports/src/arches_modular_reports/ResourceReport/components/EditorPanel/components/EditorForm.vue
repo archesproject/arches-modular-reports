@@ -380,16 +380,14 @@ function undoDelete(): void {
     --p-select-padding-x: 1.1rem;
     --p-select-padding-y: 0.8rem;
     --p-select-border-color: var(--p-content-border-color);
-    --p-select-border-radius: 0.6rem;
     --p-treeselect-padding-x: 1.1rem;
     --p-treeselect-padding-y: 0.8rem;
     --p-treeselect-border-color: var(--p-content-border-color);
-    --p-treeselect-border-radius: 0.6rem;
     padding: 2.4rem 2.4rem 4.5rem 2.4rem;
 }
 
 .editor-panel-card-body :deep(.p-form) {
-    gap: 1.8rem;
+    gap: 2.8rem;
 }
 
 .editor-panel-card-body :deep(.widget-label) {
