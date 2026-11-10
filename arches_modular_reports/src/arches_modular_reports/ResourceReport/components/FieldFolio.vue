@@ -199,7 +199,6 @@ const isDeleted = computed(
 }
 
 .field-folio-label {
-    min-inline-size: 12.8rem;
     color: var(--p-text-muted-color);
 }
 

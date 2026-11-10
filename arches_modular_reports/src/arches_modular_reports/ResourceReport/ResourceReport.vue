@@ -288,6 +288,18 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
     --resource-report-deleted-color: var(--p-red-300);
 }
 
+/*
+ * OpenVue gives every hovered button `border: 1px solid <hover colour>`, so
+ * link and text buttons gain a border (and grow) on hover. They stay
+ * borderless in the report, at rest and on hover.
+ */
+.resource-report :deep(.p-button-link),
+.resource-report :deep(.p-button-text),
+.resource-report :deep(.p-button-link:not(:disabled):hover),
+.resource-report :deep(.p-button-text:not(:disabled):hover) {
+    border: none;
+}
+
 .resource-report-loading {
     display: flex;
     flex-direction: column;

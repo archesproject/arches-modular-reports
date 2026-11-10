@@ -7,7 +7,6 @@ import Message from "openvue/message";
 import Tag from "openvue/tag";
 
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
-import { buildExportUrl } from "@/arches_modular_reports/ResourceReport/api.ts";
 import {
     DEFAULT_GRAPH_ICON_CLASS,
     EMPTY_VALUE,
@@ -17,13 +16,10 @@ import { summaryRows } from "@/arches_modular_reports/ResourceReport/utils/summa
 
 import type {
     ComponentNode,
-    ExportFormat,
     LifecycleStateSummary,
     ReportHeaderConfig,
     TagSeverity,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
-
-const EXPORT_FORMATS: ExportFormat[] = ["json-ld", "json", "csv"];
 
 const { component } = defineProps<{
     component: ComponentNode<ReportHeaderConfig>;
@@ -31,12 +27,6 @@ const { component } = defineProps<{
 
 const { $gettext } = useGettext();
 const reportData = useReportData();
-
-const exportFormatLabels: Record<ExportFormat, string> = {
-    "json-ld": $gettext("JSON-LD"),
-    json: $gettext("JSON"),
-    csv: $gettext("CSV"),
-};
 
 const currentLifecycleState = computed(
     () => reportData.value.context.lifecycle_state,
@@ -103,16 +93,6 @@ function transitionSeverity(
         return "info";
     }
     return "danger";
-}
-
-function exportAriaLabel(exportFormat: ExportFormat): string {
-    return $gettext(
-        "Export as %{exportFormat}",
-        {
-            exportFormat: exportFormatLabels[exportFormat],
-        },
-        true,
-    );
 }
 </script>
 
@@ -183,29 +163,6 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
                     @click="reportData.lifecycle.transition(lifecycleState.id)"
                 />
             </div>
-            <nav
-                class="report-header-exports"
-                :aria-label="$gettext('Export')"
-            >
-                <Button
-                    v-for="exportFormat in EXPORT_FORMATS"
-                    :key="exportFormat"
-                    class="report-header-export"
-                    as="a"
-                    variant="link"
-                    size="small"
-                    target="_blank"
-                    rel="noopener"
-                    :href="
-                        buildExportUrl(
-                            reportData.resource.resourceinstanceid,
-                            exportFormat,
-                        )
-                    "
-                    :label="exportFormatLabels[exportFormat]"
-                    :aria-label="exportAriaLabel(exportFormat)"
-                />
-            </nav>
         </div>
     </header>
     <Message
@@ -278,19 +235,17 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     margin: 0;
     overflow: hidden;
     color: var(--p-text-color);
-    font-size: 1.6rem;
-    font-weight: 700;
+    font-size: 1.8rem;
+    font-weight: 600;
     line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .report-header-actions {
-    display: grid;
+    display: flex;
     flex-shrink: 0;
-    grid-template-rows: 1fr auto;
-    justify-items: end;
-    gap: 0.8rem;
+    align-items: flex-start;
     padding-block: 1.2rem;
     padding-inline: 1.6rem;
 }
@@ -299,17 +254,18 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     display: flex;
     align-self: start;
     gap: 0.8rem;
+    padding-block: 1.75rem;
 }
 
 .report-header-title .report-header-state {
     gap: 0.4rem;
     padding-block: 0.3rem;
-    padding-inline: 0.8rem;
+    padding-inline: 1.25rem;
     border: 0.1rem solid var(--p-blue-200);
     border-radius: 2rem;
     background: var(--p-blue-50);
     color: var(--p-blue-700);
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     font-weight: 600;
 }
 
@@ -356,23 +312,6 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     background: var(--p-red-700);
 }
 
-.report-header-exports .report-header-export {
-    --p-button-label-font-weight: 600;
-    padding: 0;
-    border: none;
-    font-size: 1.2rem;
-    line-height: 1.2;
-}
-
-.report-header-exports .report-header-export :deep(.p-button-label) {
-    text-decoration: underline;
-    text-underline-offset: 0.2rem;
-}
-
-.report-header-exports .report-header-export:not(:disabled):hover {
-    color: var(--p-primary-hover-color);
-}
-
 .report-header-type {
     font-size: 0.9rem;
     font-weight: 600;
@@ -402,11 +341,5 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
 .report-header-summary dd {
     margin: 0;
     font-weight: 600;
-}
-
-.report-header-exports {
-    display: flex;
-    grid-row: 2;
-    gap: 0.8rem;
 }
 </style>

@@ -5,6 +5,8 @@ import Tab from "openvue/tab";
 import TabList from "openvue/tablist";
 import Tabs from "openvue/tabs";
 
+import ReportExports from "@/arches_modular_reports/ResourceReport/components/ReportExports.vue";
+
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
 import { useTabbedComponents } from "@/arches_modular_reports/ResourceReport/composables/useTabbedComponents.ts";
 import { provideWorkspaceHeaderHost } from "@/arches_modular_reports/ResourceReport/composables/useWorkspaceHeaderHost.ts";
@@ -36,22 +38,25 @@ const bannerNodes = computed(() => component.config.banner ?? []);
             :disabled="headerHost === null"
         >
             <div class="workspace-tabs-header">
-                <Tabs
-                    v-if="tabs.length > 1"
-                    v-model:value="activeTabIndex"
-                    class="workspace-tabs-strip"
-                    :show-navigators="false"
-                >
-                    <TabList>
-                        <Tab
-                            v-for="(tab, tabIndex) in tabs"
-                            :key="tabIndex"
-                            :value="tabIndex"
-                        >
-                            <span>{{ tab.label }}</span>
-                        </Tab>
-                    </TabList>
-                </Tabs>
+                <div class="workspace-tabs-bar">
+                    <Tabs
+                        v-if="tabs.length > 1"
+                        v-model:value="activeTabIndex"
+                        class="workspace-tabs-strip"
+                        :show-navigators="false"
+                    >
+                        <TabList>
+                            <Tab
+                                v-for="(tab, tabIndex) in tabs"
+                                :key="tabIndex"
+                                :value="tabIndex"
+                            >
+                                <span>{{ tab.label }}</span>
+                            </Tab>
+                        </TabList>
+                    </Tabs>
+                    <ReportExports class="workspace-tabs-exports" />
+                </div>
                 <p
                     v-if="activeTab?.description"
                     class="workspace-tabs-caption"
@@ -83,7 +88,24 @@ const bannerNodes = computed(() => component.config.banner ?? []);
     min-block-size: 0;
 }
 
+/* Tab strip on the left, export links right-justified, on one bar. */
+.workspace-tabs-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1.6rem;
+    padding-inline-end: 1.6rem;
+    border-block-end: 0.1rem solid var(--resource-report-bar-border-color);
+    background: var(--resource-report-bar-background);
+}
+
+.workspace-tabs-bar .workspace-tabs-exports {
+    flex-shrink: 0;
+}
+
 .workspace-tabs-strip {
+    flex: 1;
+    min-inline-size: 0;
     --p-tabs-tablist-background: var(--resource-report-bar-background);
     --p-tabs-tablist-border-color: var(--resource-report-bar-border-color);
     --p-tabs-tab-padding: 0.9rem 1rem;
@@ -95,12 +117,15 @@ const bannerNodes = computed(() => component.config.banner ?? []);
 
 .workspace-tabs-strip :deep(.p-tablist-tab-list) {
     padding-inline: 0.4rem;
+    /* The bar draws the bottom border across its full width. */
+    border-block-end: none;
 }
 
 .workspace-tabs-strip :deep(.p-tab) {
     font-size: 1.3rem;
     letter-spacing: 0.08rem;
     text-transform: uppercase;
+    font-weight: 600;
 }
 
 .workspace-tabs-caption {

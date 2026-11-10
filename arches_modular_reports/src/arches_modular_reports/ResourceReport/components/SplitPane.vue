@@ -57,7 +57,7 @@ const splitterStateKey = computed(() => {
 // Sticky elements further down the main region (e.g. the report sub-tabs)
 // offset themselves by the pinned header's height via this custom property.
 const mainRegionStyle = computed(() => ({
-    "--split-pane-main-header-block-size": `${mainHeaderBlockSize.value}px`,
+    "--split-pane-main-header-block-size": `${mainHeaderBlockSize.value}rem`,
 }));
 
 let headerResizeObserver: ResizeObserver | null = null;
@@ -71,7 +71,7 @@ watch(
             return;
         }
         headerResizeObserver = new ResizeObserver(([entry]) => {
-            mainHeaderBlockSize.value = entry.borderBoxSize[0].blockSize;
+            mainHeaderBlockSize.value = toRem(entry.borderBoxSize[0].blockSize);
         });
         headerResizeObserver.observe(headerElement);
     },
@@ -81,6 +81,14 @@ watch(
 onBeforeUnmount(() => {
     headerResizeObserver?.disconnect();
 });
+
+// ResizeObserver reports CSS pixels; express them relative to the root font size.
+function toRem(pixels: number): number {
+    const rootFontSize = parseFloat(
+        getComputedStyle(document.documentElement).fontSize,
+    );
+    return pixels / rootFontSize;
+}
 </script>
 
 <template>

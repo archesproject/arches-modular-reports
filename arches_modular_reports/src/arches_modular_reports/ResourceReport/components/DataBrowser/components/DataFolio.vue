@@ -803,8 +803,9 @@ function onDragEnd(): void {
 .data-folio-header.data-folio-header-pending,
 .data-folio-tile-row.data-folio-tile-pending,
 .data-folio-fields.data-folio-tile-pending .data-folio-field {
-    background: var(--p-yellow-300);
+    background: var(--p-yellow-200);
     color: var(--p-surface-900);
+    border-bottom: 0.15rem solid var(--p-yellow-400);
 }
 
 .data-folio-header-pending .data-folio-icon,

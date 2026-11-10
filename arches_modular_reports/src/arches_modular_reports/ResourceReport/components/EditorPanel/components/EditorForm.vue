@@ -367,6 +367,11 @@ function undoDelete(): void {
     line-height: 1.2;
 }
 
+/* Keep the red border on hover instead of the theme's pale outlined-danger one. */
+.editor-panel-card-header .editor-panel-delete:not(:disabled):hover {
+    border-color: var(--resource-report-deleted-color);
+}
+
 .editor-panel-card-body {
     --p-inputtext-padding-x: 1.1rem;
     --p-inputtext-padding-y: 0.8rem;
@@ -380,7 +385,7 @@ function undoDelete(): void {
     --p-treeselect-padding-y: 0.8rem;
     --p-treeselect-border-color: var(--p-content-border-color);
     --p-treeselect-border-radius: 0.6rem;
-    padding: 2.4rem;
+    padding: 2.4rem 2.4rem 4.5rem 2.4rem;
 }
 
 .editor-panel-card-body :deep(.p-form) {
