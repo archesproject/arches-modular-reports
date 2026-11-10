@@ -253,6 +253,17 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
         transparent
     );
     --resource-report-deleted-color: var(--p-red-600);
+    --resource-report-drawer-trigger-open-background: var(--p-primary-700);
+    --resource-report-drawer-trigger-open-color: var(--p-primary-contrast-color);
+    /* Read by the core resource-instance multiselect widget's chips. */
+    --resource-instance-multiselect-chip-background: #092c8d;
+    --resource-instance-multiselect-chip-color: var(--p-surface-0);
+    --resource-instance-multiselect-chip-button-color: var(--p-surface-0);
+    --resource-instance-multiselect-chip-button-hover-background: color-mix(
+        in srgb,
+        var(--p-surface-0) 20%,
+        transparent
+    );
 
     display: flex;
     flex-direction: column;
@@ -298,6 +309,7 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
 .resource-report :deep(.p-button-link:not(:disabled):hover),
 .resource-report :deep(.p-button-text:not(:disabled):hover) {
     border: none;
+    line-height: 1.2;
 }
 
 .resource-report-loading {

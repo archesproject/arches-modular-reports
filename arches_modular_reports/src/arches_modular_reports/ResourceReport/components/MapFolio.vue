@@ -389,16 +389,23 @@ function showNextTile(): void {
 .map-folio-fields {
     display: flex;
     flex-direction: column;
-    gap: 1.4rem;
+    gap: 0.2rem;
 }
 
 .map-folio-field {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    gap: 0.75rem;
 }
 
 .map-folio-field-value {
     font-weight: 600;
+}
+
+/* Widgets render their value in a <p>; drop its default block margins. */
+.map-folio-field-value :deep(p) {
+    margin-block-start: 0rem;
+    margin-block-end: 0rem;
 }
 
 .map-folio-actions {

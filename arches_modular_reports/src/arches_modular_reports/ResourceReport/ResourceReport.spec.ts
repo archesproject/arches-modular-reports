@@ -566,6 +566,39 @@ describe("ResourceReport", () => {
         );
     });
 
+    it("shows a workspace caption only when one is configured", async () => {
+        const wrapper = mountReport();
+        await flushPromises();
+
+        expect(wrapper.find(".workspace-tabs-caption").text()).toBe(
+            "A curated summary of this resource's data",
+        );
+
+        await buttonWithText(wrapper, ".workspace-tabs-strip", "Data").trigger(
+            "click",
+        );
+        await flushPromises();
+
+        expect(wrapper.find(".workspace-tabs-caption").exists()).toBe(false);
+    });
+
+    it("hides a workspace caption that is blank in every language", async () => {
+        const wrapper = mountReport({
+            components: [
+                workspaceTabs(
+                    reportNode("ReportPlaceholder", {
+                        label: { en: "Report" },
+                        description: { en: "", fr: "" },
+                        message: "Nothing here yet",
+                    }),
+                ),
+            ],
+        });
+        await flushPromises();
+
+        expect(wrapper.find(".workspace-tabs-caption").exists()).toBe(false);
+    });
+
     it("offers editing only when an editor is declared", async () => {
         const wrapper = mountReport(folioConfig([]));
         await flushPromises();

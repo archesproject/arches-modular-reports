@@ -376,7 +376,7 @@ function undoDelete(): void {
     --p-inputtext-padding-x: 1.1rem;
     --p-inputtext-padding-y: 0.8rem;
     --p-inputtext-border-color: var(--p-content-border-color);
-    --p-inputtext-border-radius: 0.6rem;
+    --p-inputtext-border-radius: 0.1rem;
     --p-select-padding-x: 1.1rem;
     --p-select-padding-y: 0.8rem;
     --p-select-border-color: var(--p-content-border-color);

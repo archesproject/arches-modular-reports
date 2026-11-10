@@ -506,10 +506,11 @@ function toggleOpen(): void {
 .report-folio-entry {
     display: flex;
     flex-direction: column;
+    padding-bottom: 1.5rem;
 }
 
 .report-folio-entry {
-    gap: 1.2rem;
+    gap: 0.1rem;
 }
 
 .report-folio-tile {

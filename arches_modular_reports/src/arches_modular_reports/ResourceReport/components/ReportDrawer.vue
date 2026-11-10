@@ -172,6 +172,14 @@ function closeDrawer(): void {
     color: var(--p-primary-color);
 }
 
+/* The trigger for the open panel stays highlighted, including on hover. */
+.report-drawer-triggers > .p-button[aria-pressed="true"],
+.report-drawer-triggers > .p-button[aria-pressed="true"]:not(:disabled):hover {
+    border-color: var(--resource-report-drawer-trigger-open-background);
+    background: var(--resource-report-drawer-trigger-open-background);
+    color: var(--resource-report-drawer-trigger-open-color);
+}
+
 .report-drawer-stage {
     position: relative;
     flex: 1;

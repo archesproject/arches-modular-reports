@@ -57,6 +57,8 @@ const bannerNodes = computed(() => component.config.banner ?? []);
                     </Tabs>
                     <ReportExports class="workspace-tabs-exports" />
                 </div>
+                <!-- The caption is optional: a workspace whose config omits
+                     `description`, or leaves it blank in every language, has none. -->
                 <p
                     v-if="activeTab?.description"
                     class="workspace-tabs-caption"
