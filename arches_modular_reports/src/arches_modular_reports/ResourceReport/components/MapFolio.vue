@@ -454,6 +454,7 @@ function showNextTile(): void {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
+    font-size: 1.3rem;
 }
 
 .map-folio-field {
