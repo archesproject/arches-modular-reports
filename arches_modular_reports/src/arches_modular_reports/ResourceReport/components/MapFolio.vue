@@ -10,11 +10,16 @@ import Tag from "openvue/tag";
 import GenericWidget from "@/arches_vue_components/generics/GenericWidget/GenericWidget.vue";
 import ReportFolio from "@/arches_modular_reports/ResourceReport/components/ReportFolio.vue";
 
+import { BASEMAP_TOOL_ID } from "@/arches_vue_components/components/MapComponent/constants.ts";
 import { VIEW } from "@/arches_vue_components/widgets/constants.ts";
 import { useFolio } from "@/arches_modular_reports/ResourceReport/composables/useFolio.ts";
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import { aliasedNodeDataOf } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
+import type {
+    MapHeaderAction,
+    MapSettings,
+} from "@/arches_vue_components/components/MapComponent/types.ts";
 import type { AliasedTileData } from "@/arches_vue_components/types.ts";
 import type {
     ComponentNode,
@@ -23,6 +28,15 @@ import type {
 
 const REPORT_FOLIO_COMPONENT =
     "arches_modular_reports/ResourceReport/components/ReportFolio";
+const EDIT_ACTION = "edit";
+const DELETE_ACTION = "delete";
+const DEFAULT_HEADER_TOOLS = [BASEMAP_TOOL_ID];
+const DEFAULT_HEADER_ACTIONS = [EDIT_ACTION, DELETE_ACTION];
+// Report maps sit in a scrolling page, so plain scrolling pages instead of
+// zooming. A widget config that sets this explicitly still wins.
+const REPORT_MAP_SETTINGS: Partial<MapSettings> = {
+    scrollZoomRequiresKey: true,
+};
 
 const { component } = defineProps<{
     component: ComponentNode<MapFolioConfig>;
@@ -78,6 +92,53 @@ const fieldWidgets = computed(() =>
         (widget) => widget !== mapWidget.value || !isMapShown.value,
     ),
 );
+
+const headerToolIds = computed(
+    () => component.config.header_tools ?? DEFAULT_HEADER_TOOLS,
+);
+
+const headerActions = computed<MapHeaderAction[]>(() => {
+    const actionIds = component.config.header_actions ?? DEFAULT_HEADER_ACTIONS;
+    const tile = currentTile.value;
+    const entry = tileLabel(tile);
+    const isBusy = reportData.value.changeSet.isBusy.value;
+    const actions: MapHeaderAction[] = [];
+    if (isEditableTile(tile)) {
+        if (actionIds.includes(EDIT_ACTION)) {
+            actions.push({
+                id: EDIT_ACTION,
+                label: $gettext("Edit"),
+                icon: "pi pi-pencil",
+                ariaLabel: $gettext("Edit map for %{entry}", { entry }, true),
+                onClick: () => editTile(tile.tileid),
+            });
+        }
+        if (actionIds.includes(DELETE_ACTION)) {
+            actions.push({
+                id: DELETE_ACTION,
+                label: $gettext("Delete"),
+                icon: "pi pi-trash",
+                ariaLabel: $gettext("Delete map for %{entry}", { entry }, true),
+                disabled: isBusy,
+                onClick: () => deleteTile(tile.tileid),
+            });
+        }
+    } else if (isMarkedForDeletion(tile) && actionIds.includes(DELETE_ACTION)) {
+        actions.push({
+            id: DELETE_ACTION,
+            label: $gettext("Undo delete"),
+            icon: "pi pi-undo",
+            ariaLabel: $gettext(
+                "Undo deleting map for %{entry}",
+                { entry },
+                true,
+            ),
+            disabled: isBusy,
+            onClick: () => undoDelete(tile.tileid),
+        });
+    }
+    return actions;
+});
 
 const childFolioNodes = computed(() =>
     childNodegroupAliases(
@@ -179,6 +240,9 @@ function showNextTile(): void {
                     :mode="VIEW"
                     :node-alias="mapWidget.node.alias"
                     :should-show-label="false"
+                    :visible-tool-ids="headerToolIds"
+                    :header-actions="headerActions"
+                    :default-settings="REPORT_MAP_SETTINGS"
                 />
                 <div
                     class="map-folio-details"
@@ -396,6 +460,10 @@ function showNextTile(): void {
     display: flex;
     flex-direction: row;
     gap: 0.75rem;
+}
+
+.map-folio-field-label {
+    color: var(--p-text-muted-color);
 }
 
 .map-folio-field-value {

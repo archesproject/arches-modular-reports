@@ -70,6 +70,9 @@ export interface FolioConfig {
 
 export interface MapFolioConfig extends FolioConfig {
     node_alias?: string;
+    // Map header buttons in the report; see MapFolio for the defaults.
+    header_tools?: string[];
+    header_actions?: string[];
 }
 
 export interface DrawerConfig extends ContainerConfig {
@@ -109,6 +112,7 @@ export interface ReportGraph {
     name: string;
     slug: string;
     iconclass: string | null;
+    color: string | null;
 }
 
 export interface ReportContext {

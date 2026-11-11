@@ -53,6 +53,12 @@ const graphIconClass = computed(() => {
     return DEFAULT_GRAPH_ICON_CLASS;
 });
 
+// The model's search colour, so the report's thumb matches its search card.
+const thumbAccentStyle = computed(() => ({
+    "--report-header-accent-color":
+        reportData.value.context.graph.color || "var(--p-primary-color)",
+}));
+
 const lifecycleTagSeverity = computed(() =>
     lifecycleSeverity(currentLifecycleState.value),
 );
@@ -98,7 +104,10 @@ function transitionSeverity(
 
 <template>
     <header class="report-header">
-        <div class="report-header-thumb">
+        <div
+            class="report-header-thumb"
+            :style="thumbAccentStyle"
+        >
             <i
                 aria-hidden="true"
                 class="report-header-icon"
@@ -193,7 +202,16 @@ function transitionSeverity(
 }
 
 /* Icon over model name, following the arches-search result card thumb. */
+/*
+ * The background tints the model colour as search does. Model colours are
+ * often translucent and pale, so the icon and label drop the alpha and mix
+ * toward the text colour: 40% keeps every rascoll model at 4.5:1 or better
+ * in both colour schemes, and the larger icon keeps 60% at 3:1 or better.
+ */
 .report-header-thumb {
+    --report-header-accent-opaque: rgb(
+        from var(--report-header-accent-color) r g b
+    );
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -203,12 +221,25 @@ function transitionSeverity(
     inline-size: 11rem;
     padding-block: 1.2rem;
     padding-inline: 0.6rem;
-    background: var(--resource-report-accent-background);
-    color: var(--p-primary-color);
+    background: color-mix(
+        in srgb,
+        var(--report-header-accent-color) 12%,
+        var(--p-content-background)
+    );
+    color: color-mix(
+        in srgb,
+        var(--report-header-accent-opaque) 40%,
+        var(--p-text-color)
+    );
     text-align: center;
 }
 
 .report-header-icon {
+    color: color-mix(
+        in srgb,
+        var(--report-header-accent-opaque) 60%,
+        var(--p-text-color)
+    );
     font-size: 2.4rem;
 }
 

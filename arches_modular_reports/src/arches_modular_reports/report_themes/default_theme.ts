@@ -69,26 +69,28 @@ const DEFAULT_THEME = {
 // TODO: when dropping support for 7.6, extend ArchesPreset.
 const ModularReportPreset = definePreset(Aura, {
     semantic: {
+        // Navy built around #092c8d (700): lighter steps mix in white,
+        // darker steps mix in black.
         primary: {
-            50: "{teal.50}",
-            100: "{teal.100}",
-            200: "{teal.200}",
-            300: "{teal.300}",
-            400: "{teal.400}",
-            500: "{teal.500}",
-            600: "{teal.600}",
-            700: "{teal.700}",
-            800: "{teal.800}",
-            900: "{teal.900}",
-            950: "{teal.950}",
+            50: "#f0f2f8",
+            100: "#dfe4f0",
+            200: "#bfc8e1",
+            300: "#93a2cd",
+            400: "#6278b6",
+            500: "#3552a2",
+            600: "#1d3d96",
+            700: "#092c8d",
+            800: "#072371",
+            900: "#061c5a",
+            950: "#04143f",
         },
         colorScheme: {
             light: {
                 primary: {
-                    color: "{primary.600}",
+                    color: "{primary.700}",
                     contrastColor: "#ffffff",
-                    hoverColor: "{primary.700}",
-                    activeColor: "{primary.800}",
+                    hoverColor: "{primary.800}",
+                    activeColor: "{primary.900}",
                 },
                 editor: {
                     panel: {
@@ -98,6 +100,14 @@ const ModularReportPreset = definePreset(Aura, {
                 },
             },
             dark: {
+                // Aura's default ({primary.400}) is under 4.5:1 on the dark
+                // surfaces with this navy, so dark mode steps up to 300.
+                primary: {
+                    color: "{primary.300}",
+                    contrastColor: "{surface.900}",
+                    hoverColor: "{primary.200}",
+                    activeColor: "{primary.100}",
+                },
                 surface: {
                     0: "#ffffff",
                     50: "{slate.50}",

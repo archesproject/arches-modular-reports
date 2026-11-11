@@ -687,7 +687,7 @@ async function applyAll(): Promise<void> {
     --p-button-label-font-weight: 600;
     padding-block: 0.7rem;
     padding-inline: 1.6rem;
-    border-radius: 0.5rem;
+    border-radius: 0.2rem;
     font-size: 1.3rem;
     line-height: 1.2;
 }

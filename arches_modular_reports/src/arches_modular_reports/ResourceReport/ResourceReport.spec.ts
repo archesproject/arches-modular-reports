@@ -124,6 +124,7 @@ function makeContext(
             name: "Reference and Sample Collection Item",
             slug: "reference_and_sample_collection_item",
             iconclass: "fa fa-asterisk",
+            color: "rgba(42,157,143,0.5)",
         },
         lifecycle_state: {
             ...DRAFT,

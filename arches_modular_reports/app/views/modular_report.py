@@ -167,6 +167,7 @@ class ReportContextView(APIBase):
                     "name": str(resource.graph.name),
                     "slug": resource.graph.slug,
                     "iconclass": resource.graph.iconclass,
+                    "color": resource.graph.color,
                 },
                 "lifecycle_state": resource.resource_instance_lifecycle_state.serialize(),
                 "language": get_language(),

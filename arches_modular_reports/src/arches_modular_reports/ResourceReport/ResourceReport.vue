@@ -254,7 +254,9 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
     );
     --resource-report-deleted-color: var(--p-red-600);
     --resource-report-drawer-trigger-open-background: var(--p-primary-700);
-    --resource-report-drawer-trigger-open-color: var(--p-primary-contrast-color);
+    --resource-report-drawer-trigger-open-color: var(
+        --p-primary-contrast-color
+    );
     /* Read by the core resource-instance multiselect widget's chips. */
     --resource-instance-multiselect-chip-background: #092c8d;
     --resource-instance-multiselect-chip-color: var(--p-surface-0);
@@ -264,6 +266,10 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
         var(--p-surface-0) 20%,
         transparent
     );
+    /* Read by the core map widget's viewer and editor. */
+    --map-component-viewer-block-size: 50rem;
+    --map-component-editor-block-size: 56rem;
+    --map-component-viewer-header-font-size: 1.2rem;
 
     display: flex;
     flex-direction: column;
