@@ -257,6 +257,16 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
     --resource-report-drawer-trigger-open-color: var(
         --p-primary-contrast-color
     );
+    /* A step darker than the triggers' muted background, but lighter than
+       the bar background its close button hovers to. */
+    --resource-report-drawer-header-background: color-mix(
+        in srgb,
+        var(--p-surface-100),
+        var(--p-surface-200)
+    );
+    /* Shared height, bottom border included, so the workspace tab bar and
+       the editor panel bar line up side by side. */
+    --resource-report-bar-block-size: 3.65rem;
     /* Read by the core resource-instance multiselect widget's chips. */
     --resource-instance-multiselect-chip-background: #092c8d;
     --resource-instance-multiselect-chip-color: var(--p-surface-0);
@@ -303,6 +313,11 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
         transparent
     );
     --resource-report-deleted-color: var(--p-red-300);
+    --resource-report-drawer-header-background: color-mix(
+        in srgb,
+        var(--p-surface-800),
+        var(--p-surface-900)
+    );
 }
 
 /*
@@ -315,6 +330,14 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
 .resource-report :deep(.p-button-link:not(:disabled):hover),
 .resource-report :deep(.p-button-text:not(:disabled):hover) {
     border: none;
+}
+
+/*
+ * Rest state only: a hover selector would outrank a component's own
+ * line-height and resize the button (and its container) on hover.
+ */
+.resource-report :deep(.p-button-link),
+.resource-report :deep(.p-button-text) {
     line-height: 1.2;
 }
 

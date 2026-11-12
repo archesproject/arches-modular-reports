@@ -47,6 +47,18 @@ export function containsTile(tile: AliasedTileData, tileId: string): boolean {
     );
 }
 
+// A tile counts as having data when any node in it, or in any of its
+// descendant tiles, has a value: a parent tile can be blank while its
+// children are populated.
+export function tileHasData(tile: AliasedTileData): boolean {
+    return Object.values(tile.aliased_data).some((value) => {
+        if (isAliasedNodeData(value)) {
+            return value.display_value.trim() !== "";
+        }
+        return nodegroupTiles(value).some(tileHasData);
+    });
+}
+
 export function tileSearchText(tile: AliasedTileData): string {
     const displayValues: string[] = [];
 

@@ -196,6 +196,7 @@ function showNextTile(): void {
                 <span class="map-folio-name">{{ cardName }}</span>
                 <Badge
                     v-if="tiles.length > 1"
+                    class="map-folio-count"
                     severity="secondary"
                     :value="tiles.length"
                 />
@@ -413,6 +414,19 @@ function showNextTile(): void {
 .map-folio-name {
     font-size: 1.5rem;
     font-weight: 600;
+}
+
+/* Matches ReportFolio's tile-count badge. */
+.map-folio-header .map-folio-count {
+    min-inline-size: 2rem;
+    block-size: 2rem;
+    padding-inline: 0.6rem;
+    border-radius: 1rem;
+    background: var(--resource-report-accent-background);
+    color: var(--p-primary-color);
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 2rem;
 }
 
 .map-folio-add {

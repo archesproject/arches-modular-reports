@@ -278,7 +278,7 @@ function undoDelete(): void {
     align-items: center;
     justify-content: space-between;
     gap: 1.2rem;
-    padding-block: 0.7rem 0.8rem;
+    block-size: var(--resource-report-bar-block-size);
     padding-inline: 1.6rem;
     border-block-end: 0.1rem solid var(--resource-report-bar-border-color);
     background: var(--resource-report-bar-background);

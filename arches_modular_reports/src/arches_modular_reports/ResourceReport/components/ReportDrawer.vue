@@ -148,7 +148,7 @@ function closeDrawer(): void {
     display: flex;
     flex-wrap: wrap;
     gap: 0.8rem;
-    padding-block: 1.8rem;
+    padding-block: 0.4rem;
     padding-inline: 1.5rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
     background: var(--resource-report-muted-background);
@@ -221,7 +221,7 @@ function closeDrawer(): void {
     padding-block: 1.4rem 1rem;
     padding-inline: 1.6rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
-    background: var(--resource-report-muted-background);
+    background: var(--resource-report-drawer-header-background);
 }
 
 .report-drawer-header > .p-button {

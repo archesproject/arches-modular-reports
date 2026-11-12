@@ -894,7 +894,7 @@ function onDragEnd(): void {
     flex-shrink: 0;
     padding-block: 0.1rem;
     padding-inline: 0.4rem;
-    border: 0.1rem solid var(--p-content-border-color);
+    border: 0.1rem solid var(--resource-report-bar-border-color);
     border-radius: 0.3rem;
     color: var(--p-text-muted-color);
     font-family: monospace;
@@ -905,9 +905,6 @@ function onDragEnd(): void {
 }
 
 .data-folio-cardinality-many {
-    border-color: var(--p-primary-color);
-    background: var(--resource-report-accent-background);
-    color: var(--p-primary-color);
     opacity: 1;
 }
 

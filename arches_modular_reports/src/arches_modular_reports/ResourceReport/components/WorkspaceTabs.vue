@@ -6,6 +6,7 @@ import TabList from "openvue/tablist";
 import Tabs from "openvue/tabs";
 
 import ReportExports from "@/arches_modular_reports/ResourceReport/components/ReportExports.vue";
+import TabLabel from "@/arches_modular_reports/ResourceReport/components/TabLabel.vue";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
 import { useTabbedComponents } from "@/arches_modular_reports/ResourceReport/composables/useTabbedComponents.ts";
@@ -51,7 +52,7 @@ const bannerNodes = computed(() => component.config.banner ?? []);
                                 :key="tabIndex"
                                 :value="tabIndex"
                             >
-                                <span>{{ tab.label }}</span>
+                                <TabLabel :tab="tab" />
                             </Tab>
                         </TabList>
                     </Tabs>
@@ -96,6 +97,7 @@ const bannerNodes = computed(() => component.config.banner ?? []);
     align-items: center;
     justify-content: flex-end;
     gap: 1.6rem;
+    block-size: var(--resource-report-bar-block-size);
     padding-inline-end: 1.6rem;
     border-block-end: 0.1rem solid var(--resource-report-bar-border-color);
     background: var(--resource-report-bar-background);
@@ -110,7 +112,7 @@ const bannerNodes = computed(() => component.config.banner ?? []);
     min-inline-size: 0;
     --p-tabs-tablist-background: var(--resource-report-bar-background);
     --p-tabs-tablist-border-color: var(--resource-report-bar-border-color);
-    --p-tabs-tab-padding: 0.9rem 1rem;
+    --p-tabs-tab-padding: 0 1rem;
     --p-tabs-tab-font-weight: 500;
     --p-tabs-tab-border-color: transparent;
     --p-tabs-tab-hover-border-color: transparent;
@@ -123,7 +125,10 @@ const bannerNodes = computed(() => component.config.banner ?? []);
     border-block-end: none;
 }
 
+/* Tabs fill the bar (less its bottom border) so the active bar sits on the
+   bar's bottom edge. */
 .workspace-tabs-strip :deep(.p-tab) {
+    block-size: calc(var(--resource-report-bar-block-size) - 0.1rem);
     font-size: 1.3rem;
     letter-spacing: 0.08rem;
     text-transform: uppercase;
