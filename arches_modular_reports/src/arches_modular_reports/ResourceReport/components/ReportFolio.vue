@@ -557,6 +557,7 @@ function toggleOpen(): void {
     align-items: center;
     gap: 0.4rem;
     margin-block-start: 0.4rem;
+    padding-block-end: 1.5rem;
 }
 
 .report-folio-delete,

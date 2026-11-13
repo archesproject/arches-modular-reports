@@ -18,6 +18,7 @@ import {
     loadComponent,
     preloadComponents,
 } from "@/arches_modular_reports/ModularReport/utils.ts";
+import DeletedResourceNotice from "@/arches_modular_reports/ResourceReport/components/DeletedResourceNotice.vue";
 import { useFolioNavigation } from "@/arches_modular_reports/ResourceReport/composables/useFolioNavigation.ts";
 import { useGraphWidgetConfigs } from "@/arches_modular_reports/ResourceReport/composables/useGraphWidgetConfigs.ts";
 import { REPORT_DATA_KEY } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
@@ -32,6 +33,7 @@ import { indexGraphNodes } from "@/arches_modular_reports/ResourceReport/utils/g
 import type {
     ComponentNode,
     EditTileRequest,
+    ReportContext,
     ReportData,
     ResourceReportConfig,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
@@ -55,6 +57,10 @@ const { context, isTransitioning, transitionError, transitionLifecycle } =
 
 const editorTarget = ref<EditTileRequest | null>(null);
 const editorCount = ref(0);
+const deletedResource = ref<{
+    name: string;
+    context: ReportContext;
+} | null>(null);
 
 const childNodes = computed(() => component.config.components ?? []);
 
@@ -112,6 +118,7 @@ const reportData = computed<ReportData | null>(() => {
             transition: transitionLifecycle,
         },
         folioNavigation,
+        markDeleted,
     };
 });
 
@@ -150,6 +157,19 @@ function registerEditor(): () => void {
     };
 }
 
+// The report data stays loaded but stale, so the notice keeps its own copy.
+function markDeleted(): void {
+    if (context.value === null || changeSet.workingResource.value === null) {
+        return;
+    }
+    deletedResource.value = {
+        name: changeSet.workingResource.value.name?.trim() ?? "",
+        context: context.value,
+    };
+    changeSet.discardAll();
+    closeEditor();
+}
+
 function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
     if (hasPendingChanges.value) {
         event.preventDefault();
@@ -174,6 +194,11 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
             }}
         </span>
     </Message>
+    <DeletedResourceNotice
+        v-else-if="deletedResource"
+        :resource-name="deletedResource.name"
+        :context="deletedResource.context"
+    />
     <div
         v-else-if="reportData"
         class="resource-report"

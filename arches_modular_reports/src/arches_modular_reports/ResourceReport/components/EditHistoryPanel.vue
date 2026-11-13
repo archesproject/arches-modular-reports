@@ -128,8 +128,19 @@ function fieldLabel(nodeAlias: string): string {
             <InputText
                 v-model="filterText"
                 class="edit-history-filter"
-                :placeholder="$gettext('Filter by card or user…')"
+                :placeholder="$gettext('Filter by card, user or change type…')"
                 :aria-label="$gettext('Filter the edit history')"
+            />
+            <!-- Not an InputIcon: that wrapper is aria-hidden, which would hide
+                 the button from assistive technology. `p-inputicon` still
+                 positions it at the end of the field. -->
+            <button
+                v-if="filterText"
+                type="button"
+                class="p-inputicon pi pi-times edit-history-filter-clear"
+                :aria-label="$gettext('Clear filter')"
+                :title="$gettext('Clear filter')"
+                @click="filterText = ''"
             />
         </IconField>
         <Message
@@ -299,6 +310,25 @@ function fieldLabel(nodeAlias: string): string {
     inline-size: 100%;
 }
 
+.edit-history-filter-clear {
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+    cursor: pointer;
+}
+
+.edit-history-filter-clear:hover {
+    color: var(--p-text-color);
+}
+
+.edit-history-filter-clear:focus-visible {
+    outline: 0.2rem solid var(--p-primary-color);
+    outline-offset: 0.2rem;
+    border-radius: 0.2rem;
+}
+
 .edit-history-empty {
     margin: 0;
     color: var(--p-text-muted-color);
@@ -383,6 +413,7 @@ function fieldLabel(nodeAlias: string): string {
 
 .edit-history-field dt {
     color: var(--p-text-muted-color);
+    font-weight: 400;
 }
 
 .edit-history-field dd {

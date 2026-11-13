@@ -1,7 +1,10 @@
+import copy
 import json
+import uuid
 from http import HTTPStatus
 
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import (
     Case,
     F,
@@ -16,13 +19,14 @@ from django.db.models.fields.json import KT
 from django.db.models.functions import Cast, Coalesce
 from django.http import Http404
 from django.shortcuts import render
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 from django.utils import translation
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, get_language_info, gettext as _
 from django.views.generic import View
 
 from arches.app.models import models
+from arches.app.models.resource import Resource
 from arches.app.utils.betterJSONSerializer import JSONDeserializer
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.permission_backend import (
@@ -41,6 +45,10 @@ from arches.app.views.resource import ResourceReportView
 from arches_modular_reports.app.utils.decorators import can_read_nodegroup
 from arches_modular_reports.app.utils.get_report_config import get_report_config
 from arches_modular_reports.app.utils.report_data_utils import EditValueDescriber
+from arches_modular_reports.app.utils.resource_copy_utils import (
+    name_value,
+    rename_copy,
+)
 from arches_modular_reports.app.utils.nodegroup_tile_data_utils import (
     build_valueid_annotation,
     get_sorted_filtered_tiles,
@@ -164,12 +172,14 @@ class ReportContextView(APIBase):
         return JSONResponse(
             {
                 "graph": {
+                    "graphid": str(resource.graph_id),
                     "name": str(resource.graph.name),
                     "slug": resource.graph.slug,
                     "iconclass": resource.graph.iconclass,
                     "color": resource.graph.color,
                 },
                 "lifecycle_state": resource.resource_instance_lifecycle_state.serialize(),
+                "search_url": search_url(),
                 "language": get_language(),
                 "language_dir": (
                     "rtl" if get_language_info(get_language())["bidi"] else "ltr"
@@ -181,12 +191,28 @@ class ReportContextView(APIBase):
                     ),
                     "can_copy": user_can_edit
                     and group_required(request.user, "Resource Editor"),
+                    # Matches the group core's add-resource page requires.
+                    "can_create": group_required(request.user, "Resource Editor"),
                     "is_reviewer": user_is_resource_reviewer(
                         request.user, resource=resource
                     ),
                 },
             }
         )
+
+
+ARCHES_SEARCH_PLUGIN_SLUG = "arches-search"
+
+
+def search_url():
+    """The arches-search plugin page when it's installed, else core search,
+    or None when the project routes neither."""
+    try:
+        if models.Plugin.objects.filter(slug=ARCHES_SEARCH_PLUGIN_SLUG).exists():
+            return reverse("plugins", kwargs={"slug": ARCHES_SEARCH_PLUGIN_SLUG})
+        return reverse("search_home")
+    except NoReverseMatch:
+        return None
 
 
 @method_decorator(can_read_resource_instance, name="dispatch")
@@ -257,16 +283,11 @@ class EditHistoryView(APIBase):
 
     @staticmethod
     def serialize_edit(edit, value_describer):
-        user_full_name = " ".join(
-            name_part
-            for name_part in (edit.user_firstname, edit.user_lastname)
-            if name_part
-        )
         serialized_edit = {
             "editlogid": edit.editlogid,
             "edit_type": edit.edittype,
             "timestamp": edit.timestamp,
-            "user": user_full_name or edit.user_username,
+            "user": edit_user_name(edit),
             "card_name": None,
             "values": [],
         }
@@ -276,6 +297,150 @@ class EditHistoryView(APIBase):
             )
             serialized_edit["values"] = value_describer.describe(edit)
         return serialized_edit
+
+
+def edit_user_name(edit):
+    user_full_name = " ".join(
+        name_part
+        for name_part in (edit.user_firstname, edit.user_lastname)
+        if name_part
+    )
+    return user_full_name or edit.user_username
+
+
+@method_decorator(can_read_resource_instance, name="dispatch")
+class ResourceCopiesView(APIBase):
+    page_size = 25
+
+    def get(self, request, resourceid):
+        try:
+            resource = models.ResourceInstance.objects.get(pk=resourceid)
+        except models.ResourceInstance.DoesNotExist:
+            return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
+        # Core's copy view logs "Copied to" on the original, and "Copied from"
+        # with the same edit type on the copy.
+        copy_edits = models.EditLog.objects.filter(
+            resourceinstanceid=str(resourceid), edittype="copy", note="Copied to"
+        ).order_by("-timestamp", "-editlogid")
+        if cursor := request.GET.get("after"):
+            timestamp, editlogid = json.loads(cursor)
+            copy_edits = copy_edits.filter(
+                Q(timestamp__lt=timestamp)
+                | Q(timestamp=timestamp, editlogid__lt=editlogid)
+            )
+
+        page_copies = []
+        has_more = False
+        batch_start = 0
+        while not has_more:
+            batch = list(copy_edits[batch_start : batch_start + self.page_size + 1])
+            copies_by_id = {
+                str(copied_resource.pk): copied_resource
+                for copied_resource in models.ResourceInstance.objects.filter(
+                    pk__in=[self.copied_resource_id(edit) for edit in batch]
+                )
+            }
+            for edit in batch:
+                copied_resource = copies_by_id.get(self.copied_resource_id(edit))
+                # Deleted copies stay listed; existing ones need read access.
+                if copied_resource is not None and not user_can_read_resource(
+                    request.user, resource=copied_resource
+                ):
+                    continue
+                if len(page_copies) == self.page_size:
+                    has_more = True
+                    break
+                page_copies.append(self.serialize_copy(edit, copied_resource))
+            if len(batch) <= self.page_size:
+                break
+            batch_start += len(batch)
+
+        next_cursor = None
+        if has_more:
+            next_cursor = json.dumps(
+                [page_copies[-1]["timestamp"].isoformat(), page_copies[-1]["editlogid"]]
+            )
+        return JSONResponse(
+            {
+                "default_name": _("Copy of %(name)s") % {"name": name_value(resource)},
+                "results": page_copies,
+                "next_cursor": next_cursor,
+            }
+        )
+
+    def post(self, request, resourceid):
+        if not (
+            user_can_edit_resource(request.user, resourceid=resourceid)
+            and group_required(request.user, "Resource Editor")
+        ):
+            return JSONErrorResponse(
+                _("Permission Denied"), status=HTTPStatus.FORBIDDEN
+            )
+        name = str(JSONDeserializer().deserialize(request.body).get("name", "")).strip()
+        if not name:
+            return JSONErrorResponse(
+                _("Enter a name for the copy."), status=HTTPStatus.BAD_REQUEST
+            )
+
+        with transaction.atomic():
+            original_resource = Resource.objects.get(pk=resourceid)
+            # The copy shares the original's descriptors dict until it saves.
+            original_descriptors = copy.deepcopy(original_resource.descriptors)
+            copied_resource = original_resource.copy()
+            rename_copy(copied_resource, name)
+            transaction_id = uuid.uuid4()
+            copied_resource.save(
+                transaction_id=transaction_id,
+                request=request,
+                edit_log_type="copy",
+                edit_log_note="Copied from",
+                edit_log_newvalue={
+                    "resourceinstanceid": str(original_resource.pk),
+                    "descriptors": original_descriptors,
+                },
+            )
+            original_resource.save_edit(
+                transaction_id=transaction_id,
+                user=request.user,
+                edit_type="copy",
+                note="Copied to",
+                newvalue={
+                    "resourceinstanceid": str(copied_resource.pk),
+                    "descriptors": models.ResourceInstance.objects.values_list(
+                        "descriptors", flat=True
+                    ).get(pk=copied_resource.pk),
+                },
+            )
+        return JSONResponse(
+            {"resourceid": copied_resource.pk}, status=HTTPStatus.CREATED
+        )
+
+    @staticmethod
+    def copied_resource_id(edit):
+        return (edit.newvalue or {}).get("resourceinstanceid")
+
+    def serialize_copy(self, edit, copied_resource):
+        if copied_resource is None:
+            logged_descriptors = (edit.newvalue or {}).get("descriptors") or {}
+            language_descriptors = logged_descriptors.get(get_language()) or next(
+                iter(logged_descriptors.values()), {}
+            )
+            name = language_descriptors.get("name") or ""
+        else:
+            name = str(copied_resource.name or "")
+        return {
+            "editlogid": str(edit.editlogid),
+            "resourceid": self.copied_resource_id(edit),
+            "name": name,
+            "is_deleted": copied_resource is None,
+            "report_url": (
+                None
+                if copied_resource is None
+                else reverse("resource_report", args=[copied_resource.pk])
+            ),
+            "user": edit_user_name(edit),
+            "timestamp": edit.timestamp,
+        }
 
 
 @method_decorator(can_read_resource_instance, name="dispatch")
@@ -570,7 +735,7 @@ class ResourceImagesView(APIBase):
             )
         return (
             tiles.annotate(tile_sortorder=Coalesce("sortorder", 0))
-            .select_related("resourceinstance")
+            .select_related("resourceinstance__graph")
             .order_by("resourceinstance_id", "tile_sortorder", "tileid")
         )
 
@@ -609,6 +774,7 @@ class ResourceImagesView(APIBase):
             or caption,
             "resourceinstanceid": str(resource.pk),
             "resource_name": resource_name,
+            "graph_name": str(resource.graph.name),
             "report_url": reverse("resource_report", args=[resource.pk]),
         }
 

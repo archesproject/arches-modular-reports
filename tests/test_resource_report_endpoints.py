@@ -2,7 +2,7 @@ import uuid
 from datetime import timedelta
 from unittest import mock
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -12,6 +12,8 @@ from arches.app.models.graph import Graph
 from arches.app.models.models import (
     CardModel,
     EditLog,
+    FunctionXGraph,
+    Plugin,
     Node,
     NodeGroup,
     ResourceInstance,
@@ -22,6 +24,7 @@ from arches.app.models.models import (
 from arches_modular_reports.app.views.modular_report import (
     EditHistoryView,
     RelatedResourceGroupsView,
+    ResourceCopiesView,
     ResourceImagesView,
 )
 
@@ -218,6 +221,9 @@ class ResourceReportEndpointTests(TestCase):
 
     def test_resource_images_come_from_related_file_nodes(self):
         self.add_related_photos()
+        Graph.objects.filter(pk=self.related_graph.pk).update(
+            name={"en": "Digital Resources"}
+        )
         self.client.force_login(self.superuser)
 
         response = self.client.get(
@@ -235,6 +241,7 @@ class ResourceReportEndpointTests(TestCase):
                     "alt_text": "A cube",
                     "resourceinstanceid": str(self.related_resource.pk),
                     "resource_name": "Pyrite photo set",
+                    "graph_name": "Digital Resources",
                     "report_url": reverse(
                         "resource_report", args=[self.related_resource.pk]
                     ),
@@ -424,6 +431,10 @@ class ResourceReportEndpointTests(TestCase):
         )
         self.assertEqual(context_response.status_code, 200)
         self.assertFalse(context_response.json()["permissions"]["can_edit"])
+        self.assertFalse(context_response.json()["permissions"]["can_create"])
+        self.assertEqual(
+            context_response.json()["graph"]["graphid"], str(self.graph.pk)
+        )
 
         history_response = self.client.get(
             reverse("api_edit_history", args=[self.resource.pk])
@@ -485,3 +496,187 @@ class ResourceReportEndpointTests(TestCase):
             ["Ada Lovelace", "grace"],
         )
         self.assertIsNone(second_page["next_cursor"])
+
+    def add_name_descriptor(self):
+        template = {"nodegroup_id": str(self.names.pk), "string_template": ""}
+        FunctionXGraph.objects.create(
+            function_id="60000000-0000-0000-0000-000000000001",
+            graph=self.graph,
+            config={
+                "descriptor_types": {
+                    "name": {**template, "string_template": "<Name content>"},
+                    "description": template,
+                    "map_popup": template,
+                }
+            },
+        )
+
+    def add_name_tile(self, value, sortorder):
+        return TileModel.objects.create(
+            resourceinstance=self.resource,
+            nodegroup=self.names,
+            sortorder=sortorder,
+            data={
+                str(self.name_content.pk): {"en": {"value": value, "direction": "ltr"}}
+            },
+        )
+
+    def log_copy(self, copied_resource_id, name, timestamp):
+        return EditLog.objects.create(
+            resourceinstanceid=str(self.resource.pk),
+            edittype="copy",
+            note="Copied to",
+            newvalue={
+                "resourceinstanceid": str(copied_resource_id),
+                "descriptors": {"en": {"name": name}},
+            },
+            timestamp=timestamp,
+            user_username="grace",
+            user_firstname="Grace",
+            user_lastname="Hopper",
+        )
+
+    def test_copy_renames_only_the_name_tile_descriptors_read(self):
+        self.add_name_descriptor()
+        self.add_name_tile("Original", 0)
+        self.add_name_tile("Alternate", 1)
+        # Saving tiles reads nodes from the published graph, and saves by
+        # non-reviewers become provisional edits.
+        Graph.objects.get(pk=self.graph.pk).publish()
+        self.superuser.groups.add(
+            Group.objects.get_or_create(name="Resource Reviewer")[0]
+        )
+        self.client.force_login(self.superuser)
+
+        with mock.patch("arches.app.models.resource.Resource.index"):
+            response = self.client.post(
+                reverse("api_resource_copies", args=[self.resource.pk]),
+                {"name": "  Renamed copy  "},
+                content_type="application/json",
+            )
+
+        self.assertEqual(response.status_code, 201)
+        copied_resource = ResourceInstance.objects.get(pk=response.json()["resourceid"])
+        self.assertEqual(copied_resource.name["en"], "Renamed copy")
+        self.assertEqual(
+            [
+                tile.data[str(self.name_content.pk)]["en"]["value"]
+                for tile in TileModel.objects.filter(
+                    resourceinstance=copied_resource, nodegroup=self.names
+                ).order_by("sortorder")
+            ],
+            ["Renamed copy", "Alternate"],
+        )
+        copies = self.client.get(
+            reverse("api_resource_copies", args=[self.resource.pk])
+        ).json()
+        self.assertEqual(copies["default_name"], "Copy of Original")
+        [listed_copy] = copies["results"]
+        self.assertEqual(listed_copy["name"], "Renamed copy")
+        self.assertEqual(
+            listed_copy["report_url"],
+            reverse("resource_report", args=[copied_resource.pk]),
+        )
+
+    def test_copy_requires_a_name_and_edit_permission(self):
+        copies_url = reverse("api_resource_copies", args=[self.resource.pk])
+        self.client.force_login(self.superuser)
+        response = self.client.post(
+            copies_url, {"name": " "}, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 400)
+
+        assign_perm("models.view_resourceinstance", self.reader_user, self.resource)
+        self.client.force_login(self.reader_user)
+        response = self.client.post(
+            copies_url, {"name": "Copy"}, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.client.get(copies_url).status_code, 200)
+
+    def test_copies_list_newest_first_with_current_and_deleted_names(self):
+        renamed_copy = ResourceInstance.objects.create(
+            graph=self.graph, name={"en": "Current name"}
+        )
+        deleted_copy_id = uuid.uuid4()
+        self.log_copy(renamed_copy.pk, "Name at copy time", timezone.now())
+        self.log_copy(deleted_copy_id, "Deleted copy", timezone.now() + timedelta(1))
+        self.client.force_login(self.superuser)
+
+        results = self.client.get(
+            reverse("api_resource_copies", args=[self.resource.pk])
+        ).json()["results"]
+
+        self.assertEqual(
+            [
+                (result["name"], result["is_deleted"], result["report_url"])
+                for result in results
+            ],
+            [
+                ("Deleted copy", True, None),
+                (
+                    "Current name",
+                    False,
+                    reverse("resource_report", args=[renamed_copy.pk]),
+                ),
+            ],
+        )
+        self.assertEqual(results[0]["user"], "Grace Hopper")
+
+    def test_copies_skip_copies_the_user_cannot_read(self):
+        hidden_copy = ResourceInstance.objects.create(graph=self.graph)
+        make_nodegroup(self.graph, "notes")
+        self.log_copy(hidden_copy.pk, "Hidden", timezone.now())
+        assign_perm("models.view_resourceinstance", self.reader_user, self.resource)
+        self.client.force_login(self.reader_user)
+
+        response = self.client.get(
+            reverse("api_resource_copies", args=[self.resource.pk])
+        )
+
+        self.assertEqual(response.json()["results"], [])
+
+    def test_copies_page_by_cursor(self):
+        first_copy = ResourceInstance.objects.create(graph=self.graph)
+        second_copy = ResourceInstance.objects.create(graph=self.graph)
+        self.log_copy(first_copy.pk, "First", timezone.now() - timedelta(1))
+        self.log_copy(second_copy.pk, "Second", timezone.now())
+        self.client.force_login(self.superuser)
+        copies_url = reverse("api_resource_copies", args=[self.resource.pk])
+
+        with mock.patch.object(ResourceCopiesView, "page_size", 1):
+            first_page = self.client.get(copies_url).json()
+            second_page = self.client.get(
+                copies_url, {"after": first_page["next_cursor"]}
+            ).json()
+
+        self.assertEqual(
+            [
+                result["resourceid"]
+                for result in first_page["results"] + second_page["results"]
+            ],
+            [str(second_copy.pk), str(first_copy.pk)],
+        )
+        self.assertIsNone(second_page["next_cursor"])
+
+    def test_report_context_links_to_the_arches_search_plugin_if_installed(self):
+        self.client.force_login(self.superuser)
+        context_url = reverse("api_report_context", args=[self.resource.pk])
+        Plugin.objects.filter(slug="arches-search").delete()
+
+        with mock.patch(
+            "arches_modular_reports.app.views.modular_report.reverse",
+            side_effect=lambda name, **kwargs: f"/{name}",
+        ):
+            without_plugin = self.client.get(context_url).json()["search_url"]
+            Plugin.objects.create(
+                slug="arches-search",
+                name={"en": "Search"},
+                icon="",
+                component="",
+                componentname="",
+            )
+            with_plugin = self.client.get(context_url).json()["search_url"]
+
+        self.assertEqual(without_plugin, "/search_home")
+        self.assertEqual(with_plugin, "/plugins")

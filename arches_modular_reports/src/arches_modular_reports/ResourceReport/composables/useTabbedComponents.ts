@@ -17,7 +17,6 @@ import type {
 export interface ComponentTab {
     node: ComponentNode<LabelledConfig>;
     label: string;
-    description: string;
     nodegroupAliases: Set<string>;
     // Null for a tab that holds no nodegroups (e.g. related resources), whose
     // contents are not tiles.
@@ -50,10 +49,6 @@ export function useTabbedComponents(
                     node: childNode,
                     label: localizeLabel(
                         childNode.config.label ?? null,
-                        reportData.value.context.language,
-                    ),
-                    description: localizeLabel(
-                        childNode.config.description ?? null,
                         reportData.value.context.language,
                     ),
                     nodegroupAliases,

@@ -11,12 +11,7 @@ export type LocalizedLabel = string | Record<string, string>;
 export type ExportFormat = "json-ld" | "json" | "csv";
 
 export type TagSeverity =
-    | "info"
-    | "success"
-    | "warn"
-    | "danger"
-    | "secondary"
-    | "contrast";
+    "info" | "success" | "warn" | "danger" | "secondary" | "contrast";
 
 export interface SummaryEntryConfig {
     node_alias: string;
@@ -30,7 +25,6 @@ export interface ComponentNode<TConfig = Record<string, unknown>> {
 
 export interface LabelledConfig {
     label?: LocalizedLabel | null;
-    description?: LocalizedLabel | null;
     icon?: string | null;
     requires_edit?: boolean;
 }
@@ -105,10 +99,12 @@ export interface ReportPermissions {
     can_edit: boolean;
     can_delete: boolean;
     can_copy: boolean;
+    can_create: boolean;
     is_reviewer: boolean;
 }
 
 export interface ReportGraph {
+    graphid: string;
     name: string;
     slug: string;
     iconclass: string | null;
@@ -118,6 +114,7 @@ export interface ReportGraph {
 export interface ReportContext {
     graph: ReportGraph;
     lifecycle_state: LifecycleState;
+    search_url: string | null;
     language: string;
     language_dir: "ltr" | "rtl";
     permissions: ReportPermissions;
@@ -179,18 +176,12 @@ export interface ReorderTilesChange {
 }
 
 export type ResourceChange =
-    | AddTileChange
-    | EditTileChange
-    | DeleteTileChange
-    | ReorderTilesChange;
+    AddTileChange | EditTileChange | DeleteTileChange | ReorderTilesChange;
 
 export type TileChangeType = "add" | "edit" | "delete";
 
 export type ConflictReason =
-    | "modified"
-    | "deleted"
-    | "parent_deleted"
-    | "slot_taken";
+    "modified" | "deleted" | "parent_deleted" | "slot_taken";
 
 export interface ConflictNode {
     current: unknown;
@@ -290,6 +281,7 @@ export interface ReportData {
     editor: ReportEditor;
     lifecycle: ReportLifecycle;
     folioNavigation: FolioNavigation;
+    markDeleted: () => void;
 }
 
 export interface EditHistoryValue {
@@ -310,6 +302,22 @@ export interface EditHistoryEntry {
 
 export interface EditHistoryPage {
     results: EditHistoryEntry[];
+    next_cursor: string | null;
+}
+
+export interface ResourceCopy {
+    editlogid: string;
+    resourceid: string;
+    name: string;
+    is_deleted: boolean;
+    report_url: string | null;
+    user: string;
+    timestamp: string;
+}
+
+export interface ResourceCopiesPage {
+    default_name: string;
+    results: ResourceCopy[];
     next_cursor: string | null;
 }
 
@@ -353,5 +361,6 @@ export interface ResourceImage {
     alt_text: string;
     resourceinstanceid: string;
     resource_name: string;
+    graph_name: string;
     report_url: string;
 }

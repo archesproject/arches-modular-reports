@@ -235,9 +235,6 @@ def generate_resource_report_config(graph):
         "SplitPane",
         {
             "label": translated_labels(gettext_noop("Report")),
-            "description": translated_labels(
-                gettext_noop("A curated summary of this resource's data")
-            ),
             "main": [
                 report_component(
                     "ReportTabs",
@@ -310,9 +307,6 @@ def generate_resource_report_config(graph):
         "SplitPane",
         {
             "label": translated_labels(gettext_noop("Data")),
-            "description": translated_labels(
-                gettext_noop("Browse and edit every field recorded on this resource")
-            ),
             "requires_edit": True,
             "main": [report_component("DataBrowser/DataBrowser", {})],
             "aside": [
@@ -336,11 +330,6 @@ def generate_resource_report_config(graph):
         "ReportPlaceholder",
         {
             "label": translated_labels(gettext_noop("Graph")),
-            "description": translated_labels(
-                gettext_noop(
-                    "A visual overview of how this resource connects to its data"
-                )
-            ),
             "icon": "pi pi-sitemap",
             "message": translated_labels(gettext_noop("Graph view — coming soon")),
         },

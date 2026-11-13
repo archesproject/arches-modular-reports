@@ -29,6 +29,7 @@ const images = ref<ResourceImage[]>([]);
 const nextCursor = ref<string | null>(null);
 const isLoading = ref(true);
 const isLoadingMore = ref(false);
+const activeIndex = ref(0);
 const loadError = ref<Error | null>(null);
 
 const resourceInstanceId = computed(
@@ -46,6 +47,7 @@ watchEffect(async () => {
         );
         images.value = imagesPage.images;
         nextCursor.value = imagesPage.next_cursor;
+        activeIndex.value = 0;
     } catch (error) {
         loadError.value = error as Error;
     } finally {
@@ -100,9 +102,9 @@ async function loadMore(): Promise<void> {
         </p>
         <Galleria
             v-else
+            v-model:active-index="activeIndex"
             :value="images"
             :num-visible="VISIBLE_THUMBNAIL_COUNT"
-            :show-item-navigators="images.length > 1"
             :show-thumbnails="images.length > 1"
         >
             <template #item="{ item }">
@@ -113,17 +115,50 @@ async function loadMore(): Promise<void> {
                         :alt="item.alt_text"
                     />
                     <figcaption class="images-caption">
-                        <span>{{ item.caption }}</span>
-                        <Button
+                        <template
                             v-if="
                                 item.resourceinstanceid !== resourceInstanceId
                             "
-                            as="a"
-                            variant="link"
-                            size="small"
-                            :href="item.report_url"
-                            :label="item.resource_name"
-                        />
+                        >
+                            <span>
+                                {{
+                                    $gettext("Related %{model}:", {
+                                        model: item.graph_name,
+                                    })
+                                }}
+                            </span>
+                            <Button
+                                as="a"
+                                variant="link"
+                                size="small"
+                                :href="item.report_url"
+                                :label="item.resource_name"
+                            />
+                        </template>
+                        <span v-else>{{ item.caption }}</span>
+                        <div
+                            v-if="images.length > 1"
+                            class="images-navigation"
+                        >
+                            <Button
+                                icon="pi pi-chevron-left"
+                                variant="text"
+                                severity="secondary"
+                                size="small"
+                                :aria-label="$gettext('Previous image')"
+                                :disabled="activeIndex === 0"
+                                @click="activeIndex -= 1"
+                            />
+                            <Button
+                                icon="pi pi-chevron-right"
+                                variant="text"
+                                severity="secondary"
+                                size="small"
+                                :aria-label="$gettext('Next image')"
+                                :disabled="activeIndex === images.length - 1"
+                                @click="activeIndex += 1"
+                            />
+                        </div>
                     </figcaption>
                 </figure>
             </template>
@@ -180,9 +215,21 @@ async function loadMore(): Promise<void> {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
     color: var(--p-text-muted-color);
     font-size: 1.4rem;
+}
+
+/* The link's own inline padding would widen the caption's gap. */
+.images-caption .p-button-link {
+    padding-inline: 0;
+}
+
+.images-navigation {
+    display: flex;
+    gap: 0.2rem;
+    margin-inline-start: auto;
 }
 
 .images-thumbnail {

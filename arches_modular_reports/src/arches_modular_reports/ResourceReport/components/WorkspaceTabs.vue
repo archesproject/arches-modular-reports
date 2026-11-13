@@ -58,14 +58,6 @@ const bannerNodes = computed(() => component.config.banner ?? []);
                     </Tabs>
                     <ReportExports class="workspace-tabs-exports" />
                 </div>
-                <!-- The caption is optional: a workspace whose config omits
-                     `description`, or leaves it blank in every language, has none. -->
-                <p
-                    v-if="activeTab?.description"
-                    class="workspace-tabs-caption"
-                >
-                    {{ activeTab.description }}
-                </p>
                 <component
                     :is="loadComponent(bannerNode.component)"
                     v-for="(bannerNode, bannerIndex) in bannerNodes"
@@ -135,13 +127,4 @@ const bannerNodes = computed(() => component.config.banner ?? []);
     font-weight: 600;
 }
 
-.workspace-tabs-caption {
-    margin: 0;
-    padding-block: 0.5rem;
-    padding-inline: 1.6rem;
-    border-block-end: 0.1rem solid var(--p-content-border-color);
-    background: var(--resource-report-muted-background);
-    color: var(--p-text-muted-color);
-    font-size: 1.15rem;
-}
 </style>
