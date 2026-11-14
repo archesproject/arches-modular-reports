@@ -497,6 +497,45 @@ class ResourceReportEndpointTests(TestCase):
         )
         self.assertIsNone(second_page["next_cursor"])
 
+    def test_edit_history_describes_geometry_by_kind(self):
+        location = Node.objects.create(
+            nodegroup=self.names,
+            name="Location",
+            alias="location",
+            graph=self.graph,
+            istopnode=False,
+            datatype="geojson-feature-collection",
+        )
+
+        def feature(geometry_type):
+            return {"type": "Feature", "geometry": {"type": geometry_type}}
+
+        EditLog.objects.filter(resourceinstanceid=str(self.resource.pk)).update(
+            oldvalue={str(location.pk): None},
+            newvalue={
+                str(location.pk): {
+                    "type": "FeatureCollection",
+                    "features": [
+                        feature("Point"),
+                        feature("Polygon"),
+                        feature("MultiPolygon"),
+                    ],
+                }
+            },
+        )
+        self.client.force_login(self.superuser)
+
+        response = self.client.get(reverse("api_edit_history", args=[self.resource.pk]))
+
+        location_value = [
+            value
+            for value in response.json()["results"][0]["values"]
+            if value["node_alias"] == "location"
+        ][0]
+        self.assertEqual(location_value["before"], "")
+        self.assertEqual(location_value["after"], "1 point, 2 polygons")
+        self.assertTrue(location_value["changed"])
+
     def add_name_descriptor(self):
         template = {"nodegroup_id": str(self.names.pk), "string_template": ""}
         FunctionXGraph.objects.create(

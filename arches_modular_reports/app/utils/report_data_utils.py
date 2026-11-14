@@ -1,7 +1,51 @@
+from collections import Counter
+
+from django.utils.translation import ngettext
+
 from arches.app.datatypes.datatypes import DataTypeFactory
 from arches.app.models import models
 
 from arches_modular_reports.models import ReportConfig
+
+GEOJSON_DATATYPE = "geojson-feature-collection"
+
+# The report leaves geometry to its map, but an edit to one still needs a line.
+EDIT_HISTORY_EXCLUDED_DATATYPES = ReportConfig.excluded_datatypes - {GEOJSON_DATATYPE}
+
+GEOMETRY_KINDS_BY_TYPE = {
+    "Point": "point",
+    "MultiPoint": "point",
+    "LineString": "line",
+    "MultiLineString": "line",
+    "Polygon": "polygon",
+    "MultiPolygon": "polygon",
+}
+
+
+def describe_geometry_kind(kind, count):
+    if kind == "point":
+        return ngettext("%(count)d point", "%(count)d points", count) % {"count": count}
+    if kind == "line":
+        return ngettext("%(count)d line", "%(count)d lines", count) % {"count": count}
+    if kind == "polygon":
+        return ngettext("%(count)d polygon", "%(count)d polygons", count) % {
+            "count": count
+        }
+    return ngettext("%(count)d shape", "%(count)d shapes", count) % {"count": count}
+
+
+def describe_feature_collection(feature_collection):
+    """A feature collection as counts by kind, e.g. "1 point, 2 polygons"."""
+    if not isinstance(feature_collection, dict):
+        return ""
+    kind_counts = Counter(
+        GEOMETRY_KINDS_BY_TYPE.get((feature.get("geometry") or {}).get("type"), "")
+        for feature in feature_collection.get("features") or []
+        if isinstance(feature, dict)
+    )
+    return ", ".join(
+        describe_geometry_kind(kind, count) for kind, count in kind_counts.items()
+    )
 
 
 class EditValueDescriber:
@@ -17,7 +61,7 @@ class EditValueDescriber:
         self.nodes_by_nodegroup_id = {}
         for node in (
             models.Node.objects.filter(nodegroup_id__in=nodegroup_ids)
-            .exclude(datatype__in=ReportConfig.excluded_datatypes)
+            .exclude(datatype__in=EDIT_HISTORY_EXCLUDED_DATATYPES)
             .order_by("cardxnodexwidget__sortorder")
         ):
             self.nodes_by_nodegroup_id.setdefault(str(node.nodegroup_id), []).append(
@@ -28,6 +72,8 @@ class EditValueDescriber:
         raw_value = tile_data.get(str(node.pk))
         if raw_value is None:
             return ""
+        if node.datatype == GEOJSON_DATATYPE:
+            return describe_feature_collection(raw_value)
         tile = models.TileModel(nodegroup_id=nodegroup_id, data=tile_data)
         datatype = self.datatype_factory.get_instance(node.datatype)
         try:

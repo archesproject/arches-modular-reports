@@ -1,4 +1,4 @@
-<script setup lang="ts">
+    <script setup lang="ts">
 import { computed } from "vue";
 
 import Tab from "openvue/tab";
@@ -39,6 +39,13 @@ const bannerNodes = computed(() => component.config.banner ?? []);
             :disabled="headerHost === null"
         >
             <div class="workspace-tabs-header">
+                <!-- The resource first, then the views of it. -->
+                <component
+                    :is="loadComponent(bannerNode.component)"
+                    v-for="(bannerNode, bannerIndex) in bannerNodes"
+                    :key="bannerIndex"
+                    :component="bannerNode"
+                />
                 <div class="workspace-tabs-bar">
                     <Tabs
                         v-if="tabs.length > 1"
@@ -58,12 +65,6 @@ const bannerNodes = computed(() => component.config.banner ?? []);
                     </Tabs>
                     <ReportExports class="workspace-tabs-exports" />
                 </div>
-                <component
-                    :is="loadComponent(bannerNode.component)"
-                    v-for="(bannerNode, bannerIndex) in bannerNodes"
-                    :key="bannerIndex"
-                    :component="bannerNode"
-                />
             </div>
         </Teleport>
         <component
@@ -83,48 +84,71 @@ const bannerNodes = computed(() => component.config.banner ?? []);
     min-block-size: 0;
 }
 
-/* Tab strip on the left, export links right-justified, on one bar. */
+/* Folder tabs on the left, export links right-justified, on one bar. The
+   bar's bottom line is an inset shadow, so the tabs (painted over it) decide
+   where it shows: under the inactive tabs, but not under the active one,
+   which opens onto the workspace below. */
 .workspace-tabs-bar {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: flex-end;
-    gap: 1.6rem;
-    block-size: var(--resource-report-bar-block-size);
-    padding-inline-end: 1.6rem;
-    border-block-end: 0.1rem solid var(--resource-report-bar-border-color);
+    gap: 1.6rem;    
     background: var(--resource-report-bar-background);
+    box-shadow: inset 0 -0.1rem 0 var(--resource-report-bar-border-color);
 }
 
 .workspace-tabs-bar .workspace-tabs-exports {
     flex-shrink: 0;
+    align-self: center;
+    padding-inline: 1rem;
 }
 
 .workspace-tabs-strip {
     flex: 1;
     min-inline-size: 0;
-    --p-tabs-tablist-background: var(--resource-report-bar-background);
-    --p-tabs-tablist-border-color: var(--resource-report-bar-border-color);
-    --p-tabs-tab-padding: 0 1rem;
+    --p-tabs-tablist-background: transparent;
+    --p-tabs-tablist-border-width: 0;
+    --p-tabs-tab-padding: 0 1.6rem;
+    --p-tabs-tab-margin: 0;
     --p-tabs-tab-font-weight: 500;
-    --p-tabs-tab-border-color: transparent;
-    --p-tabs-tab-hover-border-color: transparent;
-    --p-tabs-active-bar-height: 0.2rem;
+    --p-tabs-tab-border-width: 0.1rem 0.1rem 0;
+    --p-tabs-tab-border-color: var(--resource-report-bar-border-color);
+    --p-tabs-tab-hover-border-color: var(--resource-report-bar-border-color);
+    --p-tabs-tab-active-border-color: var(--resource-report-bar-border-color);
+    --p-tabs-tab-background: var(--resource-report-muted-background);
+    --p-tabs-tab-hover-background: var(--resource-report-panel-background);
+    --p-tabs-tab-active-background: var(--p-content-background);
+    --p-tabs-tab-color: var(--p-text-muted-color);
+    --p-tabs-tab-hover-color: var(--p-text-color);
+    --p-tabs-tab-active-color: var(--p-text-color);
+    --p-tabs-active-bar-height: 0;
 }
 
 .workspace-tabs-strip :deep(.p-tablist-tab-list) {
-    padding-inline: 0.4rem;
-    /* The bar draws the bottom border across its full width. */
+    align-items: flex-end;
+    gap: 0rem;
     border-block-end: none;
 }
 
-/* Tabs fill the bar (less its bottom border) so the active bar sits on the
-   bar's bottom edge. */
 .workspace-tabs-strip :deep(.p-tab) {
-    block-size: calc(var(--resource-report-bar-block-size) - 0.1rem);
-    font-size: 1.3rem;
-    letter-spacing: 0.08rem;
-    text-transform: uppercase;
-    font-weight: 600;
+    block-size: 3.4rem;
+    font-size: 1.35rem;
+    min-width: 11rem;
 }
 
+/* Neighbouring tabs share one border: each draws only its end side, after the
+   first. */
+.workspace-tabs-strip :deep(.p-tab + .p-tab) {
+    border-inline-start-width: 0;
+}
+
+/* The bar's bottom line, drawn on the inactive tabs that cover it. */
+.workspace-tabs-strip :deep(.p-tab:not(.p-tab-active)) {
+    border-block-end: 0.1rem solid var(--resource-report-bar-border-color);
+}
+
+/* A primary edge on top marks the active tab without changing its size. */
+.workspace-tabs-strip :deep(.p-tab-active) {
+    font-weight: 700;
+}
 </style>

@@ -198,7 +198,7 @@ function transitionSeverity(
     align-items: stretch;
     min-block-size: 9rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
-    background: var(--p-content-background);
+    background: var(--resource-report-panel-background);
 }
 
 /* Icon over model name, following the arches-search result card thumb. */
@@ -221,6 +221,7 @@ function transitionSeverity(
     inline-size: 11rem;
     padding-block: 1.2rem;
     padding-inline: 0.6rem;
+    border-inline-end: 0.1rem solid var(--p-content-border-color);
     background: color-mix(
         in srgb,
         var(--report-header-accent-color) 12%,

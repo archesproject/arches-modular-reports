@@ -226,7 +226,7 @@ async function loadMore(): Promise<void> {
     inline-size: 100%;
     max-block-size: 40rem;
     object-fit: contain;
-    border-radius: var(--p-content-border-radius);
+    border-radius: 0.2rem;
     background: var(--p-content-hover-background);
 }
 
@@ -251,11 +251,21 @@ async function loadMore(): Promise<void> {
     margin-inline-start: auto;
 }
 
+/*
+ * Galleria splits the strip into one equal slot per visible thumbnail and
+ * scrolls it by a slot at a time. Sizing the strip to the thumbnails, instead
+ * of the panel, packs them at the start without breaking that scrolling.
+ */
+.images :deep(.p-galleria-thumbnail-items) {
+    flex-shrink: 0;
+    inline-size: calc(v-bind(VISIBLE_THUMBNAIL_COUNT) * 6.8rem);
+}
+
 .images-thumbnail {
     inline-size: 6rem;
     block-size: 6rem;
     object-fit: cover;
-    border-radius: var(--p-content-border-radius);
+    border-radius: 0.2rem;
 }
 
 /* A wide panel (e.g. expanded to full width) gives the image more height. */

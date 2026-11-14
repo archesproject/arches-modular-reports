@@ -5,6 +5,7 @@ import Splitter from "openvue/splitter";
 import SplitterPanel from "openvue/splitterpanel";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
+import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { useWorkspaceHeaderHost } from "@/arches_modular_reports/ResourceReport/composables/useWorkspaceHeaderHost.ts";
 import { provideWorkspaceOverlayHost } from "@/arches_modular_reports/ResourceReport/composables/useWorkspaceOverlayHost.ts";
 
@@ -16,11 +17,15 @@ import type {
 const SPLITTER_STATE_KEY_PREFIX = "arches-modular-reports-split-pane";
 const MINIMUM_PANE_SIZE = 20;
 const DEFAULT_ASIDE_PANE_SIZE = 40;
+const EDITING_ASIDE_PANE_SIZE = 60;
+const EDITOR_PANEL_COMPONENT_NAME = "EditorPanel";
 const FULL_PANE_SIZE = 100;
 
 const { component } = defineProps<{
     component: ComponentNode<SplitPaneConfig>;
 }>();
+
+const reportData = useReportData();
 
 const mainHeader = useTemplateRef<HTMLElement>("mainHeader");
 useWorkspaceHeaderHost(mainHeader);
@@ -40,9 +45,28 @@ const hasAside = computed(
     () => asideNodes.value.length > 0 || asideFooterNodes.value.length > 0,
 );
 
-const asidePaneSize = computed(
+const configuredAsidePaneSize = computed(
     () => component.config.aside_size ?? DEFAULT_ASIDE_PANE_SIZE,
 );
+
+const isEditingInAside = computed(
+    () =>
+        reportData.value.editor.target !== null &&
+        asideNodes.value.some(
+            (childNode) =>
+                childNode.component.split("/").at(-1) ===
+                EDITOR_PANEL_COMPONENT_NAME,
+        ),
+);
+
+// The editor needs room for its form, so the aside widens while it is open
+// and goes back to its own size when it closes.
+const asidePaneSize = computed(() => {
+    if (isEditingInAside.value) {
+        return Math.max(configuredAsidePaneSize.value, EDITING_ASIDE_PANE_SIZE);
+    }
+    return configuredAsidePaneSize.value;
+});
 
 const mainPaneSize = computed(() => {
     if (hasAside.value) {
@@ -58,8 +82,9 @@ const splitterStateKey = computed(() => {
     const regionPaths = [...mainNodes.value, ...asideNodes.value].map(
         (childNode) => childNode.component,
     );
-    // The configured size is part of the key, so changing it replaces a
-    // remembered split rather than being masked by it.
+    // The size is part of the key, so a changed configured size replaces a
+    // remembered split rather than being masked by it, and the split while
+    // editing is remembered apart from the one while not.
     return `${SPLITTER_STATE_KEY_PREFIX}:${regionPaths.join(",")}:${asidePaneSize.value}`;
 });
 

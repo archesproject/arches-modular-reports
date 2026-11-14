@@ -151,8 +151,6 @@ function undoDelete(): void {
             <span class="editor-panel-caption">{{ caption }}</span>
             <Button
                 class="editor-panel-close"
-                variant="text"
-                severity="secondary"
                 size="small"
                 icon="pi pi-times"
                 icon-pos="right"
@@ -302,16 +300,10 @@ function undoDelete(): void {
     gap: 0.6rem;
     padding-block: 0.4rem;
     padding-inline: 0.8rem;
-    border: none;
-    border-radius: 0.4rem;
-    color: var(--p-text-muted-color);
+    border-radius: 0.2rem;
     font-size: 1.3rem;
     line-height: 1;
-}
-
-.editor-panel-bar .editor-panel-close:not(:disabled):hover {
-    background: var(--resource-report-muted-background);
-    color: var(--p-text-color);
+    padding: 0.5rem 1rem;
 }
 
 .editor-panel-body {

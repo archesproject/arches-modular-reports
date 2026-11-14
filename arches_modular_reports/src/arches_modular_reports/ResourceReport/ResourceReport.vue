@@ -295,9 +295,9 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
         var(--p-surface-100),
         var(--p-surface-200)
     );
-    /* Shared height, bottom border included, so the workspace tab bar and
-       the editor panel bar line up side by side. */
-    --resource-report-bar-block-size: 3.65rem;
+    /* Shared height, bottom border included, so the bars at the top of the
+       aside (drawer triggers, editor, record summary) match. */
+    --resource-report-bar-block-size: 4rem;
     /* Read by the core resource-instance multiselect widget's chips. */
     --resource-instance-multiselect-chip-background: #092c8d;
     --resource-instance-multiselect-chip-color: var(--p-surface-0);

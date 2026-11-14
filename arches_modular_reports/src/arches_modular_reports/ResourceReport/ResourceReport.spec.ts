@@ -661,6 +661,26 @@ describe("ResourceReport", () => {
         });
     });
 
+    it("widens the aside while the editor is open", async () => {
+        const wrapper = mountReport(FOLIO_CONFIG);
+        await flushPromises();
+        const asideStyle = (): string =>
+            wrapper.find(".split-pane-aside").attributes("style") ?? "";
+        expect(asideStyle()).toContain("40%");
+
+        await buttonWithText(
+            wrapper,
+            ".report-folio-tile-actions",
+            "Edit",
+        ).trigger("click");
+        await flushPromises();
+        expect(asideStyle()).toContain("60%");
+
+        await wrapper.find(".editor-panel-close").trigger("click");
+        await flushPromises();
+        expect(asideStyle()).toContain("40%");
+    });
+
     it("discards every pending edit only once the discard is confirmed", async () => {
         const wrapper = mountReport(FOLIO_CONFIG);
         await flushPromises();
@@ -704,6 +724,26 @@ describe("ResourceReport", () => {
         expect(wrapper.find(".edit-list-tray").exists()).toBe(false);
 
         wrapper.unmount();
+    });
+
+    it("puts the resource header above the workspace tabs", async () => {
+        const wrapper = mountReport(REPORT_CONFIG);
+        await flushPromises();
+
+        const header = wrapper.find(".workspace-tabs-header");
+        expect(
+            header
+                .findAll(":scope > *")
+                .map((child) =>
+                    child
+                        .classes()
+                        .find((className) =>
+                            ["report-header", "workspace-tabs-bar"].includes(
+                                className,
+                            ),
+                        ),
+                ),
+        ).toEqual(["report-header", "workspace-tabs-bar"]);
     });
 
     it("holds lifecycle changes while edits are pending", async () => {
