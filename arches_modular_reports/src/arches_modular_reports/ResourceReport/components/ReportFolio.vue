@@ -83,13 +83,13 @@ const singleTile = computed(() => {
 const emptyMessage = computed(() => {
     if (parentTileId.value === null) {
         return $gettext(
-            "No %{name} have been recorded.",
+            "Nothing recorded for %{name}.",
             { name: cardName.value },
             true,
         );
     }
     return $gettext(
-        "No %{name} have been recorded for this entry.",
+        "Nothing recorded for %{name} in this entry.",
         { name: cardName.value },
         true,
     );

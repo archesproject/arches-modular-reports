@@ -3,11 +3,12 @@ import { computed, nextTick, ref, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
-import ConfirmDialog from "openvue/confirmdialog";
 import Message from "openvue/message";
-import { useConfirm } from "openvue/useconfirm";
+
+import AlertDialog from "@/arches_modular_reports/ResourceReport/components/AlertDialog.vue";
 
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
+import { plainText } from "@/arches_modular_reports/ResourceReport/utils/plain-text.ts";
 import { findTile } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
 import { tileSummary } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
@@ -17,17 +18,15 @@ import type {
     ResourceChange,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
-const CONFIRM_GROUP = "edit-list-tray";
-
 defineProps<{
     component: ComponentNode;
 }>();
 
 const { $gettext, $ngettext } = useGettext();
 const reportData = useReportData();
-const confirm = useConfirm();
 
 const conflictSummary = ref<HTMLElement | null>(null);
+const isConfirmingDiscard = ref(false);
 
 const hasPendingChanges = computed(
     () => reportData.value.changeSet.pendingChanges.value.length > 0,
@@ -102,7 +101,7 @@ function nodegroupLabel(nodegroupAlias: string): string {
 }
 
 function displayOrEmpty(value: string | null | undefined): string {
-    return value ? value : $gettext("(empty)");
+    return value ? plainText(value) : $gettext("(empty)");
 }
 
 interface ConflictRow {
@@ -297,19 +296,13 @@ function openChange(change: ResourceChange): void {
 }
 
 function confirmCancelAll(): void {
-    confirm.require({
-        group: CONFIRM_GROUP,
-        header: $gettext("Discard all changes?"),
-        message: $gettext(
-            "Every pending change will be discarded. This cannot be undone.",
-        ),
-        acceptLabel: $gettext("Discard all"),
-        rejectLabel: $gettext("Keep editing"),
-        accept: () => {
-            reportData.value.changeSet.discardAll();
-            reportData.value.editor.close();
-        },
-    });
+    isConfirmingDiscard.value = true;
+}
+
+function discardAll(): void {
+    isConfirmingDiscard.value = false;
+    reportData.value.changeSet.discardAll();
+    reportData.value.editor.close();
 }
 
 async function applyAll(): Promise<void> {
@@ -328,7 +321,25 @@ async function applyAll(): Promise<void> {
         v-if="hasPendingChanges"
         class="edit-list-tray"
     >
-        <ConfirmDialog :group="CONFIRM_GROUP" />
+        <AlertDialog
+            v-model:visible="isConfirmingDiscard"
+            :header="$gettext('Discard all changes?')"
+            :cancel-label="$gettext('Keep editing')"
+            :confirm-label="$gettext('Discard all')"
+            @confirm="discardAll"
+        >
+            <Message
+                severity="warn"
+                size="small"
+                icon="pi pi-exclamation-triangle"
+            >
+                {{
+                    $gettext(
+                        "Every pending change will be discarded. This cannot be undone.",
+                    )
+                }}
+            </Message>
+        </AlertDialog>
         <div class="edit-list-tray-changes">
             <h3 class="edit-list-tray-title">
                 {{ $gettext("Edit List") }}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import IconField from "openvue/iconfield";
@@ -14,6 +14,7 @@ import { folioMatches } from "@/arches_modular_reports/ResourceReport/utils/data
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
+import type { ComponentPublicInstance } from "vue";
 import type { ComponentNode } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 defineProps<{
@@ -25,14 +26,25 @@ const reportData = useReportData();
 
 const { filterText, query: appliedFilterText } = useFilterQuery();
 
+const unregisterFolioByAlias = new Map<string, () => void>();
+let unregisterRevealer = (): void => undefined;
+
 const query = computed(() => appliedFilterText.value.toLocaleLowerCase());
 
 const isEditable = computed(
     () => reportData.value.canEdit && reportData.value.editor.isAvailable,
 );
 
+const topLevelAliases = computed(() =>
+    childNodegroupAliases(reportData.value.nodegroupWidgetConfigs, null),
+);
+
+const flashedNodegroupAlias = computed(
+    () => reportData.value.folioNavigation.flashedNodegroupAlias.value,
+);
+
 const folios = computed(() =>
-    childNodegroupAliases(reportData.value.nodegroupWidgetConfigs, null)
+    topLevelAliases.value
         .map((nodegroupAlias) => ({
             nodegroupAlias,
             tiles: nodegroupTiles(
@@ -50,6 +62,48 @@ const folios = computed(() =>
                 ),
         ),
 );
+
+// A filter that hides the folio being jumped to is cleared, so it shows. Local,
+// so a jump made while the browser is open stays in it.
+onMounted(() => {
+    unregisterRevealer = reportData.value.folioNavigation.registerRevealer({
+        isLocal: true,
+        contains: (nodegroupAlias) =>
+            topLevelAliases.value.includes(nodegroupAlias),
+        reveal: (nodegroupAlias) => {
+            const isShown = folios.value.some(
+                (folio) => folio.nodegroupAlias === nodegroupAlias,
+            );
+            if (!isShown) {
+                filterText.value = "";
+                appliedFilterText.value = "";
+            }
+        },
+    });
+});
+
+onUnmounted(() => {
+    unregisterRevealer();
+    unregisterFolioByAlias.forEach((unregisterFolio) => unregisterFolio());
+    unregisterFolioByAlias.clear();
+});
+
+function trackFolioElement(
+    nodegroupAlias: string,
+    element: Element | ComponentPublicInstance | null,
+): void {
+    unregisterFolioByAlias.get(nodegroupAlias)?.();
+    unregisterFolioByAlias.delete(nodegroupAlias);
+    if (element instanceof HTMLElement) {
+        unregisterFolioByAlias.set(
+            nodegroupAlias,
+            reportData.value.folioNavigation.registerFolio(
+                nodegroupAlias,
+                element,
+            ),
+        );
+    }
+}
 </script>
 
 <template>
@@ -78,20 +132,40 @@ const folios = computed(() =>
             }}
         </p>
         <div class="data-browser-folios">
-            <DataFolio
+            <!-- Focusable so jumping here from elsewhere moves focus too. -->
+            <div
                 v-for="folio in folios"
                 :key="folio.nodegroupAlias"
-                :nodegroup-alias="folio.nodegroupAlias"
-                :nodegroup-widget-configs="reportData.nodegroupWidgetConfigs"
-                :tiles="folio.tiles"
-                :parent-tile-id="null"
-                :change-set="reportData.changeSet"
-                :query="query"
-                :matched-by-ancestor="false"
-                :selected-tile-id="reportData.editor.target?.tileId ?? null"
-                :is-editable="isEditable"
-                @edit-tile="reportData.editor.open"
-            />
+                :ref="
+                    (element) =>
+                        trackFolioElement(folio.nodegroupAlias, element)
+                "
+                class="data-browser-folio"
+                tabindex="-1"
+                :class="{
+                    'data-browser-folio-flash':
+                        flashedNodegroupAlias === folio.nodegroupAlias,
+                }"
+                @animationend.self="reportData.folioNavigation.clearFlash"
+            >
+                <DataFolio
+                    :nodegroup-alias="folio.nodegroupAlias"
+                    :nodegroup-widget-configs="
+                        reportData.nodegroupWidgetConfigs
+                    "
+                    :tiles="folio.tiles"
+                    :parent-tile-id="null"
+                    :change-set="reportData.changeSet"
+                    :query="query"
+                    :matched-by-ancestor="false"
+                    :selected-tile-id="reportData.editor.target?.tileId ?? null"
+                    :is-editable="isEditable"
+                    :is-revealed="
+                        flashedNodegroupAlias === folio.nodegroupAlias
+                    "
+                    @edit-tile="reportData.editor.open"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -130,6 +204,23 @@ const folios = computed(() =>
     display: flex;
     flex-direction: column;
     padding: 1.6rem;
+}
+
+.data-browser-folio:focus-visible {
+    outline: 0.2rem solid var(--p-focus-ring-color);
+    outline-offset: 0.2rem;
+}
+
+/* Matches the report folios' "you've arrived" flash. */
+.data-browser-folio-flash {
+    animation: data-browser-folio-flash 1.6s ease-out;
+}
+
+@keyframes data-browser-folio-flash {
+    from {
+        background: var(--p-highlight-background);
+        box-shadow: 0 0 0 0.8rem var(--p-highlight-background);
+    }
 }
 
 .data-browser-no-results {

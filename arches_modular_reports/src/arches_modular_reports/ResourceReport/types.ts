@@ -11,7 +11,12 @@ export type LocalizedLabel = string | Record<string, string>;
 export type ExportFormat = "json-ld" | "json" | "csv";
 
 export type TagSeverity =
-    "info" | "success" | "warn" | "danger" | "secondary" | "contrast";
+    | "info"
+    | "success"
+    | "warn"
+    | "danger"
+    | "secondary"
+    | "contrast";
 
 export interface SummaryEntryConfig {
     node_alias: string;
@@ -52,6 +57,8 @@ export interface SplitPaneConfig extends LabelledConfig {
     main?: ComponentNode[];
     aside?: ComponentNode[];
     aside_footer?: ComponentNode[];
+    // The aside's starting share of the width, as a percentage (default 40).
+    aside_size?: number;
 }
 
 export interface StackConfig extends LabelledConfig, ContainerConfig {}
@@ -71,6 +78,19 @@ export interface MapFolioConfig extends FolioConfig {
 
 export interface DrawerConfig extends ContainerConfig {
     panels?: ComponentNode<LabelledConfig>[];
+}
+
+// One tab of the report (a child of ReportTabs) and the nodegroups it shows,
+// in the order the report shows them.
+export interface ReportTabGroup {
+    label: string;
+    nodegroupAliases: string[];
+}
+
+// How many entries a drawer panel holds, from its first page of results.
+export interface DrawerPanelCount {
+    count: number;
+    hasMore: boolean;
 }
 
 export interface KeyDataSummaryConfig {
@@ -176,12 +196,18 @@ export interface ReorderTilesChange {
 }
 
 export type ResourceChange =
-    AddTileChange | EditTileChange | DeleteTileChange | ReorderTilesChange;
+    | AddTileChange
+    | EditTileChange
+    | DeleteTileChange
+    | ReorderTilesChange;
 
 export type TileChangeType = "add" | "edit" | "delete";
 
 export type ConflictReason =
-    "modified" | "deleted" | "parent_deleted" | "slot_taken";
+    | "modified"
+    | "deleted"
+    | "parent_deleted"
+    | "slot_taken";
 
 export interface ConflictNode {
     current: unknown;
@@ -260,6 +286,9 @@ export interface ReportLifecycle {
 export interface FolioRevealer {
     contains: (nodegroupAlias: string) => boolean;
     reveal: (nodegroupAlias: string) => void;
+    // Reveals within the current view (e.g. clearing a filter) rather than
+    // switching to another tab; preferred over revealers that switch.
+    isLocal?: boolean;
 }
 
 export interface FolioNavigation {
@@ -267,6 +296,7 @@ export interface FolioNavigation {
     registerFolio: (nodegroupAlias: string, element: HTMLElement) => () => void;
     registerRevealer: (revealer: FolioRevealer) => () => void;
     jumpToNode: (nodeAlias: string) => Promise<void>;
+    jumpToNodegroup: (nodegroupAlias: string) => Promise<void>;
     clearFlash: () => void;
 }
 
@@ -275,6 +305,7 @@ export interface ReportData {
     nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>;
     graphNodesByAlias: Record<string, GraphNode>;
     folioLocations: Record<string, string>;
+    reportTabs: ReportTabGroup[];
     context: ReportContext;
     canEdit: boolean;
     changeSet: ResourceChangeSet;

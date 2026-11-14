@@ -6,6 +6,7 @@ import SplitterPanel from "openvue/splitterpanel";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
 import { useWorkspaceHeaderHost } from "@/arches_modular_reports/ResourceReport/composables/useWorkspaceHeaderHost.ts";
+import { provideWorkspaceOverlayHost } from "@/arches_modular_reports/ResourceReport/composables/useWorkspaceOverlayHost.ts";
 
 import type {
     ComponentNode,
@@ -14,8 +15,7 @@ import type {
 
 const SPLITTER_STATE_KEY_PREFIX = "arches-modular-reports-split-pane";
 const MINIMUM_PANE_SIZE = 20;
-const MAIN_PANE_SIZE = 60;
-const ASIDE_PANE_SIZE = 40;
+const DEFAULT_ASIDE_PANE_SIZE = 40;
 const FULL_PANE_SIZE = 100;
 
 const { component } = defineProps<{
@@ -24,6 +24,9 @@ const { component } = defineProps<{
 
 const mainHeader = useTemplateRef<HTMLElement>("mainHeader");
 useWorkspaceHeaderHost(mainHeader);
+
+const overlayHost = useTemplateRef<HTMLElement>("overlayHost");
+provideWorkspaceOverlayHost(overlayHost);
 
 const mainHeaderBlockSize = ref(0);
 
@@ -37,9 +40,13 @@ const hasAside = computed(
     () => asideNodes.value.length > 0 || asideFooterNodes.value.length > 0,
 );
 
+const asidePaneSize = computed(
+    () => component.config.aside_size ?? DEFAULT_ASIDE_PANE_SIZE,
+);
+
 const mainPaneSize = computed(() => {
     if (hasAside.value) {
-        return MAIN_PANE_SIZE;
+        return FULL_PANE_SIZE - asidePaneSize.value;
     }
     return FULL_PANE_SIZE;
 });
@@ -51,7 +58,9 @@ const splitterStateKey = computed(() => {
     const regionPaths = [...mainNodes.value, ...asideNodes.value].map(
         (childNode) => childNode.component,
     );
-    return `${SPLITTER_STATE_KEY_PREFIX}:${regionPaths.join(",")}`;
+    // The configured size is part of the key, so changing it replaces a
+    // remembered split rather than being masked by it.
+    return `${SPLITTER_STATE_KEY_PREFIX}:${regionPaths.join(",")}:${asidePaneSize.value}`;
 });
 
 // Sticky elements further down the main region (e.g. the report sub-tabs)
@@ -92,64 +101,86 @@ function toRem(pixels: number): number {
 </script>
 
 <template>
-    <Splitter
-        :key="String(hasAside)"
-        class="split-pane"
-        state-storage="local"
-        :state-key="splitterStateKey"
-    >
-        <SplitterPanel
-            class="split-pane-region"
-            :style="mainRegionStyle"
-            :size="mainPaneSize"
-            :min-size="MINIMUM_PANE_SIZE"
+    <div class="split-pane">
+        <Splitter
+            :key="String(hasAside)"
+            class="split-pane-splitter"
+            state-storage="local"
+            :state-key="splitterStateKey"
         >
-            <div
-                ref="mainHeader"
-                class="split-pane-main-header"
-            ></div>
-            <component
-                :is="loadComponent(childNode.component)"
-                v-for="(childNode, childIndex) in mainNodes"
-                :key="childIndex"
-                :component="childNode"
-            />
-        </SplitterPanel>
-        <SplitterPanel
-            v-if="hasAside"
-            class="split-pane-aside"
-            :size="ASIDE_PANE_SIZE"
-            :min-size="MINIMUM_PANE_SIZE"
-        >
-            <div class="split-pane-region split-pane-aside-stage">
-                <component
-                    :is="loadComponent(childNode.component)"
-                    v-for="(childNode, childIndex) in asideNodes"
-                    :key="childIndex"
-                    :component="childNode"
-                />
-            </div>
-            <div
-                v-if="asideFooterNodes.length > 0"
-                class="split-pane-aside-footer"
+            <SplitterPanel
+                class="split-pane-region"
+                :style="mainRegionStyle"
+                :size="mainPaneSize"
+                :min-size="MINIMUM_PANE_SIZE"
             >
+                <div
+                    ref="mainHeader"
+                    class="split-pane-main-header"
+                ></div>
                 <component
                     :is="loadComponent(childNode.component)"
-                    v-for="(childNode, childIndex) in asideFooterNodes"
+                    v-for="(childNode, childIndex) in mainNodes"
                     :key="childIndex"
                     :component="childNode"
                 />
-            </div>
-        </SplitterPanel>
-    </Splitter>
+            </SplitterPanel>
+            <SplitterPanel
+                v-if="hasAside"
+                class="split-pane-aside"
+                :size="asidePaneSize"
+                :min-size="MINIMUM_PANE_SIZE"
+            >
+                <div class="split-pane-region split-pane-aside-stage">
+                    <component
+                        :is="loadComponent(childNode.component)"
+                        v-for="(childNode, childIndex) in asideNodes"
+                        :key="childIndex"
+                        :component="childNode"
+                    />
+                </div>
+                <div
+                    v-if="asideFooterNodes.length > 0"
+                    class="split-pane-aside-footer"
+                >
+                    <component
+                        :is="loadComponent(childNode.component)"
+                        v-for="(childNode, childIndex) in asideFooterNodes"
+                        :key="childIndex"
+                        :component="childNode"
+                    />
+                </div>
+            </SplitterPanel>
+        </Splitter>
+        <div
+            ref="overlayHost"
+            class="split-pane-overlay-host"
+        ></div>
+    </div>
 </template>
 
 <style scoped>
 .split-pane {
+    position: relative;
+    display: flex;
     flex: 1;
     min-block-size: 0;
+}
+
+.split-pane-splitter {
+    flex: 1;
+    min-inline-size: 0;
     border: none;
     border-radius: 0;
+}
+
+/* Empty until a panel teleports in; it must never take clicks itself. It sits
+   above the pinned main header, so a full-width panel covers it too. */
+.split-pane-overlay-host {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
 }
 
 .split-pane :deep(.p-splitter-gutter) {

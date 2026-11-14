@@ -12,10 +12,12 @@ import Tag from "openvue/tag";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { fetchEditHistory } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { useFilterQuery } from "@/arches_modular_reports/ResourceReport/composables/useFilterQuery.ts";
+import { plainText } from "@/arches_modular_reports/ResourceReport/utils/plain-text.ts";
 
 import type {
     ComponentNode,
     EditHistoryEntry,
+    EditHistoryValue,
     LabelledConfig,
     TagSeverity,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
@@ -28,7 +30,7 @@ defineProps<{
     component: ComponentNode<LabelledConfig>;
 }>();
 
-const { $gettext } = useGettext();
+const { $gettext, $ngettext } = useGettext();
 const reportData = useReportData();
 const { filterText, query } = useFilterQuery();
 
@@ -36,6 +38,8 @@ const entries = ref<EditHistoryEntry[]>([]);
 const nextCursor = ref<string | null>(null);
 const isLoading = ref(false);
 const loadError = ref<Error | null>(null);
+// Entries showing their unchanged fields too; the rest show only changes.
+const fullyShownEntryIds = ref(new Set<string>());
 let latestHistoryRequestNumber = 0;
 
 const resourceInstanceId = computed(
@@ -118,6 +122,65 @@ function formatTimestamp(timestamp: string): string {
 
 function fieldLabel(nodeAlias: string): string {
     return reportData.value.graphNodesByAlias[nodeAlias].label;
+}
+
+function unchangedFieldCount(entry: EditHistoryEntry): number {
+    return entry.values.filter((value) => !value.changed).length;
+}
+
+// Only an entry mixing changed and unchanged fields has anything to hide.
+function hasHideableFields(entry: EditHistoryEntry): boolean {
+    const unchangedCount = unchangedFieldCount(entry);
+    return unchangedCount > 0 && unchangedCount < entry.values.length;
+}
+
+function isShowingAllFields(entry: EditHistoryEntry): boolean {
+    return fullyShownEntryIds.value.has(entry.editlogid);
+}
+
+// Rich text values arrive as HTML; show what a reader would see.
+function valueText(value: string | null): string {
+    return value === null ? "" : plainText(value);
+}
+
+function displayedValues(entry: EditHistoryEntry): EditHistoryValue[] {
+    if (!hasHideableFields(entry) || isShowingAllFields(entry)) {
+        return entry.values;
+    }
+    return entry.values.filter((value) => value.changed);
+}
+
+// Marked only where unchanged fields are listed alongside it.
+function isMarkedChanged(
+    entry: EditHistoryEntry,
+    value: EditHistoryValue,
+): boolean {
+    return (
+        value.changed && hasHideableFields(entry) && isShowingAllFields(entry)
+    );
+}
+
+function fieldsToggleLabel(entry: EditHistoryEntry): string {
+    if (isShowingAllFields(entry)) {
+        return $gettext("Show changed fields only");
+    }
+    const unchangedCount = unchangedFieldCount(entry);
+    return $ngettext(
+        "Show %{count} unchanged field",
+        "Show %{count} unchanged fields",
+        unchangedCount,
+        { count: String(unchangedCount) },
+    );
+}
+
+function toggleAllFields(entry: EditHistoryEntry): void {
+    const nextIds = new Set(fullyShownEntryIds.value);
+    if (nextIds.has(entry.editlogid)) {
+        nextIds.delete(entry.editlogid);
+    } else {
+        nextIds.add(entry.editlogid);
+    }
+    fullyShownEntryIds.value = nextIds;
 }
 </script>
 
@@ -221,7 +284,7 @@ function fieldLabel(nodeAlias: string): string {
                             class="edit-history-fields"
                         >
                             <div
-                                v-for="value in entry.values"
+                                v-for="value in displayedValues(entry)"
                                 :key="value.node_alias"
                                 class="edit-history-field"
                                 :class="{
@@ -241,7 +304,21 @@ function fieldLabel(nodeAlias: string): string {
                                         )
                                     }}
                                 </dt>
-                                <dd>{{ value.before }}</dd>
+                                <dd>
+                                    <span>{{ valueText(value.before) }}</span>
+                                    <span
+                                        v-if="isMarkedChanged(entry, value)"
+                                        class="edit-history-changed-marker"
+                                    >
+                                        <i
+                                            class="pi pi-pencil"
+                                            aria-hidden="true"
+                                        />
+                                        <span class="edit-history-sr-only">
+                                            {{ $gettext("(changed)") }}
+                                        </span>
+                                    </span>
+                                </dd>
                             </div>
                         </dl>
                     </div>
@@ -260,7 +337,7 @@ function fieldLabel(nodeAlias: string): string {
                             class="edit-history-fields"
                         >
                             <div
-                                v-for="value in entry.values"
+                                v-for="value in displayedValues(entry)"
                                 :key="value.node_alias"
                                 class="edit-history-field"
                                 :class="{
@@ -280,11 +357,33 @@ function fieldLabel(nodeAlias: string): string {
                                         )
                                     }}
                                 </dt>
-                                <dd>{{ value.after }}</dd>
+                                <dd>
+                                    <span>{{ valueText(value.after) }}</span>
+                                    <span
+                                        v-if="isMarkedChanged(entry, value)"
+                                        class="edit-history-changed-marker"
+                                    >
+                                        <i
+                                            class="pi pi-pencil"
+                                            aria-hidden="true"
+                                        />
+                                        <span class="edit-history-sr-only">
+                                            {{ $gettext("(changed)") }}
+                                        </span>
+                                    </span>
+                                </dd>
                             </div>
                         </dl>
                     </div>
                 </div>
+                <Button
+                    v-if="hasHideableFields(entry)"
+                    class="edit-history-fields-toggle"
+                    variant="link"
+                    size="small"
+                    :label="fieldsToggleLabel(entry)"
+                    @click="toggleAllFields(entry)"
+                />
             </li>
         </ol>
         <Button
@@ -304,6 +403,7 @@ function fieldLabel(nodeAlias: string): string {
     flex-direction: column;
     gap: 1.2rem;
     padding: 1.6rem;
+    container-type: inline-size;
 }
 
 .edit-history-filter {
@@ -417,11 +517,41 @@ function fieldLabel(nodeAlias: string): string {
 }
 
 .edit-history-field dd {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4rem;
     margin: 0;
 }
 
 .edit-history-field-changed dd {
     color: var(--p-primary-color);
     font-weight: 600;
+}
+
+.edit-history-changed-marker {
+    font-size: 1.1rem;
+}
+
+.edit-history-fields-toggle {
+    align-self: flex-start;
+    padding-inline: 0;
+}
+
+.edit-history-sr-only {
+    position: absolute;
+    inline-size: 0.1rem;
+    block-size: 0.1rem;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* A wide panel (e.g. expanded to full width) shows Before and After side by
+   side. */
+@container (min-inline-size: 60rem) {
+    .edit-history-diff {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
 }
 </style>

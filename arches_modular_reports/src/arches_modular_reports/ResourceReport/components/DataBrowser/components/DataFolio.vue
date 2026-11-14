@@ -14,6 +14,7 @@ import {
     ownLabelsMatch,
 } from "@/arches_modular_reports/ResourceReport/utils/data-filter.ts";
 import { datatypeIcon } from "@/arches_modular_reports/ResourceReport/utils/datatype-icon.ts";
+import { plainText } from "@/arches_modular_reports/ResourceReport/utils/plain-text.ts";
 import {
     childNodegroupAliases,
     nodegroupLineage,
@@ -50,6 +51,7 @@ const {
     matchedByAncestor,
     selectedTileId,
     isEditable,
+    isRevealed = false,
 } = defineProps<{
     nodegroupAlias: string;
     nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>;
@@ -60,6 +62,8 @@ const {
     matchedByAncestor: boolean;
     selectedTileId: string | null;
     isEditable: boolean;
+    // True while something elsewhere has jumped to this folio.
+    isRevealed?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -225,6 +229,15 @@ watch(
 );
 
 watch(
+    () => isRevealed,
+    (isFolioRevealed) => {
+        if (isFolioRevealed) {
+            isFolioToggledOpen.value = true;
+        }
+    },
+);
+
+watch(
     selectedBranchTileId,
     (branchTileId) => {
         if (branchTileId === null) {
@@ -238,7 +251,7 @@ watch(
 );
 
 function displayValue(tile: AliasedTileData, nodeAlias: string): string {
-    return aliasedNodeDataOf(tile, nodeAlias)?.display_value ?? "";
+    return plainText(aliasedNodeDataOf(tile, nodeAlias)?.display_value ?? "");
 }
 
 function tileLabel(tile: AliasedTileData): string {

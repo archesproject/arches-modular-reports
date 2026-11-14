@@ -3,9 +3,10 @@ import { computed, ref, watchEffect } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
-import Dialog from "openvue/dialog";
 import InputText from "openvue/inputtext";
 import Message from "openvue/message";
+
+import AlertDialog from "@/arches_modular_reports/ResourceReport/components/AlertDialog.vue";
 
 import {
     copyResource,
@@ -128,37 +129,16 @@ async function deleteThisResource(): Promise<void> {
 
 <template>
     <div class="manage">
-        <Dialog
+        <AlertDialog
             v-model:visible="isConfirmingDelete"
-            modal
-            :draggable="false"
-            :closable="!isDeleting"
-            :close-on-escape="!isDeleting"
             :header="$gettext('Delete this resource?')"
-            :pt="{
-                root: {
-                    class: 'manage-confirm-dialog',
-                    role: 'alertdialog',
-                    style: {
-                        width: '40rem',
-                        maxWidth: 'calc(100vw - 3.2rem)',
-                        borderRadius: '0.15rem',
-                    },
-                },
-                header: {
-                    style: {
-                        background: 'var(--p-content-hover-background)',
-                        color: 'var(--p-text-color)',
-                        borderBottom:
-                            '0.1rem solid var(--p-content-border-color)',
-                        borderRadius: '0.15rem 0.15rem 0 0',
-                    },
-                },
-            }"
+            :cancel-label="$gettext('Cancel')"
+            :confirm-label="$gettext('Delete Resource')"
+            :is-busy="isDeleting"
+            @confirm="deleteThisResource"
         >
             <Message
                 v-if="deleteError"
-                class="manage-confirm-note"
                 severity="error"
                 size="small"
                 icon="pi pi-times-circle"
@@ -173,7 +153,6 @@ async function deleteThisResource(): Promise<void> {
             </Message>
             <Message
                 v-else-if="isDeleting"
-                class="manage-confirm-note"
                 severity="info"
                 size="small"
                 icon="pi pi-spin pi-spinner"
@@ -182,28 +161,13 @@ async function deleteThisResource(): Promise<void> {
             </Message>
             <Message
                 v-else
-                class="manage-confirm-note"
                 severity="warn"
                 size="small"
                 icon="pi pi-exclamation-triangle"
             >
                 {{ deleteWarning }}
             </Message>
-            <template #footer>
-                <Button
-                    :label="$gettext('Cancel')"
-                    :disabled="isDeleting"
-                    autofocus
-                    @click="isConfirmingDelete = false"
-                />
-                <Button
-                    severity="danger"
-                    :label="$gettext('Delete Resource')"
-                    :loading="isDeleting"
-                    @click="deleteThisResource"
-                />
-            </template>
-        </Dialog>
+        </AlertDialog>
         <Message
             v-if="actionError"
             severity="error"
@@ -499,35 +463,5 @@ async function deleteThisResource(): Promise<void> {
 
 .manage-note-message :deep(.p-message-icon) {
     font-size: 1.4rem;
-}
-</style>
-
-<!-- Not scoped: the dialog is teleported to <body>, outside this component. -->
-<style>
-.manage-confirm-dialog .p-dialog-content {
-    padding-block-start: 1.25rem;
-}
-
-.manage-confirm-dialog .manage-confirm-note {
-    inline-size: 100%;
-    border-radius: 0.15rem;
-}
-
-.manage-confirm-dialog .manage-confirm-note .p-message-content {
-    gap: 1.5rem;
-}
-
-/* The small Message sizes its own text and icon; match the create dialog. */
-.manage-confirm-dialog .manage-confirm-note .p-message-text {
-    font-size: 1.25rem;
-    line-height: 1.4;
-}
-
-.manage-confirm-dialog .manage-confirm-note .p-message-icon {
-    font-size: 1.4rem;
-}
-
-.manage-confirm-dialog .p-dialog-footer .p-button {
-    border-radius: 0.15rem;
 }
 </style>

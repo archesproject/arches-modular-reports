@@ -308,20 +308,11 @@ def generate_resource_report_config(graph):
         {
             "label": translated_labels(gettext_noop("Data")),
             "requires_edit": True,
+            "aside_size": 60,
             "main": [report_component("DataBrowser/DataBrowser", {})],
             "aside": [
                 report_component("EditorPanel/EditorPanel", {}),
-                report_component(
-                    "ReportPlaceholder",
-                    {
-                        "icon": "pi pi-sitemap",
-                        "message": translated_labels(
-                            gettext_noop(
-                                "Select an entry in the data browser to begin editing."
-                            )
-                        ),
-                    },
-                ),
+                report_component("RecordSummaryPanel", {}),
             ],
             "aside_footer": [report_component("EditListTray", {})],
         },

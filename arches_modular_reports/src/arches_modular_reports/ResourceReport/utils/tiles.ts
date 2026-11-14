@@ -1,5 +1,7 @@
 import { isAliasedNodeData } from "@/arches_vue_components/generics/GenericCard/utils.ts";
 
+import { plainText } from "@/arches_modular_reports/ResourceReport/utils/plain-text.ts";
+
 import type {
     AliasedNodeData,
     AliasedNodegroupData,
@@ -53,7 +55,7 @@ export function containsTile(tile: AliasedTileData, tileId: string): boolean {
 export function tileHasData(tile: AliasedTileData): boolean {
     return Object.values(tile.aliased_data).some((value) => {
         if (isAliasedNodeData(value)) {
-            return value.display_value.trim() !== "";
+            return plainText(value.display_value).trim() !== "";
         }
         return nodegroupTiles(value).some(tileHasData);
     });
@@ -65,7 +67,7 @@ export function tileSearchText(tile: AliasedTileData): string {
     function visit(currentTile: AliasedTileData): void {
         for (const value of Object.values(currentTile.aliased_data)) {
             if (isAliasedNodeData(value)) {
-                displayValues.push(value.display_value);
+                displayValues.push(plainText(value.display_value));
             } else {
                 nodegroupTiles(value).forEach(visit);
             }
@@ -105,7 +107,7 @@ export function tileSummary(
             widget.node.alias,
         )?.display_value;
         if (displayValue) {
-            summaryValues.push(displayValue);
+            summaryValues.push(plainText(displayValue));
         }
     }
     return summaryValues.join(" · ");

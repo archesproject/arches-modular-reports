@@ -39,11 +39,26 @@ const resourceInstanceId = computed(
     () => reportData.value.resource.resourceinstanceid,
 );
 
-const visibleGroups = computed(() => {
-    if (query.value === "") {
-        return groups.value;
+const visibleGroups = computed(() =>
+    groups.value.filter((group) => group.items.length > 0),
+);
+
+// Models with nothing related share one line instead of a group each. While
+// filtering, the "No results" message covers them instead.
+const emptyGroupsMessage = computed(() => {
+    const emptyGroupNames = groups.value
+        .filter((group) => group.items.length === 0)
+        .map((group) => group.graph_name);
+    if (query.value !== "" || emptyGroupNames.length === 0) {
+        return "";
     }
-    return groups.value.filter((group) => group.items.length > 0);
+    if (visibleGroups.value.length === 0) {
+        return $gettext("No related resources.");
+    }
+    const modelList = new Intl.ListFormat(reportData.value.context.language, {
+        type: "disjunction",
+    }).format(emptyGroupNames);
+    return $gettext("No related %{models}.", { models: modelList }, true);
 });
 
 watchEffect(() => {
@@ -151,24 +166,7 @@ async function loadMore(group: RelatedResourceGroup): Promise<void> {
                 />
                 <span>{{ group.graph_name }}</span>
             </h4>
-            <p
-                v-if="group.items.length === 0"
-                class="related-resources-empty"
-            >
-                {{
-                    $gettext(
-                        "No related %{model}",
-                        {
-                            model: group.graph_name,
-                        },
-                        true,
-                    )
-                }}
-            </p>
-            <ul
-                v-else
-                class="related-resources-items"
-            >
+            <ul class="related-resources-items">
                 <li
                     v-for="item in group.items"
                     :key="item.resourcexid"
@@ -195,6 +193,12 @@ async function loadMore(group: RelatedResourceGroup): Promise<void> {
                 @click="loadMore(group)"
             />
         </section>
+        <p
+            v-if="emptyGroupsMessage"
+            class="related-resources-empty"
+        >
+            {{ emptyGroupsMessage }}
+        </p>
     </div>
 </template>
 

@@ -151,7 +151,7 @@ const childFolioNodes = computed(() =>
 );
 
 const emptyMessage = computed(() =>
-    $gettext("No %{name} have been recorded.", { name: cardName.value }, true),
+    $gettext("Nothing recorded for %{name}.", { name: cardName.value }, true),
 );
 
 function hasValue(tile: AliasedTileData, nodeAlias: string): boolean {

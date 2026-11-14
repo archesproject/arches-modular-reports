@@ -27,6 +27,7 @@ import { useResourceChangeSet } from "@/arches_modular_reports/ResourceReport/co
 import {
     componentPaths,
     folioLocations,
+    reportTabGroups,
 } from "@/arches_modular_reports/ResourceReport/utils/component-tree.ts";
 import { indexGraphNodes } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 
@@ -89,6 +90,10 @@ const folioLocationsByNodegroupAlias = computed(() =>
     folioLocations(childNodes.value, context.value?.language ?? ""),
 );
 
+const reportTabs = computed(() =>
+    reportTabGroups(childNodes.value, context.value?.language ?? ""),
+);
+
 const reportData = computed<ReportData | null>(() => {
     if (
         context.value === null ||
@@ -102,6 +107,7 @@ const reportData = computed<ReportData | null>(() => {
         nodegroupWidgetConfigs: graphWidgetConfigs.nodegroupWidgetConfigs.value,
         graphNodesByAlias: graphNodesByAlias.value,
         folioLocations: folioLocationsByNodegroupAlias.value,
+        reportTabs: reportTabs.value,
         resource: changeSet.workingResource.value,
         canEdit: canEdit.value,
         changeSet,

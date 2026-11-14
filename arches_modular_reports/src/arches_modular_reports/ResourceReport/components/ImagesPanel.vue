@@ -136,6 +136,21 @@ async function loadMore(): Promise<void> {
                             />
                         </template>
                         <span v-else>{{ item.caption }}</span>
+                        <Button
+                            class="images-full-size"
+                            as="a"
+                            variant="link"
+                            size="small"
+                            icon="pi pi-external-link"
+                            icon-pos="right"
+                            target="_blank"
+                            rel="noopener"
+                            :href="item.url"
+                            :label="$gettext('Open full size')"
+                            :aria-label="
+                                $gettext('Open full size image in a new tab')
+                            "
+                        />
                         <div
                             v-if="images.length > 1"
                             class="images-navigation"
@@ -162,11 +177,14 @@ async function loadMore(): Promise<void> {
                     </figcaption>
                 </figure>
             </template>
+            <!-- Decorative: Galleria labels each thumbnail button with its
+                 position, and repeating the main image's alt text here
+                 would make screen readers read it twice. -->
             <template #thumbnail="{ item }">
                 <img
                     class="images-thumbnail"
+                    alt=""
                     :src="item.url"
-                    :alt="item.alt_text"
                 />
             </template>
         </Galleria>
@@ -187,6 +205,7 @@ async function loadMore(): Promise<void> {
     flex-direction: column;
     gap: 1.2rem;
     padding: 1.6rem;
+    container-type: inline-size;
 }
 
 .images-empty {
@@ -237,5 +256,12 @@ async function loadMore(): Promise<void> {
     block-size: 6rem;
     object-fit: cover;
     border-radius: var(--p-content-border-radius);
+}
+
+/* A wide panel (e.g. expanded to full width) gives the image more height. */
+@container (min-inline-size: 80rem) {
+    .images-main {
+        max-block-size: 64rem;
+    }
 }
 </style>

@@ -52,4 +52,23 @@ describe("summaryRows", () => {
             },
         ]);
     });
+
+    it("shows rich text values as plain text", () => {
+        expect(
+            summaryRows(
+                [{ node_alias: "name_content", label: "Name" }],
+                {
+                    names: [
+                        nameTile(
+                            "statement",
+                            0,
+                            "<p>Said&nbsp;to&nbsp;be&nbsp;mythical</p>",
+                        ),
+                        nameTile("blank", 1, "<p></p>"),
+                    ],
+                },
+                "en",
+            )[0].values,
+        ).toEqual(["Said to be mythical"]);
+    });
 });

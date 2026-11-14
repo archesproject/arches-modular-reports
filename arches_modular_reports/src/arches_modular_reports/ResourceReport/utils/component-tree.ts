@@ -4,7 +4,10 @@ import type {
     ComponentNode,
     FolioConfig,
     LabelledConfig,
+    ReportTabGroup,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
+
+const REPORT_TABS_COMPONENT_NAME = "ReportTabs";
 
 type TreeNode = ComponentNode<
     LabelledConfig & FolioConfig & Record<string, unknown>
@@ -49,6 +52,39 @@ export function nodegroupAliasesWithin(
         }
     }
     return nodegroupAliases;
+}
+
+// Every tab of every ReportTabs in the tree, in report order, each with the
+// nodegroups it shows. A nodegroup shown in more than one tab belongs to the
+// first.
+export function reportTabGroups(
+    nodes: ComponentNode<object>[],
+    activeLanguage: string,
+): ReportTabGroup[] {
+    const placedNodegroupAliases = new Set<string>();
+    return descendantNodes(nodes)
+        .filter(
+            (node) =>
+                node.component.split("/").at(-1) === REPORT_TABS_COMPONENT_NAME,
+        )
+        .flatMap(childNodes)
+        .map((tabNode) => {
+            const nodegroupAliases = [
+                ...nodegroupAliasesWithin(tabNode),
+            ].filter(
+                (nodegroupAlias) => !placedNodegroupAliases.has(nodegroupAlias),
+            );
+            nodegroupAliases.forEach((nodegroupAlias) =>
+                placedNodegroupAliases.add(nodegroupAlias),
+            );
+            return {
+                label: localizeLabel(
+                    tabNode.config.label ?? null,
+                    activeLanguage,
+                ),
+                nodegroupAliases,
+            };
+        });
 }
 
 export function folioLocations(

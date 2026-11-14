@@ -4,9 +4,13 @@ import OpenVue from "openvue/config";
 import ConfirmationService from "openvue/confirmationservice";
 
 import DataBrowser from "@/arches_modular_reports/ResourceReport/components/DataBrowser/DataBrowser.vue";
+import EditHistoryPanel from "@/arches_modular_reports/ResourceReport/components/EditHistoryPanel.vue";
 import EditListTray from "@/arches_modular_reports/ResourceReport/components/EditListTray.vue";
 import EditorPanel from "@/arches_modular_reports/ResourceReport/components/EditorPanel/EditorPanel.vue";
+import FieldFolio from "@/arches_modular_reports/ResourceReport/components/FieldFolio.vue";
+import ImagesPanel from "@/arches_modular_reports/ResourceReport/components/ImagesPanel.vue";
 import ManagePanel from "@/arches_modular_reports/ResourceReport/components/ManagePanel.vue";
+import RecordSummaryPanel from "@/arches_modular_reports/ResourceReport/components/RecordSummaryPanel.vue";
 import RelatedResourcesPanel from "@/arches_modular_reports/ResourceReport/components/RelatedResourcesPanel.vue";
 import ReportFolio from "@/arches_modular_reports/ResourceReport/components/ReportFolio.vue";
 import ReportDrawer from "@/arches_modular_reports/ResourceReport/components/ReportDrawer.vue";
@@ -22,14 +26,18 @@ import ResourceReport from "@/arches_modular_reports/ResourceReport/ResourceRepo
 import {
     copyResource,
     deleteResource,
+    fetchEditHistory,
     fetchResource,
     fetchResourceCopies,
+    fetchResourceImages,
     fetchRelatedResourceGroup,
     fetchRelatedResourceGroups,
     fetchReportContext,
+    saveResourceChanges,
     updateLifecycleState,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { EMPTY_VALUE } from "@/arches_modular_reports/ResourceReport/constants.ts";
+import { fetchTileData } from "@/arches_vue_components/generics/GenericCard/api.ts";
 
 import type { Component } from "vue";
 import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
@@ -39,10 +47,12 @@ import type {
 } from "@/arches_vue_components/types.ts";
 import type {
     ComponentNode,
+    EditHistoryEntry,
     LifecycleStateSummary,
     RelatedResourceGroup,
     ReportContext,
     ReportPermissions,
+    ResourceImage,
     ResourceReportConfig,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
@@ -75,6 +85,26 @@ vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
     updateLifecycleState: vi.fn(),
     saveResourceChanges: vi.fn(),
     buildExportUrl: () => "/export",
+}));
+
+vi.mock("@/arches_vue_components/generics/GenericCard/api.ts", () => ({
+    fetchTileData: vi.fn(() =>
+        Promise.resolve({
+            aliased_data: {
+                owner_content: {
+                    display_value: "",
+                    node_value: null,
+                    details: [],
+                },
+            },
+            nodegroup: "owners-nodegroup",
+            parenttile: null,
+            provisionaledits: null,
+            resourceinstance: "",
+            sortorder: 0,
+            tileid: null,
+        }),
+    ),
 }));
 
 vi.mock(
@@ -174,13 +204,33 @@ function makeWidget(nodeAlias: string, label: string): CardXNodeXWidgetData {
     };
 }
 
+const OWNER_WIDGET = makeWidget("owner_content", "Owner");
+
 const NODEGROUP_WIDGET_CONFIGS: Record<string, NodegroupWidgetConfig> = {
     names: {
         parent_nodegroup_alias: null,
         cardinality: "n",
         is_writable: true,
-        card: null,
+        card: makeWidget("name_content", "Name").card,
         card_x_node_x_widgets: [makeWidget("name_content", "Name")],
+    },
+    owners: {
+        parent_nodegroup_alias: null,
+        cardinality: "1",
+        is_writable: true,
+        card: {
+            ...OWNER_WIDGET.card,
+            name: "Current Owner",
+            sortorder: 1,
+            cardid: "owners-card",
+            nodegroup_id: "owners-nodegroup",
+        },
+        card_x_node_x_widgets: [
+            {
+                ...OWNER_WIDGET,
+                node: { ...OWNER_WIDGET.node, isrequired: true },
+            },
+        ],
     },
     part_notes: {
         parent_nodegroup_alias: "parts",
@@ -221,9 +271,13 @@ const COMPONENTS_PATH = "arches_modular_reports/ResourceReport/components";
 
 const REPORT_COMPONENTS: Record<string, Component> = {
     "DataBrowser/DataBrowser": DataBrowser,
+    EditHistoryPanel,
     EditListTray,
     "EditorPanel/EditorPanel": EditorPanel,
+    FieldFolio,
+    ImagesPanel,
     ManagePanel,
+    RecordSummaryPanel,
     RelatedResourcesPanel,
     ReportDrawer,
     ReportFolio,
@@ -360,8 +414,167 @@ function drawerConfig(): ResourceReportConfig {
     };
 }
 
-function mountReport(config: ResourceReportConfig = REPORT_CONFIG): VueWrapper {
+function recordSummaryConfig(): ResourceReportConfig {
+    return {
+        components: [
+            workspaceTabs(
+                reportNode("SplitPane", {
+                    label: "Report",
+                    main: [
+                        reportNode("ReportTabs", {
+                            components: [
+                                reportNode("ReportStack", {
+                                    label: "Overview",
+                                    components: [
+                                        reportNode("ReportSection", {
+                                            label: "Names & Identifiers",
+                                            components: [
+                                                reportNode("ReportFolio", {
+                                                    nodegroup_alias: "names",
+                                                }),
+                                            ],
+                                        }),
+                                        reportNode("ReportSection", {
+                                            label: "Location & Ownership",
+                                            components: [
+                                                reportNode("FieldFolio", {
+                                                    nodegroup_alias: "owners",
+                                                }),
+                                            ],
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                    ],
+                }),
+                reportNode("SplitPane", {
+                    label: "Data",
+                    requires_edit: true,
+                    aside_size: 60,
+                    main: [reportNode("DataBrowser/DataBrowser")],
+                    aside: [
+                        reportNode("EditorPanel/EditorPanel"),
+                        reportNode("RecordSummaryPanel"),
+                    ],
+                    aside_footer: [reportNode("EditListTray")],
+                }),
+            ),
+        ],
+    };
+}
+
+async function openDataWorkspace(attachTo?: HTMLElement): Promise<VueWrapper> {
+    const wrapper = mountReport(recordSummaryConfig(), attachTo);
+    await flushPromises();
+    const dataTab = wrapper
+        .findAll(".workspace-tabs-strip .p-tab")
+        .find((tab) => tab.text() === "Data");
+    if (dataTab === undefined) {
+        throw new Error("No Data workspace tab");
+    }
+    await dataTab.trigger("click");
+    await flushPromises();
+    return wrapper;
+}
+
+function summaryFacts(wrapper: VueWrapper): Record<string, string> {
+    return Object.fromEntries(
+        wrapper
+            .findAll(".record-summary-panel-fact")
+            .map((fact) => [fact.find("dt").text(), fact.find("dd").text()]),
+    );
+}
+
+function summaryEmptyCards(
+    wrapper: VueWrapper,
+): { group: string; cards: { name: string; isRequired: boolean }[] }[] {
+    return wrapper.findAll(".record-summary-panel-group").map((group) => ({
+        group: group.find(".record-summary-panel-group-label").text(),
+        cards: group.findAll(".record-summary-panel-card").map((card) => ({
+            name: card.find(".record-summary-panel-card-name").text(),
+            isRequired: card.find(".record-summary-panel-required").exists(),
+        })),
+    }));
+}
+
+function countedDrawerConfig(): ResourceReportConfig {
+    return {
+        components: [
+            workspaceTabs(
+                reportNode("SplitPane", {
+                    label: "Report",
+                    aside: [
+                        reportNode("ReportDrawer", {
+                            panels: [
+                                reportNode("EditHistoryPanel", {
+                                    label: "Edit History",
+                                    requires_edit: true,
+                                }),
+                                reportNode("ImagesPanel", {
+                                    label: "Images",
+                                    images: [
+                                        {
+                                            model: "digital_resources",
+                                            node: "file",
+                                        },
+                                    ],
+                                }),
+                                reportNode("RelatedResourcesPanel", {
+                                    label: "Related Resources",
+                                    graphs: ["pigments"],
+                                }),
+                                reportNode("ManagePanel", { label: "Manage" }),
+                            ],
+                        }),
+                    ],
+                }),
+            ),
+        ],
+    };
+}
+
+const NAME_EDIT: EditHistoryEntry = {
+    editlogid: "edit-log-1",
+    edit_type: "tile edit",
+    timestamp: "2026-11-13T10:00:00Z",
+    user: "Ada Lovelace",
+    card_name: "Names",
+    values: [
+        {
+            node_alias: "name_content",
+            before: "Cobalt",
+            after: "Cobalt blue",
+            changed: true,
+        },
+        {
+            node_alias: "part_note_content",
+            before: "Dry pigment",
+            after: "Dry pigment",
+            changed: false,
+        },
+    ],
+};
+
+function makeImage(imageName: string): ResourceImage {
+    return {
+        url: `/files/${imageName}.jpg`,
+        caption: imageName,
+        alt_text: `Photo of ${imageName}`,
+        resourceinstanceid: "resource-id",
+        resource_name: "Cobalt blue",
+        graph_name: "Reference and Sample Collection Item",
+        report_url: "/report/resource-id",
+    };
+}
+
+// Attach to the document when a test checks where focus lands.
+function mountReport(
+    config: ResourceReportConfig = REPORT_CONFIG,
+    attachTo?: HTMLElement,
+): VueWrapper {
     return mount(ResourceReport, {
+        attachTo,
         props: {
             component: {
                 component:
@@ -384,9 +597,7 @@ function mountReport(config: ResourceReportConfig = REPORT_CONFIG): VueWrapper {
 async function openDeleteDialog(): Promise<VueWrapper> {
     const wrapper = mountReport(drawerConfig());
     await flushPromises();
-    await buttonWithText(wrapper, ".report-drawer-triggers", "Manage").trigger(
-        "click",
-    );
+    await drawerTrigger(wrapper, "Manage").trigger("click");
     await buttonWithText(wrapper, ".manage", "Delete Resource").trigger(
         "click",
     );
@@ -420,6 +631,22 @@ function buttonWithText(
     return button;
 }
 
+// Matches on the label alone, since a trigger may also show a count badge.
+function drawerTrigger(
+    wrapper: VueWrapper,
+    label: string,
+): DOMWrapper<Element> {
+    const trigger = wrapper
+        .findAll(".report-drawer-triggers button")
+        .find(
+            (candidate) => candidate.find(".p-button-label").text() === label,
+        );
+    if (trigger === undefined) {
+        throw new Error(`No ${label} drawer trigger`);
+    }
+    return trigger;
+}
+
 describe("ResourceReport", () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -432,6 +659,51 @@ describe("ResourceReport", () => {
             results: [],
             next_cursor: null,
         });
+    });
+
+    it("discards every pending edit only once the discard is confirmed", async () => {
+        const wrapper = mountReport(FOLIO_CONFIG);
+        await flushPromises();
+        await buttonWithText(
+            wrapper,
+            ".report-folio-tile-actions",
+            "Edit",
+        ).trigger("click");
+        await wrapper.find(".card-stub").trigger("click");
+
+        await buttonWithText(
+            wrapper,
+            ".edit-list-tray-actions",
+            "Cancel all edits",
+        ).trigger("click");
+        await flushPromises();
+
+        const dialog = document.body.querySelector(".alert-dialog");
+        expect(dialog?.getAttribute("role")).toBe("alertdialog");
+        expect(dialog?.textContent).toContain("Discard all changes?");
+        expect(document.activeElement?.textContent?.trim()).toBe(
+            "Keep editing",
+        );
+
+        (document.activeElement as HTMLButtonElement).click();
+        await flushPromises();
+        expect(wrapper.find(".edit-list-tray").exists()).toBe(true);
+
+        await buttonWithText(
+            wrapper,
+            ".edit-list-tray-actions",
+            "Cancel all edits",
+        ).trigger("click");
+        await flushPromises();
+        const discardButton = [
+            ...document.body.querySelectorAll(".alert-dialog button"),
+        ].find((button) => button.textContent?.trim() === "Discard all");
+        (discardButton as HTMLButtonElement).click();
+        await flushPromises();
+
+        expect(wrapper.find(".edit-list-tray").exists()).toBe(false);
+
+        wrapper.unmount();
     });
 
     it("holds lifecycle changes while edits are pending", async () => {
@@ -500,11 +772,7 @@ describe("ResourceReport", () => {
         vi.mocked(copyResource).mockResolvedValue("copy-2");
         const wrapper = mountReport(drawerConfig());
         await flushPromises();
-        await buttonWithText(
-            wrapper,
-            ".report-drawer-triggers",
-            "Manage",
-        ).trigger("click");
+        await drawerTrigger(wrapper, "Manage").trigger("click");
         await flushPromises();
 
         const nameInput = wrapper.find<HTMLInputElement>(".manage-copy-name");
@@ -619,11 +887,7 @@ describe("ResourceReport", () => {
         );
         const wrapper = mountReport(drawerConfig());
         await flushPromises();
-        await buttonWithText(
-            wrapper,
-            ".report-drawer-triggers",
-            "Related Resources",
-        ).trigger("click");
+        await drawerTrigger(wrapper, "Related Resources").trigger("click");
         await flushPromises();
 
         await wrapper.find(".related-resources-group button").trigger("click");
@@ -676,6 +940,19 @@ describe("ResourceReport", () => {
         expect(wrapper.find(".report-tabs-list").exists()).toBe(false);
     });
 
+    it("words an empty folio the same way whatever the card is called", async () => {
+        vi.mocked(fetchResource).mockResolvedValue({
+            ...RESOURCE,
+            aliased_data: { names: [] },
+        });
+        const wrapper = mountReport(FOLIO_CONFIG);
+        await flushPromises();
+
+        expect(wrapper.find(".report-folio-empty-message").text()).toBe(
+            "Nothing recorded for %{name}.",
+        );
+    });
+
     it("hides edit-only workspaces from people who cannot edit", async () => {
         vi.mocked(fetchReportContext).mockResolvedValue(
             makeContext({ can_edit: false }),
@@ -710,13 +987,8 @@ describe("ResourceReport", () => {
         ]);
         const wrapper = mountReport(drawerConfig());
         await flushPromises();
-        await buttonWithText(
-            wrapper,
-            ".report-drawer-triggers",
-            "Related Resources",
-        ).trigger("click");
+        await drawerTrigger(wrapper, "Related Resources").trigger("click");
         await flushPromises();
-        expect(wrapper.findAll(".related-resources-group")).toHaveLength(2);
 
         vi.useFakeTimers();
         await wrapper.find(".related-resources-filter").setValue("smalt");
@@ -729,5 +1001,433 @@ describe("ResourceReport", () => {
                 .findAll(".related-resources-group-label")
                 .map((label) => label.text()),
         ).toEqual(["Pigments"]);
+        expect(wrapper.find(".related-resources-empty").exists()).toBe(false);
+    });
+
+    it("lists models with nothing related on one line", async () => {
+        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
+            PIGMENTS_GROUP,
+            {
+                ...PIGMENTS_GROUP,
+                graph_slug: "places",
+                graph_name: "Places",
+                next_cursor: null,
+                items: [],
+            },
+            {
+                ...PIGMENTS_GROUP,
+                graph_slug: "groups",
+                graph_name: "Groups",
+                next_cursor: null,
+                items: [],
+            },
+        ]);
+        const wrapper = mountReport(drawerConfig());
+        await flushPromises();
+        await drawerTrigger(wrapper, "Related Resources").trigger("click");
+        await flushPromises();
+
+        expect(
+            wrapper
+                .findAll(".related-resources-group-label")
+                .map((label) => label.text()),
+        ).toEqual(["Pigments"]);
+        const emptyMessages = wrapper.findAll(".related-resources-empty");
+        expect(emptyMessages).toHaveLength(1);
+        expect(emptyMessages[0].text()).toBe("No related %{models}.");
+    });
+
+    it("says so when nothing at all is related", async () => {
+        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
+            { ...PIGMENTS_GROUP, next_cursor: null, items: [] },
+        ]);
+        const wrapper = mountReport(drawerConfig());
+        await flushPromises();
+        await drawerTrigger(wrapper, "Related Resources").trigger("click");
+        await flushPromises();
+
+        expect(wrapper.find(".related-resources-group").exists()).toBe(false);
+        expect(wrapper.find(".related-resources-empty").text()).toBe(
+            "No related resources.",
+        );
+    });
+
+    it("shows how many entries each drawer panel holds", async () => {
+        vi.mocked(fetchEditHistory).mockResolvedValue({
+            results: [NAME_EDIT, { ...NAME_EDIT, editlogid: "edit-log-2" }],
+            next_cursor: null,
+        });
+        vi.mocked(fetchResourceImages).mockResolvedValue({
+            images: [makeImage("smalt")],
+            next_cursor: "more-images",
+        });
+        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
+            { ...PIGMENTS_GROUP, next_cursor: null },
+        ]);
+        const wrapper = mountReport(countedDrawerConfig());
+        await flushPromises();
+
+        function badgeText(label: string): string | null {
+            const badge = drawerTrigger(wrapper, label).find(".p-badge");
+            return badge.exists() ? badge.text() : null;
+        }
+        expect(badgeText("Edit History")).toBe("2");
+        // A further page exists, so the count reads as a lower bound.
+        expect(badgeText("Images")).toBe("%{count}+");
+        expect(badgeText("Related Resources")).toBe("1");
+        expect(badgeText("Manage")).toBeNull();
+    });
+
+    it("shows no count for a panel whose count fails to load", async () => {
+        vi.mocked(fetchRelatedResourceGroups).mockRejectedValue(
+            new Error("Offline"),
+        );
+        const wrapper = mountReport(drawerConfig());
+        await flushPromises();
+
+        expect(
+            drawerTrigger(wrapper, "Related Resources")
+                .find(".p-badge")
+                .exists(),
+        ).toBe(false);
+    });
+
+    it("recounts the drawer panels once edits are applied", async () => {
+        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
+            { ...PIGMENTS_GROUP, next_cursor: null },
+        ]);
+        vi.mocked(saveResourceChanges).mockResolvedValue(RESOURCE);
+        const wrapper = mountReport(
+            folioConfig([
+                reportNode("EditorPanel/EditorPanel"),
+                reportNode("ReportDrawer", {
+                    panels: [
+                        reportNode("RelatedResourcesPanel", {
+                            label: "Related Resources",
+                            graphs: ["pigments"],
+                        }),
+                    ],
+                }),
+            ]),
+        );
+        await flushPromises();
+        expect(fetchRelatedResourceGroups).toHaveBeenCalledTimes(1);
+
+        await buttonWithText(
+            wrapper,
+            ".report-folio-tile-actions",
+            "Edit",
+        ).trigger("click");
+        await wrapper.find(".card-stub").trigger("click");
+        await buttonWithText(
+            wrapper,
+            ".edit-list-tray-actions",
+            "Apply all edits",
+        ).trigger("click");
+        await flushPromises();
+
+        expect(saveResourceChanges).toHaveBeenCalled();
+        expect(fetchRelatedResourceGroups).toHaveBeenCalledTimes(2);
+    });
+
+    it("shows only the changed fields of an edit until asked for the rest", async () => {
+        vi.mocked(fetchEditHistory).mockResolvedValue({
+            results: [NAME_EDIT],
+            next_cursor: null,
+        });
+        const wrapper = mountReport(countedDrawerConfig());
+        await flushPromises();
+        await drawerTrigger(wrapper, "Edit History").trigger("click");
+        await flushPromises();
+
+        // One changed field, listed under both Before and After.
+        expect(wrapper.findAll(".edit-history-field")).toHaveLength(2);
+        expect(wrapper.find(".edit-history-changed-marker").exists()).toBe(
+            false,
+        );
+        const fieldsToggle = wrapper.find(".edit-history-fields-toggle");
+        expect(fieldsToggle.text()).toBe("Show %{count} unchanged field");
+
+        await fieldsToggle.trigger("click");
+
+        expect(wrapper.findAll(".edit-history-field")).toHaveLength(4);
+        expect(wrapper.findAll(".edit-history-changed-marker")).toHaveLength(2);
+        expect(wrapper.find(".edit-history-changed-marker").text()).toBe(
+            "(changed)",
+        );
+        expect(wrapper.find(".edit-history-fields-toggle").text()).toBe(
+            "Show changed fields only",
+        );
+    });
+
+    it("lists every field of an edit with nothing to hide", async () => {
+        vi.mocked(fetchEditHistory).mockResolvedValue({
+            results: [
+                {
+                    ...NAME_EDIT,
+                    values: NAME_EDIT.values.map((value) => ({
+                        ...value,
+                        changed: false,
+                    })),
+                },
+            ],
+            next_cursor: null,
+        });
+        const wrapper = mountReport(countedDrawerConfig());
+        await flushPromises();
+        await drawerTrigger(wrapper, "Edit History").trigger("click");
+        await flushPromises();
+
+        expect(wrapper.findAll(".edit-history-field")).toHaveLength(4);
+        expect(wrapper.find(".edit-history-fields-toggle").exists()).toBe(
+            false,
+        );
+    });
+
+    it("links each image at full size and leaves thumbnails unannounced", async () => {
+        vi.mocked(fetchResourceImages).mockResolvedValue({
+            images: [makeImage("smalt"), makeImage("cobalt")],
+            next_cursor: null,
+        });
+        const wrapper = mountReport(countedDrawerConfig());
+        await flushPromises();
+        await drawerTrigger(wrapper, "Images").trigger("click");
+        await flushPromises();
+
+        const fullSizeLink = wrapper.find(".images-full-size");
+        expect(fullSizeLink.attributes("href")).toBe("/files/smalt.jpg");
+        expect(fullSizeLink.attributes("target")).toBe("_blank");
+        expect(wrapper.find(".images-main").attributes("alt")).toBe(
+            "Photo of smalt",
+        );
+        const thumbnails = wrapper.findAll(".images-thumbnail");
+        expect(thumbnails).toHaveLength(2);
+        expect(
+            thumbnails.map((thumbnail) => thumbnail.attributes("alt")),
+        ).toEqual(["", ""]);
+    });
+
+    it("expands the open panel across the workspace and keeps its state", async () => {
+        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
+            PIGMENTS_GROUP,
+        ]);
+        const wrapper = mountReport(drawerConfig());
+        await flushPromises();
+        await drawerTrigger(wrapper, "Related Resources").trigger("click");
+        await flushPromises();
+        await wrapper.find(".related-resources-filter").setValue("smalt");
+
+        const expandButton = wrapper.find(
+            ".report-drawer-header button[aria-label='Expand panel']",
+        );
+        expect(expandButton.attributes("aria-pressed")).toBe("false");
+        await expandButton.trigger("click");
+
+        const expandedPanel = wrapper.find(
+            ".split-pane-overlay-host .report-drawer-panel",
+        );
+        expect(expandedPanel.exists()).toBe(true);
+        expect(expandedPanel.classes()).toContain(
+            "report-drawer-panel-expanded",
+        );
+        expect(
+            wrapper.find(".report-drawer-stage .report-drawer-panel").exists(),
+        ).toBe(false);
+        expect(
+            wrapper.find<HTMLInputElement>(".related-resources-filter").element
+                .value,
+        ).toBe("smalt");
+
+        await wrapper
+            .find(".report-drawer-header button[aria-label='Expand panel']")
+            .trigger("click");
+
+        expect(
+            wrapper.find(".report-drawer-stage .report-drawer-panel").exists(),
+        ).toBe(true);
+        expect(
+            wrapper
+                .find(".split-pane-overlay-host .report-drawer-panel")
+                .exists(),
+        ).toBe(false);
+    });
+
+    it("reopens a closed panel at its usual width", async () => {
+        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
+            PIGMENTS_GROUP,
+        ]);
+        const wrapper = mountReport(drawerConfig());
+        await flushPromises();
+        await drawerTrigger(wrapper, "Related Resources").trigger("click");
+        await wrapper
+            .find(".report-drawer-header button[aria-label='Expand panel']")
+            .trigger("click");
+        await wrapper
+            .find(".report-drawer-header button[aria-label='Close']")
+            .trigger("click");
+        await drawerTrigger(wrapper, "Related Resources").trigger("click");
+
+        expect(
+            wrapper.find(".report-drawer-stage .report-drawer-panel").exists(),
+        ).toBe(true);
+        expect(
+            wrapper
+                .find(".report-drawer-header button[aria-label='Expand panel']")
+                .attributes("aria-pressed"),
+        ).toBe("false");
+    });
+
+    it("summarizes the latest edit and which cards have data", async () => {
+        vi.mocked(fetchEditHistory).mockResolvedValue({
+            results: [NAME_EDIT],
+            next_cursor: null,
+        });
+        const wrapper = await openDataWorkspace();
+
+        expect(fetchEditHistory).toHaveBeenCalledWith("resource-id", null, "");
+        const facts = summaryFacts(wrapper);
+        expect(facts["Last updated"]).toBe(
+            new Date(NAME_EDIT.timestamp).toLocaleString("en", {
+                dateStyle: "medium",
+                timeStyle: "short",
+            }),
+        );
+        expect(facts["Updated by"]).toBe("Ada Lovelace");
+        expect(facts["Cards with data"]).toBe("%{filled} of %{total}");
+        expect(facts["Cards without data"]).toBe(
+            "%{count}, including %{required} required",
+        );
+        expect(summaryEmptyCards(wrapper)).toEqual([
+            {
+                group: "Overview",
+                cards: [{ name: "Current Owner", isRequired: true }],
+            },
+        ]);
+    });
+
+    it("gives the aside the share of the width its config sets", async () => {
+        const wrapper = await openDataWorkspace();
+
+        expect(wrapper.find(".split-pane-aside").attributes("style")).toContain(
+            "60%",
+        );
+    });
+
+    it("notes a record with no edit history", async () => {
+        vi.mocked(fetchEditHistory).mockResolvedValue({
+            results: [],
+            next_cursor: null,
+        });
+        const wrapper = await openDataWorkspace();
+
+        const facts = summaryFacts(wrapper);
+        expect(facts["Last updated"]).toBe("No edits recorded");
+        expect(facts["Updated by"]).toBe(EMPTY_VALUE);
+    });
+
+    it("notes when the latest edit can't be loaded", async () => {
+        vi.mocked(fetchEditHistory).mockRejectedValue(new Error("Offline"));
+        const wrapper = await openDataWorkspace();
+
+        expect(summaryFacts(wrapper)["Last updated"]).toBe("Unavailable");
+    });
+
+    it("reloads the latest edit once edits are applied", async () => {
+        vi.mocked(fetchEditHistory).mockResolvedValue({
+            results: [NAME_EDIT],
+            next_cursor: null,
+        });
+        vi.mocked(saveResourceChanges).mockResolvedValue(RESOURCE);
+        const wrapper = await openDataWorkspace();
+        expect(fetchEditHistory).toHaveBeenCalledTimes(1);
+
+        await wrapper.find(".data-folio-toggle").trigger("click");
+        await buttonWithText(wrapper, ".data-folio-tiles", "Edit").trigger(
+            "click",
+        );
+        await wrapper.find(".card-stub").trigger("click");
+        await buttonWithText(
+            wrapper,
+            ".edit-list-tray-actions",
+            "Apply all edits",
+        ).trigger("click");
+        await flushPromises();
+
+        expect(saveResourceChanges).toHaveBeenCalled();
+        expect(fetchEditHistory).toHaveBeenCalledTimes(2);
+    });
+
+    it("gives way to the editor while an entry is being edited", async () => {
+        const wrapper = await openDataWorkspace();
+        expect(wrapper.find(".record-summary-panel").exists()).toBe(true);
+
+        await wrapper.find(".data-folio-toggle").trigger("click");
+        await buttonWithText(wrapper, ".data-folio-tiles", "Edit").trigger(
+            "click",
+        );
+
+        expect(wrapper.find(".editor-panel-overlay").exists()).toBe(true);
+        expect(wrapper.find(".record-summary-panel").exists()).toBe(false);
+
+        await wrapper.find(".editor-panel-close").trigger("click");
+
+        expect(wrapper.find(".record-summary-panel").exists()).toBe(true);
+    });
+
+    it("says so when every card has data", async () => {
+        vi.mocked(fetchResource).mockResolvedValue({
+            ...RESOURCE,
+            aliased_data: {
+                ...RESOURCE.aliased_data,
+                owners: {
+                    ...RESOURCE.aliased_data.names[0],
+                    aliased_data: {
+                        owner_content: {
+                            display_value: "Getty",
+                            node_value: "Getty",
+                            details: [],
+                        },
+                    },
+                    nodegroup: "owners-nodegroup",
+                    tileid: "owner-tile",
+                },
+            },
+        });
+        const wrapper = await openDataWorkspace();
+
+        expect(summaryFacts(wrapper)["Cards without data"]).toBe("0");
+        expect(wrapper.find(".record-summary-panel-group").exists()).toBe(
+            false,
+        );
+        expect(wrapper.find(".record-summary-panel-none").text()).toBe(
+            "Every card has data.",
+        );
+    });
+
+    it("adds an entry to a card, clearing a filter that hides it", async () => {
+        const wrapper = await openDataWorkspace(document.body);
+        vi.useFakeTimers();
+        await wrapper.find(".data-browser-filter").setValue("zzz");
+        await vi.advanceTimersByTimeAsync(300);
+        vi.useRealTimers();
+        await flushPromises();
+        expect(wrapper.findAll(".data-browser-folio")).toHaveLength(0);
+
+        await wrapper.find(".record-summary-panel-card-name").trigger("click");
+        await flushPromises();
+
+        const folio = wrapper.findAll(".data-browser-folio")[1];
+        expect(
+            wrapper.find<HTMLInputElement>(".data-browser-filter").element
+                .value,
+        ).toBe("");
+        expect(folio.text()).toContain("Current Owner");
+        expect(folio.classes()).toContain("data-browser-folio-flash");
+        expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+        expect(fetchTileData).toHaveBeenCalledWith(expect.anything(), "owners");
+        expect(wrapper.find(".card-stub").exists()).toBe(true);
+        expect(wrapper.find(".record-summary-panel").exists()).toBe(false);
+
+        wrapper.unmount();
     });
 });

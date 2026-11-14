@@ -14,6 +14,8 @@ vi.mock('arches', () => ({
 
 vi.mock('vue3-gettext', () => ({
     useGettext: () => ({
-        $gettext: (text: string) => (text)
+        $gettext: (text: string) => (text),
+        $ngettext: (singular: string, plural: string, count: number) =>
+            (count === 1 ? singular : plural),
     })
 }));
