@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+    containsFolios,
     folioLocations,
     nodegroupAliasesWithin,
     reportTabGroups,
@@ -115,5 +116,24 @@ describe("folioLocations", () => {
             names: "Übersicht / Names",
             statements: "Übersicht",
         });
+    });
+});
+
+describe("containsFolios", () => {
+    it("finds folios at any depth, and only folios", () => {
+        expect(containsFolios(REPORT_TREE[0])).toBe(true);
+        expect(
+            containsFolios({
+                component: "app/SplitPane",
+                config: {
+                    main: [
+                        {
+                            component: "app/DataBrowser/DataBrowser",
+                            config: {},
+                        },
+                    ],
+                },
+            }),
+        ).toBe(false);
     });
 });

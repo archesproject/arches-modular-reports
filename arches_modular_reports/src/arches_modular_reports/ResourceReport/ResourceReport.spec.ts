@@ -42,6 +42,7 @@ import { fetchTileData } from "@/arches_vue_components/generics/GenericCard/api.
 import type { Component } from "vue";
 import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import type {
+    AliasedNodeData,
     CardXNodeXWidgetData,
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
@@ -167,6 +168,7 @@ function makeContext(
         search_url: "/search",
         language: "en",
         language_dir: "ltr",
+        languages: { en: "English", de: "German" },
         permissions: {
             can_edit: true,
             can_delete: true,
@@ -569,6 +571,41 @@ function makeImage(imageName: string): ResourceImage {
 }
 
 // Attach to the document when a test checks where focus lands.
+// The resource with its name stored per language, as the text widget saves
+// it; the display value carries only the reader's language.
+function resourceNamed(
+    nameByLanguage: Record<string, { value: string; direction: "ltr" }>,
+): typeof RESOURCE {
+    const [nameTile] = RESOURCE.aliased_data.names;
+    return {
+        ...RESOURCE,
+        aliased_data: {
+            names: [
+                {
+                    ...nameTile,
+                    aliased_data: {
+                        name_content: {
+                            display_value: nameByLanguage.en?.value ?? "",
+                            node_value: nameByLanguage,
+                            details: [],
+                        },
+                    },
+                },
+            ],
+        },
+    } as unknown as typeof RESOURCE;
+}
+
+function widgetDisplayValues(wrapper: VueWrapper): string[] {
+    return wrapper
+        .findAllComponents(GenericWidgetStub)
+        .map(
+            (widgetStub) =>
+                (widgetStub.props("aliasedNodeData") as AliasedNodeData)
+                    .display_value,
+        );
+}
+
 function mountReport(
     config: ResourceReportConfig = REPORT_CONFIG,
     attachTo?: HTMLElement,
@@ -631,6 +668,13 @@ function buttonWithText(
     return button;
 }
 
+// The switch holds both labels so its width never changes; one is shown.
+function shownLabel(editLinksSwitch: DOMWrapper<Element>): string {
+    return editLinksSwitch
+        .find(".workspace-tabs-edit-links-label-current")
+        .text();
+}
+
 // Matches on the label alone, since a trigger may also show a count badge.
 function drawerTrigger(
     wrapper: VueWrapper,
@@ -650,6 +694,7 @@ function drawerTrigger(
 describe("ResourceReport", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        localStorage.clear();
         Element.prototype.scrollIntoView = vi.fn();
         vi.mocked(fetchReportContext).mockResolvedValue(makeContext());
         vi.mocked(fetchResource).mockResolvedValue(RESOURCE);
@@ -1012,6 +1057,113 @@ describe("ResourceReport", () => {
 
         expect(wrapper.find(".report-folio").exists()).toBe(true);
         expect(wrapper.find(".report-folio-tile-actions").exists()).toBe(false);
+    });
+
+    it("shows a value entered in another language, naming the language", async () => {
+        vi.mocked(fetchResource).mockResolvedValue(
+            resourceNamed({
+                en: { value: "", direction: "ltr" },
+                de: { value: "Mythische Figur", direction: "ltr" },
+            }),
+        );
+        const wrapper = mountReport(FOLIO_CONFIG);
+        await flushPromises();
+
+        expect(wrapper.find(".report-folio-empty-message").exists()).toBe(
+            false,
+        );
+        expect(widgetDisplayValues(wrapper)).toEqual(["Mythische Figur"]);
+        expect(
+            wrapper.findAll(".language-name").map((pill) => pill.text()),
+        ).toEqual(["German"]);
+        expect(
+            wrapper.find(".node-value-language-text").attributes("lang"),
+        ).toBe("de");
+    });
+
+    it("lists the reader's language first, unnamed, then the others", async () => {
+        vi.mocked(fetchResource).mockResolvedValue(
+            resourceNamed({
+                de: { value: "Kobaltblau", direction: "ltr" },
+                en: { value: "Cobalt blue", direction: "ltr" },
+            }),
+        );
+        const wrapper = mountReport(FOLIO_CONFIG);
+        await flushPromises();
+
+        expect(widgetDisplayValues(wrapper)).toEqual([
+            "Cobalt blue",
+            "Kobaltblau",
+        ]);
+        expect(
+            wrapper.findAll(".language-name").map((pill) => pill.text()),
+        ).toEqual(["German"]);
+    });
+
+    it("shows a value in the reader's language alone without naming it", async () => {
+        vi.mocked(fetchResource).mockResolvedValue(
+            resourceNamed({
+                en: { value: "Cobalt blue", direction: "ltr" },
+                de: { value: "", direction: "ltr" },
+            }),
+        );
+        const wrapper = mountReport(FOLIO_CONFIG);
+        await flushPromises();
+
+        expect(widgetDisplayValues(wrapper)).toEqual(["Cobalt blue"]);
+        expect(wrapper.find(".language-name").exists()).toBe(false);
+    });
+
+    it("lets an editor hide the report's edit links, and remembers it", async () => {
+        const wrapper = mountReport(FOLIO_CONFIG);
+        await flushPromises();
+        const editLinksSwitch = wrapper.find(".workspace-tabs-edit-links");
+        expect(editLinksSwitch.attributes("aria-checked")).toBe("true");
+        expect(shownLabel(editLinksSwitch)).toBe("Edit links: On");
+        expect(wrapper.find(".report-folio-tile-actions").exists()).toBe(true);
+
+        await editLinksSwitch.trigger("click");
+
+        expect(editLinksSwitch.attributes("aria-checked")).toBe("false");
+        expect(shownLabel(editLinksSwitch)).toBe("Edit links: Off");
+        expect(wrapper.find(".report-folio-tile-actions").exists()).toBe(false);
+        wrapper.unmount();
+
+        const remounted = mountReport(FOLIO_CONFIG);
+        await flushPromises();
+        expect(shownLabel(remounted.find(".workspace-tabs-edit-links"))).toBe(
+            "Edit links: Off",
+        );
+        expect(remounted.find(".report-folio-tile-actions").exists()).toBe(
+            false,
+        );
+
+        await remounted.find(".workspace-tabs-edit-links").trigger("click");
+
+        expect(remounted.find(".report-folio-tile-actions").exists()).toBe(
+            true,
+        );
+    });
+
+    it("offers the edit links switch only to editors, beside folios", async () => {
+        const folioReport = mountReport(FOLIO_CONFIG);
+        const reportWithoutFolios = mountReport();
+        await flushPromises();
+        expect(folioReport.find(".workspace-tabs-edit-links").exists()).toBe(
+            true,
+        );
+        expect(
+            reportWithoutFolios.find(".workspace-tabs-edit-links").exists(),
+        ).toBe(false);
+
+        vi.mocked(fetchReportContext).mockResolvedValue(
+            makeContext({ can_edit: false }),
+        );
+        const readerReport = mountReport(FOLIO_CONFIG);
+        await flushPromises();
+        expect(readerReport.find(".workspace-tabs-edit-links").exists()).toBe(
+            false,
+        );
     });
 
     it("hides models with no matches while filtering related resources", async () => {
@@ -1442,6 +1594,30 @@ describe("ResourceReport", () => {
         expect(wrapper.find(".record-summary-panel-none").text()).toBe(
             "Every card has data.",
         );
+    });
+
+    it("clears the data filter from its clear button", async () => {
+        const wrapper = await openDataWorkspace(document.body);
+        expect(wrapper.find(".data-browser-filter-clear").exists()).toBe(false);
+        vi.useFakeTimers();
+        await wrapper.find(".data-browser-filter").setValue("zzz");
+        await vi.advanceTimersByTimeAsync(300);
+        vi.useRealTimers();
+        await flushPromises();
+        expect(wrapper.findAll(".data-browser-folio")).toHaveLength(0);
+
+        await wrapper.find(".data-browser-filter-clear").trigger("click");
+
+        const filterInput = wrapper.find<HTMLInputElement>(
+            ".data-browser-filter",
+        ).element;
+        expect(filterInput.value).toBe("");
+        expect(document.activeElement).toBe(filterInput);
+        expect(wrapper.find(".data-browser-filter-clear").exists()).toBe(false);
+        expect(wrapper.findAll(".data-browser-folio").length).toBeGreaterThan(
+            0,
+        );
+        wrapper.unmount();
     });
 
     it("adds an entry to a card, clearing a filter that hides it", async () => {

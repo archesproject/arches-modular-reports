@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted, useTemplateRef } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import IconField from "openvue/iconfield";
@@ -25,6 +25,7 @@ const { $gettext } = useGettext();
 const reportData = useReportData();
 
 const { filterText, query: appliedFilterText } = useFilterQuery();
+const filterInput = useTemplateRef<ComponentPublicInstance>("filterInput");
 
 const unregisterFolioByAlias = new Map<string, () => void>();
 let unregisterRevealer = (): void => undefined;
@@ -75,8 +76,7 @@ onMounted(() => {
                 (folio) => folio.nodegroupAlias === nodegroupAlias,
             );
             if (!isShown) {
-                filterText.value = "";
-                appliedFilterText.value = "";
+                clearFilter();
             }
         },
     });
@@ -87,6 +87,18 @@ onUnmounted(() => {
     unregisterFolioByAlias.forEach((unregisterFolio) => unregisterFolio());
     unregisterFolioByAlias.clear();
 });
+
+// Applied at once, not after the typing delay.
+function clearFilter(): void {
+    filterText.value = "";
+    appliedFilterText.value = "";
+}
+
+// The clear button goes once the filter is empty, so focus moves to the field.
+function clearFilterFromButton(): void {
+    clearFilter();
+    (filterInput.value?.$el as HTMLInputElement | undefined)?.focus();
+}
 
 function trackFolioElement(
     nodegroupAlias: string,
@@ -112,10 +124,22 @@ function trackFolioElement(
             <IconField>
                 <InputIcon class="pi pi-search" />
                 <InputText
+                    ref="filterInput"
                     v-model="filterText"
                     class="data-browser-filter"
                     :placeholder="$gettext('Filter branches, groups, fields…')"
                     :aria-label="$gettext('Filter the data')"
+                />
+                <!-- Not an InputIcon: that wrapper is aria-hidden, which would
+                     hide the button from assistive technology. `p-inputicon`
+                     still positions it at the end of the field. -->
+                <button
+                    v-if="filterText"
+                    type="button"
+                    class="p-inputicon pi pi-times data-browser-filter-clear"
+                    :aria-label="$gettext('Clear filter')"
+                    :title="$gettext('Clear filter')"
+                    @click="clearFilterFromButton"
                 />
             </IconField>
         </div>
@@ -163,6 +187,8 @@ function trackFolioElement(
                     :is-revealed="
                         flashedNodegroupAlias === folio.nodegroupAlias
                     "
+                    :active-language="reportData.context.language"
+                    :language-names="reportData.context.languages"
                     @edit-tile="reportData.editor.open"
                 />
             </div>
@@ -189,7 +215,7 @@ function trackFolioElement(
 .data-browser-filter-bar .p-iconfield .data-browser-filter {
     inline-size: 100%;
     padding-block: 0.45rem;
-    padding-inline-start: 3.1rem;
+    padding-inline: 3.1rem;
     border-color: var(--p-content-border-color);
     border-radius: 0.5rem;
     font-size: 1.2rem;
@@ -198,6 +224,23 @@ function trackFolioElement(
 .data-browser-filter-bar .p-inputicon {
     color: var(--p-text-muted-color);
     font-size: 1.1rem;
+}
+
+.data-browser-filter-bar .data-browser-filter-clear {
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.data-browser-filter-bar .data-browser-filter-clear:hover {
+    color: var(--p-text-color);
+}
+
+.data-browser-filter-bar .data-browser-filter-clear:focus-visible {
+    outline: 0.2rem solid var(--p-focus-ring-color);
+    outline-offset: 0.2rem;
+    border-radius: 0.2rem;
 }
 
 .data-browser-folios {

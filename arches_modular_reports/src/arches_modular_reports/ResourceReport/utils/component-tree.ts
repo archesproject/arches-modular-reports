@@ -8,6 +8,12 @@ import type {
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const REPORT_TABS_COMPONENT_NAME = "ReportTabs";
+// The report's folios, which carry the add, edit and delete links.
+const FOLIO_COMPONENT_NAMES = new Set([
+    "ReportFolio",
+    "FieldFolio",
+    "MapFolio",
+]);
 
 type TreeNode = ComponentNode<
     LabelledConfig & FolioConfig & Record<string, unknown>
@@ -39,6 +45,14 @@ function descendantNodes(nodes: ComponentNode<object>[]): TreeNode[] {
 
 export function componentPaths(nodes: ComponentNode<object>[]): string[] {
     return [...new Set(descendantNodes(nodes).map((node) => node.component))];
+}
+
+export function containsFolios(node: ComponentNode<object>): boolean {
+    return descendantNodes([node]).some((descendantNode) =>
+        FOLIO_COMPONENT_NAMES.has(
+            descendantNode.component.split("/").at(-1) ?? "",
+        ),
+    );
 }
 
 export function nodegroupAliasesWithin(

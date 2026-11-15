@@ -1,6 +1,10 @@
 import { isAliasedNodeData } from "@/arches_vue_components/generics/GenericCard/utils.ts";
 
-import { plainText } from "@/arches_modular_reports/ResourceReport/utils/plain-text.ts";
+import {
+    nodeHasData,
+    nodeSearchTexts,
+    nodeText,
+} from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 
 import type {
     AliasedNodeData,
@@ -55,7 +59,7 @@ export function containsTile(tile: AliasedTileData, tileId: string): boolean {
 export function tileHasData(tile: AliasedTileData): boolean {
     return Object.values(tile.aliased_data).some((value) => {
         if (isAliasedNodeData(value)) {
-            return plainText(value.display_value).trim() !== "";
+            return nodeHasData(value);
         }
         return nodegroupTiles(value).some(tileHasData);
     });
@@ -67,7 +71,7 @@ export function tileSearchText(tile: AliasedTileData): string {
     function visit(currentTile: AliasedTileData): void {
         for (const value of Object.values(currentTile.aliased_data)) {
             if (isAliasedNodeData(value)) {
-                displayValues.push(plainText(value.display_value));
+                displayValues.push(...nodeSearchTexts(value));
             } else {
                 nodegroupTiles(value).forEach(visit);
             }
@@ -102,12 +106,9 @@ export function tileSummary(
         .filter((widget) => widget.visible)
         .slice(0, SUMMARY_FIELD_COUNT);
     for (const widget of summaryWidgets) {
-        const displayValue = aliasedNodeDataOf(
-            tile,
-            widget.node.alias,
-        )?.display_value;
-        if (displayValue) {
-            summaryValues.push(plainText(displayValue));
+        const valueText = nodeText(aliasedNodeDataOf(tile, widget.node.alias));
+        if (valueText.trim() !== "") {
+            summaryValues.push(valueText);
         }
     }
     return summaryValues.join(" · ");

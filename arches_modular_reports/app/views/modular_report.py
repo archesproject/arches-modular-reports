@@ -44,7 +44,10 @@ from arches.app.views.resource import ResourceReportView
 
 from arches_modular_reports.app.utils.decorators import can_read_nodegroup
 from arches_modular_reports.app.utils.get_report_config import get_report_config
-from arches_modular_reports.app.utils.report_data_utils import EditValueDescriber
+from arches_modular_reports.app.utils.report_data_utils import (
+    EditValueDescriber,
+    language_names_by_code,
+)
 from arches_modular_reports.app.utils.resource_copy_utils import (
     name_value,
     rename_copy,
@@ -184,6 +187,9 @@ class ReportContextView(APIBase):
                 "language_dir": (
                     "rtl" if get_language_info(get_language())["bidi"] else "ltr"
                 ),
+                # Names the language of multilingual values not in the
+                # active language.
+                "languages": language_names_by_code(),
                 "permissions": {
                     "can_edit": user_can_edit,
                     "can_delete": user_can_delete_resource(

@@ -8,6 +8,7 @@ import Message from "openvue/message";
 import AlertDialog from "@/arches_modular_reports/ResourceReport/components/AlertDialog.vue";
 
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
+import { nodeText } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import { plainText } from "@/arches_modular_reports/ResourceReport/utils/plain-text.ts";
 import { findTile } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
 import { tileSummary } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
@@ -154,7 +155,7 @@ function describeConflict(conflict: ChangeConflict): ConflictViewModel {
             field: nodeLabel(nodeAlias),
             mine: displayOrEmpty(
                 change?.type === "edit"
-                    ? change.aliasedData[nodeAlias]?.display_value
+                    ? nodeText(change.aliasedData[nodeAlias] ?? null)
                     : null,
             ),
             theirs: displayOrEmpty(conflict.nodes?.[nodeAlias].currentDisplay),

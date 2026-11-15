@@ -19,6 +19,7 @@ import {
     preloadComponents,
 } from "@/arches_modular_reports/ModularReport/utils.ts";
 import DeletedResourceNotice from "@/arches_modular_reports/ResourceReport/components/DeletedResourceNotice.vue";
+import { useEditLinksPreference } from "@/arches_modular_reports/ResourceReport/composables/useEditLinksPreference.ts";
 import { useFolioNavigation } from "@/arches_modular_reports/ResourceReport/composables/useFolioNavigation.ts";
 import { useGraphWidgetConfigs } from "@/arches_modular_reports/ResourceReport/composables/useGraphWidgetConfigs.ts";
 import { REPORT_DATA_KEY } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
@@ -53,6 +54,7 @@ const changeSet = useResourceChangeSet(graphSlug, resourceInstanceId);
 const folioNavigation = useFolioNavigation(
     graphWidgetConfigs.nodegroupWidgetConfigs,
 );
+const { areEditLinksShown, toggleEditLinks } = useEditLinksPreference();
 const { context, isTransitioning, transitionError, transitionLifecycle } =
     reportContext;
 
@@ -117,6 +119,10 @@ const reportData = computed<ReportData | null>(() => {
             open: openEditor,
             close: closeEditor,
             register: registerEditor,
+        },
+        editLinks: {
+            isShown: areEditLinksShown.value,
+            toggle: toggleEditLinks,
         },
         lifecycle: {
             isTransitioning: isTransitioning.value,
@@ -361,6 +367,20 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
 .resource-report :deep(.p-button-link:not(:disabled):hover),
 .resource-report :deep(.p-button-text:not(:disabled):hover) {
     border: none;
+}
+
+/* Links to related resources, from the core resource-instance widgets. */
+.resource-report :deep(.resource-instance-link) {
+    font-weight: 600;
+}
+
+/*
+ * The editor panel sits under the main column's sticky header and the drawer
+ * overlay; an expanded map inside it has to cover them.
+ */
+.resource-report
+    :deep(.editor-panel-overlay:has(.map-component[data-report-map-expanded])) {
+    z-index: 4;
 }
 
 /*

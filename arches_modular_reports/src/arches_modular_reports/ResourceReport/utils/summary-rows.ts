@@ -1,6 +1,6 @@
 import { findNodeValues } from "@/arches_modular_reports/ResourceReport/utils/find-node-values.ts";
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
-import { plainText } from "@/arches_modular_reports/ResourceReport/utils/plain-text.ts";
+import { nodeText } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 
 import type { AliasedData } from "@/arches_vue_components/types.ts";
 import type {
@@ -17,7 +17,7 @@ export function summaryRows(
         nodeAlias: summaryEntry.node_alias,
         label: localizeLabel(summaryEntry.label, activeLanguage),
         values: findNodeValues(aliasedData, summaryEntry.node_alias)
-            .map((nodeData) => plainText(nodeData.display_value))
-            .filter((displayValue) => displayValue !== ""),
+            .map(nodeText)
+            .filter((valueText) => valueText.trim() !== ""),
     }));
 }

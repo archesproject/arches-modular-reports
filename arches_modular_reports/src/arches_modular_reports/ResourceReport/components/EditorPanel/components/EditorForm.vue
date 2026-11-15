@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useTemplateRef } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
@@ -11,6 +11,7 @@ import {
     childNodegroupAliases,
     nodegroupLineage,
 } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
+import { useExpandableMap } from "@/arches_modular_reports/ResourceReport/composables/useExpandableMap.ts";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { findTile } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
 import {
@@ -27,6 +28,10 @@ const { target } = defineProps<{
 
 const { $gettext } = useGettext();
 const reportData = useReportData();
+
+const cardBody = useTemplateRef<HTMLElement>("cardBody");
+const { mapHeader, isMapExpanded, toggleMapExpanded } =
+    useExpandableMap(cardBody);
 
 const liveTile = computed(() =>
     findTile(reportData.value.resource.aliased_data, target.tileId),
@@ -183,7 +188,10 @@ function undoDelete(): void {
                         @click="deleteTile"
                     />
                 </header>
-                <div class="editor-panel-card-body">
+                <div
+                    ref="cardBody"
+                    class="editor-panel-card-body"
+                >
                     <GenericCard
                         :key="`${target.tileId}-${cardMode}`"
                         :mode="cardMode"
@@ -198,6 +206,32 @@ function undoDelete(): void {
                         :should-show-card-name="false"
                         @update:tile-data="onUpdateTileData"
                     />
+                    <!-- Only the editor offers this: the report's own map has
+                         the whole main column already. -->
+                    <Teleport
+                        v-if="mapHeader"
+                        :to="mapHeader"
+                    >
+                        <Button
+                            class="editor-panel-map-expand"
+                            variant="outlined"
+                            severity="secondary"
+                            size="small"
+                            :rounded="true"
+                            :icon="
+                                isMapExpanded
+                                    ? 'pi pi-window-minimize'
+                                    : 'pi pi-window-maximize'
+                            "
+                            :label="
+                                isMapExpanded
+                                    ? $gettext('Collapse map')
+                                    : $gettext('Expand map')
+                            "
+                            :aria-pressed="isMapExpanded"
+                            @click="toggleMapExpanded"
+                        />
+                    </Teleport>
                 </div>
                 <footer
                     v-if="isPendingDelete"
@@ -378,6 +412,48 @@ function undoDelete(): void {
     padding: 2.4rem 2.4rem 4.5rem 2.4rem;
 }
 
+/* Pinned over the whole report; the composable keeps the box in step. The
+   box is measured in viewport (physical) coordinates, hence top and left. */
+.editor-panel-card-body :deep(.map-component[data-report-map-expanded]) {
+    position: fixed;
+    top: var(--report-map-expanded-top);
+    left: var(--report-map-expanded-left);
+    z-index: 1;
+    inline-size: var(--report-map-expanded-width);
+    block-size: var(--report-map-expanded-height);
+    min-block-size: 0;
+}
+
+/* Styled as the drawer triggers. */
+.editor-panel-map-expand {
+    --p-button-label-font-weight: 600;
+    flex-shrink: 0;
+    align-self: center;
+    gap: 0.6rem;
+    block-size: 2.7rem;
+    margin-inline: auto 1.2rem;
+    padding-block: 0;
+    padding-inline: 1.2rem;
+    border-color: var(--p-content-border-color);
+    background: var(--p-content-background);
+    color: var(--p-text-muted-color);
+    font-size: 1.2rem;
+    line-height: 1.2;
+}
+
+.editor-panel-map-expand:not(:disabled):hover {
+    border-color: var(--p-primary-color);
+    background: var(--p-content-background);
+    color: var(--p-primary-color);
+}
+
+.editor-panel-map-expand[aria-pressed="true"],
+.editor-panel-map-expand[aria-pressed="true"]:not(:disabled):hover {
+    border-color: var(--resource-report-drawer-trigger-open-background);
+    background: var(--resource-report-drawer-trigger-open-background);
+    color: var(--resource-report-drawer-trigger-open-color);
+}
+
 .editor-panel-card-body :deep(.p-form) {
     gap: 2.8rem;
 }
@@ -438,5 +514,27 @@ function undoDelete(): void {
     background: var(--resource-report-accent-background);
     color: var(--p-primary-color);
     font-size: 1.3rem;
+}
+</style>
+
+<!-- Unscoped: a multiselect's options render in an overlay on <body>. -->
+<style>
+/*
+ * The theme's 1.25rem checkbox is about 12px at this app's root size, small
+ * for a click target. The "select all" box in the header matches.
+ */
+.p-multiselect-overlay .p-multiselect-option .p-checkbox,
+.p-multiselect-overlay .p-multiselect-option .p-checkbox-box,
+.p-multiselect-overlay .p-multiselect-header .p-checkbox,
+.p-multiselect-overlay .p-multiselect-header .p-checkbox-box {
+    inline-size: 1.8rem;
+    block-size: 1.8rem;
+}
+
+.p-multiselect-overlay .p-multiselect-option .p-checkbox-icon,
+.p-multiselect-overlay .p-multiselect-header .p-checkbox-icon {
+    inline-size: 1.2rem;
+    block-size: 1.2rem;
+    font-size: 1.2rem;
 }
 </style>

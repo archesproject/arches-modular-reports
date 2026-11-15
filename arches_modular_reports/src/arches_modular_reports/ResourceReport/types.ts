@@ -137,6 +137,8 @@ export interface ReportContext {
     search_url: string | null;
     language: string;
     language_dir: "ltr" | "rtl";
+    // Language names by code, for naming values in other languages.
+    languages: Record<string, string>;
     permissions: ReportPermissions;
 }
 
@@ -277,6 +279,11 @@ export interface ReportEditor {
     register: () => () => void;
 }
 
+export interface ReportEditLinks {
+    isShown: boolean;
+    toggle: () => void;
+}
+
 export interface ReportLifecycle {
     isTransitioning: boolean;
     transitionError: Error | null;
@@ -310,6 +317,7 @@ export interface ReportData {
     canEdit: boolean;
     changeSet: ResourceChangeSet;
     editor: ReportEditor;
+    editLinks: ReportEditLinks;
     lifecycle: ReportLifecycle;
     folioNavigation: FolioNavigation;
     markDeleted: () => void;

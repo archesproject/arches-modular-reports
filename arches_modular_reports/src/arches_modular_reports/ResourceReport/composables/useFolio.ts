@@ -79,8 +79,13 @@ export function useFolio(
         return nodegroupTiles(parent.aliased_data[nodegroupAlias.value]);
     });
 
+    // Editors can hide these links to read the report; the Data tab still
+    // edits.
     const canEditEntries = computed(
-        () => reportData.value.canEdit && reportData.value.editor.isAvailable,
+        () =>
+            reportData.value.canEdit &&
+            reportData.value.editor.isAvailable &&
+            reportData.value.editLinks.isShown,
     );
 
     const isAddable = computed(

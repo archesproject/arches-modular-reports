@@ -7,6 +7,7 @@ import Tag from "openvue/tag";
 
 import DataFolioTileActions from "@/arches_modular_reports/ResourceReport/components/DataBrowser/components/DataFolioTileActions.vue";
 import HighlightedText from "@/arches_modular_reports/ResourceReport/components/DataBrowser/components/HighlightedText.vue";
+import LanguageName from "@/arches_modular_reports/ResourceReport/components/LanguageName.vue";
 
 import {
     folioMatches,
@@ -14,6 +15,11 @@ import {
     ownLabelsMatch,
 } from "@/arches_modular_reports/ResourceReport/utils/data-filter.ts";
 import { datatypeIcon } from "@/arches_modular_reports/ResourceReport/utils/datatype-icon.ts";
+import {
+    hasOtherLanguages,
+    localizedTexts,
+    nodeText,
+} from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import { plainText } from "@/arches_modular_reports/ResourceReport/utils/plain-text.ts";
 import {
     childNodegroupAliases,
@@ -32,6 +38,7 @@ import type {
     AliasedTileData,
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
+import type { LocalizedText } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import type {
     EditTileRequest,
     ResourceChangeSet,
@@ -52,6 +59,8 @@ const {
     selectedTileId,
     isEditable,
     isRevealed = false,
+    activeLanguage = "",
+    languageNames = {},
 } = defineProps<{
     nodegroupAlias: string;
     nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>;
@@ -64,6 +73,9 @@ const {
     isEditable: boolean;
     // True while something elsewhere has jumped to this folio.
     isRevealed?: boolean;
+    // The reader's language, and names for values in any other.
+    activeLanguage?: string;
+    languageNames?: Record<string, string>;
 }>();
 
 const emit = defineEmits<{
@@ -251,7 +263,20 @@ watch(
 );
 
 function displayValue(tile: AliasedTileData, nodeAlias: string): string {
-    return plainText(aliasedNodeDataOf(tile, nodeAlias)?.display_value ?? "");
+    return nodeText(aliasedNodeDataOf(tile, nodeAlias));
+}
+
+// Each language's text, when any is outside the active language; otherwise
+// none, and the value shows as a single line.
+function multilingualTexts(
+    tile: AliasedTileData,
+    nodeAlias: string,
+): LocalizedText[] {
+    const texts = localizedTexts(
+        aliasedNodeDataOf(tile, nodeAlias),
+        activeLanguage,
+    );
+    return hasOtherLanguages(texts, activeLanguage) ? texts : [];
 }
 
 function tileLabel(tile: AliasedTileData): string {
@@ -688,6 +713,44 @@ function onDragEnd(): void {
                             >
                                 {{ EMPTY_VALUE }}
                             </dd>
+                            <dd
+                                v-else-if="
+                                    multilingualTexts(
+                                        tileRow.tile,
+                                        widget.node.alias,
+                                    ).length > 0
+                                "
+                                class="data-folio-field-languages"
+                            >
+                                <span
+                                    v-for="text in multilingualTexts(
+                                        tileRow.tile,
+                                        widget.node.alias,
+                                    )"
+                                    :key="text.languageCode"
+                                    class="data-folio-field-language"
+                                >
+                                    <LanguageName
+                                        v-if="
+                                            text.languageCode !== activeLanguage
+                                        "
+                                        :name="
+                                            languageNames[text.languageCode] ??
+                                            text.languageCode
+                                        "
+                                    />
+                                    <span
+                                        class="data-folio-field-language-text"
+                                        :lang="text.languageCode"
+                                        :dir="text.direction"
+                                    >
+                                        <HighlightedText
+                                            :text="plainText(text.value)"
+                                            :query="query"
+                                        />
+                                    </span>
+                                </span>
+                            </dd>
                             <dd v-else>
                                 <HighlightedText
                                     :text="
@@ -713,6 +776,8 @@ function onDragEnd(): void {
                         :matched-by-ancestor="childrenMatchedByAncestor"
                         :selected-tile-id="selectedTileId"
                         :is-editable="isEditable"
+                        :active-language="activeLanguage"
+                        :language-names="languageNames"
                         @edit-tile="emit(EDIT_TILE, $event)"
                     />
                 </div>
@@ -762,6 +827,8 @@ function onDragEnd(): void {
                 :matched-by-ancestor="childrenMatchedByAncestor"
                 :selected-tile-id="selectedTileId"
                 :is-editable="false"
+                :active-language="activeLanguage"
+                :language-names="languageNames"
                 @edit-tile="emit(EDIT_TILE, $event)"
             />
         </div>
@@ -1023,6 +1090,31 @@ function onDragEnd(): void {
     text-align: end;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* One line per language, each named unless it's the reader's own. */
+.data-folio-field dd.data-folio-field-languages {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.3rem;
+}
+
+.data-folio-field-language {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    max-inline-size: 100%;
+}
+
+.data-folio-field-language-text {
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.data-folio-field-language .language-name {
+    font-size: 1rem;
 }
 
 .data-folio-field .data-folio-field-empty {

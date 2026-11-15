@@ -7,11 +7,11 @@ import Button from "openvue/button";
 import Message from "openvue/message";
 import Tag from "openvue/tag";
 
-import GenericWidget from "@/arches_vue_components/generics/GenericWidget/GenericWidget.vue";
+import NodeValue from "@/arches_modular_reports/ResourceReport/components/NodeValue.vue";
 
-import { VIEW } from "@/arches_vue_components/widgets/constants.ts";
 import { useFolio } from "@/arches_modular_reports/ResourceReport/composables/useFolio.ts";
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
+import { nodeHasData } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import { aliasedNodeDataOf } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
 import type { AliasedTileData } from "@/arches_vue_components/types.ts";
@@ -118,8 +118,7 @@ const tileClass = computed(() => {
 });
 
 function hasValue(tile: AliasedTileData, nodeAlias: string): boolean {
-    const nodeData = aliasedNodeDataOf(tile, nodeAlias);
-    return nodeData !== null && nodeData.display_value !== "";
+    return nodeHasData(aliasedNodeDataOf(tile, nodeAlias));
 }
 
 function toggleOpen(): void {
@@ -295,18 +294,14 @@ function toggleOpen(): void {
                                 v-if="hasValue(tile, widget.node.alias)"
                                 class="report-folio-field-value"
                             >
-                                <GenericWidget
-                                    :aliased-node-data="
+                                <NodeValue
+                                    :node-data="
                                         aliasedNodeDataOf(
                                             tile,
                                             widget.node.alias,
-                                        )
+                                        )!
                                     "
-                                    :card-x-node-x-widget-data="widget"
-                                    :graph-slug="reportData.context.graph.slug"
-                                    :mode="VIEW"
-                                    :node-alias="widget.node.alias"
-                                    :should-show-label="false"
+                                    :widget="widget"
                                 />
                             </div>
                             <span

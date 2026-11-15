@@ -1,6 +1,8 @@
-    <script setup lang="ts">
+<script setup lang="ts">
 import { computed } from "vue";
+import { useGettext } from "vue3-gettext";
 
+import Button from "openvue/button";
 import Tab from "openvue/tab";
 import TabList from "openvue/tablist";
 import Tabs from "openvue/tabs";
@@ -9,8 +11,10 @@ import ReportExports from "@/arches_modular_reports/ResourceReport/components/Re
 import TabLabel from "@/arches_modular_reports/ResourceReport/components/TabLabel.vue";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
+import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { useTabbedComponents } from "@/arches_modular_reports/ResourceReport/composables/useTabbedComponents.ts";
 import { provideWorkspaceHeaderHost } from "@/arches_modular_reports/ResourceReport/composables/useWorkspaceHeaderHost.ts";
+import { containsFolios } from "@/arches_modular_reports/ResourceReport/utils/component-tree.ts";
 
 import type {
     ComponentNode,
@@ -30,6 +34,18 @@ const { tabs, activeTabIndex, activeTab } = useTabbedComponents(
 const headerHost = provideWorkspaceHeaderHost();
 
 const bannerNodes = computed(() => component.config.banner ?? []);
+
+const { $gettext } = useGettext();
+const reportData = useReportData();
+
+// Only where the links live (the report's folios), and only for editors.
+const isEditLinksToggleVisible = computed(
+    () =>
+        reportData.value.canEdit &&
+        reportData.value.editor.isAvailable &&
+        activeTab.value !== undefined &&
+        containsFolios(activeTab.value.node),
+);
 </script>
 
 <template>
@@ -64,6 +80,64 @@ const bannerNodes = computed(() => component.config.banner ?? []);
                         </TabList>
                     </Tabs>
                     <ReportExports class="workspace-tabs-exports" />
+                    <!-- A switch whose visible text names its state, so links
+                         hidden on an earlier visit are never a mystery. -->
+                    <Button
+                        v-if="isEditLinksToggleVisible"
+                        class="workspace-tabs-edit-links"
+                        variant="outlined"
+                        severity="secondary"
+                        size="small"
+                        role="switch"
+                        :rounded="true"
+                        :aria-label="$gettext('Edit links')"
+                        :aria-checked="reportData.editLinks.isShown"
+                        :title="
+                            reportData.editLinks.isShown
+                                ? $gettext(
+                                      'Hide the add, edit and delete links in the report',
+                                  )
+                                : $gettext(
+                                      'Show the add, edit and delete links in the report',
+                                  )
+                        "
+                        @click="reportData.editLinks.toggle"
+                    >
+                        <i
+                            class="p-button-icon"
+                            :class="
+                                reportData.editLinks.isShown
+                                    ? 'pi pi-eye'
+                                    : 'pi pi-eye-slash'
+                            "
+                            aria-hidden="true"
+                        />
+                        <!-- Both labels share one cell, so the button keeps
+                             the wider one's width and the bar doesn't shift
+                             when it toggles. -->
+                        <span
+                            class="p-button-label workspace-tabs-edit-links-labels"
+                        >
+                            <span
+                                class="workspace-tabs-edit-links-label"
+                                :class="{
+                                    'workspace-tabs-edit-links-label-current':
+                                        reportData.editLinks.isShown,
+                                }"
+                            >
+                                {{ $gettext("Edit links: On") }}
+                            </span>
+                            <span
+                                class="workspace-tabs-edit-links-label"
+                                :class="{
+                                    'workspace-tabs-edit-links-label-current':
+                                        !reportData.editLinks.isShown,
+                                }"
+                            >
+                                {{ $gettext("Edit links: Off") }}
+                            </span>
+                        </span>
+                    </Button>
                 </div>
             </div>
         </Teleport>
@@ -92,7 +166,7 @@ const bannerNodes = computed(() => component.config.banner ?? []);
     display: flex;
     align-items: flex-end;
     justify-content: flex-end;
-    gap: 1.6rem;    
+    gap: 1.1rem;
     background: var(--resource-report-bar-background);
     box-shadow: inset 0 -0.1rem 0 var(--resource-report-bar-border-color);
 }
@@ -101,6 +175,51 @@ const bannerNodes = computed(() => component.config.banner ?? []);
     flex-shrink: 0;
     align-self: center;
     padding-inline: 1rem;
+}
+
+.workspace-tabs-edit-links-labels {
+    display: grid;
+}
+
+.workspace-tabs-edit-links-label {
+    grid-area: 1 / 1;
+    visibility: hidden;
+}
+
+.workspace-tabs-edit-links-label.workspace-tabs-edit-links-label-current {
+    visibility: visible;
+}
+
+/* Styled as the drawer triggers. Off is the marked state: it's the one that
+   changes the report from what an editor expects. */
+.workspace-tabs-bar .workspace-tabs-edit-links {
+    --p-button-label-font-weight: 600;
+    flex-shrink: 0;
+    align-self: center;
+    gap: 0.6rem;
+    block-size: 2.7rem;
+    padding-block: 0;
+    margin-inline-end: 1rem;
+    padding-inline: 1.2rem;
+    border-color: var(--p-content-border-color);
+    background: var(--p-content-background);
+    color: var(--p-text-muted-color);
+    font-size: 1.2rem;
+    line-height: 1.2;
+}
+
+.workspace-tabs-bar .workspace-tabs-edit-links:not(:disabled):hover {
+    border-color: var(--p-primary-color);
+    background: var(--p-content-background);
+    color: var(--p-primary-color);
+}
+
+.workspace-tabs-bar .workspace-tabs-edit-links[aria-checked="false"],
+.workspace-tabs-bar
+    .workspace-tabs-edit-links[aria-checked="false"]:not(:disabled):hover {
+    border-color: var(--resource-report-drawer-trigger-open-background);
+    background: var(--resource-report-drawer-trigger-open-background);
+    color: var(--resource-report-drawer-trigger-open-color);
 }
 
 .workspace-tabs-strip {

@@ -13,6 +13,7 @@ from arches.app.models.models import (
     CardModel,
     EditLog,
     FunctionXGraph,
+    Language,
     Plugin,
     Node,
     NodeGroup,
@@ -535,6 +536,42 @@ class ResourceReportEndpointTests(TestCase):
         self.assertEqual(location_value["before"], "")
         self.assertEqual(location_value["after"], "1 point, 2 polygons")
         self.assertTrue(location_value["changed"])
+
+    def test_edit_history_names_values_in_other_languages(self):
+        Language.objects.get_or_create(
+            code="de", defaults={"name": "German", "default_direction": "ltr"}
+        )
+        EditLog.objects.filter(resourceinstanceid=str(self.resource.pk)).update(
+            newvalue={
+                str(self.name_content.pk): {
+                    "en": {"value": "", "direction": "ltr"},
+                    "de": {"value": "Neu", "direction": "ltr"},
+                }
+            },
+        )
+        self.client.force_login(self.superuser)
+
+        response = self.client.get(reverse("api_edit_history", args=[self.resource.pk]))
+
+        name_value = [
+            value
+            for value in response.json()["results"][0]["values"]
+            if value["node_alias"] == "name_content"
+        ][0]
+        self.assertEqual(name_value["before"], "Old")
+        self.assertEqual(name_value["after"], "Neu (German)")
+
+    def test_report_context_names_the_languages(self):
+        Language.objects.get_or_create(
+            code="de", defaults={"name": "German", "default_direction": "ltr"}
+        )
+        self.client.force_login(self.superuser)
+
+        response = self.client.get(
+            reverse("api_report_context", args=[self.resource.pk])
+        )
+
+        self.assertEqual(response.json()["languages"]["de"], "German")
 
     def add_name_descriptor(self):
         template = {"nodegroup_id": str(self.names.pk), "string_template": ""}

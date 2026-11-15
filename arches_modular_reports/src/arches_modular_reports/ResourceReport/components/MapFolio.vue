@@ -8,12 +8,14 @@ import Message from "openvue/message";
 import Tag from "openvue/tag";
 
 import GenericWidget from "@/arches_vue_components/generics/GenericWidget/GenericWidget.vue";
+import NodeValue from "@/arches_modular_reports/ResourceReport/components/NodeValue.vue";
 import ReportFolio from "@/arches_modular_reports/ResourceReport/components/ReportFolio.vue";
 
 import { BASEMAP_TOOL_ID } from "@/arches_vue_components/components/MapComponent/constants.ts";
 import { VIEW } from "@/arches_vue_components/widgets/constants.ts";
 import { useFolio } from "@/arches_modular_reports/ResourceReport/composables/useFolio.ts";
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
+import { nodeHasData } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import { aliasedNodeDataOf } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
 import type {
@@ -155,8 +157,7 @@ const emptyMessage = computed(() =>
 );
 
 function hasValue(tile: AliasedTileData, nodeAlias: string): boolean {
-    const nodeData = aliasedNodeDataOf(tile, nodeAlias);
-    return nodeData !== null && nodeData.display_value !== "";
+    return nodeHasData(aliasedNodeDataOf(tile, nodeAlias));
 }
 
 function showPreviousTile(): void {
@@ -264,18 +265,14 @@ function showNextTile(): void {
                                 v-if="hasValue(currentTile, widget.node.alias)"
                                 class="map-folio-field-value"
                             >
-                                <GenericWidget
-                                    :aliased-node-data="
+                                <NodeValue
+                                    :node-data="
                                         aliasedNodeDataOf(
                                             currentTile,
                                             widget.node.alias,
-                                        )
+                                        )!
                                     "
-                                    :card-x-node-x-widget-data="widget"
-                                    :graph-slug="reportData.context.graph.slug"
-                                    :mode="VIEW"
-                                    :node-alias="widget.node.alias"
-                                    :should-show-label="false"
+                                    :widget="widget"
                                 />
                             </div>
                             <span
@@ -481,8 +478,10 @@ function showNextTile(): void {
     color: var(--p-text-muted-color);
 }
 
+/* Matches the report folios' values. */
 .map-folio-field-value {
-    font-weight: 600;
+    color: var(--p-text-color);
+    font-weight: 500;
 }
 
 /* Widgets render their value in a <p>; drop its default block margins. */
