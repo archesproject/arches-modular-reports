@@ -11,7 +11,10 @@ import GenericWidget from "@/arches_vue_components/generics/GenericWidget/Generi
 import NodeValue from "@/arches_modular_reports/ResourceReport/components/NodeValue.vue";
 import ReportFolio from "@/arches_modular_reports/ResourceReport/components/ReportFolio.vue";
 
-import { BASEMAP_TOOL_ID } from "@/arches_vue_components/components/MapComponent/constants.ts";
+import {
+    BASEMAP_TOOL_ID,
+    OVERLAYS_TOOL_ID,
+} from "@/arches_vue_components/components/MapComponent/constants.ts";
 import { VIEW } from "@/arches_vue_components/widgets/constants.ts";
 import { useFolio } from "@/arches_modular_reports/ResourceReport/composables/useFolio.ts";
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
@@ -32,7 +35,7 @@ const REPORT_FOLIO_COMPONENT =
     "arches_modular_reports/ResourceReport/components/ReportFolio";
 const EDIT_ACTION = "edit";
 const DELETE_ACTION = "delete";
-const DEFAULT_HEADER_TOOLS = [BASEMAP_TOOL_ID];
+const DEFAULT_HEADER_TOOLS = [BASEMAP_TOOL_ID, OVERLAYS_TOOL_ID];
 const DEFAULT_HEADER_ACTIONS = [EDIT_ACTION, DELETE_ACTION];
 // Report maps sit in a scrolling page, so plain scrolling pages instead of
 // zooming. A widget config that sets this explicitly still wins.
@@ -49,6 +52,7 @@ const {
     reportData,
     nodegroupAlias,
     hasNodegroup,
+    isCardHidden,
     nodegroupWidgetConfig,
     cardName,
     tiles,
@@ -106,15 +110,6 @@ const headerActions = computed<MapHeaderAction[]>(() => {
     const isBusy = reportData.value.changeSet.isBusy.value;
     const actions: MapHeaderAction[] = [];
     if (isEditableTile(tile)) {
-        if (actionIds.includes(EDIT_ACTION)) {
-            actions.push({
-                id: EDIT_ACTION,
-                label: $gettext("Edit"),
-                icon: "pi pi-pencil",
-                ariaLabel: $gettext("Edit map for %{entry}", { entry }, true),
-                onClick: () => editTile(tile.tileid),
-            });
-        }
         if (actionIds.includes(DELETE_ACTION)) {
             actions.push({
                 id: DELETE_ACTION,
@@ -123,6 +118,15 @@ const headerActions = computed<MapHeaderAction[]>(() => {
                 ariaLabel: $gettext("Delete map for %{entry}", { entry }, true),
                 disabled: isBusy,
                 onClick: () => deleteTile(tile.tileid),
+            });
+        }
+        if (actionIds.includes(EDIT_ACTION)) {
+            actions.push({
+                id: EDIT_ACTION,
+                label: $gettext("Edit"),
+                icon: "pi pi-pencil",
+                ariaLabel: $gettext("Edit map for %{entry}", { entry }, true),
+                onClick: () => editTile(tile.tileid),
             });
         }
     } else if (isMarkedForDeletion(tile) && actionIds.includes(DELETE_ACTION)) {
@@ -174,6 +178,7 @@ function showNextTile(): void {
 
 <template>
     <div
+        v-if="!isCardHidden"
         ref="folio"
         class="map-folio"
         :class="{ 'map-folio-flash': isFlashed }"

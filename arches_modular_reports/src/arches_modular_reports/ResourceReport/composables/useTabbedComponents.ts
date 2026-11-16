@@ -1,7 +1,10 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
-import { nodegroupAliasesWithin } from "@/arches_modular_reports/ResourceReport/utils/component-tree.ts";
+import {
+    isHiddenNode,
+    nodegroupAliasesWithin,
+} from "@/arches_modular_reports/ResourceReport/utils/component-tree.ts";
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
 import {
     nodegroupTiles,
@@ -40,8 +43,12 @@ export function useTabbedComponents(
         childNodes()
             .filter(
                 (childNode) =>
-                    childNode.config.requires_edit !== true ||
-                    reportData.value.canEdit,
+                    (childNode.config.requires_edit !== true ||
+                        reportData.value.canEdit) &&
+                    !isHiddenNode(
+                        childNode,
+                        reportData.value.nodegroupWidgetConfigs,
+                    ),
             )
             .map((childNode) => {
                 const nodegroupAliases = nodegroupAliasesWithin(childNode);

@@ -1114,6 +1114,81 @@ describe("ResourceReport", () => {
         expect(wrapper.find(".language-name").exists()).toBe(false);
     });
 
+    it("leaves out cards hidden in the graph, and what holds only them", async () => {
+        const config: ResourceReportConfig = {
+            components: [
+                workspaceTabs(
+                    reportNode("SplitPane", {
+                        label: "Report",
+                        main: [
+                            reportNode("ReportTabs", {
+                                components: [
+                                    reportNode("ReportStack", {
+                                        label: "Overview",
+                                        components: [
+                                            reportNode("ReportSection", {
+                                                label: "Names",
+                                                components: [
+                                                    reportNode("ReportFolio", {
+                                                        nodegroup_alias:
+                                                            "names",
+                                                    }),
+                                                ],
+                                            }),
+                                            reportNode("ReportSection", {
+                                                label: "Ownership",
+                                                components: [
+                                                    reportNode("FieldFolio", {
+                                                        nodegroup_alias:
+                                                            "owners",
+                                                    }),
+                                                ],
+                                            }),
+                                        ],
+                                    }),
+                                    reportNode("ReportStack", {
+                                        label: "Owners",
+                                        components: [
+                                            reportNode("ReportFolio", {
+                                                nodegroup_alias: "owners",
+                                            }),
+                                        ],
+                                    }),
+                                ],
+                            }),
+                        ],
+                        aside: [reportNode("EditorPanel/EditorPanel")],
+                    }),
+                ),
+            ],
+        };
+        const ownersCard = NODEGROUP_WIDGET_CONFIGS.owners.card!;
+        ownersCard.visible = false;
+        try {
+            const wrapper = mountReport(config);
+            await flushPromises();
+
+            const sectionLabels = wrapper
+                .findAll(".report-section-label")
+                .map((label) => label.text());
+            expect(sectionLabels).toEqual(["Names"]);
+            expect(wrapper.text()).not.toContain("Current Owner");
+            // One tab left, so no tab list at all.
+            expect(wrapper.find(".report-tabs-list").exists()).toBe(false);
+        } finally {
+            ownersCard.visible = true;
+        }
+
+        const shownAgain = mountReport(config);
+        await flushPromises();
+        expect(
+            shownAgain
+                .findAll(".report-section-label")
+                .map((label) => label.text()),
+        ).toEqual(["Names", "Ownership"]);
+        expect(shownAgain.find(".report-tabs-list").text()).toContain("Owners");
+    });
+
     it("lets an editor hide the report's edit links, and remembers it", async () => {
         const wrapper = mountReport(FOLIO_CONFIG);
         await flushPromises();

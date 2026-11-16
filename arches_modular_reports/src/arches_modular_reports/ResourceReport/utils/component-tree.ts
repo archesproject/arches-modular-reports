@@ -1,5 +1,6 @@
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
 
+import type { NodegroupWidgetConfig } from "@/arches_vue_components/types.ts";
 import type {
     ComponentNode,
     FolioConfig,
@@ -52,6 +53,30 @@ export function containsFolios(node: ComponentNode<object>): boolean {
         FOLIO_COMPONENT_NAMES.has(
             descendantNode.component.split("/").at(-1) ?? "",
         ),
+    );
+}
+
+/*
+ * Hidden in the graph, so not rendered: a folio whose card is hidden, or a
+ * section, stack or tab with nothing left to show. The config keeps its place,
+ * so making the card visible puts it back. A folio whose nodegroup is missing
+ * altogether isn't hidden; it reports the problem.
+ */
+export function isHiddenNode(
+    node: ComponentNode<object>,
+    nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>,
+): boolean {
+    if (!isComponentNode(node)) {
+        return false;
+    }
+    const { nodegroup_alias: nodegroupAlias } = node.config;
+    if (typeof nodegroupAlias === "string") {
+        return nodegroupWidgetConfigs[nodegroupAlias]?.card?.visible === false;
+    }
+    const children = childNodes(node);
+    return (
+        children.length > 0 &&
+        children.every((child) => isHiddenNode(child, nodegroupWidgetConfigs))
     );
 }
 

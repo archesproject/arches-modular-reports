@@ -24,6 +24,7 @@ export interface Folio {
     reportData: ComputedRef<ReportData>;
     nodegroupAlias: ComputedRef<string>;
     hasNodegroup: ComputedRef<boolean>;
+    isCardHidden: ComputedRef<boolean>;
     nodegroupWidgetConfig: ComputedRef<NodegroupWidgetConfig>;
     cardName: ComputedRef<string>;
     parentTileId: ComputedRef<string | null>;
@@ -59,6 +60,13 @@ export function useFolio(
 
     const nodegroupWidgetConfig = computed(
         () => reportData.value.nodegroupWidgetConfigs[nodegroupAlias.value],
+    );
+
+    // Hidden in the graph: the folio renders nothing until it's shown again.
+    const isCardHidden = computed(
+        () =>
+            hasNodegroup.value &&
+            nodegroupWidgetConfig.value.card?.visible === false,
     );
 
     const cardName = computed(
@@ -194,6 +202,7 @@ export function useFolio(
         reportData,
         nodegroupAlias,
         hasNodegroup,
+        isCardHidden,
         nodegroupWidgetConfig,
         cardName,
         parentTileId,

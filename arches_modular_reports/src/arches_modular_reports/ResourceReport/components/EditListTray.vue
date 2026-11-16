@@ -341,10 +341,27 @@ async function applyAll(): Promise<void> {
                 }}
             </Message>
         </AlertDialog>
-        <div class="edit-list-tray-changes">
+        <div class="edit-list-tray-header">
             <h3 class="edit-list-tray-title">
                 {{ $gettext("Edit List") }}
             </h3>
+            <div class="edit-list-tray-actions">
+                <Button
+                    class="edit-list-tray-action edit-list-tray-cancel"
+                    severity="secondary"
+                    :label="$gettext('Cancel all edits')"
+                    :disabled="reportData.changeSet.isBusy.value"
+                    @click="confirmCancelAll"
+                />
+                <Button
+                    class="edit-list-tray-action"
+                    :label="$gettext('Apply all edits')"
+                    :loading="reportData.changeSet.isSaving.value"
+                    @click="applyAll"
+                />
+            </div>
+        </div>
+        <div class="edit-list-tray-changes">
             <div
                 class="edit-list-tray-sr-only"
                 role="status"
@@ -550,39 +567,41 @@ async function applyAll(): Promise<void> {
                 </li>
             </ul>
         </div>
-        <div class="edit-list-tray-actions">
-            <Button
-                class="edit-list-tray-action edit-list-tray-cancel"
-                severity="secondary"
-                :label="$gettext('Cancel all edits')"
-                :disabled="reportData.changeSet.isBusy.value"
-                @click="confirmCancelAll"
-            />
-            <Button
-                class="edit-list-tray-action"
-                :label="$gettext('Apply all edits')"
-                :loading="reportData.changeSet.isSaving.value"
-                @click="applyAll"
-            />
-        </div>
     </section>
 </template>
 
 <style scoped>
+/*
+ * The aside footer caps the tray's height; past that, only the list of
+ * changes scrolls, so the header and its buttons stay in view.
+ */
 .edit-list-tray {
     display: flex;
     flex-direction: column;
+    gap: 0.8rem;
+    min-block-size: 0;
+    padding-block: 0.8rem 1.4rem;
+    padding-inline: 1.4rem;
     border-block-start: 0.2rem solid var(--resource-report-bar-border-color);
     background: var(--p-content-background);
     color: var(--p-text-color);
+}
+
+/* The buttons wrap under the title when the aside is too narrow for both. */
+.edit-list-tray-header {
+    display: flex;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.8rem 1.6rem;
 }
 
 .edit-list-tray-changes {
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
-    padding-block: 0.6rem 2.4rem;
-    padding-inline: 1.4rem;
+    min-block-size: 0;
+    overflow-y: auto;
 }
 
 .edit-list-tray-title {
@@ -688,11 +707,8 @@ async function applyAll(): Promise<void> {
 
 .edit-list-tray-actions {
     display: flex;
-    justify-content: flex-end;
     gap: 0.8rem;
-    padding: 1.5rem;
-    border-block-start: 0.1rem solid var(--resource-report-bar-border-color);
-    background: var(--resource-report-bar-background);
+    margin-inline-start: auto;
 }
 
 .edit-list-tray-actions .edit-list-tray-action {

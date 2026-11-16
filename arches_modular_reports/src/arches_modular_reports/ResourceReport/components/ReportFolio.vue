@@ -30,6 +30,7 @@ const {
     reportData,
     nodegroupAlias,
     hasNodegroup,
+    isCardHidden,
     nodegroupWidgetConfig,
     cardName,
     parentTileId,
@@ -128,6 +129,7 @@ function toggleOpen(): void {
 
 <template>
     <div
+        v-if="!isCardHidden"
         ref="folio"
         class="report-folio-anchor"
         :class="{
@@ -540,6 +542,10 @@ function toggleOpen(): void {
 .report-folio-field-value {
     color: var(--p-text-color);
     font-weight: 500;
+}
+
+.report-folio-field-value :deep(p) {
+    margin: 0;
 }
 
 .report-folio-tile-deleted > .report-folio-fields {

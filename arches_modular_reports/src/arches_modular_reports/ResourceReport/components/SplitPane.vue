@@ -250,8 +250,13 @@ function toRem(pixels: number): number {
     min-block-size: 0;
 }
 
+/* At most half the aside, so a long edit list can't crowd out the panels
+   above it; the footer's content scrolls within that. */
 .split-pane-aside-footer {
+    display: flex;
+    flex-direction: column;
     flex-shrink: 0;
+    max-block-size: 50%;
 }
 
 @media (prefers-reduced-motion: no-preference) {
