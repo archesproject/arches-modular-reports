@@ -53,7 +53,6 @@ const graphIconClass = computed(() => {
     return DEFAULT_GRAPH_ICON_CLASS;
 });
 
-// The model's search colour, so the report's thumb matches its search card.
 const thumbAccentStyle = computed(() => ({
     "--report-header-accent-color":
         reportData.value.context.graph.color || "var(--p-primary-color)",
@@ -201,13 +200,6 @@ function transitionSeverity(
     background: var(--resource-report-panel-background);
 }
 
-/* Icon over model name, following the arches-search result card thumb. */
-/*
- * The background tints the model colour as search does. Model colours are
- * often translucent and pale, so the icon and label drop the alpha and mix
- * toward the text colour: 40% keeps every rascoll model at 4.5:1 or better
- * in both colour schemes, and the larger icon keeps 60% at 3:1 or better.
- */
 .report-header-thumb {
     --report-header-accent-opaque: rgb(
         from var(--report-header-accent-color) r g b

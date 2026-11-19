@@ -43,8 +43,6 @@ const visibleGroups = computed(() =>
     groups.value.filter((group) => group.items.length > 0),
 );
 
-// Models with nothing related share one line instead of a group each. While
-// filtering, the "No results" message covers them instead.
 const emptyGroupsMessage = computed(() => {
     const emptyGroupNames = groups.value
         .filter((group) => group.items.length === 0)

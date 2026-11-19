@@ -199,7 +199,7 @@ Paths are under `arches_modular_reports/ResourceReport/components/`.
 
 -   `WorkspaceTabs`: the tab strip at the top of the report. Each of its `components` is a tab, named by its `label`. `banner` lists components shown under the strip above every tab.
 -   `ReportTabs`: tabs inside a pane, with a tab bar that stays in view while the pane scrolls. Each of its `components` is a tab, named by its `label`.
--   `SplitPane`: `main` and `aside` lists side by side. `aside_footer` lists components pinned to the bottom of the aside, below anything that covers it, such as an open `EditorPanel`. Without an `aside` or `aside_footer`, `main` takes the full width.
+-   `SplitPane`: `main` and `aside` lists side by side. `aside_footer` lists components pinned to the bottom of the aside, below anything that covers it, such as an open `EditorPanel`. `aside_size` sets the aside's starting share of the width as a percentage, and is required alongside an `aside` or `aside_footer`. Without an `aside` or `aside_footer`, `main` takes the full width.
 -   `ReportStack`: its `components` in a column.
 -   `ReportSection`: a heading (`label`, optional `icon`) over its `components`.
 -   `ReportDrawer`: its `components`, with `panels` as buttons that open over them.

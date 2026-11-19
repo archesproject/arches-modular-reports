@@ -25,20 +25,15 @@ const { component } = defineProps<{
     component: ComponentNode<WorkspaceTabsConfig>;
 }>();
 
+const { $gettext } = useGettext();
+const reportData = useReportData();
 const { tabs, activeTabIndex, activeTab } = useTabbedComponents(
     () => component.config.components ?? [],
 );
-
-// A workspace with a main column (SplitPane) hosts the header there, so the
-// aside starts at the top of the page; otherwise it renders full width here.
 const headerHost = provideWorkspaceHeaderHost();
 
 const bannerNodes = computed(() => component.config.banner ?? []);
 
-const { $gettext } = useGettext();
-const reportData = useReportData();
-
-// Only where the links live (the report's folios), and only for editors.
 const isEditLinksToggleVisible = computed(
     () =>
         reportData.value.canEdit &&
@@ -46,6 +41,20 @@ const isEditLinksToggleVisible = computed(
         activeTab.value !== undefined &&
         containsFolios(activeTab.value.node),
 );
+
+const editLinksTitle = computed(() => {
+    if (reportData.value.editLinks.isShown) {
+        return $gettext("Hide the add, edit and delete links in the report");
+    }
+    return $gettext("Show the add, edit and delete links in the report");
+});
+
+const editLinksIcon = computed(() => {
+    if (reportData.value.editLinks.isShown) {
+        return "pi pi-eye";
+    }
+    return "pi pi-eye-slash";
+});
 </script>
 
 <template>
@@ -55,7 +64,6 @@ const isEditLinksToggleVisible = computed(
             :disabled="headerHost === null"
         >
             <div class="workspace-tabs-header">
-                <!-- The resource first, then the views of it. -->
                 <component
                     :is="loadComponent(bannerNode.component)"
                     v-for="(bannerNode, bannerIndex) in bannerNodes"
@@ -80,8 +88,6 @@ const isEditLinksToggleVisible = computed(
                         </TabList>
                     </Tabs>
                     <ReportExports class="workspace-tabs-exports" />
-                    <!-- A switch whose visible text names its state, so links
-                         hidden on an earlier visit are never a mystery. -->
                     <Button
                         v-if="isEditLinksToggleVisible"
                         class="workspace-tabs-edit-links"
@@ -92,29 +98,14 @@ const isEditLinksToggleVisible = computed(
                         :rounded="true"
                         :aria-label="$gettext('Edit links')"
                         :aria-checked="reportData.editLinks.isShown"
-                        :title="
-                            reportData.editLinks.isShown
-                                ? $gettext(
-                                      'Hide the add, edit and delete links in the report',
-                                  )
-                                : $gettext(
-                                      'Show the add, edit and delete links in the report',
-                                  )
-                        "
+                        :title="editLinksTitle"
                         @click="reportData.editLinks.toggle"
                     >
                         <i
                             class="p-button-icon"
-                            :class="
-                                reportData.editLinks.isShown
-                                    ? 'pi pi-eye'
-                                    : 'pi pi-eye-slash'
-                            "
                             aria-hidden="true"
+                            :class="editLinksIcon"
                         />
-                        <!-- Both labels share one cell, so the button keeps
-                             the wider one's width and the bar doesn't shift
-                             when it toggles. -->
                         <span
                             class="p-button-label workspace-tabs-edit-links-labels"
                         >
@@ -158,10 +149,6 @@ const isEditLinksToggleVisible = computed(
     min-block-size: 0;
 }
 
-/* Folder tabs on the left, export links right-justified, on one bar. The
-   bar's bottom line is an inset shadow, so the tabs (painted over it) decide
-   where it shows: under the inactive tabs, but not under the active one,
-   which opens onto the workspace below. */
 .workspace-tabs-bar {
     display: flex;
     align-items: flex-end;
@@ -190,8 +177,6 @@ const isEditLinksToggleVisible = computed(
     visibility: visible;
 }
 
-/* Styled as the drawer triggers. Off is the marked state: it's the one that
-   changes the report from what an editor expects. */
 .workspace-tabs-bar .workspace-tabs-edit-links {
     --p-button-label-font-weight: 600;
     flex-shrink: 0;
@@ -245,28 +230,24 @@ const isEditLinksToggleVisible = computed(
 
 .workspace-tabs-strip :deep(.p-tablist-tab-list) {
     align-items: flex-end;
-    gap: 0rem;
+    gap: 0;
     border-block-end: none;
 }
 
 .workspace-tabs-strip :deep(.p-tab) {
     block-size: 3.4rem;
     font-size: 1.35rem;
-    min-width: 11rem;
+    min-inline-size: 11rem;
 }
 
-/* Neighbouring tabs share one border: each draws only its end side, after the
-   first. */
 .workspace-tabs-strip :deep(.p-tab + .p-tab) {
     border-inline-start-width: 0;
 }
 
-/* The bar's bottom line, drawn on the inactive tabs that cover it. */
 .workspace-tabs-strip :deep(.p-tab:not(.p-tab-active)) {
     border-block-end: 0.1rem solid var(--resource-report-bar-border-color);
 }
 
-/* A primary edge on top marks the active tab without changing its size. */
 .workspace-tabs-strip :deep(.p-tab-active) {
     font-weight: 700;
 }

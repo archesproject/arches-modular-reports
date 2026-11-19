@@ -2,8 +2,6 @@
 import { computed } from "vue";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
-import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
-import { isHiddenNode } from "@/arches_modular_reports/ResourceReport/utils/component-tree.ts";
 
 import type {
     ComponentNode,
@@ -14,14 +12,7 @@ const { component } = defineProps<{
     component: ComponentNode<StackConfig>;
 }>();
 
-const reportData = useReportData();
-
-const childNodes = computed(() =>
-    (component.config.components ?? []).filter(
-        (childNode) =>
-            !isHiddenNode(childNode, reportData.value.nodegroupWidgetConfigs),
-    ),
-);
+const childNodes = computed(() => component.config.components ?? []);
 </script>
 
 <template>

@@ -251,8 +251,6 @@ export async function copyResource(
     return parsed.resourceid;
 }
 
-// Projects may override core's resource editor URL (RASColl redirects it to
-// the report), so delete through the querysets API instead.
 export async function deleteResource(
     graphSlug: string,
     resourceInstanceId: string,
@@ -261,7 +259,6 @@ export async function deleteResource(
         method: "DELETE",
         headers: { "X-CSRFToken": Cookies.get("csrftoken") ?? "" },
     });
-    // A successful delete answers 204 with no body to parse.
     if (!response.ok) {
         await parseResponse<unknown>(response);
     }

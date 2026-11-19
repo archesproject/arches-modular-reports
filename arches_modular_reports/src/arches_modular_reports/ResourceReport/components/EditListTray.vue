@@ -105,6 +105,16 @@ function displayOrEmpty(value: string | null | undefined): string {
     return value ? plainText(value) : $gettext("(empty)");
 }
 
+function pendingNodeText(
+    change: ResourceChange | undefined,
+    nodeAlias: string,
+): string | null {
+    if (change?.type !== "edit") {
+        return null;
+    }
+    return nodeText(change.aliasedData[nodeAlias] ?? null);
+}
+
 interface ConflictRow {
     field: string;
     mine: string;
@@ -153,11 +163,7 @@ function describeConflict(conflict: ChangeConflict): ConflictViewModel {
         const fields = nodeAliases.map(nodeLabel).join(", ");
         const rows = nodeAliases.map((nodeAlias) => ({
             field: nodeLabel(nodeAlias),
-            mine: displayOrEmpty(
-                change?.type === "edit"
-                    ? nodeText(change.aliasedData[nodeAlias] ?? null)
-                    : null,
-            ),
+            mine: displayOrEmpty(pendingNodeText(change, nodeAlias)),
             theirs: displayOrEmpty(conflict.nodes?.[nodeAlias].currentDisplay),
         }));
         return {
@@ -184,14 +190,15 @@ function describeConflict(conflict: ChangeConflict): ConflictViewModel {
         };
     }
     if (conflict.reason === "deleted") {
-        const summary = conflict.tileSnapshot
-            ? tileSummary(
-                  conflict.tileSnapshot,
-                  reportData.value.nodegroupWidgetConfigs[
-                      conflict.nodegroupAlias
-                  ],
-              )
-            : "";
+        let summary = "";
+        if (conflict.tileSnapshot) {
+            summary = tileSummary(
+                conflict.tileSnapshot,
+                reportData.value.nodegroupWidgetConfigs[
+                    conflict.nodegroupAlias
+                ],
+            );
+        }
         return {
             ...base,
             message: $gettext(
@@ -571,10 +578,6 @@ async function applyAll(): Promise<void> {
 </template>
 
 <style scoped>
-/*
- * The aside footer caps the tray's height; past that, only the list of
- * changes scrolls, so the header and its buttons stay in view.
- */
 .edit-list-tray {
     display: flex;
     flex-direction: column;
@@ -587,7 +590,6 @@ async function applyAll(): Promise<void> {
     color: var(--p-text-color);
 }
 
-/* The buttons wrap under the title when the aside is too narrow for both. */
 .edit-list-tray-header {
     display: flex;
     flex-wrap: wrap;

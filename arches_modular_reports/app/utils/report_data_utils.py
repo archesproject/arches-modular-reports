@@ -7,11 +7,6 @@ from arches.app.models import models
 
 from arches_modular_reports.models import ReportConfig
 
-GEOJSON_DATATYPE = "geojson-feature-collection"
-
-# The report leaves geometry to its map, but an edit to one still needs a line.
-EDIT_HISTORY_EXCLUDED_DATATYPES = ReportConfig.excluded_datatypes - {GEOJSON_DATATYPE}
-
 GEOMETRY_KINDS_BY_TYPE = {
     "Point": "point",
     "MultiPoint": "point",
@@ -27,7 +22,6 @@ def language_names_by_code():
 
 
 def is_localized_text(raw_value):
-    """A multilingual string value: {language code: {"value", "direction"}}."""
     return (
         isinstance(raw_value, dict)
         and len(raw_value) > 0
@@ -40,8 +34,6 @@ def is_localized_text(raw_value):
 
 
 def describe_localized_text(raw_value, language_names):
-    """Every language's text, the active language first and the others
-    named, e.g. "Mythical figure; Mythische Figur (German)"."""
     active_language = get_language()
     texts = [
         (language_code, language_value["value"])
@@ -49,12 +41,14 @@ def describe_localized_text(raw_value, language_names):
         if language_value["value"].strip()
     ]
     texts.sort(key=lambda text: text[0] != active_language)
-    return "; ".join(
-        text
-        if language_code == active_language
-        else f"{text} ({language_names.get(language_code, language_code)})"
-        for language_code, text in texts
-    )
+    descriptions = []
+    for language_code, text in texts:
+        if language_code == active_language:
+            descriptions.append(text)
+        else:
+            language_name = language_names.get(language_code, language_code)
+            descriptions.append(f"{text} ({language_name})")
+    return "; ".join(descriptions)
 
 
 def describe_geometry_kind(kind, count):
@@ -70,7 +64,6 @@ def describe_geometry_kind(kind, count):
 
 
 def describe_feature_collection(feature_collection):
-    """A feature collection as counts by kind, e.g. "1 point, 2 polygons"."""
     if not isinstance(feature_collection, dict):
         return ""
     kind_counts = Counter(
@@ -94,10 +87,17 @@ class EditValueDescriber:
                 str(nodegroup_id), str(card_name or "")
             )
         self.language_names = language_names_by_code()
+        self.geometric_datatypes = set(
+            models.DDataType.objects.filter(isgeometric=True).values_list(
+                "datatype", flat=True
+            )
+        )
         self.nodes_by_nodegroup_id = {}
         for node in (
             models.Node.objects.filter(nodegroup_id__in=nodegroup_ids)
-            .exclude(datatype__in=EDIT_HISTORY_EXCLUDED_DATATYPES)
+            .exclude(
+                datatype__in=ReportConfig.excluded_datatypes - self.geometric_datatypes
+            )
             .order_by("cardxnodexwidget__sortorder")
         ):
             self.nodes_by_nodegroup_id.setdefault(str(node.nodegroup_id), []).append(
@@ -108,7 +108,7 @@ class EditValueDescriber:
         raw_value = tile_data.get(str(node.pk))
         if raw_value is None:
             return ""
-        if node.datatype == GEOJSON_DATATYPE:
+        if node.datatype in self.geometric_datatypes:
             return describe_feature_collection(raw_value)
         if is_localized_text(raw_value):
             return describe_localized_text(raw_value, self.language_names)

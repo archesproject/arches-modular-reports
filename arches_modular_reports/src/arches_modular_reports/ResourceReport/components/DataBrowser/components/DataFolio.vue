@@ -71,9 +71,7 @@ const {
     matchedByAncestor: boolean;
     selectedTileId: string | null;
     isEditable: boolean;
-    // True while something elsewhere has jumped to this folio.
     isRevealed?: boolean;
-    // The reader's language, and names for values in any other.
     activeLanguage?: string;
     languageNames?: Record<string, string>;
 }>();
@@ -266,8 +264,6 @@ function displayValue(tile: AliasedTileData, nodeAlias: string): string {
     return nodeText(aliasedNodeDataOf(tile, nodeAlias));
 }
 
-// Each language's text, when any is outside the active language; otherwise
-// none, and the value shows as a single line.
 function multilingualTexts(
     tile: AliasedTileData,
     nodeAlias: string,
@@ -883,9 +879,9 @@ function onDragEnd(): void {
 .data-folio-header.data-folio-header-pending,
 .data-folio-tile-row.data-folio-tile-pending,
 .data-folio-fields.data-folio-tile-pending .data-folio-field {
-    background: var(--p-yellow-200);
-    color: var(--p-surface-900);
-    border-bottom: 0.15rem solid var(--p-yellow-400);
+    border-block-end: 0.15rem solid var(--resource-report-pending-border-color);
+    background: var(--resource-report-pending-background);
+    color: var(--resource-report-pending-color);
 }
 
 .data-folio-header-pending .data-folio-icon,
@@ -893,7 +889,7 @@ function onDragEnd(): void {
 .data-folio-tile-pending .data-folio-tile-number,
 .data-folio-tile-pending .data-folio-field dt,
 .data-folio-tile-pending .data-folio-field dd {
-    color: var(--p-surface-900);
+    color: var(--resource-report-pending-color);
 }
 
 .data-folio-header .data-folio-toggle,
@@ -1092,7 +1088,6 @@ function onDragEnd(): void {
     white-space: nowrap;
 }
 
-/* One line per language, each named unless it's the reader's own. */
 .data-folio-field dd.data-folio-field-languages {
     display: flex;
     flex-direction: column;

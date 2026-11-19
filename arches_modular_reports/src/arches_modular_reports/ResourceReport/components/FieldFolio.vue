@@ -25,7 +25,6 @@ const { $gettext } = useGettext();
 const {
     reportData,
     hasNodegroup,
-    isCardHidden,
     nodegroupWidgetConfig,
     cardName,
     tiles,
@@ -73,7 +72,6 @@ const isDeleted = computed(
 
 <template>
     <div
-        v-if="!isCardHidden"
         ref="folio"
         class="field-folio"
         :class="{ 'field-folio-flash': isFlashed }"

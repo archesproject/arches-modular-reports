@@ -30,7 +30,6 @@ const {
     reportData,
     nodegroupAlias,
     hasNodegroup,
-    isCardHidden,
     nodegroupWidgetConfig,
     cardName,
     parentTileId,
@@ -129,7 +128,6 @@ function toggleOpen(): void {
 
 <template>
     <div
-        v-if="!isCardHidden"
         ref="folio"
         class="report-folio-anchor"
         :class="{
@@ -503,7 +501,7 @@ function toggleOpen(): void {
 .report-folio-entry {
     display: flex;
     flex-direction: column;
-    padding-bottom: 1.5rem;
+    padding-block-end: 1.5rem;
 }
 
 .report-folio-entry {

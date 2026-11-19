@@ -38,7 +38,6 @@ const entries = ref<EditHistoryEntry[]>([]);
 const nextCursor = ref<string | null>(null);
 const isLoading = ref(false);
 const loadError = ref<Error | null>(null);
-// Entries showing their unchanged fields too; the rest show only changes.
 const fullyShownEntryIds = ref(new Set<string>());
 let latestHistoryRequestNumber = 0;
 
@@ -128,7 +127,6 @@ function unchangedFieldCount(entry: EditHistoryEntry): number {
     return entry.values.filter((value) => !value.changed).length;
 }
 
-// Only an entry mixing changed and unchanged fields has anything to hide.
 function hasHideableFields(entry: EditHistoryEntry): boolean {
     const unchangedCount = unchangedFieldCount(entry);
     return unchangedCount > 0 && unchangedCount < entry.values.length;
@@ -138,7 +136,6 @@ function isShowingAllFields(entry: EditHistoryEntry): boolean {
     return fullyShownEntryIds.value.has(entry.editlogid);
 }
 
-// Rich text values arrive as HTML; show what a reader would see.
 function valueText(value: string | null): string {
     return value === null ? "" : plainText(value);
 }
@@ -150,7 +147,6 @@ function displayedValues(entry: EditHistoryEntry): EditHistoryValue[] {
     return entry.values.filter((value) => value.changed);
 }
 
-// Marked only where unchanged fields are listed alongside it.
 function isMarkedChanged(
     entry: EditHistoryEntry,
     value: EditHistoryValue,
@@ -194,13 +190,11 @@ function toggleAllFields(entry: EditHistoryEntry): void {
                 :placeholder="$gettext('Filter by card, user or change type…')"
                 :aria-label="$gettext('Filter the edit history')"
             />
-            <!-- Not an InputIcon: that wrapper is aria-hidden, which would hide
-                 the button from assistive technology. `p-inputicon` still
-                 positions it at the end of the field. -->
-            <button
+            <Button
                 v-if="filterText"
-                type="button"
-                class="p-inputicon pi pi-times edit-history-filter-clear"
+                class="p-inputicon edit-history-filter-clear"
+                icon="pi pi-times"
+                variant="text"
                 :aria-label="$gettext('Clear filter')"
                 :title="$gettext('Clear filter')"
                 @click="filterText = ''"
@@ -411,15 +405,22 @@ function toggleAllFields(entry: EditHistoryEntry): void {
 }
 
 .edit-history-filter-clear {
+    inline-size: auto;
+    block-size: auto;
     padding: 0;
     border: none;
     background: none;
     color: inherit;
     font-size: inherit;
-    cursor: pointer;
 }
 
-.edit-history-filter-clear:hover {
+.edit-history-filter-clear :deep(.p-button-icon) {
+    font-size: inherit;
+}
+
+.edit-history-filter-clear:not(:disabled):hover {
+    border: none;
+    background: none;
     color: var(--p-text-color);
 }
 
@@ -546,8 +547,6 @@ function toggleAllFields(entry: EditHistoryEntry): void {
     white-space: nowrap;
 }
 
-/* A wide panel (e.g. expanded to full width) shows Before and After side by
-   side. */
 @container (min-inline-size: 60rem) {
     .edit-history-diff {
         display: grid;

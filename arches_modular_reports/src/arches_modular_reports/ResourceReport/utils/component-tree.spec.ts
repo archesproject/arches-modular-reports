@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import {
     containsFolios,
-    isHiddenNode,
     folioLocations,
     nodegroupAliasesWithin,
     reportTabGroups,
+    withoutHiddenCards,
 } from "@/arches_modular_reports/ResourceReport/utils/component-tree.ts";
 
 import type { NodegroupWidgetConfig } from "@/arches_vue_components/types.ts";
@@ -140,7 +140,7 @@ describe("containsFolios", () => {
     });
 });
 
-describe("isHiddenNode", () => {
+describe("withoutHiddenCards", () => {
     const configs = {
         names: { card: { visible: true } },
         statements: { card: { visible: false } },
@@ -157,20 +157,20 @@ describe("isHiddenNode", () => {
         return { component: "app/ReportSection", config: { components } };
     }
 
-    it("hides a folio whose card is hidden, not one that's missing", () => {
-        expect(isHiddenNode(folio("statements"), configs)).toBe(true);
-        expect(isHiddenNode(folio("names"), configs)).toBe(false);
-        expect(isHiddenNode(folio("unknown"), configs)).toBe(false);
-    });
-
-    it("hides a container only when everything in it is hidden", () => {
-        expect(isHiddenNode(section(folio("statements")), configs)).toBe(true);
+    it("drops folios whose card is hidden and containers left empty", () => {
         expect(
-            isHiddenNode(section(folio("statements"), folio("names")), configs),
-        ).toBe(false);
-        expect(
-            isHiddenNode(section(section(folio("statements"))), configs),
-        ).toBe(true);
-        expect(isHiddenNode(section(), configs)).toBe(false);
+            withoutHiddenCards(
+                [
+                    section(section(folio("statements"))),
+                    section(
+                        folio("statements"),
+                        folio("names"),
+                        folio("unknown"),
+                    ),
+                    section(),
+                ],
+                configs,
+            ),
+        ).toEqual([section(folio("names"), folio("unknown")), section()]);
     });
 });

@@ -21,14 +21,10 @@ export interface CompletenessCard {
 }
 
 export interface CompletenessGroup {
-    // Null for the cards the report places in no tab.
     tabLabel: string | null;
     cards: CompletenessCard[];
 }
 
-// One entry per visible top-level card. A card has data once any of its tiles
-// holds a value (its own or a child tile's) and is not pending deletion, so
-// staged edits show up before they are applied.
 export function completenessCards(
     nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>,
     aliasedData: AliasedData,
@@ -54,8 +50,6 @@ export function completenessCards(
     );
 }
 
-// Cards in report-tab order, each in the first tab that shows it or any of its
-// descendants; cards in no tab follow, in graph order.
 export function groupCardsByReportTab(
     cards: CompletenessCard[],
     reportTabs: ReportTabGroup[],
@@ -73,10 +67,10 @@ export function groupCardsByReportTab(
                 nodegroupWidgetConfigs,
                 nodegroupAlias,
             ).at(-1);
-            const card =
-                topLevelAlias === undefined
-                    ? undefined
-                    : cardsByAlias.get(topLevelAlias);
+            if (topLevelAlias === undefined) {
+                continue;
+            }
+            const card = cardsByAlias.get(topLevelAlias);
             if (card !== undefined && !placedAliases.has(card.nodegroupAlias)) {
                 placedAliases.add(card.nodegroupAlias);
                 tabCards.push(card);

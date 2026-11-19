@@ -17,6 +17,7 @@ import type {
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const VISIBLE_THUMBNAIL_COUNT = 5;
+const THUMBNAIL_STRIP_INLINE_SIZE = `${VISIBLE_THUMBNAIL_COUNT * 6.8}rem`;
 
 const { component } = defineProps<{
     component: ComponentNode<ImagesPanelConfig>;
@@ -122,9 +123,11 @@ async function loadMore(): Promise<void> {
                         >
                             <span>
                                 {{
-                                    $gettext("Related %{model}:", {
-                                        model: item.graph_name,
-                                    })
+                                    $gettext(
+                                        "Related %{model}:",
+                                        { model: item.graph_name },
+                                        true,
+                                    )
                                 }}
                             </span>
                             <Button
@@ -177,9 +180,6 @@ async function loadMore(): Promise<void> {
                     </figcaption>
                 </figure>
             </template>
-            <!-- Decorative: Galleria labels each thumbnail button with its
-                 position, and repeating the main image's alt text here
-                 would make screen readers read it twice. -->
             <template #thumbnail="{ item }">
                 <img
                     class="images-thumbnail"
@@ -235,12 +235,12 @@ async function loadMore(): Promise<void> {
     flex-wrap: wrap;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.5rem 1rem;
+    padding-block: 0.5rem;
+    padding-inline: 1rem;
     color: var(--p-text-muted-color);
     font-size: 1.4rem;
 }
 
-/* The link's own inline padding would widen the caption's gap. */
 .images-caption .p-button-link {
     padding-inline: 0;
 }
@@ -251,14 +251,9 @@ async function loadMore(): Promise<void> {
     margin-inline-start: auto;
 }
 
-/*
- * Galleria splits the strip into one equal slot per visible thumbnail and
- * scrolls it by a slot at a time. Sizing the strip to the thumbnails, instead
- * of the panel, packs them at the start without breaking that scrolling.
- */
 .images :deep(.p-galleria-thumbnail-items) {
     flex-shrink: 0;
-    inline-size: calc(v-bind(VISIBLE_THUMBNAIL_COUNT) * 6.8rem);
+    inline-size: v-bind(THUMBNAIL_STRIP_INLINE_SIZE);
 }
 
 .images-thumbnail {
@@ -268,7 +263,6 @@ async function loadMore(): Promise<void> {
     border-radius: 0.2rem;
 }
 
-/* A wide panel (e.g. expanded to full width) gives the image more height. */
 @container (min-inline-size: 80rem) {
     .images-main {
         max-block-size: 64rem;

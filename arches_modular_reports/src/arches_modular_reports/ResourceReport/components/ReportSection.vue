@@ -2,7 +2,6 @@
 import { computed } from "vue";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
-import { isHiddenNode } from "@/arches_modular_reports/ResourceReport/utils/component-tree.ts";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
 
@@ -24,19 +23,11 @@ const label = computed(() =>
     ),
 );
 
-const childNodes = computed(() =>
-    (component.config.components ?? []).filter(
-        (childNode) =>
-            !isHiddenNode(childNode, reportData.value.nodegroupWidgetConfigs),
-    ),
-);
+const childNodes = computed(() => component.config.components ?? []);
 </script>
 
 <template>
-    <section
-        v-if="!isHiddenNode(component, reportData.nodegroupWidgetConfigs)"
-        class="report-section"
-    >
+    <section class="report-section">
         <h3
             v-if="label"
             class="report-section-label"

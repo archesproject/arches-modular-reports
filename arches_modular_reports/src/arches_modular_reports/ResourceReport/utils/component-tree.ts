@@ -9,12 +9,6 @@ import type {
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const REPORT_TABS_COMPONENT_NAME = "ReportTabs";
-// The report's folios, which carry the add, edit and delete links.
-const FOLIO_COMPONENT_NAMES = new Set([
-    "ReportFolio",
-    "FieldFolio",
-    "MapFolio",
-]);
 
 type TreeNode = ComponentNode<
     LabelledConfig & FolioConfig & Record<string, unknown>
@@ -49,20 +43,45 @@ export function componentPaths(nodes: ComponentNode<object>[]): string[] {
 }
 
 export function containsFolios(node: ComponentNode<object>): boolean {
-    return descendantNodes([node]).some((descendantNode) =>
-        FOLIO_COMPONENT_NAMES.has(
-            descendantNode.component.split("/").at(-1) ?? "",
-        ),
-    );
+    return nodegroupAliasesWithin(node).size > 0;
 }
 
-/*
- * Hidden in the graph, so not rendered: a folio whose card is hidden, or a
- * section, stack or tab with nothing left to show. The config keeps its place,
- * so making the card visible puts it back. A folio whose nodegroup is missing
- * altogether isn't hidden; it reports the problem.
- */
-export function isHiddenNode(
+export function withoutHiddenCards<TNode extends ComponentNode<object>>(
+    nodes: TNode[],
+    nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>,
+): TNode[] {
+    return nodes
+        .filter((node) => !isHiddenNode(node, nodegroupWidgetConfigs))
+        .map((node) => withoutHiddenChildren(node, nodegroupWidgetConfigs));
+}
+
+function withoutHiddenChildren<TNode extends ComponentNode<object>>(
+    node: TNode,
+    nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>,
+): TNode {
+    if (!isComponentNode(node)) {
+        return node;
+    }
+    const config = Object.fromEntries(
+        Object.entries(node.config).map(([configKey, configValue]) => [
+            configKey,
+            withoutHiddenCardsIn(configValue, nodegroupWidgetConfigs),
+        ]),
+    );
+    return { ...node, config };
+}
+
+function withoutHiddenCardsIn(
+    configValue: unknown,
+    nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>,
+): unknown {
+    if (Array.isArray(configValue) && configValue.some(isComponentNode)) {
+        return withoutHiddenCards(configValue, nodegroupWidgetConfigs);
+    }
+    return configValue;
+}
+
+function isHiddenNode(
     node: ComponentNode<object>,
     nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>,
 ): boolean {
@@ -93,9 +112,6 @@ export function nodegroupAliasesWithin(
     return nodegroupAliases;
 }
 
-// Every tab of every ReportTabs in the tree, in report order, each with the
-// nodegroups it shows. A nodegroup shown in more than one tab belongs to the
-// first.
 export function reportTabGroups(
     nodes: ComponentNode<object>[],
     activeLanguage: string,

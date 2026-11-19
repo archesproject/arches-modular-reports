@@ -49,6 +49,7 @@ from arches_modular_reports.app.utils.report_data_utils import (
     language_names_by_code,
 )
 from arches_modular_reports.app.utils.resource_copy_utils import (
+    can_rename_copies,
     name_value,
     rename_copy,
 )
@@ -171,6 +172,9 @@ class ReportContextView(APIBase):
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
 
         user_can_edit = user_can_edit_resource(request.user, resource=resource)
+        latest_readable_edit = None
+        if user_can_edit:
+            latest_readable_edit = latest_edit(resource.pk, request.user)
 
         return JSONResponse(
             {
@@ -187,9 +191,8 @@ class ReportContextView(APIBase):
                 "language_dir": (
                     "rtl" if get_language_info(get_language())["bidi"] else "ltr"
                 ),
-                # Names the language of multilingual values not in the
-                # active language.
                 "languages": language_names_by_code(),
+                "latest_edit": latest_readable_edit,
                 "permissions": {
                     "can_edit": user_can_edit,
                     "can_delete": user_can_delete_resource(
@@ -197,7 +200,6 @@ class ReportContextView(APIBase):
                     ),
                     "can_copy": user_can_edit
                     and group_required(request.user, "Resource Editor"),
-                    # Matches the group core's add-resource page requires.
                     "can_create": group_required(request.user, "Resource Editor"),
                     "is_reviewer": user_is_resource_reviewer(
                         request.user, resource=resource
@@ -211,14 +213,31 @@ ARCHES_SEARCH_PLUGIN_SLUG = "arches-search"
 
 
 def search_url():
-    """The arches-search plugin page when it's installed, else core search,
-    or None when the project routes neither."""
     try:
         if models.Plugin.objects.filter(slug=ARCHES_SEARCH_PLUGIN_SLUG).exists():
             return reverse("plugins", kwargs={"slug": ARCHES_SEARCH_PLUGIN_SLUG})
         return reverse("search_home")
     except NoReverseMatch:
         return None
+
+
+def readable_edits(resourceid, user):
+    readable_nodegroup_ids = {
+        str(nodegroup_id)
+        for nodegroup_id in get_nodegroups_by_perm(user, "models.read_nodegroup")
+    }
+    return (
+        models.EditLog.objects.filter(resourceinstanceid=str(resourceid))
+        .filter(Q(nodegroupid__isnull=True) | Q(nodegroupid__in=readable_nodegroup_ids))
+        .order_by("-timestamp", "-editlogid")
+    )
+
+
+def latest_edit(resourceid, user):
+    edit = readable_edits(resourceid, user).first()
+    if edit is None:
+        return None
+    return {"timestamp": edit.timestamp, "user": edit_user_name(edit)}
 
 
 @method_decorator(can_read_resource_instance, name="dispatch")
@@ -231,24 +250,13 @@ class EditHistoryView(APIBase):
                 _("Permission Denied"), status=HTTPStatus.FORBIDDEN
             )
 
-        readable_nodegroup_ids = {
-            str(nodegroup_id)
-            for nodegroup_id in get_nodegroups_by_perm(
-                request.user, "models.read_nodegroup"
-            )
-        }
-        edits = (
-            models.EditLog.objects.filter(resourceinstanceid=str(resourceid))
-            .filter(
-                Q(nodegroupid__isnull=True) | Q(nodegroupid__in=readable_nodegroup_ids)
-            )
-            .order_by("-timestamp", "-editlogid")
-        )
+        edits = readable_edits(resourceid, request.user)
         if query := request.GET.get("q", "").strip():
             edits = edits.filter(
                 Q(user_firstname__icontains=query)
                 | Q(user_lastname__icontains=query)
                 | Q(user_username__icontains=query)
+                | Q(edittype__icontains=query)
                 | Q(
                     nodegroupid__in=models.CardModel.objects.annotate(
                         card_name_text=KT(f"name__{get_language()}"),
@@ -323,8 +331,6 @@ class ResourceCopiesView(APIBase):
             resource = models.ResourceInstance.objects.get(pk=resourceid)
         except models.ResourceInstance.DoesNotExist:
             return JSONErrorResponse(status=HTTPStatus.NOT_FOUND)
-        # Core's copy view logs "Copied to" on the original, and "Copied from"
-        # with the same edit type on the copy.
         copy_edits = models.EditLog.objects.filter(
             resourceinstanceid=str(resourceid), edittype="copy", note="Copied to"
         ).order_by("-timestamp", "-editlogid")
@@ -348,7 +354,6 @@ class ResourceCopiesView(APIBase):
             }
             for edit in batch:
                 copied_resource = copies_by_id.get(self.copied_resource_id(edit))
-                # Deleted copies stay listed; existing ones need read access.
                 if copied_resource is not None and not user_can_read_resource(
                     request.user, resource=copied_resource
                 ):
@@ -366,9 +371,12 @@ class ResourceCopiesView(APIBase):
             next_cursor = json.dumps(
                 [page_copies[-1]["timestamp"].isoformat(), page_copies[-1]["editlogid"]]
             )
+        default_name = None
+        if can_rename_copies(resource):
+            default_name = _("Copy of %(name)s") % {"name": name_value(resource)}
         return JSONResponse(
             {
-                "default_name": _("Copy of %(name)s") % {"name": name_value(resource)},
+                "default_name": default_name,
                 "results": page_copies,
                 "next_cursor": next_cursor,
             }
@@ -383,17 +391,23 @@ class ResourceCopiesView(APIBase):
                 _("Permission Denied"), status=HTTPStatus.FORBIDDEN
             )
         name = str(JSONDeserializer().deserialize(request.body).get("name", "")).strip()
-        if not name:
+        original_resource = Resource.objects.get(pk=resourceid)
+        is_renamable = can_rename_copies(original_resource)
+        if is_renamable and not name:
             return JSONErrorResponse(
                 _("Enter a name for the copy."), status=HTTPStatus.BAD_REQUEST
             )
+        if name and not is_renamable:
+            return JSONErrorResponse(
+                _("Copies of this resource can't be renamed."),
+                status=HTTPStatus.BAD_REQUEST,
+            )
 
         with transaction.atomic():
-            original_resource = Resource.objects.get(pk=resourceid)
-            # The copy shares the original's descriptors dict until it saves.
             original_descriptors = copy.deepcopy(original_resource.descriptors)
             copied_resource = original_resource.copy()
-            rename_copy(copied_resource, name)
+            if is_renamable:
+                rename_copy(copied_resource, name)
             transaction_id = uuid.uuid4()
             copied_resource.save(
                 transaction_id=transaction_id,
@@ -428,22 +442,24 @@ class ResourceCopiesView(APIBase):
     def serialize_copy(self, edit, copied_resource):
         if copied_resource is None:
             logged_descriptors = (edit.newvalue or {}).get("descriptors") or {}
-            language_descriptors = logged_descriptors.get(get_language()) or next(
-                iter(logged_descriptors.values()), {}
-            )
+            language_descriptors = logged_descriptors.get(get_language())
+            if not language_descriptors:
+                every_language_descriptors = list(logged_descriptors.values())
+                if every_language_descriptors:
+                    language_descriptors = every_language_descriptors[0]
+                else:
+                    language_descriptors = {}
             name = language_descriptors.get("name") or ""
+            report_url = None
         else:
             name = str(copied_resource.name or "")
+            report_url = reverse("resource_report", args=[copied_resource.pk])
         return {
             "editlogid": str(edit.editlogid),
             "resourceid": self.copied_resource_id(edit),
             "name": name,
             "is_deleted": copied_resource is None,
-            "report_url": (
-                None
-                if copied_resource is None
-                else reverse("resource_report", args=[copied_resource.pk])
-            ),
+            "report_url": report_url,
             "user": edit_user_name(edit),
             "timestamp": edit.timestamp,
         }

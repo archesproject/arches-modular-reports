@@ -108,11 +108,11 @@ function closeDrawer(): void {
                 variant="outlined"
                 severity="secondary"
                 size="small"
+                badge-severity="secondary"
                 :rounded="true"
                 :icon="trigger.panel.config.icon ?? undefined"
                 :label="trigger.label"
                 :badge="trigger.countLabel"
-                badge-severity="secondary"
                 :aria-pressed="openPanel === trigger.panel"
                 @click="togglePanel(trigger.panel)"
             />
@@ -126,8 +126,6 @@ function closeDrawer(): void {
                     :component="bodyNode"
                 />
             </div>
-            <!-- Moving between the stage and the overlay host keeps the open
-                 panel mounted, so its loaded entries and filter survive. -->
             <Teleport
                 :to="overlayHost ?? 'body'"
                 :disabled="!isPanelExpanded"
@@ -206,8 +204,6 @@ function closeDrawer(): void {
     min-block-size: 0;
 }
 
-/* Matches the workspace tab bar and editor bar: one row of fixed-height
-   triggers fits the shared bar size, and the bar only grows if they wrap. */
 .report-drawer-triggers {
     display: flex;
     flex-wrap: wrap;
@@ -221,7 +217,6 @@ function closeDrawer(): void {
     background: var(--resource-report-muted-background);
 }
 
-/* A fixed height, so a count badge can't make a trigger (or the bar) taller. */
 .report-drawer-triggers > .p-button {
     --p-button-label-font-weight: 600;
     gap: 0.6rem;
@@ -248,7 +243,6 @@ function closeDrawer(): void {
     line-height: 1.8rem;
 }
 
-/* The trigger for the open panel stays highlighted, including on hover. */
 .report-drawer-triggers > .p-button[aria-pressed="true"],
 .report-drawer-triggers > .p-button[aria-pressed="true"]:not(:disabled):hover {
     border-color: var(--resource-report-drawer-trigger-open-background);
@@ -272,8 +266,6 @@ function closeDrawer(): void {
     overflow: auto;
 }
 
-/* Both may be teleported into the workspace overlay host, which ignores
-   pointer events so the panes under it stay usable. */
 .report-drawer-scrim {
     position: absolute;
     inset: 0;

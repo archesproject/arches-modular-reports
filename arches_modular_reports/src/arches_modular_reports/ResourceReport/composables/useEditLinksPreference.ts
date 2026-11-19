@@ -4,7 +4,6 @@ import type { Ref } from "vue";
 
 const STORAGE_KEY = "arches-modular-reports-edit-links-shown";
 
-// Remembered per browser; shown unless this browser chose to hide them.
 export function useEditLinksPreference(): {
     areEditLinksShown: Ref<boolean>;
     toggleEditLinks: () => void;
@@ -15,8 +14,7 @@ export function useEditLinksPreference(): {
         try {
             localStorage.setItem(STORAGE_KEY, String(isShown));
         } catch {
-            // Storage can be unavailable (private windows, blocked site data);
-            // the choice then lasts for this page only.
+            return;
         }
     });
 

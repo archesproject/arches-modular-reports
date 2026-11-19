@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, useTemplateRef } from "vue";
 import { useGettext } from "vue3-gettext";
 
+import Button from "openvue/button";
 import IconField from "openvue/iconfield";
 import InputIcon from "openvue/inputicon";
 import InputText from "openvue/inputtext";
@@ -64,8 +65,6 @@ const folios = computed(() =>
         ),
 );
 
-// A filter that hides the folio being jumped to is cleared, so it shows. Local,
-// so a jump made while the browser is open stays in it.
 onMounted(() => {
     unregisterRevealer = reportData.value.folioNavigation.registerRevealer({
         isLocal: true,
@@ -88,13 +87,11 @@ onUnmounted(() => {
     unregisterFolioByAlias.clear();
 });
 
-// Applied at once, not after the typing delay.
 function clearFilter(): void {
     filterText.value = "";
     appliedFilterText.value = "";
 }
 
-// The clear button goes once the filter is empty, so focus moves to the field.
 function clearFilterFromButton(): void {
     clearFilter();
     (filterInput.value?.$el as HTMLInputElement | undefined)?.focus();
@@ -130,13 +127,11 @@ function trackFolioElement(
                     :placeholder="$gettext('Filter branches, groups, fields…')"
                     :aria-label="$gettext('Filter the data')"
                 />
-                <!-- Not an InputIcon: that wrapper is aria-hidden, which would
-                     hide the button from assistive technology. `p-inputicon`
-                     still positions it at the end of the field. -->
-                <button
+                <Button
                     v-if="filterText"
-                    type="button"
-                    class="p-inputicon pi pi-times data-browser-filter-clear"
+                    class="p-inputicon data-browser-filter-clear"
+                    icon="pi pi-times"
+                    variant="text"
                     :aria-label="$gettext('Clear filter')"
                     :title="$gettext('Clear filter')"
                     @click="clearFilterFromButton"
@@ -156,7 +151,6 @@ function trackFolioElement(
             }}
         </p>
         <div class="data-browser-folios">
-            <!-- Focusable so jumping here from elsewhere moves focus too. -->
             <div
                 v-for="folio in folios"
                 :key="folio.nodegroupAlias"
@@ -227,13 +221,21 @@ function trackFolioElement(
 }
 
 .data-browser-filter-bar .data-browser-filter-clear {
+    inline-size: auto;
+    block-size: auto;
     padding: 0;
     border: none;
     background: none;
-    cursor: pointer;
+    color: var(--p-text-muted-color);
 }
 
-.data-browser-filter-bar .data-browser-filter-clear:hover {
+.data-browser-filter-bar .data-browser-filter-clear :deep(.p-button-icon) {
+    font-size: inherit;
+}
+
+.data-browser-filter-bar .data-browser-filter-clear:not(:disabled):hover {
+    border: none;
+    background: none;
     color: var(--p-text-color);
 }
 
@@ -254,7 +256,6 @@ function trackFolioElement(
     outline-offset: 0.2rem;
 }
 
-/* Matches the report folios' "you've arrived" flash. */
 .data-browser-folio-flash {
     animation: data-browser-folio-flash 1.6s ease-out;
 }

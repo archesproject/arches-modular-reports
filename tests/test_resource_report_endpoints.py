@@ -132,7 +132,7 @@ class ResourceReportEndpointTests(TestCase):
         self.assertEqual(name_value["before"], "Old")
         self.assertEqual(name_value["after"], "New")
 
-    def test_edit_history_filters_by_user_and_card_name(self):
+    def test_edit_history_filters_by_user_card_name_and_change_type(self):
         EditLog.objects.create(
             resourceinstanceid=str(self.resource.pk),
             edittype="create",
@@ -150,6 +150,7 @@ class ResourceReportEndpointTests(TestCase):
 
         self.assertEqual(matching_users("lovelace"), ["Ada Lovelace"])
         self.assertEqual(matching_users("NAMES"), ["Ada Lovelace"])
+        self.assertEqual(matching_users("create"), ["Grace Hopper"])
 
     def test_related_resource_groups_for_listed_models_and_query(self):
         ResourceInstance.objects.filter(pk=self.related_resource.pk).update(
@@ -436,6 +437,7 @@ class ResourceReportEndpointTests(TestCase):
         self.assertEqual(
             context_response.json()["graph"]["graphid"], str(self.graph.pk)
         )
+        self.assertIsNone(context_response.json()["latest_edit"])
 
         history_response = self.client.get(
             reverse("api_edit_history", args=[self.resource.pk])
@@ -561,7 +563,7 @@ class ResourceReportEndpointTests(TestCase):
         self.assertEqual(name_value["before"], "Old")
         self.assertEqual(name_value["after"], "Neu (German)")
 
-    def test_report_context_names_the_languages(self):
+    def test_report_context_names_the_languages_and_latest_edit(self):
         Language.objects.get_or_create(
             code="de", defaults={"name": "German", "default_direction": "ltr"}
         )
@@ -572,6 +574,7 @@ class ResourceReportEndpointTests(TestCase):
         )
 
         self.assertEqual(response.json()["languages"]["de"], "German")
+        self.assertEqual(response.json()["latest_edit"]["user"], "Ada Lovelace")
 
     def add_name_descriptor(self):
         template = {"nodegroup_id": str(self.names.pk), "string_template": ""}
@@ -616,8 +619,6 @@ class ResourceReportEndpointTests(TestCase):
         self.add_name_descriptor()
         self.add_name_tile("Original", 0)
         self.add_name_tile("Alternate", 1)
-        # Saving tiles reads nodes from the published graph, and saves by
-        # non-reviewers become provisional edits.
         Graph.objects.get(pk=self.graph.pk).publish()
         self.superuser.groups.add(
             Group.objects.get_or_create(name="Resource Reviewer")[0]
@@ -654,9 +655,16 @@ class ResourceReportEndpointTests(TestCase):
             reverse("resource_report", args=[copied_resource.pk]),
         )
 
-    def test_copy_requires_a_name_and_edit_permission(self):
+    def test_copy_takes_a_name_only_when_copies_can_be_renamed(self):
         copies_url = reverse("api_resource_copies", args=[self.resource.pk])
         self.client.force_login(self.superuser)
+        response = self.client.post(
+            copies_url, {"name": "Copy"}, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIsNone(self.client.get(copies_url).json()["default_name"])
+
+        self.add_name_descriptor()
         response = self.client.post(
             copies_url, {"name": " "}, content_type="application/json"
         )

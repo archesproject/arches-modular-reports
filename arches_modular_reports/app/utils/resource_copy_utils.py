@@ -10,7 +10,6 @@ TEMPLATE_TOKEN = re.compile(r"<(.*?)>")
 
 
 def name_node(graph_id):
-    """The string node the graph's name descriptor starts with, if any."""
     descriptor_function = models.FunctionXGraph.objects.filter(
         graph_id=graph_id, function__functiontype="primarydescriptors"
     ).first()
@@ -23,8 +22,6 @@ def name_node(graph_id):
     string_nodes = models.Node.objects.filter(
         graph_id=graph_id, datatype="string", source_identifier__isnull=True
     )
-    # The multi-card descriptor names nodes by alias; the default descriptor
-    # names them by node name within its configured nodegroup.
     if node := string_nodes.filter(alias=tokens[0]).first():
         return node
     if nodegroup_id := name_config.get("nodegroup_id"):
@@ -32,11 +29,20 @@ def name_node(graph_id):
     return None
 
 
+def can_rename_copies(resource):
+    node = name_node(resource.graph_id)
+    if node is None:
+        return False
+    if node.nodegroup.parentnodegroup_id is None:
+        return True
+    return models.TileModel.objects.filter(
+        resourceinstance_id=resource.pk, nodegroup_id=node.nodegroup_id
+    ).exists()
+
+
 def name_value(resource):
-    """The resource's name without the rest of its descriptor template."""
     node = name_node(resource.graph_id)
     if node is not None:
-        # Descriptors read the first tile of the nodegroup, as here.
         tile = (
             models.TileModel.objects.filter(
                 resourceinstance_id=resource.pk, nodegroup_id=node.nodegroup_id
@@ -56,11 +62,7 @@ def name_value(resource):
 
 
 def rename_copy(copied_resource, name):
-    """Write `name` into the copy's name tile in the current language,
-    leaving its other names and languages as copied."""
     node = name_node(copied_resource.graph_id)
-    if node is None:
-        return
     name_tiles = [
         tile
         for tile in all_tiles(copied_resource.tiles)
@@ -68,13 +70,11 @@ def rename_copy(copied_resource, name):
     ]
     if name_tiles:
         name_tile = min(name_tiles, key=lambda tile: tile.sortorder or 0)
-    elif node.nodegroup.parentnodegroup_id is None:
+    else:
         name_tile = Tile.get_blank_tile_from_nodegroup_id(
             node.nodegroup_id, resourceid=copied_resource.pk
         )
         copied_resource.tiles.append(name_tile)
-    else:
-        return
     language = get_language()
     localized_value = dict(name_tile.data.get(str(node.pk)) or {})
     localized_value[language] = {

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 
 import EditorForm from "@/arches_modular_reports/ResourceReport/components/EditorPanel/components/EditorForm.vue";
 
+import { useAsideWidening } from "@/arches_modular_reports/ResourceReport/composables/useAsideWidening.ts";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 
 import type { ComponentNode } from "@/arches_modular_reports/ResourceReport/types.ts";
@@ -12,8 +13,19 @@ defineProps<{
 }>();
 
 const reportData = useReportData();
+const isAsideWidened = useAsideWidening();
 
 let unregisterEditor = (): void => undefined;
+
+watch(
+    () => reportData.value.editor.target,
+    (target) => {
+        if (isAsideWidened !== null) {
+            isAsideWidened.value = target !== null;
+        }
+    },
+    { immediate: true },
+);
 
 onMounted(() => {
     unregisterEditor = reportData.value.editor.register();

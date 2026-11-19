@@ -89,6 +89,7 @@ def curated_config():
                         report_component(
                             "SplitPane",
                             {
+                                "aside_size": 40,
                                 "main": [
                                     report_component(
                                         "ReportSection",
@@ -380,35 +381,16 @@ class ResourceReportConfigTests(TestCase):
                 with self.assertRaises(ValidationError):
                     ReportConfig(graph=self.graph, config=config).full_clean()
 
-    def test_map_header_options_are_checked(self):
-        def config_with_map_folio(**header_options):
-            config = curated_config()
-            report_folio = find_components(config, "ReportFolio")[0]
-            report_folio["component"] = component_path("MapFolio")
-            report_folio["config"].update(header_options)
-            return config
+    def test_an_aside_needs_a_numeric_size(self):
+        missing_size = curated_config()
+        del find_components(missing_size, "SplitPane")[0]["config"]["aside_size"]
+        text_size = curated_config()
+        find_components(text_size, "SplitPane")[0]["config"]["aside_size"] = "wide"
 
-        for header_options in (
-            {},
-            {"header_tools": [], "header_actions": []},
-            {"header_tools": ["basemap", "legend"], "header_actions": ["edit"]},
-        ):
-            with self.subTest(header_options=header_options):
-                ReportConfig(
-                    graph=self.graph, config=config_with_map_folio(**header_options)
-                ).full_clean()
-
-        for header_options in (
-            {"header_tools": ["map_tools"]},
-            {"header_tools": "basemap"},
-            {"header_actions": ["edit", "archive"]},
-        ):
-            with self.subTest(header_options=header_options):
+        for config in (missing_size, text_size):
+            with self.subTest(config=config):
                 with self.assertRaises(ValidationError):
-                    ReportConfig(
-                        graph=self.graph,
-                        config=config_with_map_folio(**header_options),
-                    ).full_clean()
+                    ReportConfig(graph=self.graph, config=config).full_clean()
 
     def test_empty_resource_report_config_is_valid(self):
         config = {

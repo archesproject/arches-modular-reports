@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from "vue";
+import { computed, ref, useId, watchEffect } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
@@ -27,12 +27,14 @@ defineProps<{
 
 const { $gettext } = useGettext();
 const reportData = useReportData();
+const copyNameInputId = useId();
 
 const copies = ref<ResourceCopy[]>([]);
 const nextCursor = ref<string | null>(null);
 const isLoadingCopies = ref(false);
 const copiesError = ref<Error | null>(null);
 const copyName = ref("");
+const isRenamable = ref(false);
 const isCopying = ref(false);
 const isConfirmingDelete = ref(false);
 const isDeleting = ref(false);
@@ -43,6 +45,9 @@ const permissions = computed(() => reportData.value.context.permissions);
 const lifecycleState = computed(() => reportData.value.context.lifecycle_state);
 const resourceInstanceId = computed(
     () => reportData.value.resource.resourceinstanceid,
+);
+const isCopyNameMissing = computed(
+    () => isRenamable.value && copyName.value.trim() === "",
 );
 const deleteWarning = computed(() => {
     if (reportData.value.changeSet.pendingChanges.value.length > 0) {
@@ -67,7 +72,8 @@ async function loadCopies(
         const copiesPage = await fetchResourceCopies(resourceId, cursor);
         if (cursor === null) {
             copies.value = copiesPage.results;
-            copyName.value = copiesPage.default_name;
+            isRenamable.value = copiesPage.default_name !== null;
+            copyName.value = copiesPage.default_name ?? "";
         } else {
             copies.value = [...copies.value, ...copiesPage.results];
         }
@@ -107,8 +113,6 @@ function confirmDelete(): void {
     isConfirmingDelete.value = true;
 }
 
-// The dialog stays open until the server answers, so a slow delete shows
-// progress and a failed one shows its error where the user is looking.
 async function deleteThisResource(): Promise<void> {
     isDeleting.value = true;
     deleteError.value = null;
@@ -195,25 +199,27 @@ async function deleteThisResource(): Promise<void> {
                 class="manage-copy-form"
                 @submit.prevent="createCopy"
             >
-                <label
-                    for="manage-copy-name"
-                    class="manage-field-label"
-                >
-                    {{ $gettext("Name of the copy") }}
-                </label>
-                <InputText
-                    id="manage-copy-name"
-                    v-model="copyName"
-                    class="manage-copy-name"
-                    required
-                />
+                <template v-if="isRenamable">
+                    <label
+                        class="manage-field-label"
+                        :for="copyNameInputId"
+                    >
+                        {{ $gettext("Name of the copy") }}
+                    </label>
+                    <InputText
+                        :id="copyNameInputId"
+                        v-model="copyName"
+                        class="manage-copy-name"
+                        :required="true"
+                    />
+                </template>
                 <Button
                     type="submit"
                     icon="pi pi-copy"
                     size="small"
                     :label="$gettext('Create Copy')"
                     :loading="isCopying"
-                    :disabled="copyName.trim() === ''"
+                    :disabled="isCopyNameMissing"
                 />
             </form>
             <Message
@@ -368,7 +374,6 @@ async function deleteThisResource(): Promise<void> {
     inline-size: 100%;
 }
 
-/* Matches the report editor panel's field labels. */
 .manage-field-label {
     color: var(--p-text-muted-color);
     font-size: 1.25rem;
@@ -446,7 +451,6 @@ async function deleteThisResource(): Promise<void> {
     margin: 0;
 }
 
-/* Matches the warning in the delete confirmation dialog. */
 .manage-note-message {
     inline-size: 100%;
     border-radius: 0.15rem;

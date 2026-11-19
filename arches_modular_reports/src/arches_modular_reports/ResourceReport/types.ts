@@ -57,8 +57,7 @@ export interface SplitPaneConfig extends LabelledConfig {
     main?: ComponentNode[];
     aside?: ComponentNode[];
     aside_footer?: ComponentNode[];
-    // The aside's starting share of the width, as a percentage (default 40).
-    aside_size?: number;
+    aside_size: number;
 }
 
 export interface StackConfig extends LabelledConfig, ContainerConfig {}
@@ -71,23 +70,17 @@ export interface FolioConfig {
 
 export interface MapFolioConfig extends FolioConfig {
     node_alias?: string;
-    // Map header buttons in the report; see MapFolio for the defaults.
-    header_tools?: string[];
-    header_actions?: string[];
 }
 
 export interface DrawerConfig extends ContainerConfig {
     panels?: ComponentNode<LabelledConfig>[];
 }
 
-// One tab of the report (a child of ReportTabs) and the nodegroups it shows,
-// in the order the report shows them.
 export interface ReportTabGroup {
     label: string;
     nodegroupAliases: string[];
 }
 
-// How many entries a drawer panel holds, from its first page of results.
 export interface DrawerPanelCount {
     count: number;
     hasMore: boolean;
@@ -131,14 +124,19 @@ export interface ReportGraph {
     color: string | null;
 }
 
+export interface LatestEdit {
+    timestamp: string;
+    user: string;
+}
+
 export interface ReportContext {
     graph: ReportGraph;
     lifecycle_state: LifecycleState;
     search_url: string | null;
     language: string;
     language_dir: "ltr" | "rtl";
-    // Language names by code, for naming values in other languages.
     languages: Record<string, string>;
+    latest_edit: LatestEdit | null;
     permissions: ReportPermissions;
 }
 
@@ -293,8 +291,6 @@ export interface ReportLifecycle {
 export interface FolioRevealer {
     contains: (nodegroupAlias: string) => boolean;
     reveal: (nodegroupAlias: string) => void;
-    // Reveals within the current view (e.g. clearing a filter) rather than
-    // switching to another tab; preferred over revealers that switch.
     isLocal?: boolean;
 }
 
@@ -355,7 +351,7 @@ export interface ResourceCopy {
 }
 
 export interface ResourceCopiesPage {
-    default_name: string;
+    default_name: string | null;
     results: ResourceCopy[];
     next_cursor: string | null;
 }

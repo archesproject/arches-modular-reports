@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, watch, watchEffect } from "vue";
+import { computed, useId } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
 
-import { fetchEditHistory } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { EMPTY_VALUE } from "@/arches_modular_reports/ResourceReport/constants.ts";
 import {
@@ -16,31 +15,25 @@ import {
     nodegroupTiles,
 } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
-import type {
-    ComponentNode,
-    EditHistoryEntry,
-} from "@/arches_modular_reports/ResourceReport/types.ts";
+import type { ComponentNode } from "@/arches_modular_reports/ResourceReport/types.ts";
 import type { CompletenessCard } from "@/arches_modular_reports/ResourceReport/utils/completeness.ts";
 
 defineProps<{
     component: ComponentNode;
 }>();
 
-const { $gettext, $ngettext } = useGettext();
+const { $gettext } = useGettext();
 const reportData = useReportData();
-
-const latestEdit = ref<EditHistoryEntry | null>(null);
-const isLoadingLatestEdit = ref(true);
-const latestEditError = ref<Error | null>(null);
-let latestEditRequestNumber = 0;
-
-const resourceInstanceId = computed(
-    () => reportData.value.resource.resourceinstanceid,
-);
+const titleId = useId();
+const overviewTitleId = useId();
+const emptyCardsTitleId = useId();
+const groupIdPrefix = useId();
 
 const isEditable = computed(
     () => reportData.value.canEdit && reportData.value.editor.isAvailable,
 );
+
+const latestEdit = computed(() => reportData.value.context.latest_edit);
 
 const cards = computed(() =>
     completenessCards(
@@ -61,12 +54,6 @@ const requiredEmptyCount = computed(
 );
 
 const lastUpdated = computed(() => {
-    if (isLoadingLatestEdit.value) {
-        return $gettext("Loading…");
-    }
-    if (latestEditError.value !== null) {
-        return $gettext("Unavailable");
-    }
     if (latestEdit.value === null) {
         return $gettext("No edits recorded");
     }
@@ -90,12 +77,10 @@ const emptySummary = computed(() => {
     if (requiredEmptyCount.value === 0) {
         return emptyCount;
     }
-    return $ngettext(
-        "%{count}, including %{required} required",
-        "%{count}, including %{required} required",
-        requiredEmptyCount.value,
-        { count: emptyCount, required: String(requiredEmptyCount.value) },
-    );
+    return $gettext("%{count}, including %{required} required", {
+        count: emptyCount,
+        required: String(requiredEmptyCount.value),
+    });
 });
 
 const emptyCardGroups = computed(() =>
@@ -103,57 +88,22 @@ const emptyCardGroups = computed(() =>
         emptyCards.value,
         reportData.value.reportTabs,
         reportData.value.nodegroupWidgetConfigs,
-    ).map((group, groupIndex) => ({
-        headingId: `record-summary-panel-group-${groupIndex}`,
-        label: groupLabel(group.tabLabel),
-        cards: group.cards.map((card) => ({
-            ...card,
-            isAddable: isAddable(card),
-        })),
-    })),
+    ).map((group, groupIndex) => {
+        const headingId = `${groupIdPrefix}-${groupIndex}`;
+        const label = groupLabel(group.tabLabel);
+        return {
+            headingId,
+            label,
+            labelledBy: label === "" ? undefined : headingId,
+            cards: group.cards.map((card) => ({
+                ...card,
+                isAddable: isAddable(card),
+                actionLabel: cardActionLabel(card),
+            })),
+        };
+    }),
 );
 
-watchEffect(() => {
-    loadLatestEdit(resourceInstanceId.value);
-});
-
-// Applying edits adds to the edit history, so the latest edit changes too.
-watch(
-    () => reportData.value.changeSet.isSaving.value,
-    (isSaving, wasSaving) => {
-        if (
-            wasSaving &&
-            !isSaving &&
-            reportData.value.changeSet.saveError.value === null
-        ) {
-            loadLatestEdit(resourceInstanceId.value);
-        }
-    },
-);
-
-async function loadLatestEdit(resourceId: string): Promise<void> {
-    latestEditRequestNumber += 1;
-    const requestNumber = latestEditRequestNumber;
-    isLoadingLatestEdit.value = true;
-    latestEditError.value = null;
-    try {
-        const historyPage = await fetchEditHistory(resourceId, null, "");
-        if (requestNumber === latestEditRequestNumber) {
-            latestEdit.value = historyPage.results[0] ?? null;
-        }
-    } catch (error) {
-        if (requestNumber === latestEditRequestNumber) {
-            latestEditError.value = error as Error;
-        }
-    } finally {
-        if (requestNumber === latestEditRequestNumber) {
-            isLoadingLatestEdit.value = false;
-        }
-    }
-}
-
-// A tab's own label; the leftover cards are "not in the report" only when the
-// report has tabs to be in, and go unheaded otherwise.
 function groupLabel(tabLabel: string | null): string {
     if (tabLabel !== null) {
         return tabLabel;
@@ -164,7 +114,6 @@ function groupLabel(tabLabel: string | null): string {
     return "";
 }
 
-// Same rule as the card's Add button in the data browser.
 function isAddable(card: CompletenessCard): boolean {
     return (
         isEditable.value &&
@@ -179,8 +128,17 @@ function isAddable(card: CompletenessCard): boolean {
     );
 }
 
-// Adds an entry to the card and opens it in the editor, as the card's Add
-// button does; a card that can't take another entry is shown instead.
+function cardActionLabel(card: CompletenessCard): string {
+    if (isAddable(card)) {
+        return $gettext("Add to %{card}", { card: card.name }, true);
+    }
+    return $gettext(
+        "Show %{card} in the data browser",
+        { card: card.name },
+        true,
+    );
+}
+
 async function addToCard(card: CompletenessCard): Promise<void> {
     reportData.value.folioNavigation.jumpToNodegroup(card.nodegroupAlias);
     if (!isAddable(card)) {
@@ -200,16 +158,14 @@ async function addToCard(card: CompletenessCard): Promise<void> {
 </script>
 
 <template>
-    <!-- The editor opens in this same column; it replaces the summary rather
-         than covering it. -->
     <section
         v-if="reportData.editor.target === null"
         class="record-summary-panel"
-        aria-labelledby="record-summary-panel-title"
+        :aria-labelledby="titleId"
     >
         <header class="record-summary-panel-bar">
             <h3
-                id="record-summary-panel-title"
+                :id="titleId"
                 class="record-summary-panel-caption"
             >
                 {{ $gettext("Record Summary") }}
@@ -218,10 +174,10 @@ async function addToCard(card: CompletenessCard): Promise<void> {
         <div class="record-summary-panel-body">
             <section
                 class="record-summary-panel-overview"
-                aria-labelledby="record-summary-panel-overview-title"
+                :aria-labelledby="overviewTitleId"
             >
                 <h4
-                    id="record-summary-panel-overview-title"
+                    :id="overviewTitleId"
                     class="record-summary-panel-heading"
                 >
                     {{ $gettext("Resource Summary") }}
@@ -255,10 +211,10 @@ async function addToCard(card: CompletenessCard): Promise<void> {
             </section>
             <section
                 class="record-summary-panel-empty-cards"
-                aria-labelledby="record-summary-panel-empty-title"
+                :aria-labelledby="emptyCardsTitleId"
             >
                 <h4
-                    id="record-summary-panel-empty-title"
+                    :id="emptyCardsTitleId"
                     class="record-summary-panel-heading"
                 >
                     {{ $gettext("Cards without data") }}
@@ -283,9 +239,7 @@ async function addToCard(card: CompletenessCard): Promise<void> {
                     </h5>
                     <ul
                         class="record-summary-panel-cards"
-                        :aria-labelledby="
-                            group.label !== '' ? group.headingId : undefined
-                        "
+                        :aria-labelledby="group.labelledBy"
                     >
                         <li
                             v-for="card in group.cards"
@@ -297,19 +251,7 @@ async function addToCard(card: CompletenessCard): Promise<void> {
                                 variant="link"
                                 size="small"
                                 :label="card.name"
-                                :aria-label="
-                                    card.isAddable
-                                        ? $gettext(
-                                              'Add to %{card}',
-                                              { card: card.name },
-                                              true,
-                                          )
-                                        : $gettext(
-                                              'Show %{card} in the data browser',
-                                              { card: card.name },
-                                              true,
-                                          )
-                                "
+                                :aria-label="card.actionLabel"
                                 :disabled="
                                     card.isAddable &&
                                     reportData.changeSet.isBusy.value
@@ -385,7 +327,6 @@ async function addToCard(card: CompletenessCard): Promise<void> {
     margin: 0;
 }
 
-/* Each row's dt and dd sit in the outer grid's two columns. */
 .record-summary-panel-fact {
     display: contents;
 }
@@ -436,8 +377,6 @@ async function addToCard(card: CompletenessCard): Promise<void> {
     gap: 0.6rem;
 }
 
-/* Muted like the rest of the panel, so the underline (always shown, not just
-   on hover) is what marks the name as a link. */
 .record-summary-panel-card .record-summary-panel-card-name {
     --p-button-link-color: var(--p-text-muted-color);
     --p-button-link-hover-color: var(--p-text-color);

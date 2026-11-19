@@ -33,7 +33,6 @@ const { $gettext } = useGettext();
     gap: 0.5rem;
 }
 
-/* Hollow ring: flags a tab whose nodegroups have no values yet. */
 .tab-label-empty-marker {
     flex-shrink: 0;
     inline-size: 0.7rem;

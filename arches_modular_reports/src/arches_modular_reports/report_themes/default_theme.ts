@@ -43,11 +43,11 @@ const cssOverrides = {
         "font-size": "1.6rem !important",
     },
     ".p-toast-message-icon": {
-        "margin-top": "0.6rem !important",
+        "margin-block-start": "0.6rem !important",
     },
     ".p-icon": {
-        width: "1.2rem !important",
-        height: "1.2rem !important",
+        "inline-size": "1.2rem !important",
+        "block-size": "1.2rem !important",
     },
     ".p-dialog-title": {
         "font-size": "1.8rem !important",
@@ -69,8 +69,6 @@ const DEFAULT_THEME = {
 // TODO: when dropping support for 7.6, extend ArchesPreset.
 const ModularReportPreset = definePreset(Aura, {
     semantic: {
-        // Navy built around #092c8d (700): lighter steps mix in white,
-        // darker steps mix in black.
         primary: {
             50: "#f0f2f8",
             100: "#dfe4f0",
@@ -100,8 +98,6 @@ const ModularReportPreset = definePreset(Aura, {
                 },
             },
             dark: {
-                // Aura's default ({primary.400}) is under 4.5:1 on the dark
-                // surfaces with this navy, so dark mode steps up to 300.
                 primary: {
                     color: "{primary.300}",
                     contrastColor: "{surface.900}",
@@ -175,51 +171,39 @@ const ModularReportPreset = definePreset(Aura, {
                 },
             },
         },
-        // Select, MultiSelect and TreeSelect dropdowns render on <body>, so
-        // these radii read variables that must be overridden at :root, not
-        // on the report.
         multiselect: {
             root: {
-                borderRadius:
-                    "var(--resource-report-multiselect-border-radius, 0.2rem)",
+                borderRadius: "0.2rem",
             },
             overlay: {
-                borderRadius:
-                    "var(--resource-report-multiselect-border-radius, 0.2rem)",
+                borderRadius: "0.2rem",
             },
             option: {
-                borderRadius:
-                    "var(--resource-report-multiselect-border-radius, 0.2rem)",
+                borderRadius: "0.2rem",
             },
         },
         select: {
             root: {
-                borderRadius:
-                    "var(--resource-report-select-border-radius, 0.2rem)",
+                borderRadius: "0.2rem",
             },
             overlay: {
-                borderRadius:
-                    "var(--resource-report-select-border-radius, 0.2rem)",
+                borderRadius: "0.2rem",
             },
             option: {
-                borderRadius:
-                    "var(--resource-report-select-border-radius, 0.2rem)",
+                borderRadius: "0.2rem",
             },
         },
         treeselect: {
             root: {
-                borderRadius:
-                    "var(--resource-report-treeselect-border-radius, 0.2rem)",
+                borderRadius: "0.2rem",
             },
             overlay: {
-                borderRadius:
-                    "var(--resource-report-treeselect-border-radius, 0.2rem)",
+                borderRadius: "0.2rem",
             },
         },
         tree: {
             node: {
-                borderRadius:
-                    "var(--resource-report-treeselect-border-radius, 0.2rem)",
+                borderRadius: "0.2rem",
             },
             colorScheme: {
                 light: {

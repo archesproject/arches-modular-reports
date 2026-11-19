@@ -11,9 +11,6 @@ const WORKSPACE_HEADER_HOST_KEY: InjectionKey<WorkspaceHeaderHost> = Symbol(
     "workspaceHeaderHost",
 );
 
-// Called by the component that owns the workspace header (tab strip, caption,
-// banner). Returns the element the header should be teleported into, or null
-// when the active workspace has no place for it and it should render in place.
 export function provideWorkspaceHeaderHost(): ShallowRef<HTMLElement | null> {
     const target = shallowRef<HTMLElement | null>(null);
 
@@ -30,7 +27,6 @@ export function provideWorkspaceHeaderHost(): ShallowRef<HTMLElement | null> {
     return target;
 }
 
-// Called by a workspace (e.g. SplitPane) that offers a place for the header.
 export function useWorkspaceHeaderHost(
     element: Readonly<ShallowRef<HTMLElement | null>>,
 ): void {
@@ -45,10 +41,11 @@ export function useWorkspaceHeaderHost(
         element,
         (hostElement) => {
             unregister();
-            unregister =
-                hostElement === null
-                    ? (): void => undefined
-                    : host.register(hostElement);
+            if (hostElement === null) {
+                unregister = (): void => undefined;
+            } else {
+                unregister = host.register(hostElement);
+            }
         },
         { immediate: true, flush: "post" },
     );

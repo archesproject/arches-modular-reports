@@ -29,6 +29,7 @@ import {
     componentPaths,
     folioLocations,
     reportTabGroups,
+    withoutHiddenCards,
 } from "@/arches_modular_reports/ResourceReport/utils/component-tree.ts";
 import { indexGraphNodes } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 
@@ -55,8 +56,13 @@ const folioNavigation = useFolioNavigation(
     graphWidgetConfigs.nodegroupWidgetConfigs,
 );
 const { areEditLinksShown, toggleEditLinks } = useEditLinksPreference();
-const { context, isTransitioning, transitionError, transitionLifecycle } =
-    reportContext;
+const {
+    context,
+    isTransitioning,
+    transitionError,
+    transitionLifecycle,
+    reloadContext,
+} = reportContext;
 
 const editorTarget = ref<EditTileRequest | null>(null);
 const editorCount = ref(0);
@@ -65,7 +71,12 @@ const deletedResource = ref<{
     context: ReportContext;
 } | null>(null);
 
-const childNodes = computed(() => component.config.components ?? []);
+const childNodes = computed(() =>
+    withoutHiddenCards(
+        component.config.components ?? [],
+        graphWidgetConfigs.nodegroupWidgetConfigs.value ?? {},
+    ),
+);
 
 const fetchError = computed(
     () =>
@@ -142,6 +153,15 @@ watch(canEdit, (isEditable) => {
     }
 });
 
+watch(
+    () => changeSet.isSaving.value,
+    (isSaving, wasSaving) => {
+        if (wasSaving && !isSaving && changeSet.saveError.value === null) {
+            reloadContext();
+        }
+    },
+);
+
 watchEffect(() => {
     preloadComponents(componentPaths(childNodes.value));
 });
@@ -169,7 +189,6 @@ function registerEditor(): () => void {
     };
 }
 
-// The report data stays loaded but stale, so the notice keeps its own copy.
 function markDeleted(): void {
     if (context.value === null || changeSet.workingResource.value === null) {
         return;
@@ -290,22 +309,20 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
         transparent
     );
     --resource-report-deleted-color: var(--p-red-600);
+    --resource-report-pending-background: var(--p-yellow-200);
+    --resource-report-pending-border-color: var(--p-yellow-400);
+    --resource-report-pending-color: var(--p-surface-900);
     --resource-report-drawer-trigger-open-background: var(--p-primary-700);
     --resource-report-drawer-trigger-open-color: var(
         --p-primary-contrast-color
     );
-    /* A step darker than the triggers' muted background, but lighter than
-       the bar background its close button hovers to. */
     --resource-report-drawer-header-background: color-mix(
         in srgb,
         var(--p-surface-100),
         var(--p-surface-200)
     );
-    /* Shared height, bottom border included, so the bars at the top of the
-       aside (drawer triggers, editor, record summary) match. */
     --resource-report-bar-block-size: 4rem;
-    /* Read by the core resource-instance multiselect widget's chips. */
-    --resource-instance-multiselect-chip-background: #092c8d;
+    --resource-instance-multiselect-chip-background: var(--p-primary-700);
     --resource-instance-multiselect-chip-color: var(--p-surface-0);
     --resource-instance-multiselect-chip-button-color: var(--p-surface-0);
     --resource-instance-multiselect-chip-button-hover-background: color-mix(
@@ -313,10 +330,7 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
         var(--p-surface-0) 20%,
         transparent
     );
-    /* Read by the core map widget's viewer and editor. */
     --map-component-viewer-block-size: 50rem;
-    --map-component-editor-block-size: 56rem;
-    --map-component-viewer-header-font-size: 1.2rem;
 
     display: flex;
     flex-direction: column;
@@ -350,6 +364,18 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
         transparent
     );
     --resource-report-deleted-color: var(--p-red-300);
+    --resource-report-pending-background: color-mix(
+        in srgb,
+        var(--p-yellow-500) 16%,
+        transparent
+    );
+    --resource-report-pending-border-color: color-mix(
+        in srgb,
+        var(--p-yellow-500) 40%,
+        transparent
+    );
+    --resource-report-pending-color: var(--p-surface-0);
+    --resource-report-drawer-trigger-open-color: var(--p-surface-0);
     --resource-report-drawer-header-background: color-mix(
         in srgb,
         var(--p-surface-800),
@@ -357,11 +383,6 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
     );
 }
 
-/*
- * OpenVue gives every hovered button `border: 1px solid <hover colour>`, so
- * link and text buttons gain a border (and grow) on hover. They stay
- * borderless in the report, at rest and on hover.
- */
 .resource-report :deep(.p-button-link),
 .resource-report :deep(.p-button-text),
 .resource-report :deep(.p-button-link:not(:disabled):hover),
@@ -369,24 +390,10 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
     border: none;
 }
 
-/* Links to related resources, from the core resource-instance widgets. */
 .resource-report :deep(.resource-instance-link) {
     font-weight: 600;
 }
 
-/*
- * The editor panel sits under the main column's sticky header and the drawer
- * overlay; an expanded map inside it has to cover them.
- */
-.resource-report
-    :deep(.editor-panel-overlay:has(.map-component[data-report-map-expanded])) {
-    z-index: 4;
-}
-
-/*
- * Rest state only: a hover selector would outrank a component's own
- * line-height and resize the button (and its container) on hover.
- */
 .resource-report :deep(.p-button-link),
 .resource-report :deep(.p-button-text) {
     line-height: 1.2;

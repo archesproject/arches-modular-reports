@@ -21,16 +21,12 @@ type PanelCountLoader = (
     config: LabelledConfig,
 ) => Promise<DrawerPanelCount>;
 
-// Keyed by component name; panels without an entry show no count.
 const PANEL_COUNT_LOADERS: Record<string, PanelCountLoader> = {
     EditHistoryPanel: countEditHistory,
     ImagesPanel: countImages,
     RelatedResourcesPanel: countRelatedResources,
 };
 
-// Counts come from each panel's first page, so a panel with more entries than
-// one page reports that page's size with hasMore set. Counts reload whenever
-// the panels change and after edits are applied.
 export function useDrawerPanelCounts(
     panels: ComputedRef<ComponentNode<LabelledConfig>[]>,
     reportData: ComputedRef<ReportData>,
@@ -87,7 +83,6 @@ export function useDrawerPanelCounts(
     return counts;
 }
 
-// A count is only a hint, so a panel whose count fails to load shows none.
 async function countPanel(
     panel: ComponentNode<LabelledConfig>,
     resourceInstanceId: string,

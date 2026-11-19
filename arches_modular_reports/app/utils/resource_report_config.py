@@ -18,9 +18,6 @@ RESOURCE_REPORT_COMPONENT = "arches_modular_reports/ResourceReport/ResourceRepor
 RESOURCE_INSTANCE_DATATYPES = ["resource-instance", "resource-instance-list"]
 REPORT_COMPONENTS_PATH = "arches_modular_reports/ResourceReport/components"
 COMPONENT_NODE_KEYS = {"component", "config"}
-# The map's Map Tools panel edits geometry, so the read-only report omits it.
-MAP_HEADER_TOOLS = {"basemap", "overlays", "legend", "settings"}
-MAP_HEADER_ACTIONS = {"edit", "delete"}
 
 
 def extract_substrings(template_string):
@@ -235,6 +232,7 @@ def generate_resource_report_config(graph):
         "SplitPane",
         {
             "label": translated_labels(gettext_noop("Report")),
+            "aside_size": 40,
             "main": [
                 report_component(
                     "ReportTabs",
@@ -381,7 +379,7 @@ def validate_report_config_tree(value, report_graph, refers_to_report_graph=True
     if refers_to_report_graph:
         validate_report_graph_references(value, report_graph)
     validate_other_graph_references(value)
-    validate_map_header_options(value)
+    validate_aside_size(value)
     for child_value in value.values():
         validate_report_config_tree(child_value, report_graph, refers_to_report_graph)
 
@@ -412,24 +410,12 @@ def validate_report_graph_references(entry, report_graph):
             raise ValidationError(f"Must name a node that holds a value: {node_alias}")
 
 
-def validate_map_header_options(entry):
-    for key, allowed_values in (
-        ("header_tools", MAP_HEADER_TOOLS),
-        ("header_actions", MAP_HEADER_ACTIONS),
-    ):
-        if key not in entry:
-            continue
-        values = entry[key]
-        if not isinstance(values, list) or not all(
-            isinstance(value, str) for value in values
-        ):
-            raise ValidationError(f"{key} must be a list of strings: {values}")
-        unknown_values = sorted(set(values) - allowed_values)
-        if unknown_values:
-            raise ValidationError(
-                f"Unknown {key}: {', '.join(unknown_values)} "
-                f"(allowed: {', '.join(sorted(allowed_values))})"
-            )
+def validate_aside_size(entry):
+    if "aside" not in entry and "aside_footer" not in entry:
+        return
+    require_keys(entry, ["aside_size"], "A config with an aside")
+    if not isinstance(entry["aside_size"], (int, float)):
+        raise ValidationError(f"aside_size is not a number: {entry['aside_size']}")
 
 
 def validate_other_graph_references(entry):

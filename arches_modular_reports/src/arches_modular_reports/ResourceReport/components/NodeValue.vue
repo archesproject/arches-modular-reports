@@ -28,8 +28,6 @@ const activeLanguage = computed(() => reportData.value.context.language);
 
 const texts = computed(() => localizedTexts(nodeData, activeLanguage.value));
 
-// Only a value with text in another language needs naming; one in the active
-// language alone reads as it always has.
 const isMultilingual = computed(() =>
     hasOtherLanguages(texts.value, activeLanguage.value),
 );
@@ -38,7 +36,6 @@ function languageName(languageCode: string): string {
     return reportData.value.context.languages?.[languageCode] ?? languageCode;
 }
 
-// The widget renders its display value, so each language gets one of its own.
 function nodeDataIn(text: LocalizedText): AliasedNodeData {
     return {
         ...nodeData,

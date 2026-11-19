@@ -59,10 +59,10 @@ export function useFolioNavigation(
             const localRevealers = containingRevealers.filter(
                 (revealer) => revealer.isLocal === true,
             );
-            const chosenRevealers =
-                localRevealers.length > 0
-                    ? localRevealers
-                    : containingRevealers;
+            let chosenRevealers = containingRevealers;
+            if (localRevealers.length > 0) {
+                chosenRevealers = localRevealers;
+            }
             for (const revealer of chosenRevealers) {
                 revealer.reveal(nodegroupAlias);
             }
@@ -78,8 +78,6 @@ export function useFolioNavigation(
         await jumpToNodegroup(graphNodesByAlias[nodeAlias].nodegroupAlias);
     }
 
-    // Lands on the nearest shown folio in the nodegroup's lineage. Focus
-    // follows when the folio's element can take it (tabindex="-1").
     async function jumpToNodegroup(nodegroupAlias: string): Promise<void> {
         if (nodegroupWidgetConfigs.value === null) {
             return;

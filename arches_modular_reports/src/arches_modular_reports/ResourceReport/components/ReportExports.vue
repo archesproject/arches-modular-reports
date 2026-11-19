@@ -67,6 +67,7 @@ function exportAriaLabel(exportFormat: ExportFormat): string {
     --p-button-label-font-weight: 600;
     padding: 0;
     border: none;
+    overflow: visible;
     font-size: 1.2rem;
     line-height: 1.2;
 }

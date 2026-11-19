@@ -18,8 +18,6 @@ import type {
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
 
-// Saved by the text widget: every language, blank where nothing was entered.
-// The display value carries only the reader's (English) text.
 const GERMAN_ONLY: AliasedNodeData = {
     display_value: "",
     node_value: {

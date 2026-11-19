@@ -4,7 +4,6 @@ const { name } = defineProps<{
 }>();
 </script>
 
-<!-- Names the language of a value not in the reader's own. -->
 <template>
     <span class="language-name">{{ name }}</span>
 </template>

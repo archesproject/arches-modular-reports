@@ -7,19 +7,20 @@ import Button from "openvue/button";
 import Message from "openvue/message";
 import Tag from "openvue/tag";
 
+import BasemapPanel from "@/arches_vue_components/components/MapComponent/components/BasemapPanel/BasemapPanel.vue";
+import OverlayPanel from "@/arches_vue_components/components/MapComponent/components/OverlayPanel/OverlayPanel.vue";
 import GenericWidget from "@/arches_vue_components/generics/GenericWidget/GenericWidget.vue";
 import NodeValue from "@/arches_modular_reports/ResourceReport/components/NodeValue.vue";
 import ReportFolio from "@/arches_modular_reports/ResourceReport/components/ReportFolio.vue";
 
-import {
-    BASEMAP_TOOL_ID,
-    OVERLAYS_TOOL_ID,
-} from "@/arches_vue_components/components/MapComponent/constants.ts";
+import { useDefaultMapInteractionTools } from "@/arches_vue_components/components/MapComponent/composables/useDefaultMapInteractionTools.ts";
 import { VIEW } from "@/arches_vue_components/widgets/constants.ts";
 import { useFolio } from "@/arches_modular_reports/ResourceReport/composables/useFolio.ts";
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import { nodeHasData } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import { aliasedNodeDataOf } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
+
+import type { Component } from "vue";
 
 import type {
     MapHeaderAction,
@@ -35,10 +36,7 @@ const REPORT_FOLIO_COMPONENT =
     "arches_modular_reports/ResourceReport/components/ReportFolio";
 const EDIT_ACTION = "edit";
 const DELETE_ACTION = "delete";
-const DEFAULT_HEADER_TOOLS = [BASEMAP_TOOL_ID, OVERLAYS_TOOL_ID];
-const DEFAULT_HEADER_ACTIONS = [EDIT_ACTION, DELETE_ACTION];
-// Report maps sit in a scrolling page, so plain scrolling pages instead of
-// zooming. A widget config that sets this explicitly still wins.
+const REPORT_MAP_TOOL_COMPONENTS: Component[] = [BasemapPanel, OverlayPanel];
 const REPORT_MAP_SETTINGS: Partial<MapSettings> = {
     scrollZoomRequiresKey: true,
 };
@@ -52,7 +50,6 @@ const {
     reportData,
     nodegroupAlias,
     hasNodegroup,
-    isCardHidden,
     nodegroupWidgetConfig,
     cardName,
     tiles,
@@ -68,6 +65,9 @@ const {
     undoDelete,
     clearFlash,
 } = useFolio(() => component);
+const reportMapTools = useDefaultMapInteractionTools().filter((tool) =>
+    REPORT_MAP_TOOL_COMPONENTS.includes(tool.component),
+);
 
 const currentTileIndex = ref(0);
 
@@ -99,51 +99,46 @@ const fieldWidgets = computed(() =>
     ),
 );
 
-const headerToolIds = computed(
-    () => component.config.header_tools ?? DEFAULT_HEADER_TOOLS,
-);
-
 const headerActions = computed<MapHeaderAction[]>(() => {
-    const actionIds = component.config.header_actions ?? DEFAULT_HEADER_ACTIONS;
     const tile = currentTile.value;
     const entry = tileLabel(tile);
     const isBusy = reportData.value.changeSet.isBusy.value;
-    const actions: MapHeaderAction[] = [];
     if (isEditableTile(tile)) {
-        if (actionIds.includes(DELETE_ACTION)) {
-            actions.push({
+        return [
+            {
                 id: DELETE_ACTION,
                 label: $gettext("Delete"),
                 icon: "pi pi-trash",
                 ariaLabel: $gettext("Delete map for %{entry}", { entry }, true),
                 disabled: isBusy,
                 onClick: () => deleteTile(tile.tileid),
-            });
-        }
-        if (actionIds.includes(EDIT_ACTION)) {
-            actions.push({
+            },
+            {
                 id: EDIT_ACTION,
                 label: $gettext("Edit"),
                 icon: "pi pi-pencil",
                 ariaLabel: $gettext("Edit map for %{entry}", { entry }, true),
                 onClick: () => editTile(tile.tileid),
-            });
-        }
-    } else if (isMarkedForDeletion(tile) && actionIds.includes(DELETE_ACTION)) {
-        actions.push({
-            id: DELETE_ACTION,
-            label: $gettext("Undo delete"),
-            icon: "pi pi-undo",
-            ariaLabel: $gettext(
-                "Undo deleting map for %{entry}",
-                { entry },
-                true,
-            ),
-            disabled: isBusy,
-            onClick: () => undoDelete(tile.tileid),
-        });
+            },
+        ];
     }
-    return actions;
+    if (isMarkedForDeletion(tile)) {
+        return [
+            {
+                id: DELETE_ACTION,
+                label: $gettext("Undo delete"),
+                icon: "pi pi-undo",
+                ariaLabel: $gettext(
+                    "Undo deleting map for %{entry}",
+                    { entry },
+                    true,
+                ),
+                disabled: isBusy,
+                onClick: () => undoDelete(tile.tileid),
+            },
+        ];
+    }
+    return [];
 });
 
 const childFolioNodes = computed(() =>
@@ -178,7 +173,6 @@ function showNextTile(): void {
 
 <template>
     <div
-        v-if="!isCardHidden"
         ref="folio"
         class="map-folio"
         :class="{ 'map-folio-flash': isFlashed }"
@@ -247,7 +241,7 @@ function showNextTile(): void {
                     :mode="VIEW"
                     :node-alias="mapWidget.node.alias"
                     :should-show-label="false"
-                    :visible-tool-ids="headerToolIds"
+                    :interaction-tools="reportMapTools"
                     :header-actions="headerActions"
                     :default-settings="REPORT_MAP_SETTINGS"
                 />
@@ -396,6 +390,7 @@ function showNextTile(): void {
 
 <style scoped>
 .map-folio {
+    --map-header-button-font-size: 1.2rem;
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
@@ -418,7 +413,6 @@ function showNextTile(): void {
     font-weight: 600;
 }
 
-/* Matches ReportFolio's tile-count badge. */
 .map-folio-header .map-folio-count {
     min-inline-size: 2rem;
     block-size: 2rem;
@@ -483,16 +477,13 @@ function showNextTile(): void {
     color: var(--p-text-muted-color);
 }
 
-/* Matches the report folios' values. */
 .map-folio-field-value {
     color: var(--p-text-color);
     font-weight: 500;
 }
 
-/* Widgets render their value in a <p>; drop its default block margins. */
 .map-folio-field-value :deep(p) {
-    margin-block-start: 0rem;
-    margin-block-end: 0rem;
+    margin-block: 0;
 }
 
 .map-folio-actions {

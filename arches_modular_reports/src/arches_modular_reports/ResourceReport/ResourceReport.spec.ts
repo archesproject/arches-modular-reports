@@ -169,6 +169,7 @@ function makeContext(
         language: "en",
         language_dir: "ltr",
         languages: { en: "English", de: "German" },
+        latest_edit: null,
         permissions: {
             can_edit: true,
             can_delete: true,
@@ -320,6 +321,7 @@ const REPORT_CONFIG: ResourceReportConfig = {
         workspaceTabs(
             reportNode("SplitPane", {
                 label: { en: "Report" },
+                aside_size: 40,
                 main: [reportNode("ReportTabs", { components: [] })],
                 aside: [
                     reportNode("EditorPanel/EditorPanel"),
@@ -330,6 +332,7 @@ const REPORT_CONFIG: ResourceReportConfig = {
             reportNode("SplitPane", {
                 label: { en: "Data" },
                 requires_edit: true,
+                aside_size: 60,
                 main: [reportNode("DataBrowser/DataBrowser")],
                 aside: [reportNode("EditorPanel/EditorPanel")],
                 aside_footer: [reportNode("EditListTray")],
@@ -365,6 +368,7 @@ function folioConfig(aside: ComponentNode[]): ResourceReportConfig {
             workspaceTabs(
                 reportNode("SplitPane", {
                     label: "Report",
+                    aside_size: 40,
                     main: [
                         reportNode("ReportTabs", {
                             components: [
@@ -395,6 +399,7 @@ function drawerConfig(): ResourceReportConfig {
             workspaceTabs(
                 reportNode("SplitPane", {
                     label: "Report",
+                    aside_size: 40,
                     aside: [
                         reportNode("ReportDrawer", {
                             panels: [
@@ -422,6 +427,7 @@ function recordSummaryConfig(): ResourceReportConfig {
             workspaceTabs(
                 reportNode("SplitPane", {
                     label: "Report",
+                    aside_size: 40,
                     main: [
                         reportNode("ReportTabs", {
                             components: [
@@ -506,6 +512,7 @@ function countedDrawerConfig(): ResourceReportConfig {
             workspaceTabs(
                 reportNode("SplitPane", {
                     label: "Report",
+                    aside_size: 40,
                     aside: [
                         reportNode("ReportDrawer", {
                             panels: [
@@ -570,9 +577,6 @@ function makeImage(imageName: string): ResourceImage {
     };
 }
 
-// Attach to the document when a test checks where focus lands.
-// The resource with its name stored per language, as the text widget saves
-// it; the display value carries only the reader's language.
 function resourceNamed(
     nameByLanguage: Record<string, { value: string; direction: "ltr" }>,
 ): typeof RESOURCE {
@@ -668,14 +672,12 @@ function buttonWithText(
     return button;
 }
 
-// The switch holds both labels so its width never changes; one is shown.
 function shownLabel(editLinksSwitch: DOMWrapper<Element>): string {
     return editLinksSwitch
         .find(".workspace-tabs-edit-links-label-current")
         .text();
 }
 
-// Matches on the label alone, since a trigger may also show a count badge.
 function drawerTrigger(
     wrapper: VueWrapper,
     label: string,
@@ -1120,6 +1122,7 @@ describe("ResourceReport", () => {
                 workspaceTabs(
                     reportNode("SplitPane", {
                         label: "Report",
+                        aside_size: 40,
                         main: [
                             reportNode("ReportTabs", {
                                 components: [
@@ -1173,7 +1176,6 @@ describe("ResourceReport", () => {
                 .map((label) => label.text());
             expect(sectionLabels).toEqual(["Names"]);
             expect(wrapper.text()).not.toContain("Current Owner");
-            // One tab left, so no tab list at all.
             expect(wrapper.find(".report-tabs-list").exists()).toBe(false);
         } finally {
             ownersCard.visible = true;
@@ -1339,7 +1341,6 @@ describe("ResourceReport", () => {
             return badge.exists() ? badge.text() : null;
         }
         expect(badgeText("Edit History")).toBe("2");
-        // A further page exists, so the count reads as a lower bound.
         expect(badgeText("Images")).toBe("%{count}+");
         expect(badgeText("Related Resources")).toBe("1");
         expect(badgeText("Manage")).toBeNull();
@@ -1407,7 +1408,6 @@ describe("ResourceReport", () => {
         await drawerTrigger(wrapper, "Edit History").trigger("click");
         await flushPromises();
 
-        // One changed field, listed under both Before and After.
         expect(wrapper.findAll(".edit-history-field")).toHaveLength(2);
         expect(wrapper.find(".edit-history-changed-marker").exists()).toBe(
             false,
@@ -1545,13 +1545,15 @@ describe("ResourceReport", () => {
     });
 
     it("summarizes the latest edit and which cards have data", async () => {
-        vi.mocked(fetchEditHistory).mockResolvedValue({
-            results: [NAME_EDIT],
-            next_cursor: null,
+        vi.mocked(fetchReportContext).mockResolvedValue({
+            ...makeContext(),
+            latest_edit: {
+                timestamp: NAME_EDIT.timestamp,
+                user: NAME_EDIT.user,
+            },
         });
         const wrapper = await openDataWorkspace();
 
-        expect(fetchEditHistory).toHaveBeenCalledWith("resource-id", null, "");
         const facts = summaryFacts(wrapper);
         expect(facts["Last updated"]).toBe(
             new Date(NAME_EDIT.timestamp).toLocaleString("en", {
@@ -1581,10 +1583,6 @@ describe("ResourceReport", () => {
     });
 
     it("notes a record with no edit history", async () => {
-        vi.mocked(fetchEditHistory).mockResolvedValue({
-            results: [],
-            next_cursor: null,
-        });
         const wrapper = await openDataWorkspace();
 
         const facts = summaryFacts(wrapper);
@@ -1592,21 +1590,10 @@ describe("ResourceReport", () => {
         expect(facts["Updated by"]).toBe(EMPTY_VALUE);
     });
 
-    it("notes when the latest edit can't be loaded", async () => {
-        vi.mocked(fetchEditHistory).mockRejectedValue(new Error("Offline"));
-        const wrapper = await openDataWorkspace();
-
-        expect(summaryFacts(wrapper)["Last updated"]).toBe("Unavailable");
-    });
-
-    it("reloads the latest edit once edits are applied", async () => {
-        vi.mocked(fetchEditHistory).mockResolvedValue({
-            results: [NAME_EDIT],
-            next_cursor: null,
-        });
+    it("reloads the report context once edits are applied", async () => {
         vi.mocked(saveResourceChanges).mockResolvedValue(RESOURCE);
         const wrapper = await openDataWorkspace();
-        expect(fetchEditHistory).toHaveBeenCalledTimes(1);
+        expect(fetchReportContext).toHaveBeenCalledTimes(1);
 
         await wrapper.find(".data-folio-toggle").trigger("click");
         await buttonWithText(wrapper, ".data-folio-tiles", "Edit").trigger(
@@ -1621,7 +1608,7 @@ describe("ResourceReport", () => {
         await flushPromises();
 
         expect(saveResourceChanges).toHaveBeenCalled();
-        expect(fetchEditHistory).toHaveBeenCalledTimes(2);
+        expect(fetchReportContext).toHaveBeenCalledTimes(2);
     });
 
     it("gives way to the editor while an entry is being edited", async () => {
