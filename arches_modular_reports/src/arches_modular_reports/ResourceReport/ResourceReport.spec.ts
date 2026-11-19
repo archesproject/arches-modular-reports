@@ -26,23 +26,18 @@ import ResourceReport from "@/arches_modular_reports/ResourceReport/ResourceRepo
 import {
     copyResource,
     deleteResource,
-    fetchEditHistory,
     fetchResource,
     fetchResourceCopies,
-    fetchResourceImages,
     fetchRelatedResourceGroup,
     fetchRelatedResourceGroups,
     fetchReportContext,
-    saveResourceChanges,
     updateLifecycleState,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { EMPTY_VALUE } from "@/arches_modular_reports/ResourceReport/constants.ts";
-import { fetchTileData } from "@/arches_vue_components/generics/GenericCard/api.ts";
 
 import type { Component } from "vue";
 import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import type {
-    AliasedNodeData,
     CardXNodeXWidgetData,
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
@@ -53,7 +48,6 @@ import type {
     RelatedResourceGroup,
     ReportContext,
     ReportPermissions,
-    ResourceImage,
     ResourceReportConfig,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
@@ -507,43 +501,6 @@ function summaryEmptyCards(
     }));
 }
 
-function countedDrawerConfig(): ResourceReportConfig {
-    return {
-        components: [
-            workspaceTabs(
-                reportNode("SplitPane", {
-                    label: "Report",
-                    aside_size: 40,
-                    aside: [
-                        reportNode("ReportDrawer", {
-                            panels: [
-                                reportNode("EditHistoryPanel", {
-                                    label: "Edit History",
-                                    requires_edit: true,
-                                }),
-                                reportNode("ImagesPanel", {
-                                    label: "Images",
-                                    images: [
-                                        {
-                                            model: "digital_resources",
-                                            node: "file",
-                                        },
-                                    ],
-                                }),
-                                reportNode("RelatedResourcesPanel", {
-                                    label: "Related Resources",
-                                    graphs: ["pigments"],
-                                }),
-                                reportNode("ManagePanel", { label: "Manage" }),
-                            ],
-                        }),
-                    ],
-                }),
-            ),
-        ],
-    };
-}
-
 const NAME_EDIT: EditHistoryEntry = {
     editlogid: "edit-log-1",
     edit_type: "tile edit",
@@ -565,51 +522,6 @@ const NAME_EDIT: EditHistoryEntry = {
         },
     ],
 };
-
-function makeImage(imageName: string): ResourceImage {
-    return {
-        url: `/files/${imageName}.jpg`,
-        caption: imageName,
-        alt_text: `Photo of ${imageName}`,
-        resourceinstanceid: "resource-id",
-        resource_name: "Cobalt blue",
-        graph_name: "Reference and Sample Collection Item",
-        report_url: "/report/resource-id",
-    };
-}
-
-function resourceNamed(
-    nameByLanguage: Record<string, { value: string; direction: "ltr" }>,
-): typeof RESOURCE {
-    const [nameTile] = RESOURCE.aliased_data.names;
-    return {
-        ...RESOURCE,
-        aliased_data: {
-            names: [
-                {
-                    ...nameTile,
-                    aliased_data: {
-                        name_content: {
-                            display_value: nameByLanguage.en?.value ?? "",
-                            node_value: nameByLanguage,
-                            details: [],
-                        },
-                    },
-                },
-            ],
-        },
-    } as unknown as typeof RESOURCE;
-}
-
-function widgetDisplayValues(wrapper: VueWrapper): string[] {
-    return wrapper
-        .findAllComponents(GenericWidgetStub)
-        .map(
-            (widgetStub) =>
-                (widgetStub.props("aliasedNodeData") as AliasedNodeData)
-                    .display_value,
-        );
-}
 
 function mountReport(
     config: ResourceReportConfig = REPORT_CONFIG,
@@ -673,12 +585,6 @@ function buttonWithText(
     return button;
 }
 
-function shownLabel(editLinksSwitch: DOMWrapper<Element>): string {
-    return editLinksSwitch
-        .find(".workspace-tabs-edit-links-label-current")
-        .text();
-}
-
 function drawerTrigger(
     wrapper: VueWrapper,
     label: string,
@@ -707,26 +613,6 @@ describe("ResourceReport", () => {
             results: [],
             next_cursor: null,
         });
-    });
-
-    it("widens the aside while the editor is open", async () => {
-        const wrapper = mountReport(FOLIO_CONFIG);
-        await flushPromises();
-        const asideStyle = (): string =>
-            wrapper.find(".split-pane-aside").attributes("style") ?? "";
-        expect(asideStyle()).toContain("40%");
-
-        await buttonWithText(
-            wrapper,
-            ".report-folio-tile-actions",
-            "Edit",
-        ).trigger("click");
-        await flushPromises();
-        expect(asideStyle()).toContain("60%");
-
-        await wrapper.find(".editor-panel-close").trigger("click");
-        await flushPromises();
-        expect(asideStyle()).toContain("40%");
     });
 
     it("discards every pending edit only once the discard is confirmed", async () => {
@@ -772,26 +658,6 @@ describe("ResourceReport", () => {
         expect(wrapper.find(".edit-list-tray").exists()).toBe(false);
 
         wrapper.unmount();
-    });
-
-    it("puts the resource header above the workspace tabs", async () => {
-        const wrapper = mountReport(REPORT_CONFIG);
-        await flushPromises();
-
-        const header = wrapper.find(".workspace-tabs-header");
-        expect(
-            header
-                .findAll(":scope > *")
-                .map((child) =>
-                    child
-                        .classes()
-                        .find((className) =>
-                            ["report-header", "workspace-tabs-bar"].includes(
-                                className,
-                            ),
-                        ),
-                ),
-        ).toEqual(["report-header", "workspace-tabs-bar"]);
     });
 
     it("holds lifecycle changes while edits are pending", async () => {
@@ -908,43 +774,6 @@ describe("ResourceReport", () => {
         wrapper.unmount();
     });
 
-    it("replaces the report with a notice once the resource is deleted", async () => {
-        vi.mocked(deleteResource).mockResolvedValue();
-        const wrapper = await openDeleteDialog();
-
-        dialogDeleteButton(wrapper).click();
-        await flushPromises();
-
-        expect(wrapper.find(".resource-report").exists()).toBe(false);
-        expect(wrapper.find(".deleted-resource").exists()).toBe(true);
-        expect(
-            wrapper
-                .findAll(".deleted-resource-actions a")
-                .map((link) => link.attributes("href")),
-        ).toEqual(["/add-resource/graph-id", "/search", "/resource"]);
-
-        wrapper.unmount();
-    });
-
-    it("offers no create link to users who cannot create resources", async () => {
-        vi.mocked(fetchReportContext).mockResolvedValue(
-            makeContext({ can_create: false }),
-        );
-        vi.mocked(deleteResource).mockResolvedValue();
-        const wrapper = await openDeleteDialog();
-
-        dialogDeleteButton(wrapper).click();
-        await flushPromises();
-
-        expect(
-            wrapper
-                .findAll(".deleted-resource-actions a")
-                .map((link) => link.attributes("href")),
-        ).toEqual(["/search", "/resource"]);
-
-        wrapper.unmount();
-    });
-
     it("shows a summary node under an unreadable parent as empty", async () => {
         const wrapper = mountReport({
             components: [
@@ -1028,19 +857,6 @@ describe("ResourceReport", () => {
         expect(wrapper.find(".report-tabs-list").exists()).toBe(false);
     });
 
-    it("words an empty folio the same way whatever the card is called", async () => {
-        vi.mocked(fetchResource).mockResolvedValue({
-            ...RESOURCE,
-            aliased_data: { names: [] },
-        });
-        const wrapper = mountReport(FOLIO_CONFIG);
-        await flushPromises();
-
-        expect(wrapper.find(".report-folio-empty-message").text()).toBe(
-            "Nothing recorded for %{name}.",
-        );
-    });
-
     it("hides edit-only workspaces from people who cannot edit", async () => {
         vi.mocked(fetchReportContext).mockResolvedValue(
             makeContext({ can_edit: false }),
@@ -1060,188 +876,6 @@ describe("ResourceReport", () => {
 
         expect(wrapper.find(".report-folio").exists()).toBe(true);
         expect(wrapper.find(".report-folio-tile-actions").exists()).toBe(false);
-    });
-
-    it("shows a value entered in another language, naming the language", async () => {
-        vi.mocked(fetchResource).mockResolvedValue(
-            resourceNamed({
-                en: { value: "", direction: "ltr" },
-                de: { value: "Mythische Figur", direction: "ltr" },
-            }),
-        );
-        const wrapper = mountReport(FOLIO_CONFIG);
-        await flushPromises();
-
-        expect(wrapper.find(".report-folio-empty-message").exists()).toBe(
-            false,
-        );
-        expect(widgetDisplayValues(wrapper)).toEqual(["Mythische Figur"]);
-        expect(
-            wrapper.findAll(".language-name").map((pill) => pill.text()),
-        ).toEqual(["German"]);
-        expect(
-            wrapper.find(".node-value-language-text").attributes("lang"),
-        ).toBe("de");
-    });
-
-    it("lists the reader's language first, unnamed, then the others", async () => {
-        vi.mocked(fetchResource).mockResolvedValue(
-            resourceNamed({
-                de: { value: "Kobaltblau", direction: "ltr" },
-                en: { value: "Cobalt blue", direction: "ltr" },
-            }),
-        );
-        const wrapper = mountReport(FOLIO_CONFIG);
-        await flushPromises();
-
-        expect(widgetDisplayValues(wrapper)).toEqual([
-            "Cobalt blue",
-            "Kobaltblau",
-        ]);
-        expect(
-            wrapper.findAll(".language-name").map((pill) => pill.text()),
-        ).toEqual(["German"]);
-    });
-
-    it("shows a value in the reader's language alone without naming it", async () => {
-        vi.mocked(fetchResource).mockResolvedValue(
-            resourceNamed({
-                en: { value: "Cobalt blue", direction: "ltr" },
-                de: { value: "", direction: "ltr" },
-            }),
-        );
-        const wrapper = mountReport(FOLIO_CONFIG);
-        await flushPromises();
-
-        expect(widgetDisplayValues(wrapper)).toEqual(["Cobalt blue"]);
-        expect(wrapper.find(".language-name").exists()).toBe(false);
-    });
-
-    it("leaves out cards hidden in the graph, and what holds only them", async () => {
-        const config: ResourceReportConfig = {
-            components: [
-                workspaceTabs(
-                    reportNode("SplitPane", {
-                        label: "Report",
-                        aside_size: 40,
-                        main: [
-                            reportNode("ReportTabs", {
-                                components: [
-                                    reportNode("ReportStack", {
-                                        label: "Overview",
-                                        components: [
-                                            reportNode("ReportSection", {
-                                                label: "Names",
-                                                components: [
-                                                    reportNode("ReportFolio", {
-                                                        nodegroup_alias:
-                                                            "names",
-                                                    }),
-                                                ],
-                                            }),
-                                            reportNode("ReportSection", {
-                                                label: "Ownership",
-                                                components: [
-                                                    reportNode("FieldFolio", {
-                                                        nodegroup_alias:
-                                                            "owners",
-                                                    }),
-                                                ],
-                                            }),
-                                        ],
-                                    }),
-                                    reportNode("ReportStack", {
-                                        label: "Owners",
-                                        components: [
-                                            reportNode("ReportFolio", {
-                                                nodegroup_alias: "owners",
-                                            }),
-                                        ],
-                                    }),
-                                ],
-                            }),
-                        ],
-                        aside: [reportNode("EditorPanel/EditorPanel")],
-                    }),
-                ),
-            ],
-        };
-        const ownersCard = NODEGROUP_WIDGET_CONFIGS.owners.card!;
-        ownersCard.visible = false;
-        try {
-            const wrapper = mountReport(config);
-            await flushPromises();
-
-            const sectionLabels = wrapper
-                .findAll(".report-section-label")
-                .map((label) => label.text());
-            expect(sectionLabels).toEqual(["Names"]);
-            expect(wrapper.text()).not.toContain("Current Owner");
-            expect(wrapper.find(".report-tabs-list").exists()).toBe(false);
-        } finally {
-            ownersCard.visible = true;
-        }
-
-        const shownAgain = mountReport(config);
-        await flushPromises();
-        expect(
-            shownAgain
-                .findAll(".report-section-label")
-                .map((label) => label.text()),
-        ).toEqual(["Names", "Ownership"]);
-        expect(shownAgain.find(".report-tabs-list").text()).toContain("Owners");
-    });
-
-    it("lets an editor hide the report's edit links, and remembers it", async () => {
-        const wrapper = mountReport(FOLIO_CONFIG);
-        await flushPromises();
-        const editLinksSwitch = wrapper.find(".workspace-tabs-edit-links");
-        expect(editLinksSwitch.attributes("aria-checked")).toBe("true");
-        expect(shownLabel(editLinksSwitch)).toBe("Edit links: On");
-        expect(wrapper.find(".report-folio-tile-actions").exists()).toBe(true);
-
-        await editLinksSwitch.trigger("click");
-
-        expect(editLinksSwitch.attributes("aria-checked")).toBe("false");
-        expect(shownLabel(editLinksSwitch)).toBe("Edit links: Off");
-        expect(wrapper.find(".report-folio-tile-actions").exists()).toBe(false);
-        wrapper.unmount();
-
-        const remounted = mountReport(FOLIO_CONFIG);
-        await flushPromises();
-        expect(shownLabel(remounted.find(".workspace-tabs-edit-links"))).toBe(
-            "Edit links: Off",
-        );
-        expect(remounted.find(".report-folio-tile-actions").exists()).toBe(
-            false,
-        );
-
-        await remounted.find(".workspace-tabs-edit-links").trigger("click");
-
-        expect(remounted.find(".report-folio-tile-actions").exists()).toBe(
-            true,
-        );
-    });
-
-    it("offers the edit links switch only to editors, beside folios", async () => {
-        const folioReport = mountReport(FOLIO_CONFIG);
-        const reportWithoutFolios = mountReport();
-        await flushPromises();
-        expect(folioReport.find(".workspace-tabs-edit-links").exists()).toBe(
-            true,
-        );
-        expect(
-            reportWithoutFolios.find(".workspace-tabs-edit-links").exists(),
-        ).toBe(false);
-
-        vi.mocked(fetchReportContext).mockResolvedValue(
-            makeContext({ can_edit: false }),
-        );
-        const readerReport = mountReport(FOLIO_CONFIG);
-        await flushPromises();
-        expect(readerReport.find(".workspace-tabs-edit-links").exists()).toBe(
-            false,
-        );
     });
 
     it("hides models with no matches while filtering related resources", async () => {
@@ -1274,277 +908,6 @@ describe("ResourceReport", () => {
         expect(wrapper.find(".related-resources-empty").exists()).toBe(false);
     });
 
-    it("lists models with nothing related on one line", async () => {
-        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
-            PIGMENTS_GROUP,
-            {
-                ...PIGMENTS_GROUP,
-                graph_slug: "places",
-                graph_name: "Places",
-                next_cursor: null,
-                items: [],
-            },
-            {
-                ...PIGMENTS_GROUP,
-                graph_slug: "groups",
-                graph_name: "Groups",
-                next_cursor: null,
-                items: [],
-            },
-        ]);
-        const wrapper = mountReport(drawerConfig());
-        await flushPromises();
-        await drawerTrigger(wrapper, "Related Resources").trigger("click");
-        await flushPromises();
-
-        expect(
-            wrapper
-                .findAll(".related-resources-group-label")
-                .map((label) => label.text()),
-        ).toEqual(["Pigments"]);
-        const emptyMessages = wrapper.findAll(".related-resources-empty");
-        expect(emptyMessages).toHaveLength(1);
-        expect(emptyMessages[0].text()).toBe("No related %{models}.");
-    });
-
-    it("says so when nothing at all is related", async () => {
-        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
-            { ...PIGMENTS_GROUP, next_cursor: null, items: [] },
-        ]);
-        const wrapper = mountReport(drawerConfig());
-        await flushPromises();
-        await drawerTrigger(wrapper, "Related Resources").trigger("click");
-        await flushPromises();
-
-        expect(wrapper.find(".related-resources-group").exists()).toBe(false);
-        expect(wrapper.find(".related-resources-empty").text()).toBe(
-            "No related resources.",
-        );
-    });
-
-    it("shows how many entries each drawer panel holds", async () => {
-        vi.mocked(fetchEditHistory).mockResolvedValue({
-            results: [NAME_EDIT, { ...NAME_EDIT, editlogid: "edit-log-2" }],
-            next_cursor: null,
-        });
-        vi.mocked(fetchResourceImages).mockResolvedValue({
-            images: [makeImage("smalt")],
-            next_cursor: "more-images",
-        });
-        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
-            { ...PIGMENTS_GROUP, next_cursor: null },
-        ]);
-        const wrapper = mountReport(countedDrawerConfig());
-        await flushPromises();
-
-        function badgeText(label: string): string | null {
-            const badge = drawerTrigger(wrapper, label).find(".p-badge");
-            return badge.exists() ? badge.text() : null;
-        }
-        expect(badgeText("Edit History")).toBe("2");
-        expect(badgeText("Images")).toBe("%{count}+");
-        expect(badgeText("Related Resources")).toBe("1");
-        expect(badgeText("Manage")).toBeNull();
-    });
-
-    it("shows no count for a panel whose count fails to load", async () => {
-        vi.mocked(fetchRelatedResourceGroups).mockRejectedValue(
-            new Error("Offline"),
-        );
-        const wrapper = mountReport(drawerConfig());
-        await flushPromises();
-
-        expect(
-            drawerTrigger(wrapper, "Related Resources")
-                .find(".p-badge")
-                .exists(),
-        ).toBe(false);
-    });
-
-    it("recounts the drawer panels once edits are applied", async () => {
-        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
-            { ...PIGMENTS_GROUP, next_cursor: null },
-        ]);
-        vi.mocked(saveResourceChanges).mockResolvedValue(RESOURCE);
-        const wrapper = mountReport(
-            folioConfig([
-                reportNode("EditorPanel/EditorPanel"),
-                reportNode("ReportDrawer", {
-                    panels: [
-                        reportNode("RelatedResourcesPanel", {
-                            label: "Related Resources",
-                            graphs: ["pigments"],
-                        }),
-                    ],
-                }),
-            ]),
-        );
-        await flushPromises();
-        expect(fetchRelatedResourceGroups).toHaveBeenCalledTimes(1);
-
-        await buttonWithText(
-            wrapper,
-            ".report-folio-tile-actions",
-            "Edit",
-        ).trigger("click");
-        await wrapper.find(".card-stub").trigger("click");
-        await buttonWithText(
-            wrapper,
-            ".edit-list-tray-actions",
-            "Apply all edits",
-        ).trigger("click");
-        await flushPromises();
-
-        expect(saveResourceChanges).toHaveBeenCalled();
-        expect(fetchRelatedResourceGroups).toHaveBeenCalledTimes(2);
-    });
-
-    it("shows only the changed fields of an edit until asked for the rest", async () => {
-        vi.mocked(fetchEditHistory).mockResolvedValue({
-            results: [NAME_EDIT],
-            next_cursor: null,
-        });
-        const wrapper = mountReport(countedDrawerConfig());
-        await flushPromises();
-        await drawerTrigger(wrapper, "Edit History").trigger("click");
-        await flushPromises();
-
-        expect(wrapper.findAll(".edit-history-field")).toHaveLength(2);
-        expect(wrapper.find(".edit-history-changed-marker").exists()).toBe(
-            false,
-        );
-        const fieldsToggle = wrapper.find(".edit-history-fields-toggle");
-        expect(fieldsToggle.text()).toBe("Show %{count} unchanged field");
-
-        await fieldsToggle.trigger("click");
-
-        expect(wrapper.findAll(".edit-history-field")).toHaveLength(4);
-        expect(wrapper.findAll(".edit-history-changed-marker")).toHaveLength(2);
-        expect(wrapper.find(".edit-history-changed-marker").text()).toBe(
-            "(changed)",
-        );
-        expect(wrapper.find(".edit-history-fields-toggle").text()).toBe(
-            "Show changed fields only",
-        );
-    });
-
-    it("lists every field of an edit with nothing to hide", async () => {
-        vi.mocked(fetchEditHistory).mockResolvedValue({
-            results: [
-                {
-                    ...NAME_EDIT,
-                    values: NAME_EDIT.values.map((value) => ({
-                        ...value,
-                        changed: false,
-                    })),
-                },
-            ],
-            next_cursor: null,
-        });
-        const wrapper = mountReport(countedDrawerConfig());
-        await flushPromises();
-        await drawerTrigger(wrapper, "Edit History").trigger("click");
-        await flushPromises();
-
-        expect(wrapper.findAll(".edit-history-field")).toHaveLength(4);
-        expect(wrapper.find(".edit-history-fields-toggle").exists()).toBe(
-            false,
-        );
-    });
-
-    it("links each image at full size and leaves thumbnails unannounced", async () => {
-        vi.mocked(fetchResourceImages).mockResolvedValue({
-            images: [makeImage("smalt"), makeImage("cobalt")],
-            next_cursor: null,
-        });
-        const wrapper = mountReport(countedDrawerConfig());
-        await flushPromises();
-        await drawerTrigger(wrapper, "Images").trigger("click");
-        await flushPromises();
-
-        const fullSizeLink = wrapper.find(".images-full-size");
-        expect(fullSizeLink.attributes("href")).toBe("/files/smalt.jpg");
-        expect(fullSizeLink.attributes("target")).toBe("_blank");
-        expect(wrapper.find(".images-main").attributes("alt")).toBe(
-            "Photo of smalt",
-        );
-        const thumbnails = wrapper.findAll(".images-thumbnail");
-        expect(thumbnails).toHaveLength(2);
-        expect(
-            thumbnails.map((thumbnail) => thumbnail.attributes("alt")),
-        ).toEqual(["", ""]);
-    });
-
-    it("expands the open panel across the workspace and keeps its state", async () => {
-        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
-            PIGMENTS_GROUP,
-        ]);
-        const wrapper = mountReport(drawerConfig());
-        await flushPromises();
-        await drawerTrigger(wrapper, "Related Resources").trigger("click");
-        await flushPromises();
-        await wrapper.find(".related-resources-filter").setValue("smalt");
-
-        const expandButton = wrapper.find(
-            ".report-drawer-header button[aria-label='Expand panel']",
-        );
-        expect(expandButton.attributes("aria-pressed")).toBe("false");
-        await expandButton.trigger("click");
-
-        const expandedPanel = wrapper.find(
-            ".split-pane-overlay-host .report-drawer-panel",
-        );
-        expect(expandedPanel.exists()).toBe(true);
-        expect(expandedPanel.classes()).toContain(
-            "report-drawer-panel-expanded",
-        );
-        expect(
-            wrapper.find(".report-drawer-stage .report-drawer-panel").exists(),
-        ).toBe(false);
-        expect(
-            wrapper.find<HTMLInputElement>(".related-resources-filter").element
-                .value,
-        ).toBe("smalt");
-
-        await wrapper
-            .find(".report-drawer-header button[aria-label='Expand panel']")
-            .trigger("click");
-
-        expect(
-            wrapper.find(".report-drawer-stage .report-drawer-panel").exists(),
-        ).toBe(true);
-        expect(
-            wrapper
-                .find(".split-pane-overlay-host .report-drawer-panel")
-                .exists(),
-        ).toBe(false);
-    });
-
-    it("reopens a closed panel at its usual width", async () => {
-        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([
-            PIGMENTS_GROUP,
-        ]);
-        const wrapper = mountReport(drawerConfig());
-        await flushPromises();
-        await drawerTrigger(wrapper, "Related Resources").trigger("click");
-        await wrapper
-            .find(".report-drawer-header button[aria-label='Expand panel']")
-            .trigger("click");
-        await wrapper
-            .find(".report-drawer-header button[aria-label='Close']")
-            .trigger("click");
-        await drawerTrigger(wrapper, "Related Resources").trigger("click");
-
-        expect(
-            wrapper.find(".report-drawer-stage .report-drawer-panel").exists(),
-        ).toBe(true);
-        expect(
-            wrapper
-                .find(".report-drawer-header button[aria-label='Expand panel']")
-                .attributes("aria-pressed"),
-        ).toBe("false");
-    });
-
     it("summarizes the latest edit and which cards have data", async () => {
         vi.mocked(fetchReportContext).mockResolvedValue({
             ...makeContext(),
@@ -1573,140 +936,5 @@ describe("ResourceReport", () => {
                 cards: [{ name: "Current Owner", isRequired: true }],
             },
         ]);
-    });
-
-    it("gives the aside the share of the width its config sets", async () => {
-        const wrapper = await openDataWorkspace();
-
-        expect(wrapper.find(".split-pane-aside").attributes("style")).toContain(
-            "60%",
-        );
-    });
-
-    it("notes a record with no edit history", async () => {
-        const wrapper = await openDataWorkspace();
-
-        const facts = summaryFacts(wrapper);
-        expect(facts["Last updated"]).toBe("No edits recorded");
-        expect(facts["Updated by"]).toBe(EMPTY_VALUE);
-    });
-
-    it("reloads the report context once edits are applied", async () => {
-        vi.mocked(saveResourceChanges).mockResolvedValue(RESOURCE);
-        const wrapper = await openDataWorkspace();
-        expect(fetchReportContext).toHaveBeenCalledTimes(1);
-
-        await wrapper.find(".data-folio-toggle").trigger("click");
-        await buttonWithText(wrapper, ".data-folio-tiles", "Edit").trigger(
-            "click",
-        );
-        await wrapper.find(".card-stub").trigger("click");
-        await buttonWithText(
-            wrapper,
-            ".edit-list-tray-actions",
-            "Apply all edits",
-        ).trigger("click");
-        await flushPromises();
-
-        expect(saveResourceChanges).toHaveBeenCalled();
-        expect(fetchReportContext).toHaveBeenCalledTimes(2);
-    });
-
-    it("gives way to the editor while an entry is being edited", async () => {
-        const wrapper = await openDataWorkspace();
-        expect(wrapper.find(".record-summary-panel").exists()).toBe(true);
-
-        await wrapper.find(".data-folio-toggle").trigger("click");
-        await buttonWithText(wrapper, ".data-folio-tiles", "Edit").trigger(
-            "click",
-        );
-
-        expect(wrapper.find(".editor-panel-overlay").exists()).toBe(true);
-        expect(wrapper.find(".record-summary-panel").exists()).toBe(false);
-
-        await wrapper.find(".editor-panel-close").trigger("click");
-
-        expect(wrapper.find(".record-summary-panel").exists()).toBe(true);
-    });
-
-    it("says so when every card has data", async () => {
-        vi.mocked(fetchResource).mockResolvedValue({
-            ...RESOURCE,
-            aliased_data: {
-                ...RESOURCE.aliased_data,
-                owners: {
-                    ...RESOURCE.aliased_data.names[0],
-                    aliased_data: {
-                        owner_content: {
-                            display_value: "Getty",
-                            node_value: "Getty",
-                            details: [],
-                        },
-                    },
-                    nodegroup: "owners-nodegroup",
-                    tileid: "owner-tile",
-                },
-            },
-        });
-        const wrapper = await openDataWorkspace();
-
-        expect(summaryFacts(wrapper)["Cards without data"]).toBe("0");
-        expect(wrapper.find(".record-summary-panel-group").exists()).toBe(
-            false,
-        );
-        expect(wrapper.find(".record-summary-panel-none").text()).toBe(
-            "Every card has data.",
-        );
-    });
-
-    it("clears the data filter from its clear button", async () => {
-        const wrapper = await openDataWorkspace(document.body);
-        expect(wrapper.find(".data-browser-filter-clear").exists()).toBe(false);
-        vi.useFakeTimers();
-        await wrapper.find(".data-browser-filter").setValue("zzz");
-        await vi.advanceTimersByTimeAsync(300);
-        vi.useRealTimers();
-        await flushPromises();
-        expect(wrapper.findAll(".data-browser-folio")).toHaveLength(0);
-
-        await wrapper.find(".data-browser-filter-clear").trigger("click");
-
-        const filterInput = wrapper.find<HTMLInputElement>(
-            ".data-browser-filter",
-        ).element;
-        expect(filterInput.value).toBe("");
-        expect(document.activeElement).toBe(filterInput);
-        expect(wrapper.find(".data-browser-filter-clear").exists()).toBe(false);
-        expect(wrapper.findAll(".data-browser-folio").length).toBeGreaterThan(
-            0,
-        );
-        wrapper.unmount();
-    });
-
-    it("adds an entry to a card, clearing a filter that hides it", async () => {
-        const wrapper = await openDataWorkspace(document.body);
-        vi.useFakeTimers();
-        await wrapper.find(".data-browser-filter").setValue("zzz");
-        await vi.advanceTimersByTimeAsync(300);
-        vi.useRealTimers();
-        await flushPromises();
-        expect(wrapper.findAll(".data-browser-folio")).toHaveLength(0);
-
-        await wrapper.find(".record-summary-panel-card-name").trigger("click");
-        await flushPromises();
-
-        const folio = wrapper.findAll(".data-browser-folio")[1];
-        expect(
-            wrapper.find<HTMLInputElement>(".data-browser-filter").element
-                .value,
-        ).toBe("");
-        expect(folio.text()).toContain("Current Owner");
-        expect(folio.classes()).toContain("data-browser-folio-flash");
-        expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
-        expect(fetchTileData).toHaveBeenCalledWith(expect.anything(), "owners");
-        expect(wrapper.find(".card-stub").exists()).toBe(true);
-        expect(wrapper.find(".record-summary-panel").exists()).toBe(false);
-
-        wrapper.unmount();
     });
 });

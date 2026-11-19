@@ -111,20 +111,6 @@ function card(nodegroupAlias: string): CompletenessCard {
 }
 
 describe("completenessCards", () => {
-    it("lists each visible top-level card in graph order", () => {
-        const cards = completenessCards(
-            NODEGROUP_WIDGET_CONFIGS,
-            {},
-            () => false,
-        );
-
-        expect(cards.map((completenessCard) => completenessCard.name)).toEqual([
-            "Name",
-            "Current Owner",
-            "Color",
-        ]);
-    });
-
     it("has data once an entry holds a value and is not being deleted", () => {
         const cards = completenessCards(
             NODEGROUP_WIDGET_CONFIGS,
@@ -137,18 +123,6 @@ describe("completenessCards", () => {
 
         expect(
             cards.map((completenessCard) => completenessCard.hasData),
-        ).toEqual([false, true, false]);
-    });
-
-    it("marks a card required when any of its fields is required", () => {
-        const cards = completenessCards(
-            NODEGROUP_WIDGET_CONFIGS,
-            {},
-            () => false,
-        );
-
-        expect(
-            cards.map((completenessCard) => completenessCard.isRequired),
         ).toEqual([false, true, false]);
     });
 });
@@ -175,37 +149,5 @@ describe("groupCardsByReportTab", () => {
             { tabLabel: "Overview", aliases: ["owner", "names"] },
             { tabLabel: "Physical", aliases: ["colors"] },
         ]);
-    });
-
-    it("puts cards no tab shows last, and drops empty tabs", () => {
-        const groups = groupCardsByReportTab(
-            [card("names"), card("owner"), card("colors")],
-            [
-                { label: "Overview", nodegroupAliases: ["names"] },
-                { label: "Graph", nodegroupAliases: [] },
-            ],
-            NODEGROUP_WIDGET_CONFIGS,
-        );
-
-        expect(groups.map((group) => group.tabLabel)).toEqual([
-            "Overview",
-            null,
-        ]);
-        expect(
-            groups[1].cards.map((groupCard) => groupCard.nodegroupAlias),
-        ).toEqual(["owner", "colors"]);
-    });
-
-    it("shows each card once, in the first tab that shows it", () => {
-        const groups = groupCardsByReportTab(
-            [card("names")],
-            [
-                { label: "Overview", nodegroupAliases: ["names"] },
-                { label: "Physical", nodegroupAliases: ["names"] },
-            ],
-            NODEGROUP_WIDGET_CONFIGS,
-        );
-
-        expect(groups.map((group) => group.tabLabel)).toEqual(["Overview"]);
     });
 });

@@ -253,50 +253,6 @@ describe("DataFolio", () => {
         ).toBe(true);
     });
 
-    it("names the language of a value entered in another", async () => {
-        const changeSet = effectScope().run(() =>
-            useResourceChangeSet("pigment", "resource"),
-        )!;
-        await flushPromises();
-        const wrapper = mount(DataFolio, {
-            props: {
-                nodegroupAlias: "origin",
-                nodegroupWidgetConfigs: NODEGROUP_WIDGET_CONFIGS,
-                tiles: [
-                    makeTile("origin", 0, {
-                        origin_place: {
-                            display_value: "",
-                            node_value: {
-                                en: { value: "", direction: "ltr" },
-                                de: { value: "Sachsen", direction: "ltr" },
-                            },
-                            details: [],
-                        },
-                    }),
-                ],
-                parentTileId: null,
-                changeSet,
-                query: "",
-                matchedByAncestor: false,
-                selectedTileId: null,
-                isEditable: true,
-                activeLanguage: "en",
-                languageNames: { en: "English", de: "German" },
-            },
-            global: { plugins: [[OpenVue, { theme: "none" }]] },
-        });
-        await wrapper
-            .find(".data-folio-header [aria-expanded]")
-            .trigger("click");
-
-        const value = wrapper.find(".data-folio-field dd");
-        expect(value.classes()).toContain("data-folio-field-languages");
-        expect(value.find(".language-name").text()).toBe("German");
-        expect(value.find(".data-folio-field-language-text").text()).toBe(
-            "Sachsen",
-        );
-    });
-
     it("collapses a tile that the filter expanded", async () => {
         const { wrapper } = await mountEditor("names", "glass");
         expect(

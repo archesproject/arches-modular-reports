@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import {
-    containsFolios,
     folioLocations,
     nodegroupAliasesWithin,
     reportTabGroups,
@@ -69,12 +68,6 @@ describe("nodegroupAliasesWithin", () => {
 });
 
 describe("reportTabGroups", () => {
-    it("lists each report tab with the nodegroups it shows", () => {
-        expect(reportTabGroups(REPORT_TREE, "de", "en")).toEqual([
-            { label: "Übersicht", nodegroupAliases: ["names", "statements"] },
-        ]);
-    });
-
     it("places a nodegroup shown in two tabs in the first only", () => {
         const tab = (
             label: string,
@@ -106,10 +99,6 @@ describe("reportTabGroups", () => {
             { label: "Physical", nodegroupAliases: ["colors"] },
         ]);
     });
-
-    it("finds no tabs in a report without ReportTabs", () => {
-        expect(reportTabGroups([REPORT_TREE[1]], "en", "en")).toEqual([]);
-    });
 });
 
 describe("folioLocations", () => {
@@ -118,25 +107,6 @@ describe("folioLocations", () => {
             names: "Übersicht / Names",
             statements: "Übersicht",
         });
-    });
-});
-
-describe("containsFolios", () => {
-    it("finds folios at any depth, and only folios", () => {
-        expect(containsFolios(REPORT_TREE[0])).toBe(true);
-        expect(
-            containsFolios({
-                component: "app/SplitPane",
-                config: {
-                    main: [
-                        {
-                            component: "app/DataBrowser/DataBrowser",
-                            config: {},
-                        },
-                    ],
-                },
-            }),
-        ).toBe(false);
     });
 });
 

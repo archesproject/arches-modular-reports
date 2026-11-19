@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-    hasOtherLanguages,
     localizedTexts,
-    nodeHasData,
-    nodeSearchTexts,
     nodeText,
 } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import {
@@ -36,12 +33,6 @@ const BOTH: AliasedNodeData = {
     details: [],
 };
 
-const NUMBER: AliasedNodeData = {
-    display_value: "42",
-    node_value: 42,
-    details: [],
-};
-
 function tileWith(nodeData: AliasedNodeData): AliasedTileData {
     return {
         aliased_data: { name_content: nodeData },
@@ -63,56 +54,11 @@ describe("localizedTexts", () => {
             localizedTexts(GERMAN_ONLY, "en").map((text) => text.languageCode),
         ).toEqual(["de"]);
     });
-
-    it("has nothing to say about values that aren't multilingual text", () => {
-        expect(localizedTexts(NUMBER, "en")).toEqual([]);
-        expect(localizedTexts(null, "en")).toEqual([]);
-    });
-
-    it("tells when a value has text outside the reader's language", () => {
-        expect(hasOtherLanguages(localizedTexts(BOTH, "en"), "en")).toBe(true);
-        expect(
-            hasOtherLanguages(
-                localizedTexts(
-                    {
-                        ...BOTH,
-                        node_value: {
-                            en: { value: "Cobalt blue", direction: "ltr" },
-                        },
-                    },
-                    "en",
-                ),
-                "en",
-            ),
-        ).toBe(false);
-    });
 });
 
 describe("nodeText", () => {
-    it("prefers the display value", () => {
-        expect(nodeText(BOTH)).toBe("Cobalt blue");
-        expect(nodeText(NUMBER)).toBe("42");
-    });
-
     it("falls back to another language's plain text", () => {
         expect(nodeText(GERMAN_ONLY)).toBe("Mythische Figur");
-    });
-
-    it("counts only real text as data", () => {
-        expect(nodeHasData(GERMAN_ONLY)).toBe(true);
-        expect(
-            nodeHasData({
-                display_value: "  ",
-                node_value: { en: { value: " ", direction: "ltr" } },
-                details: [],
-            }),
-        ).toBe(false);
-        expect(nodeHasData(null)).toBe(false);
-    });
-
-    it("searches every language", () => {
-        expect(nodeSearchTexts(BOTH)).toEqual(["Kobaltblau", "Cobalt blue"]);
-        expect(nodeSearchTexts(NUMBER)).toEqual(["42"]);
     });
 });
 

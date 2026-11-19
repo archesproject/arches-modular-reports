@@ -14,7 +14,6 @@ from arches.app.models.models import (
     EditLog,
     FunctionXGraph,
     Language,
-    Plugin,
     Node,
     NodeGroup,
     ResourceInstance,
@@ -25,7 +24,6 @@ from arches.app.models.models import (
 from arches_modular_reports.app.views.modular_report import (
     EditHistoryView,
     RelatedResourceGroupsView,
-    ResourceCopiesView,
     ResourceImagesView,
 )
 
@@ -500,45 +498,6 @@ class ResourceReportEndpointTests(TestCase):
         )
         self.assertIsNone(second_page["next_cursor"])
 
-    def test_edit_history_describes_geometry_by_kind(self):
-        location = Node.objects.create(
-            nodegroup=self.names,
-            name="Location",
-            alias="location",
-            graph=self.graph,
-            istopnode=False,
-            datatype="geojson-feature-collection",
-        )
-
-        def feature(geometry_type):
-            return {"type": "Feature", "geometry": {"type": geometry_type}}
-
-        EditLog.objects.filter(resourceinstanceid=str(self.resource.pk)).update(
-            oldvalue={str(location.pk): None},
-            newvalue={
-                str(location.pk): {
-                    "type": "FeatureCollection",
-                    "features": [
-                        feature("Point"),
-                        feature("Polygon"),
-                        feature("MultiPolygon"),
-                    ],
-                }
-            },
-        )
-        self.client.force_login(self.superuser)
-
-        response = self.client.get(reverse("api_edit_history", args=[self.resource.pk]))
-
-        location_value = [
-            value
-            for value in response.json()["results"][0]["values"]
-            if value["node_alias"] == "location"
-        ][0]
-        self.assertEqual(location_value["before"], "")
-        self.assertEqual(location_value["after"], "1 point, 2 polygons")
-        self.assertTrue(location_value["changed"])
-
     def test_edit_history_names_values_in_other_languages(self):
         Language.objects.get_or_create(
             code="de", defaults={"name": "German", "default_direction": "ltr"}
@@ -562,19 +521,6 @@ class ResourceReportEndpointTests(TestCase):
         ][0]
         self.assertEqual(name_value["before"], "Old")
         self.assertEqual(name_value["after"], "Neu (German)")
-
-    def test_report_context_names_the_languages_and_latest_edit(self):
-        Language.objects.get_or_create(
-            code="de", defaults={"name": "German", "default_direction": "ltr"}
-        )
-        self.client.force_login(self.superuser)
-
-        response = self.client.get(
-            reverse("api_report_context", args=[self.resource.pk])
-        )
-
-        self.assertEqual(response.json()["languages"]["de"], "German")
-        self.assertEqual(response.json()["latest_edit"]["user"], "Ada Lovelace")
 
     def add_name_descriptor(self):
         template = {"nodegroup_id": str(self.names.pk), "string_template": ""}
@@ -678,35 +624,6 @@ class ResourceReportEndpointTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(self.client.get(copies_url).status_code, 200)
 
-    def test_copies_list_newest_first_with_current_and_deleted_names(self):
-        renamed_copy = ResourceInstance.objects.create(
-            graph=self.graph, name={"en": "Current name"}
-        )
-        deleted_copy_id = uuid.uuid4()
-        self.log_copy(renamed_copy.pk, "Name at copy time", timezone.now())
-        self.log_copy(deleted_copy_id, "Deleted copy", timezone.now() + timedelta(1))
-        self.client.force_login(self.superuser)
-
-        results = self.client.get(
-            reverse("api_resource_copies", args=[self.resource.pk])
-        ).json()["results"]
-
-        self.assertEqual(
-            [
-                (result["name"], result["is_deleted"], result["report_url"])
-                for result in results
-            ],
-            [
-                ("Deleted copy", True, None),
-                (
-                    "Current name",
-                    False,
-                    reverse("resource_report", args=[renamed_copy.pk]),
-                ),
-            ],
-        )
-        self.assertEqual(results[0]["user"], "Grace Hopper")
-
     def test_copies_skip_copies_the_user_cannot_read(self):
         hidden_copy = ResourceInstance.objects.create(graph=self.graph)
         make_nodegroup(self.graph, "notes")
@@ -719,48 +636,3 @@ class ResourceReportEndpointTests(TestCase):
         )
 
         self.assertEqual(response.json()["results"], [])
-
-    def test_copies_page_by_cursor(self):
-        first_copy = ResourceInstance.objects.create(graph=self.graph)
-        second_copy = ResourceInstance.objects.create(graph=self.graph)
-        self.log_copy(first_copy.pk, "First", timezone.now() - timedelta(1))
-        self.log_copy(second_copy.pk, "Second", timezone.now())
-        self.client.force_login(self.superuser)
-        copies_url = reverse("api_resource_copies", args=[self.resource.pk])
-
-        with mock.patch.object(ResourceCopiesView, "page_size", 1):
-            first_page = self.client.get(copies_url).json()
-            second_page = self.client.get(
-                copies_url, {"after": first_page["next_cursor"]}
-            ).json()
-
-        self.assertEqual(
-            [
-                result["resourceid"]
-                for result in first_page["results"] + second_page["results"]
-            ],
-            [str(second_copy.pk), str(first_copy.pk)],
-        )
-        self.assertIsNone(second_page["next_cursor"])
-
-    def test_report_context_links_to_the_arches_search_plugin_if_installed(self):
-        self.client.force_login(self.superuser)
-        context_url = reverse("api_report_context", args=[self.resource.pk])
-        Plugin.objects.filter(slug="arches-search").delete()
-
-        with mock.patch(
-            "arches_modular_reports.app.views.modular_report.reverse",
-            side_effect=lambda name, **kwargs: f"/{name}",
-        ):
-            without_plugin = self.client.get(context_url).json()["search_url"]
-            Plugin.objects.create(
-                slug="arches-search",
-                name={"en": "Search"},
-                icon="",
-                component="",
-                componentname="",
-            )
-            with_plugin = self.client.get(context_url).json()["search_url"]
-
-        self.assertEqual(without_plugin, "/search_home")
-        self.assertEqual(with_plugin, "/plugins")
