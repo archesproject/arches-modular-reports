@@ -43,6 +43,7 @@ describe("summaryRows", () => {
                 [{ node_alias: "name_content", label: { en: "Name" } }],
                 ALIASED_DATA,
                 "en",
+                "en",
             ),
         ).toEqual([
             {
@@ -67,6 +68,7 @@ describe("summaryRows", () => {
                         nameTile("blank", 1, "<p></p>"),
                     ],
                 },
+                "en",
                 "en",
             )[0].values,
         ).toEqual(["Said to be mythical"]);

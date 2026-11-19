@@ -82,6 +82,7 @@ const summaryLines = computed(() =>
         component.config.summary ?? [],
         reportData.value.resource.aliased_data,
         reportData.value.context.language,
+        reportData.value.context.default_language,
     ),
 );
 

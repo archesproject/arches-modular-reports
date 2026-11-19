@@ -12,10 +12,15 @@ export function summaryRows(
     summaryEntries: SummaryEntryConfig[],
     aliasedData: AliasedData,
     activeLanguage: string,
+    defaultLanguage: string,
 ): SummaryRow[] {
     return summaryEntries.map((summaryEntry) => ({
         nodeAlias: summaryEntry.node_alias,
-        label: localizeLabel(summaryEntry.label, activeLanguage),
+        label: localizeLabel(
+            summaryEntry.label,
+            activeLanguage,
+            defaultLanguage,
+        ),
         values: findNodeValues(aliasedData, summaryEntry.node_alias)
             .map(nodeText)
             .filter((valueText) => valueText.trim() !== ""),

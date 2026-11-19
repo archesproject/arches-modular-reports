@@ -48,6 +48,7 @@ export function useTabbedComponents(
                     label: localizeLabel(
                         childNode.config.label ?? null,
                         reportData.value.context.language,
+                        reportData.value.context.default_language,
                     ),
                     nodegroupAliases,
                     hasData: tabHasData(nodegroupAliases),

@@ -125,7 +125,7 @@ Every level of a report config is a component: a `component` path and the `confi
 
 `ResourceReport` loads the resource and renders its `components` in order. With `"config": {}` it renders an empty report. Nothing below it is fixed: a report can have tabs or none, one pane or two, sections or a plain list of folios.
 
-Labels are a string or an object keyed by language, e.g. `{"en": "Report"}`. A missing child list means no children. A component that is missing config it needs shows an error where it would appear.
+Labels are a string or an object keyed by language, e.g. `{"en": "Report"}`; a language without an entry shows the default language's label. A missing child list means no children. A component that is missing config it needs shows an error where it would appear.
 
 Configs are validated against the graph on save, without looking at component names:
 

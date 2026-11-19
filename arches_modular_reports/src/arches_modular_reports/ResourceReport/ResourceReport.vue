@@ -100,11 +100,19 @@ const graphNodesByAlias = computed(() =>
 );
 
 const folioLocationsByNodegroupAlias = computed(() =>
-    folioLocations(childNodes.value, context.value?.language ?? ""),
+    folioLocations(
+        childNodes.value,
+        context.value?.language ?? "",
+        context.value?.default_language ?? "",
+    ),
 );
 
 const reportTabs = computed(() =>
-    reportTabGroups(childNodes.value, context.value?.language ?? ""),
+    reportTabGroups(
+        childNodes.value,
+        context.value?.language ?? "",
+        context.value?.default_language ?? "",
+    ),
 );
 
 const reportData = computed<ReportData | null>(() => {

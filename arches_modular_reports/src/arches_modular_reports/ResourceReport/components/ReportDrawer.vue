@@ -64,6 +64,7 @@ function panelLabel(panel: ComponentNode<LabelledConfig>): string {
     return localizeLabel(
         panel.config.label ?? null,
         reportData.value.context.language,
+        reportData.value.context.default_language,
     );
 }
 

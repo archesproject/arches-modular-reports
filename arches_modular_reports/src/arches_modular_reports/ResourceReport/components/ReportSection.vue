@@ -20,6 +20,7 @@ const label = computed(() =>
     localizeLabel(
         component.config.label ?? null,
         reportData.value.context.language,
+        reportData.value.context.default_language,
     ),
 );
 

@@ -28,10 +28,14 @@ def extract_substrings(template_string):
 
 
 def translated_labels(message):
-    labels = {}
-    for language in settings.LANGUAGES:
-        with translation.override(language[0]):
-            labels[language[0]] = gettext(message)
+    with translation.override(settings.LANGUAGE_CODE):
+        default_label = gettext(message)
+    labels = {settings.LANGUAGE_CODE: default_label}
+    for language_code, _language_name in settings.LANGUAGES:
+        with translation.override(language_code):
+            translated_message = gettext(message)
+        if translated_message != default_label:
+            labels[language_code] = translated_message
     return labels
 
 

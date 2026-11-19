@@ -70,7 +70,7 @@ describe("nodegroupAliasesWithin", () => {
 
 describe("reportTabGroups", () => {
     it("lists each report tab with the nodegroups it shows", () => {
-        expect(reportTabGroups(REPORT_TREE, "de")).toEqual([
+        expect(reportTabGroups(REPORT_TREE, "de", "en")).toEqual([
             { label: "Übersicht", nodegroupAliases: ["names", "statements"] },
         ]);
     });
@@ -101,20 +101,20 @@ describe("reportTabGroups", () => {
             },
         ];
 
-        expect(reportTabGroups(tree, "en")).toEqual([
+        expect(reportTabGroups(tree, "en", "en")).toEqual([
             { label: "Overview", nodegroupAliases: ["names"] },
             { label: "Physical", nodegroupAliases: ["colors"] },
         ]);
     });
 
     it("finds no tabs in a report without ReportTabs", () => {
-        expect(reportTabGroups([REPORT_TREE[1]], "en")).toEqual([]);
+        expect(reportTabGroups([REPORT_TREE[1]], "en", "en")).toEqual([]);
     });
 });
 
 describe("folioLocations", () => {
     it("joins the labels above each folio in the active language", () => {
-        expect(folioLocations(REPORT_TREE, "de")).toEqual({
+        expect(folioLocations(REPORT_TREE, "de", "en")).toEqual({
             names: "Übersicht / Names",
             statements: "Übersicht",
         });

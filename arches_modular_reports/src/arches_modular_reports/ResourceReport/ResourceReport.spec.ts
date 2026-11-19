@@ -167,6 +167,7 @@ function makeContext(
         },
         search_url: "/search",
         language: "en",
+        default_language: "en",
         language_dir: "ltr",
         languages: { en: "English", de: "German" },
         latest_edit: null,

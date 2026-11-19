@@ -134,6 +134,7 @@ export interface ReportContext {
     lifecycle_state: LifecycleState;
     search_url: string | null;
     language: string;
+    default_language: string;
     language_dir: "ltr" | "rtl";
     languages: Record<string, string>;
     latest_edit: LatestEdit | null;

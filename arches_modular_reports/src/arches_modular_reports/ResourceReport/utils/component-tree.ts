@@ -115,6 +115,7 @@ export function nodegroupAliasesWithin(
 export function reportTabGroups(
     nodes: ComponentNode<object>[],
     activeLanguage: string,
+    defaultLanguage: string,
 ): ReportTabGroup[] {
     const placedNodegroupAliases = new Set<string>();
     return descendantNodes(nodes)
@@ -136,6 +137,7 @@ export function reportTabGroups(
                 label: localizeLabel(
                     tabNode.config.label ?? null,
                     activeLanguage,
+                    defaultLanguage,
                 ),
                 nodegroupAliases,
             };
@@ -145,6 +147,7 @@ export function reportTabGroups(
 export function folioLocations(
     nodes: ComponentNode<object>[],
     activeLanguage: string,
+    defaultLanguage: string,
 ): Record<string, string> {
     const locationsByNodegroupAlias: Record<string, string> = {};
 
@@ -153,7 +156,11 @@ export function folioLocations(
             locationsByNodegroupAlias[node.config.nodegroup_alias] ??=
                 ancestorLabels.join(" / ");
         }
-        const label = localizeLabel(node.config.label ?? null, activeLanguage);
+        const label = localizeLabel(
+            node.config.label ?? null,
+            activeLanguage,
+            defaultLanguage,
+        );
         const labels =
             label === "" ? ancestorLabels : [...ancestorLabels, label];
         for (const childNode of childNodes(node)) {

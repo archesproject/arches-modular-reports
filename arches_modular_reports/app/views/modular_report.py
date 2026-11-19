@@ -27,6 +27,7 @@ from django.views.generic import View
 
 from arches.app.models import models
 from arches.app.models.resource import Resource
+from arches.app.models.system_settings import settings
 from arches.app.utils.betterJSONSerializer import JSONDeserializer
 from arches.app.utils.decorators import can_read_resource_instance
 from arches.app.utils.permission_backend import (
@@ -188,6 +189,7 @@ class ReportContextView(APIBase):
                 "lifecycle_state": resource.resource_instance_lifecycle_state.serialize(),
                 "search_url": search_url(),
                 "language": get_language(),
+                "default_language": settings.LANGUAGE_CODE,
                 "language_dir": (
                     "rtl" if get_language_info(get_language())["bidi"] else "ltr"
                 ),
