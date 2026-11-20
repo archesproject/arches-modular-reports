@@ -9,7 +9,14 @@ import type {
     AliasedTileData,
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
+import type { NodeTextContext } from "@/arches_modular_reports/ResourceReport/types.ts";
 import type { CompletenessCard } from "@/arches_modular_reports/ResourceReport/utils/completeness.ts";
+
+const NODE_TEXT_CONTEXT: NodeTextContext = {
+    richTextNodeAliases: new Set(),
+    activeLanguage: "",
+    defaultLanguage: "",
+};
 
 function nodegroupConfig({
     name,
@@ -119,6 +126,7 @@ describe("completenessCards", () => {
                 owner: tile("owner", "Getty"),
             },
             (tileId) => tileId === "doomed",
+            NODE_TEXT_CONTEXT,
         );
 
         expect(

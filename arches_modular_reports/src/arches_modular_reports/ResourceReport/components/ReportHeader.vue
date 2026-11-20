@@ -81,8 +81,7 @@ const summaryLines = computed(() =>
     summaryRows(
         component.config.summary ?? [],
         reportData.value.resource.aliased_data,
-        reportData.value.context.language,
-        reportData.value.context.default_language,
+        reportData.value.nodeTextContext,
     ),
 );
 

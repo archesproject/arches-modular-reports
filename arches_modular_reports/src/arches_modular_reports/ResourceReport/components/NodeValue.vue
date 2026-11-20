@@ -26,7 +26,13 @@ const reportData = useReportData();
 
 const activeLanguage = computed(() => reportData.value.context.language);
 
-const texts = computed(() => localizedTexts(nodeData, activeLanguage.value));
+const texts = computed(() =>
+    localizedTexts(
+        widget.node.alias,
+        nodeData,
+        reportData.value.nodeTextContext,
+    ),
+);
 
 const isMultilingual = computed(() =>
     hasOtherLanguages(texts.value, activeLanguage.value),

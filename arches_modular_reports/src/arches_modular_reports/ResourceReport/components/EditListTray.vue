@@ -8,8 +8,10 @@ import Message from "openvue/message";
 import AlertDialog from "@/arches_modular_reports/ResourceReport/components/AlertDialog.vue";
 
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
-import { nodeText } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
-import { plainText } from "@/arches_modular_reports/ResourceReport/utils/plain-text.ts";
+import {
+    nodeText,
+    readableText,
+} from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import { findTile } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
 import { tileSummary } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
@@ -102,7 +104,22 @@ function nodegroupLabel(nodegroupAlias: string): string {
 }
 
 function displayOrEmpty(value: string | null | undefined): string {
-    return value ? plainText(value) : $gettext("(empty)");
+    return value || $gettext("(empty)");
+}
+
+function currentNodeText(
+    conflict: ChangeConflict,
+    nodeAlias: string,
+): string | null {
+    const currentDisplay = conflict.nodes?.[nodeAlias].currentDisplay;
+    if (!currentDisplay) {
+        return null;
+    }
+    return readableText(
+        nodeAlias,
+        currentDisplay,
+        reportData.value.nodeTextContext,
+    );
 }
 
 function pendingNodeText(
@@ -112,7 +129,11 @@ function pendingNodeText(
     if (change?.type !== "edit") {
         return null;
     }
-    return nodeText(change.aliasedData[nodeAlias] ?? null);
+    return nodeText(
+        nodeAlias,
+        change.aliasedData[nodeAlias] ?? null,
+        reportData.value.nodeTextContext,
+    );
 }
 
 interface ConflictRow {
@@ -164,7 +185,7 @@ function describeConflict(conflict: ChangeConflict): ConflictViewModel {
         const rows = nodeAliases.map((nodeAlias) => ({
             field: nodeLabel(nodeAlias),
             mine: displayOrEmpty(pendingNodeText(change, nodeAlias)),
-            theirs: displayOrEmpty(conflict.nodes?.[nodeAlias].currentDisplay),
+            theirs: displayOrEmpty(currentNodeText(conflict, nodeAlias)),
         }));
         return {
             ...base,
@@ -197,6 +218,7 @@ function describeConflict(conflict: ChangeConflict): ConflictViewModel {
                 reportData.value.nodegroupWidgetConfigs[
                     conflict.nodegroupAlias
                 ],
+                reportData.value.nodeTextContext,
             );
         }
         return {
@@ -290,6 +312,7 @@ function changedTileSummary(change: ResourceChange): string {
     return tileSummary(
         tile,
         reportData.value.nodegroupWidgetConfigs[change.nodegroupAlias],
+        reportData.value.nodeTextContext,
     );
 }
 

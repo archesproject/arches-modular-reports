@@ -12,7 +12,10 @@ import type {
     AliasedTileData,
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
-import type { ResourceChangeSet } from "@/arches_modular_reports/ResourceReport/types.ts";
+import type {
+    NodeTextContext,
+    ResourceChangeSet,
+} from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const SUMMARY_FIELD_COUNT = 2;
 
@@ -53,22 +56,30 @@ export function containsTile(tile: AliasedTileData, tileId: string): boolean {
     );
 }
 
-export function tileHasData(tile: AliasedTileData): boolean {
-    return Object.values(tile.aliased_data).some((value) => {
+export function tileHasData(
+    tile: AliasedTileData,
+    context: NodeTextContext,
+): boolean {
+    return Object.entries(tile.aliased_data).some(([alias, value]) => {
         if (isAliasedNodeData(value)) {
-            return nodeHasData(value);
+            return nodeHasData(alias, value, context);
         }
-        return nodegroupTiles(value).some(tileHasData);
+        return nodegroupTiles(value).some((childTile) =>
+            tileHasData(childTile, context),
+        );
     });
 }
 
-export function tileSearchText(tile: AliasedTileData): string {
+export function tileSearchText(
+    tile: AliasedTileData,
+    context: NodeTextContext,
+): string {
     const displayValues: string[] = [];
 
     function visit(currentTile: AliasedTileData): void {
-        for (const value of Object.values(currentTile.aliased_data)) {
+        for (const [alias, value] of Object.entries(currentTile.aliased_data)) {
             if (isAliasedNodeData(value)) {
-                displayValues.push(...nodeSearchTexts(value));
+                displayValues.push(...nodeSearchTexts(alias, value, context));
             } else {
                 nodegroupTiles(value).forEach(visit);
             }
@@ -97,13 +108,18 @@ export function canAddTile(
 export function tileSummary(
     tile: AliasedTileData,
     nodegroupWidgetConfig: NodegroupWidgetConfig,
+    context: NodeTextContext,
 ): string {
     const summaryValues: string[] = [];
     const summaryWidgets = nodegroupWidgetConfig.card_x_node_x_widgets
         .filter((widget) => widget.visible)
         .slice(0, SUMMARY_FIELD_COUNT);
     for (const widget of summaryWidgets) {
-        const valueText = nodeText(aliasedNodeDataOf(tile, widget.node.alias));
+        const valueText = nodeText(
+            widget.node.alias,
+            aliasedNodeDataOf(tile, widget.node.alias),
+            context,
+        );
         if (valueText.trim() !== "") {
             summaryValues.push(valueText);
         }

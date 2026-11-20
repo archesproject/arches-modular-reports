@@ -13,7 +13,7 @@ import { useReportData } from "@/arches_modular_reports/ResourceReport/composabl
 import { fetchEditHistory } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { useFilterQuery } from "@/arches_modular_reports/ResourceReport/composables/useFilterQuery.ts";
 import { PANEL_COUNT_EVENT } from "@/arches_modular_reports/ResourceReport/constants.ts";
-import { plainText } from "@/arches_modular_reports/ResourceReport/utils/plain-text.ts";
+import { readableText } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 
 import type {
     ComponentNode,
@@ -135,8 +135,11 @@ function isShowingAllFields(entry: EditHistoryEntry): boolean {
     return fullyShownEntryIds.value.has(entry.editlogid);
 }
 
-function valueText(value: string | null): string {
-    return value === null ? "" : plainText(value);
+function valueText(nodeAlias: string, value: string | null): string {
+    if (value === null) {
+        return "";
+    }
+    return readableText(nodeAlias, value, reportData.value.nodeTextContext);
 }
 
 function displayedValues(entry: EditHistoryEntry): EditHistoryValue[] {
@@ -298,7 +301,12 @@ function toggleAllFields(entry: EditHistoryEntry): void {
                                     }}
                                 </dt>
                                 <dd>
-                                    <span>{{ valueText(value.before) }}</span>
+                                    <span>{{
+                                        valueText(
+                                            value.node_alias,
+                                            value.before,
+                                        )
+                                    }}</span>
                                     <span
                                         v-if="isMarkedChanged(entry, value)"
                                         class="edit-history-changed-marker"
@@ -351,7 +359,9 @@ function toggleAllFields(entry: EditHistoryEntry): void {
                                     }}
                                 </dt>
                                 <dd>
-                                    <span>{{ valueText(value.after) }}</span>
+                                    <span>{{
+                                        valueText(value.node_alias, value.after)
+                                    }}</span>
                                     <span
                                         v-if="isMarkedChanged(entry, value)"
                                         class="edit-history-changed-marker"

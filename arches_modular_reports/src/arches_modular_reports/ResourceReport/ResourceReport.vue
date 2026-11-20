@@ -31,7 +31,10 @@ import {
     reportTabGroups,
     withoutHiddenCards,
 } from "@/arches_modular_reports/ResourceReport/utils/component-tree.ts";
-import { indexGraphNodes } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
+import {
+    indexGraphNodes,
+    richTextNodeAliases,
+} from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 
 import type {
     ComponentNode,
@@ -99,6 +102,14 @@ const graphNodesByAlias = computed(() =>
     indexGraphNodes(graphWidgetConfigs.nodegroupWidgetConfigs.value ?? {}),
 );
 
+const nodeTextContext = computed(() => ({
+    richTextNodeAliases: richTextNodeAliases(
+        graphWidgetConfigs.nodegroupWidgetConfigs.value ?? {},
+    ),
+    activeLanguage: context.value?.language ?? "",
+    defaultLanguage: context.value?.default_language ?? "",
+}));
+
 const folioLocationsByNodegroupAlias = computed(() =>
     folioLocations(
         childNodes.value,
@@ -127,6 +138,7 @@ const reportData = computed<ReportData | null>(() => {
         context: context.value,
         nodegroupWidgetConfigs: graphWidgetConfigs.nodegroupWidgetConfigs.value,
         graphNodesByAlias: graphNodesByAlias.value,
+        nodeTextContext: nodeTextContext.value,
         folioLocations: folioLocationsByNodegroupAlias.value,
         reportTabs: reportTabs.value,
         resource: changeSet.workingResource.value,

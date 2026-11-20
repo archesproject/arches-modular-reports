@@ -140,6 +140,12 @@ export interface ReportContext {
     permissions: ReportPermissions;
 }
 
+export interface NodeTextContext {
+    richTextNodeAliases: ReadonlySet<string>;
+    activeLanguage: string;
+    defaultLanguage: string;
+}
+
 export interface GraphNode {
     label: string;
     nodegroupAlias: string;
@@ -307,6 +313,7 @@ export interface ReportData {
     resource: AliasedResourceData;
     nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>;
     graphNodesByAlias: Record<string, GraphNode>;
+    nodeTextContext: NodeTextContext;
     folioLocations: Record<string, string>;
     reportTabs: ReportTabGroup[];
     context: ReportContext;

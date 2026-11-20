@@ -19,8 +19,8 @@ import {
     hasOtherLanguages,
     localizedTexts,
     nodeText,
+    readableText,
 } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
-import { plainText } from "@/arches_modular_reports/ResourceReport/utils/plain-text.ts";
 import {
     childNodegroupAliases,
     nodegroupLineage,
@@ -41,6 +41,7 @@ import type {
 import type { LocalizedText } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import type {
     EditTileRequest,
+    NodeTextContext,
     ResourceChangeSet,
     TileChangeType,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
@@ -59,7 +60,7 @@ const {
     selectedTileId,
     isEditable,
     isRevealed = false,
-    activeLanguage = "",
+    nodeTextContext,
     languageNames = {},
 } = defineProps<{
     nodegroupAlias: string;
@@ -72,7 +73,7 @@ const {
     selectedTileId: string | null;
     isEditable: boolean;
     isRevealed?: boolean;
-    activeLanguage?: string;
+    nodeTextContext: NodeTextContext;
     languageNames?: Record<string, string>;
 }>();
 
@@ -261,7 +262,11 @@ watch(
 );
 
 function displayValue(tile: AliasedTileData, nodeAlias: string): string {
-    return nodeText(aliasedNodeDataOf(tile, nodeAlias));
+    return nodeText(
+        nodeAlias,
+        aliasedNodeDataOf(tile, nodeAlias),
+        nodeTextContext,
+    );
 }
 
 function multilingualTexts(
@@ -269,14 +274,21 @@ function multilingualTexts(
     nodeAlias: string,
 ): LocalizedText[] {
     const texts = localizedTexts(
+        nodeAlias,
         aliasedNodeDataOf(tile, nodeAlias),
-        activeLanguage,
+        nodeTextContext,
     );
-    return hasOtherLanguages(texts, activeLanguage) ? texts : [];
+    return hasOtherLanguages(texts, nodeTextContext.activeLanguage)
+        ? texts
+        : [];
 }
 
 function tileLabel(tile: AliasedTileData): string {
-    const summary = tileSummary(tile, nodegroupWidgetConfig.value);
+    const summary = tileSummary(
+        tile,
+        nodegroupWidgetConfig.value,
+        nodeTextContext,
+    );
     if (summary === "") {
         return $gettext("New entry");
     }
@@ -303,7 +315,7 @@ function isTileVisible(tile: AliasedTileData): boolean {
         return true;
     }
     return (
-        tileSearchText(tile).includes(query) ||
+        tileSearchText(tile, nodeTextContext).includes(query) ||
         childAliases.value.some((childAlias) =>
             nodegroupMatches(nodegroupWidgetConfigs, childAlias, query),
         )
@@ -327,6 +339,7 @@ function visibleChildFolios(
                     childFolio.nodegroupAlias,
                     childFolio.tiles,
                     query,
+                    nodeTextContext,
                 ),
         );
 }
@@ -728,7 +741,8 @@ function onDragEnd(): void {
                                 >
                                     <LanguageName
                                         v-if="
-                                            text.languageCode !== activeLanguage
+                                            text.languageCode !==
+                                            nodeTextContext.activeLanguage
                                         "
                                         :name="
                                             languageNames[text.languageCode] ??
@@ -741,7 +755,13 @@ function onDragEnd(): void {
                                         :dir="text.direction"
                                     >
                                         <HighlightedText
-                                            :text="plainText(text.value)"
+                                            :text="
+                                                readableText(
+                                                    widget.node.alias,
+                                                    text.value,
+                                                    nodeTextContext,
+                                                )
+                                            "
                                             :query="query"
                                         />
                                     </span>
@@ -772,7 +792,7 @@ function onDragEnd(): void {
                         :matched-by-ancestor="childrenMatchedByAncestor"
                         :selected-tile-id="selectedTileId"
                         :is-editable="isEditable"
-                        :active-language="activeLanguage"
+                        :node-text-context="nodeTextContext"
                         :language-names="languageNames"
                         @edit-tile="emit(EDIT_TILE, $event)"
                     />
@@ -823,7 +843,7 @@ function onDragEnd(): void {
                 :matched-by-ancestor="childrenMatchedByAncestor"
                 :selected-tile-id="selectedTileId"
                 :is-editable="false"
-                :active-language="activeLanguage"
+                :node-text-context="nodeTextContext"
                 :language-names="languageNames"
                 @edit-tile="emit(EDIT_TILE, $event)"
             />

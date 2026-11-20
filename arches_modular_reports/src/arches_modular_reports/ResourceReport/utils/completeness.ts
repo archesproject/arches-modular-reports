@@ -11,7 +11,10 @@ import type {
     AliasedData,
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
-import type { ReportTabGroup } from "@/arches_modular_reports/ResourceReport/types.ts";
+import type {
+    NodeTextContext,
+    ReportTabGroup,
+} from "@/arches_modular_reports/ResourceReport/types.ts";
 
 export interface CompletenessCard {
     nodegroupAlias: string;
@@ -29,6 +32,7 @@ export function completenessCards(
     nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>,
     aliasedData: AliasedData,
     isPendingDelete: (tileId: string) => boolean,
+    context: NodeTextContext,
 ): CompletenessCard[] {
     return childNodegroupAliases(nodegroupWidgetConfigs, null).map(
         (nodegroupAlias) => {
@@ -39,7 +43,7 @@ export function completenessCards(
                 name: nodegroupWidgetConfig.card?.name ?? nodegroupAlias,
                 hasData: nodegroupTiles(aliasedData[nodegroupAlias]).some(
                     (tile) =>
-                        tileHasData(tile) &&
+                        tileHasData(tile, context) &&
                         !isPendingDelete(tile.tileid ?? ""),
                 ),
                 isRequired: nodegroupWidgetConfig.card_x_node_x_widgets.some(

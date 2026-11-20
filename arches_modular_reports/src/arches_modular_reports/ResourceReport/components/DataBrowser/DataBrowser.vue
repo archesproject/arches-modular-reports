@@ -61,6 +61,7 @@ const folios = computed(() =>
                     folio.nodegroupAlias,
                     folio.tiles,
                     query.value,
+                    reportData.value.nodeTextContext,
                 ),
         ),
 );
@@ -181,7 +182,7 @@ function trackFolioElement(
                     :is-revealed="
                         flashedNodegroupAlias === folio.nodegroupAlias
                     "
-                    :active-language="reportData.context.language"
+                    :node-text-context="reportData.nodeTextContext"
                     :language-names="reportData.context.languages"
                     @edit-tile="reportData.editor.open"
                 />

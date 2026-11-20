@@ -14,6 +14,13 @@ import type {
     AliasedTileData,
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
+import type { NodeTextContext } from "@/arches_modular_reports/ResourceReport/types.ts";
+
+const NODE_TEXT_CONTEXT: NodeTextContext = {
+    richTextNodeAliases: new Set(["name_content"]),
+    activeLanguage: "en",
+    defaultLanguage: "en",
+};
 
 const GERMAN_ONLY: AliasedNodeData = {
     display_value: "",
@@ -48,17 +55,51 @@ function tileWith(nodeData: AliasedNodeData): AliasedTileData {
 describe("localizedTexts", () => {
     it("puts the reader's language first and drops blank languages", () => {
         expect(
-            localizedTexts(BOTH, "en").map((text) => text.languageCode),
+            localizedTexts("name_content", BOTH, NODE_TEXT_CONTEXT).map(
+                (text) => text.languageCode,
+            ),
         ).toEqual(["en", "de"]);
         expect(
-            localizedTexts(GERMAN_ONLY, "en").map((text) => text.languageCode),
+            localizedTexts("name_content", GERMAN_ONLY, NODE_TEXT_CONTEXT).map(
+                (text) => text.languageCode,
+            ),
         ).toEqual(["de"]);
     });
 });
 
 describe("nodeText", () => {
     it("falls back to another language's plain text", () => {
-        expect(nodeText(GERMAN_ONLY)).toBe("Mythische Figur");
+        expect(nodeText("name_content", GERMAN_ONLY, NODE_TEXT_CONTEXT)).toBe(
+            "Mythische Figur",
+        );
+    });
+
+    it("prefers the default language and leaves plain text alone", () => {
+        const germanAndFrench: AliasedNodeData = {
+            display_value: "",
+            node_value: {
+                de: { value: "Kobaltblau", direction: "ltr" },
+                fr: { value: "Bleu de cobalt", direction: "ltr" },
+            },
+            details: [],
+        };
+        const plainNote: AliasedNodeData = {
+            display_value: "pH<neutral after firing",
+            node_value: {
+                en: { value: "pH<neutral after firing", direction: "ltr" },
+            },
+            details: [],
+        };
+
+        expect(
+            nodeText("note_content", germanAndFrench, {
+                ...NODE_TEXT_CONTEXT,
+                defaultLanguage: "fr",
+            }),
+        ).toBe("Bleu de cobalt");
+        expect(nodeText("note_content", plainNote, NODE_TEXT_CONTEXT)).toBe(
+            "pH<neutral after firing",
+        );
     });
 });
 
@@ -66,13 +107,17 @@ describe("tiles holding text in another language", () => {
     it("have data, and a summary", () => {
         const tile = tileWith(GERMAN_ONLY);
 
-        expect(tileHasData(tile)).toBe(true);
+        expect(tileHasData(tile, NODE_TEXT_CONTEXT)).toBe(true);
         expect(
-            tileSummary(tile, {
-                card_x_node_x_widgets: [
-                    { visible: true, node: { alias: "name_content" } },
-                ],
-            } as NodegroupWidgetConfig),
+            tileSummary(
+                tile,
+                {
+                    card_x_node_x_widgets: [
+                        { visible: true, node: { alias: "name_content" } },
+                    ],
+                } as NodegroupWidgetConfig,
+                NODE_TEXT_CONTEXT,
+            ),
         ).toBe("Mythische Figur");
     });
 });

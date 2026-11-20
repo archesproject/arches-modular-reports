@@ -118,7 +118,11 @@ const tileClass = computed(() => {
 });
 
 function hasValue(tile: AliasedTileData, nodeAlias: string): boolean {
-    return nodeHasData(aliasedNodeDataOf(tile, nodeAlias));
+    return nodeHasData(
+        nodeAlias,
+        aliasedNodeDataOf(tile, nodeAlias),
+        reportData.value.nodeTextContext,
+    );
 }
 
 function toggleOpen(): void {

@@ -1,3 +1,5 @@
+import { isRichTextWidget } from "@/arches_vue_components/widgets/RichTextWidget/utils.ts";
+
 import type { NodegroupWidgetConfig } from "@/arches_vue_components/types.ts";
 import type { GraphNode } from "@/arches_modular_reports/ResourceReport/types.ts";
 
@@ -16,6 +18,20 @@ export function indexGraphNodes(
         }
     }
     return graphNodesByAlias;
+}
+
+export function richTextNodeAliases(
+    nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>,
+): Set<string> {
+    return new Set(
+        Object.values(nodegroupWidgetConfigs)
+            .flatMap(
+                (nodegroupWidgetConfig) =>
+                    nodegroupWidgetConfig.card_x_node_x_widgets,
+            )
+            .filter(isRichTextWidget)
+            .map((widget) => widget.node.alias),
+    );
 }
 
 export function nodegroupLineage(

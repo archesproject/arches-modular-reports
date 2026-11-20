@@ -59,7 +59,14 @@ const nodeData = computed(() => {
         return null;
     }
     const tileNodeData = aliasedNodeDataOf(tile.value, widget.value.node.alias);
-    if (tileNodeData === null || !nodeHasData(tileNodeData)) {
+    if (
+        tileNodeData === null ||
+        !nodeHasData(
+            widget.value.node.alias,
+            tileNodeData,
+            reportData.value.nodeTextContext,
+        )
+    ) {
         return null;
     }
     return tileNodeData;

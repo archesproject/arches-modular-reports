@@ -62,7 +62,9 @@ export function useTabbedComponents(
         }
         const aliasedData = reportData.value.resource.aliased_data;
         return [...nodegroupAliases].some((nodegroupAlias) =>
-            nodegroupTiles(aliasedData[nodegroupAlias]).some(tileHasData),
+            nodegroupTiles(aliasedData[nodegroupAlias]).some((tile) =>
+                tileHasData(tile, reportData.value.nodeTextContext),
+            ),
         );
     }
 

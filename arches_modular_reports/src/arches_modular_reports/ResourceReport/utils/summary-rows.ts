@@ -4,6 +4,7 @@ import { nodeText } from "@/arches_modular_reports/ResourceReport/utils/localize
 
 import type { AliasedData } from "@/arches_vue_components/types.ts";
 import type {
+    NodeTextContext,
     SummaryEntryConfig,
     SummaryRow,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
@@ -11,18 +12,19 @@ import type {
 export function summaryRows(
     summaryEntries: SummaryEntryConfig[],
     aliasedData: AliasedData,
-    activeLanguage: string,
-    defaultLanguage: string,
+    context: NodeTextContext,
 ): SummaryRow[] {
     return summaryEntries.map((summaryEntry) => ({
         nodeAlias: summaryEntry.node_alias,
         label: localizeLabel(
             summaryEntry.label,
-            activeLanguage,
-            defaultLanguage,
+            context.activeLanguage,
+            context.defaultLanguage,
         ),
         values: findNodeValues(aliasedData, summaryEntry.node_alias)
-            .map(nodeText)
+            .map((nodeData) =>
+                nodeText(summaryEntry.node_alias, nodeData, context),
+            )
             .filter((valueText) => valueText.trim() !== ""),
     }));
 }

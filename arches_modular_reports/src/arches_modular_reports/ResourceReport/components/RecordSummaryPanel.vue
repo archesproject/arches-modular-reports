@@ -40,6 +40,7 @@ const cards = computed(() =>
         reportData.value.nodegroupWidgetConfigs,
         reportData.value.resource.aliased_data,
         (tileId) => reportData.value.changeSet.isPendingDelete(tileId),
+        reportData.value.nodeTextContext,
     ),
 );
 

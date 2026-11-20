@@ -65,7 +65,13 @@ const nameWidget = computed(() => {
     );
 });
 const isCopyNameMissing = computed(
-    () => nameWidget.value !== undefined && !nodeHasData(copyName.value),
+    () =>
+        nameWidget.value !== undefined &&
+        !nodeHasData(
+            nameWidget.value.node.alias,
+            copyName.value,
+            reportData.value.nodeTextContext,
+        ),
 );
 const deleteWarning = computed(() => {
     if (reportData.value.changeSet.pendingChanges.value.length > 0) {

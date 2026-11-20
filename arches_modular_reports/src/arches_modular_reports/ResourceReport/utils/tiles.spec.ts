@@ -7,6 +7,13 @@ import type {
     AliasedNodeData,
     AliasedTileData,
 } from "@/arches_vue_components/types.ts";
+import type { NodeTextContext } from "@/arches_modular_reports/ResourceReport/types.ts";
+
+const NODE_TEXT_CONTEXT: NodeTextContext = {
+    richTextNodeAliases: new Set(),
+    activeLanguage: "",
+    defaultLanguage: "",
+};
 
 function nodeData(displayValue: string): AliasedNodeData {
     return {
@@ -37,6 +44,7 @@ describe("tileHasData", () => {
                     name_content: nodeData(""),
                     name_parts: [tile("empty-part", {}), child],
                 }),
+                NODE_TEXT_CONTEXT,
             ),
         ).toBe(true);
     });
