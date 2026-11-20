@@ -232,7 +232,7 @@ export async function fetchResourceCopies(
 
 export async function copyResource(
     resourceInstanceId: string,
-    name: string,
+    name: unknown,
 ): Promise<string> {
     const response = await fetch(
         generateArchesURL("arches_modular_reports:api_resource_copies", {
@@ -270,6 +270,10 @@ export function addResourceUrl(graphId: string): string {
 
 export function resourceManagerUrl(): string {
     return generateArchesURL("arches:resource");
+}
+
+export function searchUrl(): string {
+    return generateArchesURL("arches:search_home");
 }
 
 export async function updateLifecycleState(

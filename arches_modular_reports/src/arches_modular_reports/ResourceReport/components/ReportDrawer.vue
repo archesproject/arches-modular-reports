@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef } from "vue";
+import { computed, ref, shallowRef, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
-import { useDrawerPanelCounts } from "@/arches_modular_reports/ResourceReport/composables/useDrawerPanelCounts.ts";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { useWorkspaceOverlayHost } from "@/arches_modular_reports/ResourceReport/composables/useWorkspaceOverlayHost.ts";
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
@@ -13,6 +12,7 @@ import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/loc
 import type {
     ComponentNode,
     DrawerConfig,
+    DrawerPanelCount,
     LabelledConfig,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
@@ -26,6 +26,10 @@ const overlayHost = useWorkspaceOverlayHost();
 
 const openPanel = shallowRef<ComponentNode<LabelledConfig> | null>(null);
 const isExpanded = ref(false);
+const savedChangesCount = ref(0);
+const panelCounts = shallowRef(
+    new Map<ComponentNode<LabelledConfig>, DrawerPanelCount>(),
+);
 
 const bodyNodes = computed(() => component.config.components ?? []);
 
@@ -35,8 +39,6 @@ const visiblePanels = computed(() =>
             panel.config.requires_edit !== true || reportData.value.canEdit,
     ),
 );
-
-const panelCounts = useDrawerPanelCounts(visiblePanels, reportData);
 
 const triggers = computed(() =>
     visiblePanels.value.map((panel) => ({
@@ -52,12 +54,32 @@ const resourceLabel = computed(
         reportData.value.context.graph.name,
 );
 
+const openPanelLabel = computed(() => {
+    if (openPanel.value === null) {
+        return "";
+    }
+    return panelLabel(openPanel.value);
+});
+
 const canExpand = computed(() => overlayHost.value !== null);
 
 const isPanelExpanded = computed(() => isExpanded.value && canExpand.value);
 
 const expandIcon = computed(() =>
     isPanelExpanded.value ? "pi pi-window-minimize" : "pi pi-window-maximize",
+);
+
+watch(
+    () => reportData.value.changeSet.isSaving.value,
+    (isSaving, wasSaving) => {
+        if (
+            wasSaving &&
+            !isSaving &&
+            reportData.value.changeSet.saveError.value === null
+        ) {
+            savedChangesCount.value += 1;
+        }
+    },
 );
 
 function panelLabel(panel: ComponentNode<LabelledConfig>): string {
@@ -77,6 +99,13 @@ function countLabel(panel: ComponentNode<LabelledConfig>): string | undefined {
         return $gettext("%{count}+", { count: String(panelCount.count) });
     }
     return String(panelCount.count);
+}
+
+function setPanelCount(
+    panel: ComponentNode<LabelledConfig>,
+    panelCount: DrawerPanelCount,
+): void {
+    panelCounts.value = new Map(panelCounts.value).set(panel, panelCount);
 }
 
 function togglePanel(panel: ComponentNode<LabelledConfig>): void {
@@ -140,12 +169,12 @@ function closeDrawer(): void {
                 </Transition>
                 <Transition name="report-drawer-slide">
                     <section
-                        v-if="openPanel"
+                        v-show="openPanel"
                         class="report-drawer-panel"
                         :class="{
                             'report-drawer-panel-expanded': isPanelExpanded,
                         }"
-                        :aria-label="panelLabel(openPanel)"
+                        :aria-label="openPanelLabel"
                     >
                         <header class="report-drawer-header">
                             <div class="report-drawer-crumb">
@@ -157,7 +186,7 @@ function closeDrawer(): void {
                                     aria-hidden="true"
                                 />
                                 <span class="report-drawer-crumb-leaf">{{
-                                    panelLabel(openPanel)
+                                    openPanelLabel
                                 }}</span>
                             </div>
                             <div class="report-drawer-header-actions">
@@ -185,10 +214,17 @@ function closeDrawer(): void {
                             </div>
                         </header>
                         <div class="report-drawer-body">
-                            <component
-                                :is="loadComponent(openPanel.component)"
-                                :component="openPanel"
-                            />
+                            <div
+                                v-for="(panel, panelIndex) in visiblePanels"
+                                v-show="panel === openPanel"
+                                :key="`${panelIndex}:${savedChangesCount}`"
+                            >
+                                <component
+                                    :is="loadComponent(panel.component)"
+                                    :component="panel"
+                                    @count="setPanelCount(panel, $event)"
+                                />
+                            </div>
                         </div>
                     </section>
                 </Transition>

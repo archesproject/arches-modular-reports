@@ -1,8 +1,5 @@
 import re
 
-from django.utils.translation import get_language, get_language_info
-
-from arches.app.datatypes.datatypes import DataTypeFactory
 from arches.app.models import models
 from arches.app.models.tile import Tile
 
@@ -19,50 +16,30 @@ def name_node(graph_id):
     tokens = TEMPLATE_TOKEN.findall(name_config.get("string_template", ""))
     if not tokens:
         return None
-    string_nodes = models.Node.objects.filter(
-        graph_id=graph_id, datatype="string", source_identifier__isnull=True
+    graph_nodes = models.Node.objects.filter(
+        graph_id=graph_id, source_identifier__isnull=True
     )
-    if node := string_nodes.filter(alias=tokens[0]).first():
+    if node := graph_nodes.filter(alias=tokens[0]).first():
         return node
     if nodegroup_id := name_config.get("nodegroup_id"):
-        return string_nodes.filter(nodegroup_id=nodegroup_id, name=tokens[0]).first()
+        return graph_nodes.filter(nodegroup_id=nodegroup_id, name=tokens[0]).first()
     return None
 
 
-def can_rename_copies(resource):
+def renamable_name_node(resource):
     node = name_node(resource.graph_id)
     if node is None:
-        return False
+        return None
     if node.nodegroup.parentnodegroup_id is None:
-        return True
-    return models.TileModel.objects.filter(
+        return node
+    if models.TileModel.objects.filter(
         resourceinstance_id=resource.pk, nodegroup_id=node.nodegroup_id
-    ).exists()
+    ).exists():
+        return node
+    return None
 
 
-def name_value(resource):
-    node = name_node(resource.graph_id)
-    if node is not None:
-        tile = (
-            models.TileModel.objects.filter(
-                resourceinstance_id=resource.pk, nodegroup_id=node.nodegroup_id
-            )
-            .order_by("sortorder", "tileid")
-            .first()
-        )
-        if tile is not None:
-            value = (
-                DataTypeFactory()
-                .get_instance(node.datatype)
-                .get_display_value(tile, node)
-            )
-            if value:
-                return str(value)
-    return str(resource.name or "")
-
-
-def rename_copy(copied_resource, name):
-    node = name_node(copied_resource.graph_id)
+def rename_copy(copied_resource, node, name_value):
     name_tiles = [
         tile
         for tile in all_tiles(copied_resource.tiles)
@@ -75,13 +52,7 @@ def rename_copy(copied_resource, name):
             node.nodegroup_id, resourceid=copied_resource.pk
         )
         copied_resource.tiles.append(name_tile)
-    language = get_language()
-    localized_value = dict(name_tile.data.get(str(node.pk)) or {})
-    localized_value[language] = {
-        "value": name,
-        "direction": "rtl" if get_language_info(language)["bidi"] else "ltr",
-    }
-    name_tile.data[str(node.pk)] = localized_value
+    name_tile.data[str(node.pk)] = name_value
 
 
 def all_tiles(tiles):

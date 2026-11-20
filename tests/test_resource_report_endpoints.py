@@ -149,6 +149,7 @@ class ResourceReportEndpointTests(TestCase):
         self.assertEqual(matching_users("lovelace"), ["Ada Lovelace"])
         self.assertEqual(matching_users("NAMES"), ["Ada Lovelace"])
         self.assertEqual(matching_users("create"), ["Grace Hopper"])
+        self.assertEqual(matching_users("update"), ["Ada Lovelace"])
 
     def test_related_resource_groups_for_listed_models_and_query(self):
         ResourceInstance.objects.filter(pk=self.related_resource.pk).update(
@@ -574,7 +575,7 @@ class ResourceReportEndpointTests(TestCase):
         with mock.patch("arches.app.models.resource.Resource.index"):
             response = self.client.post(
                 reverse("api_resource_copies", args=[self.resource.pk]),
-                {"name": "  Renamed copy  "},
+                {"name": {"en": {"value": "Renamed copy", "direction": "ltr"}}},
                 content_type="application/json",
             )
 
@@ -593,7 +594,7 @@ class ResourceReportEndpointTests(TestCase):
         copies = self.client.get(
             reverse("api_resource_copies", args=[self.resource.pk])
         ).json()
-        self.assertEqual(copies["default_name"], "Copy of Original")
+        self.assertEqual(copies["name_node_alias"], "name_content")
         [listed_copy] = copies["results"]
         self.assertEqual(listed_copy["name"], "Renamed copy")
         self.assertEqual(
@@ -608,11 +609,13 @@ class ResourceReportEndpointTests(TestCase):
             copies_url, {"name": "Copy"}, content_type="application/json"
         )
         self.assertEqual(response.status_code, 400)
-        self.assertIsNone(self.client.get(copies_url).json()["default_name"])
+        self.assertIsNone(self.client.get(copies_url).json()["name_node_alias"])
 
         self.add_name_descriptor()
+        response = self.client.post(copies_url, {}, content_type="application/json")
+        self.assertEqual(response.status_code, 400)
         response = self.client.post(
-            copies_url, {"name": " "}, content_type="application/json"
+            copies_url, {"name": "Copy"}, content_type="application/json"
         )
         self.assertEqual(response.status_code, 400)
 

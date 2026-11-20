@@ -12,7 +12,8 @@ import type { ComponentNode } from "@/arches_modular_reports/ResourceReport/type
 
 const REPORT_TREE: ComponentNode[] = [
     {
-        component: "app/ReportTabs",
+        component:
+            "arches_modular_reports/ResourceReport/components/ReportTabs",
         config: {
             components: [
                 {
@@ -84,7 +85,8 @@ describe("reportTabGroups", () => {
         });
         const tree: ComponentNode[] = [
             {
-                component: "app/ReportTabs",
+                component:
+                    "arches_modular_reports/ResourceReport/components/ReportTabs",
                 config: {
                     components: [
                         tab("Overview", ["names"]),

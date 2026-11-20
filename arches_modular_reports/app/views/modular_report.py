@@ -15,16 +15,16 @@ from django.db.models import (
     Value,
     When,
 )
-from django.db.models.fields.json import KT
 from django.db.models.functions import Cast, Coalesce
 from django.http import Http404
 from django.shortcuts import render
-from django.urls import NoReverseMatch, reverse
+from django.urls import reverse
 from django.utils import translation
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language, get_language_info, gettext as _
 from django.views.generic import View
 
+from arches.app.datatypes.datatypes import DataTypeFactory
 from arches.app.models import models
 from arches.app.models.resource import Resource
 from arches.app.models.system_settings import settings
@@ -47,11 +47,13 @@ from arches_modular_reports.app.utils.decorators import can_read_nodegroup
 from arches_modular_reports.app.utils.get_report_config import get_report_config
 from arches_modular_reports.app.utils.report_data_utils import (
     EditValueDescriber,
+    in_display_language,
     language_names_by_code,
+    localized_file_text,
+    localized_text_field,
 )
 from arches_modular_reports.app.utils.resource_copy_utils import (
-    can_rename_copies,
-    name_value,
+    renamable_name_node,
     rename_copy,
 )
 from arches_modular_reports.app.utils.nodegroup_tile_data_utils import (
@@ -187,7 +189,6 @@ class ReportContextView(APIBase):
                     "color": resource.graph.color,
                 },
                 "lifecycle_state": resource.resource_instance_lifecycle_state.serialize(),
-                "search_url": search_url(),
                 "language": get_language(),
                 "default_language": settings.LANGUAGE_CODE,
                 "language_dir": (
@@ -209,18 +210,6 @@ class ReportContextView(APIBase):
                 },
             }
         )
-
-
-ARCHES_SEARCH_PLUGIN_SLUG = "arches-search"
-
-
-def search_url():
-    try:
-        if models.Plugin.objects.filter(slug=ARCHES_SEARCH_PLUGIN_SLUG).exists():
-            return reverse("plugins", kwargs={"slug": ARCHES_SEARCH_PLUGIN_SLUG})
-        return reverse("search_home")
-    except NoReverseMatch:
-        return None
 
 
 def readable_edits(resourceid, user):
@@ -252,16 +241,26 @@ class EditHistoryView(APIBase):
                 _("Permission Denied"), status=HTTPStatus.FORBIDDEN
             )
 
+        labels_by_edit_type = edit_type_labels()
         edits = readable_edits(resourceid, request.user)
         if query := request.GET.get("q", "").strip():
+            labelled_edit_types = [
+                edit_type
+                for edit_type, label in labels_by_edit_type.items()
+                if query.casefold() in label.casefold()
+            ]
             edits = edits.filter(
                 Q(user_firstname__icontains=query)
                 | Q(user_lastname__icontains=query)
                 | Q(user_username__icontains=query)
-                | Q(edittype__icontains=query)
+                | Q(edittype__in=labelled_edit_types)
+                | (
+                    Q(edittype__icontains=query)
+                    & ~Q(edittype__in=labels_by_edit_type.keys())
+                )
                 | Q(
                     nodegroupid__in=models.CardModel.objects.annotate(
-                        card_name_text=KT(f"name__{get_language()}"),
+                        card_name_text=localized_text_field("name"),
                         nodegroup_id_text=Cast("nodegroup_id", TextField()),
                     )
                     .filter(
@@ -291,17 +290,19 @@ class EditHistoryView(APIBase):
         return JSONResponse(
             {
                 "results": [
-                    self.serialize_edit(edit, value_describer) for edit in page_edits
+                    self.serialize_edit(edit, value_describer, labels_by_edit_type)
+                    for edit in page_edits
                 ],
                 "next_cursor": next_cursor,
             }
         )
 
     @staticmethod
-    def serialize_edit(edit, value_describer):
+    def serialize_edit(edit, value_describer, labels_by_edit_type):
         serialized_edit = {
             "editlogid": edit.editlogid,
             "edit_type": edit.edittype,
+            "edit_type_label": labels_by_edit_type.get(edit.edittype, edit.edittype),
             "timestamp": edit.timestamp,
             "user": edit_user_name(edit),
             "card_name": None,
@@ -313,6 +314,14 @@ class EditHistoryView(APIBase):
             )
             serialized_edit["values"] = value_describer.describe(edit)
         return serialized_edit
+
+
+def edit_type_labels():
+    return {
+        "tile create": _("create"),
+        "tile edit": _("update"),
+        "tile delete": _("delete"),
+    }
 
 
 def edit_user_name(edit):
@@ -373,12 +382,12 @@ class ResourceCopiesView(APIBase):
             next_cursor = json.dumps(
                 [page_copies[-1]["timestamp"].isoformat(), page_copies[-1]["editlogid"]]
             )
-        default_name = None
-        if can_rename_copies(resource):
-            default_name = _("Copy of %(name)s") % {"name": name_value(resource)}
+        name_node_alias = None
+        if name_node := renamable_name_node(resource):
+            name_node_alias = name_node.alias
         return JSONResponse(
             {
-                "default_name": default_name,
+                "name_node_alias": name_node_alias,
                 "results": page_copies,
                 "next_cursor": next_cursor,
             }
@@ -392,24 +401,34 @@ class ResourceCopiesView(APIBase):
             return JSONErrorResponse(
                 _("Permission Denied"), status=HTTPStatus.FORBIDDEN
             )
-        name = str(JSONDeserializer().deserialize(request.body).get("name", "")).strip()
+        name = JSONDeserializer().deserialize(request.body).get("name")
         original_resource = Resource.objects.get(pk=resourceid)
-        is_renamable = can_rename_copies(original_resource)
-        if is_renamable and not name:
+        name_node = renamable_name_node(original_resource)
+        if name_node is not None and name is None:
             return JSONErrorResponse(
                 _("Enter a name for the copy."), status=HTTPStatus.BAD_REQUEST
             )
-        if name and not is_renamable:
+        if name is not None and name_node is None:
             return JSONErrorResponse(
                 _("Copies of this resource can't be renamed."),
                 status=HTTPStatus.BAD_REQUEST,
             )
+        if name_node is not None:
+            name_errors = [
+                error["message"]
+                for error in DataTypeFactory()
+                .get_instance(name_node.datatype)
+                .validate(name, node=name_node)
+                if error["type"] == "ERROR"
+            ]
+            if name_errors:
+                return JSONErrorResponse(name_errors[0], status=HTTPStatus.BAD_REQUEST)
 
         with transaction.atomic():
             original_descriptors = copy.deepcopy(original_resource.descriptors)
             copied_resource = original_resource.copy()
-            if is_renamable:
-                rename_copy(copied_resource, name)
+            if name_node is not None:
+                rename_copy(copied_resource, name_node, name)
             transaction_id = uuid.uuid4()
             copied_resource.save(
                 transaction_id=transaction_id,
@@ -444,13 +463,7 @@ class ResourceCopiesView(APIBase):
     def serialize_copy(self, edit, copied_resource):
         if copied_resource is None:
             logged_descriptors = (edit.newvalue or {}).get("descriptors") or {}
-            language_descriptors = logged_descriptors.get(get_language())
-            if not language_descriptors:
-                every_language_descriptors = list(logged_descriptors.values())
-                if every_language_descriptors:
-                    language_descriptors = every_language_descriptors[0]
-                else:
-                    language_descriptors = {}
+            language_descriptors = in_display_language(logged_descriptors) or {}
             name = language_descriptors.get("name") or ""
             report_url = None
         else:
@@ -507,8 +520,8 @@ class RelatedResourceGroupsView(APIBase):
                 ),
             )
             .annotate(
-                related_resource_sort_name=KT(
-                    f"related_resource_name__{get_language()}"
+                related_resource_sort_name=localized_text_field(
+                    "related_resource_name"
                 ),
             )
         )
@@ -517,7 +530,7 @@ class RelatedResourceGroupsView(APIBase):
                 relationship_label_text=Subquery(
                     models.CardXNodeXWidget.objects.filter(
                         node=OuterRef("node")
-                    ).values(label_text=KT(f"label__{get_language()}"))[:1]
+                    ).values(label_text=localized_text_field("label"))[:1]
                 )
             ).filter(
                 Q(related_resource_sort_name__icontains=query)
@@ -527,7 +540,7 @@ class RelatedResourceGroupsView(APIBase):
                 )
                 | Q(
                     related_graph_id__in=models.GraphModel.objects.annotate(
-                        graph_name_text=KT(f"name__{get_language()}")
+                        graph_name_text=localized_text_field("name")
                     )
                     .filter(
                         isresource=True,
@@ -784,18 +797,16 @@ class ResourceImagesView(APIBase):
 
     @staticmethod
     def serialize_image(file_value, resource):
-        language = get_language()
         resource_name = str(resource.name or "")
         caption = (
-            file_value.get("title", {}).get(language, {}).get("value")
-            or file_value.get("description", {}).get(language, {}).get("value")
+            localized_file_text(file_value, "title")
+            or localized_file_text(file_value, "description")
             or resource_name
         )
         return {
             "url": file_value.get("url"),
             "caption": caption,
-            "alt_text": file_value.get("altText", {}).get(language, {}).get("value")
-            or caption,
+            "alt_text": localized_file_text(file_value, "altText") or caption,
             "resourceinstanceid": str(resource.pk),
             "resource_name": resource_name,
             "graph_name": str(resource.graph.name),

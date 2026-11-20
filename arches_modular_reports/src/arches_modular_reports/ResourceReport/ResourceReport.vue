@@ -330,6 +330,12 @@ function warnAboutPendingChanges(event: BeforeUnloadEvent): void {
         var(--p-surface-200)
     );
     --resource-report-bar-block-size: 4rem;
+    --map-header-expand-button-pressed-background: var(
+        --resource-report-drawer-trigger-open-background
+    );
+    --map-header-expand-button-pressed-color: var(
+        --resource-report-drawer-trigger-open-color
+    );
     --resource-instance-multiselect-chip-background: var(--p-primary-700);
     --resource-instance-multiselect-chip-color: var(--p-surface-0);
     --resource-instance-multiselect-chip-button-color: var(--p-surface-0);

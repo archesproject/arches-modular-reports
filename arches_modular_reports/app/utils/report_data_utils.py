@@ -1,9 +1,12 @@
 from collections import Counter
 
+from django.db.models.fields.json import KT
+from django.db.models.functions import Coalesce
 from django.utils.translation import get_language, ngettext
 
 from arches.app.datatypes.datatypes import DataTypeFactory
 from arches.app.models import models
+from arches.app.models.system_settings import settings
 
 from arches_modular_reports.models import ReportConfig
 
@@ -19,6 +22,29 @@ GEOMETRY_KINDS_BY_TYPE = {
 
 def language_names_by_code():
     return dict(models.Language.objects.values_list("code", "name"))
+
+
+def localized_text_field(field_name):
+    return Coalesce(
+        KT(f"{field_name}__{get_language()}"),
+        KT(f"{field_name}__{settings.LANGUAGE_CODE}"),
+    )
+
+
+def in_display_language(values_by_language):
+    for language_code in (get_language(), settings.LANGUAGE_CODE):
+        if value := values_by_language.get(language_code):
+            return value
+    return next((value for value in values_by_language.values() if value), None)
+
+
+def localized_file_text(file_value, key):
+    return in_display_language(
+        {
+            language_code: text.get("value")
+            for language_code, text in (file_value.get(key) or {}).items()
+        }
+    )
 
 
 def is_localized_text(raw_value):

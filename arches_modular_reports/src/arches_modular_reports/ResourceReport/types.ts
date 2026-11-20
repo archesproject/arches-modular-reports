@@ -132,7 +132,6 @@ export interface LatestEdit {
 export interface ReportContext {
     graph: ReportGraph;
     lifecycle_state: LifecycleState;
-    search_url: string | null;
     language: string;
     default_language: string;
     language_dir: "ltr" | "rtl";
@@ -330,6 +329,7 @@ export interface EditHistoryValue {
 export interface EditHistoryEntry {
     editlogid: string;
     edit_type: string;
+    edit_type_label: string;
     timestamp: string;
     user: string;
     card_name: string | null;
@@ -352,7 +352,7 @@ export interface ResourceCopy {
 }
 
 export interface ResourceCopiesPage {
-    default_name: string | null;
+    name_node_alias: string | null;
     results: ResourceCopy[];
     next_cursor: string | null;
 }

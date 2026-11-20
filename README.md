@@ -217,7 +217,7 @@ A tab or drawer panel with `"requires_edit": true` is hidden from people who can
 -   `EditListTray`: pending edits, with Apply and Cancel. Hidden when nothing is pending. The default config puts it in each `SplitPane`'s `aside_footer`.
 -   `DataBrowser/DataBrowser`: every nodegroup in a tree, with a filter.
 -   `ReportPlaceholder`: an `icon` and a `message`.
--   Drawer panels, each with a `label` and `icon`: `EditHistoryPanel`; `ImagesPanel`, whose `images` lists `{"model": "<graph slug>", "node": "<node alias>"}` sources; `RelatedResourcesPanel`, whose `graphs` lists models in order; `ManagePanel`, which copies the resource under a new name, lists its copies newest first with their current names, and deletes it.
+-   Drawer panels, each with a `label` and `icon`: `EditHistoryPanel`; `ImagesPanel`, whose `images` lists `{"model": "<graph slug>", "node": "<node alias>"}` sources; `RelatedResourcesPanel`, whose `graphs` lists models in order; `ManagePanel`, which copies the resource under a new name, lists its copies newest first with their current names, and deletes it. A panel puts a count on its drawer button by emitting `count` with `{count, hasMore}`.
 
 ### Custom components
 

@@ -3,10 +3,12 @@ import { computed, ref, useId, watchEffect } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
-import InputText from "openvue/inputtext";
 import Message from "openvue/message";
 
+import GenericWidget from "@/arches_vue_components/generics/GenericWidget/GenericWidget.vue";
 import AlertDialog from "@/arches_modular_reports/ResourceReport/components/AlertDialog.vue";
+
+import { EDIT } from "@/arches_vue_components/widgets/constants.ts";
 
 import {
     copyResource,
@@ -14,7 +16,10 @@ import {
     fetchResourceCopies,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
+import { findNodeValues } from "@/arches_modular_reports/ResourceReport/utils/find-node-values.ts";
+import { nodeHasData } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 
+import type { AliasedNodeData } from "@/arches_vue_components/types.ts";
 import type {
     ComponentNode,
     LabelledConfig,
@@ -27,14 +32,16 @@ defineProps<{
 
 const { $gettext } = useGettext();
 const reportData = useReportData();
-const copyNameInputId = useId();
+const copyNameLabelId = useId();
 
 const copies = ref<ResourceCopy[]>([]);
 const nextCursor = ref<string | null>(null);
 const isLoadingCopies = ref(false);
 const copiesError = ref<Error | null>(null);
-const copyName = ref("");
-const isRenamable = ref(false);
+const nameNodeAlias = ref<string | null>(null);
+const initialCopyName = ref<AliasedNodeData | null>(null);
+const copyName = ref<AliasedNodeData | null>(null);
+const copyFormVersion = ref(0);
 const isCopying = ref(false);
 const isConfirmingDelete = ref(false);
 const isDeleting = ref(false);
@@ -46,8 +53,19 @@ const lifecycleState = computed(() => reportData.value.context.lifecycle_state);
 const resourceInstanceId = computed(
     () => reportData.value.resource.resourceinstanceid,
 );
+const nameWidget = computed(() => {
+    if (nameNodeAlias.value === null) {
+        return undefined;
+    }
+    const graphNode = reportData.value.graphNodesByAlias[nameNodeAlias.value];
+    return reportData.value.nodegroupWidgetConfigs[
+        graphNode?.nodegroupAlias
+    ]?.card_x_node_x_widgets.find(
+        (widget) => widget.node.alias === nameNodeAlias.value,
+    );
+});
 const isCopyNameMissing = computed(
-    () => isRenamable.value && copyName.value.trim() === "",
+    () => nameWidget.value !== undefined && !nodeHasData(copyName.value),
 );
 const deleteWarning = computed(() => {
     if (reportData.value.changeSet.pendingChanges.value.length > 0) {
@@ -72,8 +90,10 @@ async function loadCopies(
         const copiesPage = await fetchResourceCopies(resourceId, cursor);
         if (cursor === null) {
             copies.value = copiesPage.results;
-            isRenamable.value = copiesPage.default_name !== null;
-            copyName.value = copiesPage.default_name ?? "";
+            nameNodeAlias.value = copiesPage.name_node_alias;
+            initialCopyName.value = originalName(copiesPage.name_node_alias);
+            copyName.value = initialCopyName.value;
+            copyFormVersion.value += 1;
         } else {
             copies.value = [...copies.value, ...copiesPage.results];
         }
@@ -85,6 +105,27 @@ async function loadCopies(
     }
 }
 
+function originalName(nodeAlias: string | null): AliasedNodeData | null {
+    if (nodeAlias === null) {
+        return null;
+    }
+    return (
+        findNodeValues(reportData.value.resource.aliased_data, nodeAlias)[0] ??
+        null
+    );
+}
+
+function updateCopyName(aliasedNodeData: AliasedNodeData): void {
+    copyName.value = aliasedNodeData;
+}
+
+function copyNameValue(): unknown {
+    if (nameWidget.value === undefined) {
+        return null;
+    }
+    return copyName.value?.node_value ?? null;
+}
+
 function loadMoreCopies(): void {
     loadCopies(resourceInstanceId.value, nextCursor.value);
 }
@@ -93,7 +134,7 @@ async function createCopy(): Promise<void> {
     isCopying.value = true;
     actionError.value = null;
     try {
-        await copyResource(resourceInstanceId.value, copyName.value.trim());
+        await copyResource(resourceInstanceId.value, copyNameValue());
         await loadCopies(resourceInstanceId.value, null);
     } catch (error) {
         actionError.value = error as Error;
@@ -199,19 +240,29 @@ async function deleteThisResource(): Promise<void> {
                 class="manage-copy-form"
                 @submit.prevent="createCopy"
             >
-                <template v-if="isRenamable">
-                    <label
+                <template v-if="nameWidget">
+                    <span
+                        :id="copyNameLabelId"
                         class="manage-field-label"
-                        :for="copyNameInputId"
                     >
                         {{ $gettext("Name of the copy") }}
-                    </label>
-                    <InputText
-                        :id="copyNameInputId"
-                        v-model="copyName"
+                    </span>
+                    <div
                         class="manage-copy-name"
-                        :required="true"
-                    />
+                        role="group"
+                        :aria-labelledby="copyNameLabelId"
+                    >
+                        <GenericWidget
+                            :key="copyFormVersion"
+                            :aliased-node-data="initialCopyName"
+                            :card-x-node-x-widget-data="nameWidget"
+                            :graph-slug="reportData.context.graph.slug"
+                            :mode="EDIT"
+                            :node-alias="nameWidget.node.alias"
+                            :should-show-label="false"
+                            @update:aliased-node-data="updateCopyName"
+                        />
+                    </div>
                 </template>
                 <Button
                     type="submit"
@@ -383,6 +434,9 @@ async function deleteThisResource(): Promise<void> {
 .manage-copy-name {
     inline-size: 100%;
     margin-block-end: 0.3rem;
+}
+
+.manage-copy-name :deep(.p-inputtext) {
     border-radius: 0.15rem;
 }
 

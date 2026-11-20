@@ -8,7 +8,8 @@ import type {
     ReportTabGroup,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
-const REPORT_TABS_COMPONENT_NAME = "ReportTabs";
+const REPORT_TABS_COMPONENT =
+    "arches_modular_reports/ResourceReport/components/ReportTabs";
 
 type TreeNode = ComponentNode<
     LabelledConfig & FolioConfig & Record<string, unknown>
@@ -119,10 +120,7 @@ export function reportTabGroups(
 ): ReportTabGroup[] {
     const placedNodegroupAliases = new Set<string>();
     return descendantNodes(nodes)
-        .filter(
-            (node) =>
-                node.component.split("/").at(-1) === REPORT_TABS_COMPONENT_NAME,
-        )
+        .filter((node) => node.component === REPORT_TABS_COMPONENT)
         .flatMap(childNodes)
         .map((tabNode) => {
             const nodegroupAliases = [

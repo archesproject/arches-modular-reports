@@ -14,16 +14,24 @@ import {
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { useFilterQuery } from "@/arches_modular_reports/ResourceReport/composables/useFilterQuery.ts";
-import { DEFAULT_GRAPH_ICON_CLASS } from "@/arches_modular_reports/ResourceReport/constants.ts";
+import {
+    DEFAULT_GRAPH_ICON_CLASS,
+    PANEL_COUNT_EVENT,
+} from "@/arches_modular_reports/ResourceReport/constants.ts";
 
 import type {
     ComponentNode,
+    DrawerPanelCount,
     RelatedResourceGroup,
     RelatedResourcesPanelConfig,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const { component } = defineProps<{
     component: ComponentNode<RelatedResourcesPanelConfig>;
+}>();
+
+const emit = defineEmits<{
+    (event: typeof PANEL_COUNT_EVENT, panelCount: DrawerPanelCount): void;
 }>();
 
 const { $gettext } = useGettext();
@@ -73,8 +81,20 @@ async function loadGroups(searchText: string): Promise<void> {
             component.config.graphs ?? [],
             searchText,
         );
-        if (groupsRequestNumber === latestGroupsRequestNumber) {
-            groups.value = loadedGroups;
+        if (groupsRequestNumber !== latestGroupsRequestNumber) {
+            return;
+        }
+        groups.value = loadedGroups;
+        if (searchText === "") {
+            emit(PANEL_COUNT_EVENT, {
+                count: loadedGroups.reduce(
+                    (total, group) => total + group.items.length,
+                    0,
+                ),
+                hasMore: loadedGroups.some(
+                    (group) => group.next_cursor !== null,
+                ),
+            });
         }
     } catch (error) {
         if (groupsRequestNumber === latestGroupsRequestNumber) {

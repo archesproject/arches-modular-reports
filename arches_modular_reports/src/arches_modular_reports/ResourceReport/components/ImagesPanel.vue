@@ -9,9 +9,11 @@ import Skeleton from "openvue/skeleton";
 
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { fetchResourceImages } from "@/arches_modular_reports/ResourceReport/api.ts";
+import { PANEL_COUNT_EVENT } from "@/arches_modular_reports/ResourceReport/constants.ts";
 
 import type {
     ComponentNode,
+    DrawerPanelCount,
     ImagesPanelConfig,
     ResourceImage,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
@@ -21,6 +23,10 @@ const THUMBNAIL_STRIP_INLINE_SIZE = `${VISIBLE_THUMBNAIL_COUNT * 6.8}rem`;
 
 const { component } = defineProps<{
     component: ComponentNode<ImagesPanelConfig>;
+}>();
+
+const emit = defineEmits<{
+    (event: typeof PANEL_COUNT_EVENT, panelCount: DrawerPanelCount): void;
 }>();
 
 const { $gettext } = useGettext();
@@ -49,6 +55,10 @@ watchEffect(async () => {
         images.value = imagesPage.images;
         nextCursor.value = imagesPage.next_cursor;
         activeIndex.value = 0;
+        emit(PANEL_COUNT_EVENT, {
+            count: imagesPage.images.length,
+            hasMore: imagesPage.next_cursor !== null,
+        });
     } catch (error) {
         loadError.value = error as Error;
     } finally {
@@ -112,6 +122,7 @@ async function loadMore(): Promise<void> {
                 <figure class="images-item">
                     <img
                         class="images-main"
+                        loading="lazy"
                         :src="item.url"
                         :alt="item.alt_text"
                     />
@@ -184,6 +195,7 @@ async function loadMore(): Promise<void> {
                 <img
                     class="images-thumbnail"
                     alt=""
+                    loading="lazy"
                     :src="item.url"
                 />
             </template>

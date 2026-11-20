@@ -7,6 +7,7 @@ import Button from "openvue/button";
 import {
     addResourceUrl,
     resourceManagerUrl,
+    searchUrl,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 
 import type { ReportContext } from "@/arches_modular_reports/ResourceReport/types.ts";
@@ -67,12 +68,11 @@ const heading = computed(() => {
                     "
                 />
                 <Button
-                    v-if="context.search_url"
                     as="a"
                     icon="pi pi-search"
                     variant="outlined"
                     size="small"
-                    :href="context.search_url"
+                    :href="searchUrl()"
                     :label="$gettext('Search')"
                 />
                 <Button

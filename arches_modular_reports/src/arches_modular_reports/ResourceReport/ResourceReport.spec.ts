@@ -159,7 +159,6 @@ function makeContext(
             next_resource_instance_lifecycle_states: [ACTIVE],
             previous_resource_instance_lifecycle_states: [],
         },
-        search_url: "/search",
         language: "en",
         default_language: "en",
         language_dir: "ltr",
@@ -504,6 +503,7 @@ function summaryEmptyCards(
 const NAME_EDIT: EditHistoryEntry = {
     editlogid: "edit-log-1",
     edit_type: "tile edit",
+    edit_type_label: "update",
     timestamp: "2026-11-13T10:00:00Z",
     user: "Ada Lovelace",
     card_name: "Names",
@@ -609,10 +609,11 @@ describe("ResourceReport", () => {
         vi.mocked(fetchResource).mockResolvedValue(RESOURCE);
         vi.mocked(updateLifecycleState).mockResolvedValue();
         vi.mocked(fetchResourceCopies).mockResolvedValue({
-            default_name: "Copy of Sample",
+            name_node_alias: "name_content",
             results: [],
             next_cursor: null,
         });
+        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([]);
     });
 
     it("discards every pending edit only once the discard is confirmed", async () => {
@@ -714,12 +715,12 @@ describe("ResourceReport", () => {
         };
         vi.mocked(fetchResourceCopies)
             .mockResolvedValueOnce({
-                default_name: "Copy of Sample",
+                name_node_alias: "name_content",
                 results: [deletedCopy],
                 next_cursor: null,
             })
             .mockResolvedValueOnce({
-                default_name: "Copy of Sample",
+                name_node_alias: "name_content",
                 results: [newCopy, deletedCopy],
                 next_cursor: null,
             });
@@ -729,13 +730,22 @@ describe("ResourceReport", () => {
         await drawerTrigger(wrapper, "Manage").trigger("click");
         await flushPromises();
 
-        const nameInput = wrapper.find<HTMLInputElement>(".manage-copy-name");
-        expect(nameInput.element.value).toBe("Copy of Sample");
+        const nameWidget = wrapper
+            .find(".manage-copy-name")
+            .findComponent({ name: "GenericWidget" });
+        expect(nameWidget.props("nodeAlias")).toBe("name_content");
+        expect(nameWidget.props("aliasedNodeData").node_value).toBe(
+            "Cobalt blue",
+        );
         expect(wrapper.find(".manage-copy-deleted s").text()).toBe(
             "First sample",
         );
 
-        await nameInput.setValue("Second sample");
+        nameWidget.vm.$emit("update:aliasedNodeData", {
+            display_value: "Second sample",
+            node_value: "Second sample",
+            details: [],
+        });
         await wrapper.find(".manage-copy-form").trigger("submit");
         await flushPromises();
 

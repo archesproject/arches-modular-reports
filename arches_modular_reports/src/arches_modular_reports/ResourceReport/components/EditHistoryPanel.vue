@@ -12,10 +12,12 @@ import Tag from "openvue/tag";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { fetchEditHistory } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { useFilterQuery } from "@/arches_modular_reports/ResourceReport/composables/useFilterQuery.ts";
+import { PANEL_COUNT_EVENT } from "@/arches_modular_reports/ResourceReport/constants.ts";
 import { plainText } from "@/arches_modular_reports/ResourceReport/utils/plain-text.ts";
 
 import type {
     ComponentNode,
+    DrawerPanelCount,
     EditHistoryEntry,
     EditHistoryValue,
     LabelledConfig,
@@ -28,6 +30,10 @@ const TILE_DELETE = "tile delete";
 
 defineProps<{
     component: ComponentNode<LabelledConfig>;
+}>();
+
+const emit = defineEmits<{
+    (event: typeof PANEL_COUNT_EVENT, panelCount: DrawerPanelCount): void;
 }>();
 
 const { $gettext, $ngettext } = useGettext();
@@ -72,6 +78,12 @@ async function loadHistory(
             entries.value = [...entries.value, ...historyPage.results];
         }
         nextCursor.value = historyPage.next_cursor;
+        if (searchText === "" && cursor === null) {
+            emit(PANEL_COUNT_EVENT, {
+                count: historyPage.results.length,
+                hasMore: historyPage.next_cursor !== null,
+            });
+        }
     } catch (error) {
         if (historyRequestNumber === latestHistoryRequestNumber) {
             loadError.value = error as Error;
@@ -85,19 +97,6 @@ async function loadHistory(
 
 function loadMore(): void {
     loadHistory(query.value, nextCursor.value);
-}
-
-function editTypeLabel(entry: EditHistoryEntry): string {
-    if (entry.edit_type === TILE_CREATE) {
-        return $gettext("create");
-    }
-    if (entry.edit_type === TILE_EDIT) {
-        return $gettext("update");
-    }
-    if (entry.edit_type === TILE_DELETE) {
-        return $gettext("delete");
-    }
-    return entry.edit_type;
 }
 
 function editTypeSeverity(entry: EditHistoryEntry): TagSeverity {
@@ -236,7 +235,7 @@ function toggleAllFields(entry: EditHistoryEntry): void {
             >
                 <div class="edit-history-meta">
                     <Tag
-                        :value="editTypeLabel(entry)"
+                        :value="entry.edit_type_label"
                         :severity="editTypeSeverity(entry)"
                     />
                     <span
