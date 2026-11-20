@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, provide } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
 
 import GenericCard from "@/arches_vue_components/generics/GenericCard/GenericCard.vue";
 
+import { mapExpandTargetKey } from "@/arches_vue_components/components/MapComponent/constants.ts";
 import { EDIT, VIEW } from "@/arches_vue_components/widgets/constants.ts";
 import {
     childNodegroupAliases,
     nodegroupLineage,
 } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
+import { useWorkspaceOverlayHost } from "@/arches_modular_reports/ResourceReport/composables/useWorkspaceOverlayHost.ts";
 import { findTile } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
 import {
     canAddTile,
@@ -27,6 +29,8 @@ const { target } = defineProps<{
 
 const { $gettext } = useGettext();
 const reportData = useReportData();
+
+provide(mapExpandTargetKey, useWorkspaceOverlayHost());
 
 const liveTile = computed(() =>
     findTile(reportData.value.resource.aliased_data, target.tileId),
@@ -151,8 +155,6 @@ function undoDelete(): void {
             <span class="editor-panel-caption">{{ caption }}</span>
             <Button
                 class="editor-panel-close"
-                variant="text"
-                severity="secondary"
                 size="small"
                 icon="pi pi-times"
                 icon-pos="right"
@@ -278,7 +280,7 @@ function undoDelete(): void {
     align-items: center;
     justify-content: space-between;
     gap: 1.2rem;
-    padding-block: 0.7rem 0.8rem;
+    block-size: var(--resource-report-bar-block-size);
     padding-inline: 1.6rem;
     border-block-end: 0.1rem solid var(--resource-report-bar-border-color);
     background: var(--resource-report-bar-background);
@@ -300,18 +302,11 @@ function undoDelete(): void {
     --p-button-label-font-weight: 400;
     flex-shrink: 0;
     gap: 0.6rem;
-    padding-block: 0.4rem;
-    padding-inline: 0.8rem;
-    border: none;
-    border-radius: 0.4rem;
-    color: var(--p-text-muted-color);
+    padding-block: 0.5rem;
+    padding-inline: 1rem;
+    border-radius: 0.2rem;
     font-size: 1.3rem;
     line-height: 1;
-}
-
-.editor-panel-bar .editor-panel-close:not(:disabled):hover {
-    background: var(--resource-report-muted-background);
-    color: var(--p-text-color);
 }
 
 .editor-panel-body {
@@ -367,24 +362,27 @@ function undoDelete(): void {
     line-height: 1.2;
 }
 
+.editor-panel-card-header .editor-panel-delete:not(:disabled):hover {
+    border-color: var(--resource-report-deleted-color);
+}
+
 .editor-panel-card-body {
     --p-inputtext-padding-x: 1.1rem;
     --p-inputtext-padding-y: 0.8rem;
     --p-inputtext-border-color: var(--p-content-border-color);
-    --p-inputtext-border-radius: 0.6rem;
+    --p-inputtext-border-radius: 0.1rem;
     --p-select-padding-x: 1.1rem;
     --p-select-padding-y: 0.8rem;
     --p-select-border-color: var(--p-content-border-color);
-    --p-select-border-radius: 0.6rem;
     --p-treeselect-padding-x: 1.1rem;
     --p-treeselect-padding-y: 0.8rem;
     --p-treeselect-border-color: var(--p-content-border-color);
-    --p-treeselect-border-radius: 0.6rem;
-    padding: 2.4rem;
+    padding-block: 2.4rem 4.5rem;
+    padding-inline: 2.4rem;
 }
 
 .editor-panel-card-body :deep(.p-form) {
-    gap: 1.8rem;
+    gap: 2.8rem;
 }
 
 .editor-panel-card-body :deep(.widget-label) {

@@ -16,6 +16,7 @@ import type {
     RelatedResourceGroup,
     ReportContext,
     ResourceChange,
+    ResourceCopiesPage,
     ResourceImagesPage,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
@@ -211,37 +212,64 @@ export async function fetchResourceImages(
     return parseResponse<ResourceImagesPage>(response);
 }
 
+export async function fetchResourceCopies(
+    resourceInstanceId: string,
+    cursor: string | null,
+): Promise<ResourceCopiesPage> {
+    const queryParameters: Record<string, string> = {};
+    if (cursor !== null) {
+        queryParameters.after = cursor;
+    }
+    const response = await fetch(
+        generateArchesURL(
+            "arches_modular_reports:api_resource_copies",
+            { resourceid: resourceInstanceId },
+            queryParameters,
+        ),
+    );
+    return parseResponse<ResourceCopiesPage>(response);
+}
+
 export async function copyResource(
     resourceInstanceId: string,
+    name: unknown,
 ): Promise<string> {
     const response = await fetch(
-        generateArchesURL("arches:resource_copy", {
+        generateArchesURL("arches_modular_reports:api_resource_copies", {
             resourceid: resourceInstanceId,
         }),
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": Cookies.get("csrftoken") ?? "",
+            },
+            body: JSON.stringify({ name }),
+        },
     );
     const parsed = await parseResponse<{ resourceid: string }>(response);
     return parsed.resourceid;
 }
 
 export async function deleteResource(
+    graphSlug: string,
     resourceInstanceId: string,
 ): Promise<void> {
-    const response = await fetch(
-        generateArchesURL("arches:resource_editor", {
-            resourceid: resourceInstanceId,
-        }),
-        {
-            method: "DELETE",
-            headers: { "X-CSRFToken": Cookies.get("csrftoken") ?? "" },
-        },
-    );
-    await parseResponse<unknown>(response);
+    const response = await fetch(resourceUrl(graphSlug, resourceInstanceId), {
+        method: "DELETE",
+        headers: { "X-CSRFToken": Cookies.get("csrftoken") ?? "" },
+    });
+    if (!response.ok) {
+        await parseResponse<unknown>(response);
+    }
 }
 
-export function resourceReportUrl(resourceInstanceId: string): string {
-    return generateArchesURL("arches:resource_report", {
-        resourceid: resourceInstanceId,
-    });
+export function addResourceUrl(graphId: string): string {
+    return generateArchesURL("arches:add_resource", { graphid: graphId });
+}
+
+export function resourceManagerUrl(): string {
+    return generateArchesURL("arches:resource");
 }
 
 export function searchUrl(): string {

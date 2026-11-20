@@ -7,6 +7,7 @@ import Tag from "openvue/tag";
 
 import DataFolioTileActions from "@/arches_modular_reports/ResourceReport/components/DataBrowser/components/DataFolioTileActions.vue";
 import HighlightedText from "@/arches_modular_reports/ResourceReport/components/DataBrowser/components/HighlightedText.vue";
+import LanguageName from "@/arches_modular_reports/ResourceReport/components/LanguageName.vue";
 
 import {
     folioMatches,
@@ -14,6 +15,12 @@ import {
     ownLabelsMatch,
 } from "@/arches_modular_reports/ResourceReport/utils/data-filter.ts";
 import { datatypeIcon } from "@/arches_modular_reports/ResourceReport/utils/datatype-icon.ts";
+import {
+    hasOtherLanguages,
+    localizedTexts,
+    nodeText,
+    readableText,
+} from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import {
     childNodegroupAliases,
     nodegroupLineage,
@@ -31,8 +38,10 @@ import type {
     AliasedTileData,
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
+import type { LocalizedText } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import type {
     EditTileRequest,
+    NodeTextContext,
     ResourceChangeSet,
     TileChangeType,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
@@ -50,6 +59,9 @@ const {
     matchedByAncestor,
     selectedTileId,
     isEditable,
+    isRevealed = false,
+    nodeTextContext,
+    languageNames = {},
 } = defineProps<{
     nodegroupAlias: string;
     nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>;
@@ -60,6 +72,9 @@ const {
     matchedByAncestor: boolean;
     selectedTileId: string | null;
     isEditable: boolean;
+    isRevealed?: boolean;
+    nodeTextContext: NodeTextContext;
+    languageNames?: Record<string, string>;
 }>();
 
 const emit = defineEmits<{
@@ -225,6 +240,15 @@ watch(
 );
 
 watch(
+    () => isRevealed,
+    (isFolioRevealed) => {
+        if (isFolioRevealed) {
+            isFolioToggledOpen.value = true;
+        }
+    },
+);
+
+watch(
     selectedBranchTileId,
     (branchTileId) => {
         if (branchTileId === null) {
@@ -238,11 +262,33 @@ watch(
 );
 
 function displayValue(tile: AliasedTileData, nodeAlias: string): string {
-    return aliasedNodeDataOf(tile, nodeAlias)?.display_value ?? "";
+    return nodeText(
+        nodeAlias,
+        aliasedNodeDataOf(tile, nodeAlias),
+        nodeTextContext,
+    );
+}
+
+function multilingualTexts(
+    tile: AliasedTileData,
+    nodeAlias: string,
+): LocalizedText[] {
+    const texts = localizedTexts(
+        nodeAlias,
+        aliasedNodeDataOf(tile, nodeAlias),
+        nodeTextContext,
+    );
+    return hasOtherLanguages(texts, nodeTextContext.activeLanguage)
+        ? texts
+        : [];
 }
 
 function tileLabel(tile: AliasedTileData): string {
-    const summary = tileSummary(tile, nodegroupWidgetConfig.value);
+    const summary = tileSummary(
+        tile,
+        nodegroupWidgetConfig.value,
+        nodeTextContext,
+    );
     if (summary === "") {
         return $gettext("New entry");
     }
@@ -269,7 +315,7 @@ function isTileVisible(tile: AliasedTileData): boolean {
         return true;
     }
     return (
-        tileSearchText(tile).includes(query) ||
+        tileSearchText(tile, nodeTextContext).includes(query) ||
         childAliases.value.some((childAlias) =>
             nodegroupMatches(nodegroupWidgetConfigs, childAlias, query),
         )
@@ -293,6 +339,7 @@ function visibleChildFolios(
                     childFolio.nodegroupAlias,
                     childFolio.tiles,
                     query,
+                    nodeTextContext,
                 ),
         );
 }
@@ -675,6 +722,51 @@ function onDragEnd(): void {
                             >
                                 {{ EMPTY_VALUE }}
                             </dd>
+                            <dd
+                                v-else-if="
+                                    multilingualTexts(
+                                        tileRow.tile,
+                                        widget.node.alias,
+                                    ).length > 0
+                                "
+                                class="data-folio-field-languages"
+                            >
+                                <span
+                                    v-for="text in multilingualTexts(
+                                        tileRow.tile,
+                                        widget.node.alias,
+                                    )"
+                                    :key="text.languageCode"
+                                    class="data-folio-field-language"
+                                >
+                                    <LanguageName
+                                        v-if="
+                                            text.languageCode !==
+                                            nodeTextContext.activeLanguage
+                                        "
+                                        :name="
+                                            languageNames[text.languageCode] ??
+                                            text.languageCode
+                                        "
+                                    />
+                                    <span
+                                        class="data-folio-field-language-text"
+                                        :lang="text.languageCode"
+                                        :dir="text.direction"
+                                    >
+                                        <HighlightedText
+                                            :text="
+                                                readableText(
+                                                    widget.node.alias,
+                                                    text.value,
+                                                    nodeTextContext,
+                                                )
+                                            "
+                                            :query="query"
+                                        />
+                                    </span>
+                                </span>
+                            </dd>
                             <dd v-else>
                                 <HighlightedText
                                     :text="
@@ -700,6 +792,8 @@ function onDragEnd(): void {
                         :matched-by-ancestor="childrenMatchedByAncestor"
                         :selected-tile-id="selectedTileId"
                         :is-editable="isEditable"
+                        :node-text-context="nodeTextContext"
+                        :language-names="languageNames"
                         @edit-tile="emit(EDIT_TILE, $event)"
                     />
                 </div>
@@ -749,6 +843,8 @@ function onDragEnd(): void {
                 :matched-by-ancestor="childrenMatchedByAncestor"
                 :selected-tile-id="selectedTileId"
                 :is-editable="false"
+                :node-text-context="nodeTextContext"
+                :language-names="languageNames"
                 @edit-tile="emit(EDIT_TILE, $event)"
             />
         </div>
@@ -803,8 +899,9 @@ function onDragEnd(): void {
 .data-folio-header.data-folio-header-pending,
 .data-folio-tile-row.data-folio-tile-pending,
 .data-folio-fields.data-folio-tile-pending .data-folio-field {
-    background: var(--p-yellow-300);
-    color: var(--p-surface-900);
+    border-block-end: 0.15rem solid var(--resource-report-pending-border-color);
+    background: var(--resource-report-pending-background);
+    color: var(--resource-report-pending-color);
 }
 
 .data-folio-header-pending .data-folio-icon,
@@ -812,7 +909,7 @@ function onDragEnd(): void {
 .data-folio-tile-pending .data-folio-tile-number,
 .data-folio-tile-pending .data-folio-field dt,
 .data-folio-tile-pending .data-folio-field dd {
-    color: var(--p-surface-900);
+    color: var(--resource-report-pending-color);
 }
 
 .data-folio-header .data-folio-toggle,
@@ -893,7 +990,7 @@ function onDragEnd(): void {
     flex-shrink: 0;
     padding-block: 0.1rem;
     padding-inline: 0.4rem;
-    border: 0.1rem solid var(--p-content-border-color);
+    border: 0.1rem solid var(--resource-report-bar-border-color);
     border-radius: 0.3rem;
     color: var(--p-text-muted-color);
     font-family: monospace;
@@ -904,9 +1001,6 @@ function onDragEnd(): void {
 }
 
 .data-folio-cardinality-many {
-    border-color: var(--p-primary-color);
-    background: var(--resource-report-accent-background);
-    color: var(--p-primary-color);
     opacity: 1;
 }
 
@@ -1012,6 +1106,30 @@ function onDragEnd(): void {
     text-align: end;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.data-folio-field dd.data-folio-field-languages {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.3rem;
+}
+
+.data-folio-field-language {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    max-inline-size: 100%;
+}
+
+.data-folio-field-language-text {
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.data-folio-field-language .language-name {
+    font-size: 1rem;
 }
 
 .data-folio-field .data-folio-field-empty {

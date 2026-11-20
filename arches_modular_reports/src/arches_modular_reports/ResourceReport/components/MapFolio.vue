@@ -7,14 +7,25 @@ import Button from "openvue/button";
 import Message from "openvue/message";
 import Tag from "openvue/tag";
 
+import BasemapPanel from "@/arches_vue_components/components/MapComponent/components/BasemapPanel/BasemapPanel.vue";
+import OverlayPanel from "@/arches_vue_components/components/MapComponent/components/OverlayPanel/OverlayPanel.vue";
 import GenericWidget from "@/arches_vue_components/generics/GenericWidget/GenericWidget.vue";
+import NodeValue from "@/arches_modular_reports/ResourceReport/components/NodeValue.vue";
 import ReportFolio from "@/arches_modular_reports/ResourceReport/components/ReportFolio.vue";
 
+import { useDefaultMapInteractionTools } from "@/arches_vue_components/components/MapComponent/composables/useDefaultMapInteractionTools.ts";
 import { VIEW } from "@/arches_vue_components/widgets/constants.ts";
 import { useFolio } from "@/arches_modular_reports/ResourceReport/composables/useFolio.ts";
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
+import { nodeHasData } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import { aliasedNodeDataOf } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
+import type { Component } from "vue";
+
+import type {
+    MapHeaderAction,
+    MapSettings,
+} from "@/arches_vue_components/components/MapComponent/types.ts";
 import type { AliasedTileData } from "@/arches_vue_components/types.ts";
 import type {
     ComponentNode,
@@ -23,6 +34,12 @@ import type {
 
 const REPORT_FOLIO_COMPONENT =
     "arches_modular_reports/ResourceReport/components/ReportFolio";
+const EDIT_ACTION = "edit";
+const DELETE_ACTION = "delete";
+const REPORT_MAP_TOOL_COMPONENTS: Component[] = [BasemapPanel, OverlayPanel];
+const REPORT_MAP_SETTINGS: Partial<MapSettings> = {
+    scrollZoomRequiresKey: true,
+};
 
 const { component } = defineProps<{
     component: ComponentNode<MapFolioConfig>;
@@ -48,6 +65,9 @@ const {
     undoDelete,
     clearFlash,
 } = useFolio(() => component);
+const reportMapTools = useDefaultMapInteractionTools().filter((tool) =>
+    REPORT_MAP_TOOL_COMPONENTS.includes(tool.component),
+);
 
 const currentTileIndex = ref(0);
 
@@ -79,6 +99,48 @@ const fieldWidgets = computed(() =>
     ),
 );
 
+const headerActions = computed<MapHeaderAction[]>(() => {
+    const tile = currentTile.value;
+    const entry = tileLabel(tile);
+    const isBusy = reportData.value.changeSet.isBusy.value;
+    if (isEditableTile(tile)) {
+        return [
+            {
+                id: DELETE_ACTION,
+                label: $gettext("Delete"),
+                icon: "pi pi-trash",
+                ariaLabel: $gettext("Delete map for %{entry}", { entry }, true),
+                disabled: isBusy,
+                onClick: () => deleteTile(tile.tileid),
+            },
+            {
+                id: EDIT_ACTION,
+                label: $gettext("Edit"),
+                icon: "pi pi-pencil",
+                ariaLabel: $gettext("Edit map for %{entry}", { entry }, true),
+                onClick: () => editTile(tile.tileid),
+            },
+        ];
+    }
+    if (isMarkedForDeletion(tile)) {
+        return [
+            {
+                id: DELETE_ACTION,
+                label: $gettext("Undo delete"),
+                icon: "pi pi-undo",
+                ariaLabel: $gettext(
+                    "Undo deleting map for %{entry}",
+                    { entry },
+                    true,
+                ),
+                disabled: isBusy,
+                onClick: () => undoDelete(tile.tileid),
+            },
+        ];
+    }
+    return [];
+});
+
 const childFolioNodes = computed(() =>
     childNodegroupAliases(
         reportData.value.nodegroupWidgetConfigs,
@@ -90,12 +152,15 @@ const childFolioNodes = computed(() =>
 );
 
 const emptyMessage = computed(() =>
-    $gettext("No %{name} have been recorded.", { name: cardName.value }, true),
+    $gettext("Nothing recorded for %{name}.", { name: cardName.value }, true),
 );
 
 function hasValue(tile: AliasedTileData, nodeAlias: string): boolean {
-    const nodeData = aliasedNodeDataOf(tile, nodeAlias);
-    return nodeData !== null && nodeData.display_value !== "";
+    return nodeHasData(
+        nodeAlias,
+        aliasedNodeDataOf(tile, nodeAlias),
+        reportData.value.nodeTextContext,
+    );
 }
 
 function showPreviousTile(): void {
@@ -135,6 +200,7 @@ function showNextTile(): void {
                 <span class="map-folio-name">{{ cardName }}</span>
                 <Badge
                     v-if="tiles.length > 1"
+                    class="map-folio-count"
                     severity="secondary"
                     :value="tiles.length"
                 />
@@ -179,6 +245,9 @@ function showNextTile(): void {
                     :mode="VIEW"
                     :node-alias="mapWidget.node.alias"
                     :should-show-label="false"
+                    :interaction-tools="reportMapTools"
+                    :header-actions="headerActions"
+                    :default-settings="REPORT_MAP_SETTINGS"
                 />
                 <div
                     class="map-folio-details"
@@ -199,18 +268,14 @@ function showNextTile(): void {
                                 v-if="hasValue(currentTile, widget.node.alias)"
                                 class="map-folio-field-value"
                             >
-                                <GenericWidget
-                                    :aliased-node-data="
+                                <NodeValue
+                                    :node-data="
                                         aliasedNodeDataOf(
                                             currentTile,
                                             widget.node.alias,
-                                        )
+                                        )!
                                     "
-                                    :card-x-node-x-widget-data="widget"
-                                    :graph-slug="reportData.context.graph.slug"
-                                    :mode="VIEW"
-                                    :node-alias="widget.node.alias"
-                                    :should-show-label="false"
+                                    :widget="widget"
                                 />
                             </div>
                             <span
@@ -329,6 +394,7 @@ function showNextTile(): void {
 
 <style scoped>
 .map-folio {
+    --map-header-button-font-size: 1.2rem;
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
@@ -349,6 +415,18 @@ function showNextTile(): void {
 .map-folio-name {
     font-size: 1.5rem;
     font-weight: 600;
+}
+
+.map-folio-header .map-folio-count {
+    min-inline-size: 2rem;
+    block-size: 2rem;
+    padding-inline: 0.6rem;
+    border-radius: 1rem;
+    background: var(--resource-report-accent-background);
+    color: var(--p-primary-color);
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 2rem;
 }
 
 .map-folio-add {
@@ -389,16 +467,27 @@ function showNextTile(): void {
 .map-folio-fields {
     display: flex;
     flex-direction: column;
-    gap: 1.4rem;
+    gap: 0.2rem;
+    font-size: 1.3rem;
 }
 
 .map-folio-field {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    gap: 0.75rem;
+}
+
+.map-folio-field-label {
+    color: var(--p-text-muted-color);
 }
 
 .map-folio-field-value {
-    font-weight: 600;
+    color: var(--p-text-color);
+    font-weight: 500;
+}
+
+.map-folio-field-value :deep(p) {
+    margin-block: 0;
 }
 
 .map-folio-actions {

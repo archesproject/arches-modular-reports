@@ -5,6 +5,8 @@ import TabPanel from "openvue/tabpanel";
 import TabPanels from "openvue/tabpanels";
 import Tabs from "openvue/tabs";
 
+import TabLabel from "@/arches_modular_reports/ResourceReport/components/TabLabel.vue";
+
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
 import { useTabbedComponents } from "@/arches_modular_reports/ResourceReport/composables/useTabbedComponents.ts";
 
@@ -38,7 +40,7 @@ const { tabs, activeTabIndex } = useTabbedComponents(
                 :key="tabIndex"
                 :value="tabIndex"
             >
-                <span>{{ tab.label }}</span>
+                <TabLabel :tab="tab" />
             </Tab>
         </TabList>
         <TabPanels>
@@ -60,7 +62,7 @@ const { tabs, activeTabIndex } = useTabbedComponents(
 
 <style scoped>
 .report-tabs {
-    --p-tabs-tablist-background: var(--resource-report-panel-background);
+    --p-tabs-tablist-background: var(--p-content-background);
     --p-tabs-tab-padding: 0.8rem 1.4rem;
     --p-tabs-tab-font-weight: 500;
     --p-tabs-tab-hover-color: var(--p-text-color);

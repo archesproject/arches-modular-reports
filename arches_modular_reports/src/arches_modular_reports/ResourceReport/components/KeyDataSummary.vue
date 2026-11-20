@@ -24,7 +24,7 @@ const rows = computed(() =>
     summaryRows(
         component.config.summary ?? [],
         reportData.value.resource.aliased_data,
-        reportData.value.context.language,
+        reportData.value.nodeTextContext,
     ).map((summaryRow) => ({
         nodeAlias: summaryRow.nodeAlias,
         label: summaryRow.label,

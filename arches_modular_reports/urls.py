@@ -11,6 +11,7 @@ from arches_modular_reports.app.views.modular_report import (
     ModularReportConfigView,
     RelatedResourceGroupsView,
     ReportContextView,
+    ResourceCopiesView,
     ResourceImagesView,
     UserPermissionsView,
 )
@@ -54,6 +55,11 @@ urlpatterns = [
         "api/related_resource_groups/<uuid:resourceid>",
         RelatedResourceGroupsView.as_view(),
         name="api_related_resource_groups",
+    ),
+    path(
+        "api/resource_copies/<uuid:resourceid>",
+        ResourceCopiesView.as_view(),
+        name="api_resource_copies",
     ),
     path(
         "api/resource_images/<uuid:resourceid>",

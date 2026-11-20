@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useTemplateRef } from "vue";
 
 import Splitter from "openvue/splitter";
 import SplitterPanel from "openvue/splitterpanel";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
+import { provideAsideWidening } from "@/arches_modular_reports/ResourceReport/composables/useAsideWidening.ts";
+import { useWorkspaceHeaderHost } from "@/arches_modular_reports/ResourceReport/composables/useWorkspaceHeaderHost.ts";
+import { provideWorkspaceOverlayHost } from "@/arches_modular_reports/ResourceReport/composables/useWorkspaceOverlayHost.ts";
 
 import type {
     ComponentNode,
@@ -13,13 +16,20 @@ import type {
 
 const SPLITTER_STATE_KEY_PREFIX = "arches-modular-reports-split-pane";
 const MINIMUM_PANE_SIZE = 20;
-const MAIN_PANE_SIZE = 60;
-const ASIDE_PANE_SIZE = 40;
+const EDITING_ASIDE_PANE_SIZE = 60;
 const FULL_PANE_SIZE = 100;
 
 const { component } = defineProps<{
     component: ComponentNode<SplitPaneConfig>;
 }>();
+
+const mainHeader = useTemplateRef<HTMLElement>("mainHeader");
+useWorkspaceHeaderHost(mainHeader);
+
+const overlayHost = useTemplateRef<HTMLElement>("overlayHost");
+provideWorkspaceOverlayHost(overlayHost);
+
+const isAsideWidened = provideAsideWidening();
 
 const mainNodes = computed(() => component.config.main ?? []);
 
@@ -31,9 +41,16 @@ const hasAside = computed(
     () => asideNodes.value.length > 0 || asideFooterNodes.value.length > 0,
 );
 
+const asidePaneSize = computed(() => {
+    if (isAsideWidened.value) {
+        return Math.max(component.config.aside_size, EDITING_ASIDE_PANE_SIZE);
+    }
+    return component.config.aside_size;
+});
+
 const mainPaneSize = computed(() => {
     if (hasAside.value) {
-        return MAIN_PANE_SIZE;
+        return FULL_PANE_SIZE - asidePaneSize.value;
     }
     return FULL_PANE_SIZE;
 });
@@ -45,64 +62,91 @@ const splitterStateKey = computed(() => {
     const regionPaths = [...mainNodes.value, ...asideNodes.value].map(
         (childNode) => childNode.component,
     );
-    return `${SPLITTER_STATE_KEY_PREFIX}:${regionPaths.join(",")}`;
+    return `${SPLITTER_STATE_KEY_PREFIX}:${regionPaths.join(",")}:${asidePaneSize.value}`;
 });
 </script>
 
 <template>
-    <Splitter
-        :key="String(hasAside)"
-        class="split-pane"
-        state-storage="local"
-        :state-key="splitterStateKey"
-    >
-        <SplitterPanel
-            class="split-pane-region"
-            :size="mainPaneSize"
-            :min-size="MINIMUM_PANE_SIZE"
+    <div class="split-pane">
+        <Splitter
+            :key="String(hasAside)"
+            class="split-pane-splitter"
+            state-storage="local"
+            :state-key="splitterStateKey"
         >
-            <component
-                :is="loadComponent(childNode.component)"
-                v-for="(childNode, childIndex) in mainNodes"
-                :key="childIndex"
-                :component="childNode"
-            />
-        </SplitterPanel>
-        <SplitterPanel
-            v-if="hasAside"
-            class="split-pane-aside"
-            :size="ASIDE_PANE_SIZE"
-            :min-size="MINIMUM_PANE_SIZE"
-        >
-            <div class="split-pane-region split-pane-aside-stage">
-                <component
-                    :is="loadComponent(childNode.component)"
-                    v-for="(childNode, childIndex) in asideNodes"
-                    :key="childIndex"
-                    :component="childNode"
-                />
-            </div>
-            <div
-                v-if="asideFooterNodes.length > 0"
-                class="split-pane-aside-footer"
+            <SplitterPanel
+                class="split-pane-main"
+                :size="mainPaneSize"
+                :min-size="MINIMUM_PANE_SIZE"
             >
-                <component
-                    :is="loadComponent(childNode.component)"
-                    v-for="(childNode, childIndex) in asideFooterNodes"
-                    :key="childIndex"
-                    :component="childNode"
+                <div
+                    ref="mainHeader"
+                    class="split-pane-main-header"
                 />
-            </div>
-        </SplitterPanel>
-    </Splitter>
+                <div class="split-pane-region split-pane-main-scroll">
+                    <component
+                        :is="loadComponent(childNode.component)"
+                        v-for="(childNode, childIndex) in mainNodes"
+                        :key="childIndex"
+                        :component="childNode"
+                    />
+                </div>
+            </SplitterPanel>
+            <SplitterPanel
+                v-if="hasAside"
+                class="split-pane-aside"
+                :size="asidePaneSize"
+                :min-size="MINIMUM_PANE_SIZE"
+            >
+                <div class="split-pane-region split-pane-aside-stage">
+                    <component
+                        :is="loadComponent(childNode.component)"
+                        v-for="(childNode, childIndex) in asideNodes"
+                        :key="childIndex"
+                        :component="childNode"
+                    />
+                </div>
+                <div
+                    v-if="asideFooterNodes.length > 0"
+                    class="split-pane-aside-footer"
+                >
+                    <component
+                        :is="loadComponent(childNode.component)"
+                        v-for="(childNode, childIndex) in asideFooterNodes"
+                        :key="childIndex"
+                        :component="childNode"
+                    />
+                </div>
+            </SplitterPanel>
+        </Splitter>
+        <div
+            ref="overlayHost"
+            class="split-pane-overlay-host"
+        />
+    </div>
 </template>
 
 <style scoped>
 .split-pane {
+    position: relative;
+    display: flex;
     flex: 1;
     min-block-size: 0;
+    contain: inline-size;
+}
+
+.split-pane-splitter {
+    flex: 1;
+    min-inline-size: 0;
     border: none;
     border-radius: 0;
+}
+
+.split-pane-overlay-host {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
 }
 
 .split-pane :deep(.p-splitter-gutter) {
@@ -127,6 +171,23 @@ const splitterStateKey = computed(() => {
     overflow: auto;
 }
 
+.split-pane-main {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+    overflow: hidden;
+}
+
+.split-pane-main-header {
+    flex-shrink: 0;
+    background: var(--p-content-background);
+}
+
+.split-pane-main-scroll {
+    flex: 1;
+    min-block-size: 0;
+}
+
 .split-pane-aside {
     display: flex;
     flex-direction: column;
@@ -140,7 +201,10 @@ const splitterStateKey = computed(() => {
 }
 
 .split-pane-aside-footer {
+    display: flex;
+    flex-direction: column;
     flex-shrink: 0;
+    max-block-size: 50%;
 }
 
 @media (prefers-reduced-motion: no-preference) {

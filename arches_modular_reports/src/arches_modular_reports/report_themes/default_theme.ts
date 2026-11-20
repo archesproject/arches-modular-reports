@@ -43,11 +43,11 @@ const cssOverrides = {
         "font-size": "1.6rem !important",
     },
     ".p-toast-message-icon": {
-        "margin-top": "0.6rem !important",
+        "margin-block-start": "0.6rem !important",
     },
     ".p-icon": {
-        width: "1.2rem !important",
-        height: "1.2rem !important",
+        "inline-size": "1.2rem !important",
+        "block-size": "1.2rem !important",
     },
     ".p-dialog-title": {
         "font-size": "1.8rem !important",
@@ -70,25 +70,25 @@ const DEFAULT_THEME = {
 const ModularReportPreset = definePreset(Aura, {
     semantic: {
         primary: {
-            50: "{teal.50}",
-            100: "{teal.100}",
-            200: "{teal.200}",
-            300: "{teal.300}",
-            400: "{teal.400}",
-            500: "{teal.500}",
-            600: "{teal.600}",
-            700: "{teal.700}",
-            800: "{teal.800}",
-            900: "{teal.900}",
-            950: "{teal.950}",
+            50: "#f0f2f8",
+            100: "#dfe4f0",
+            200: "#bfc8e1",
+            300: "#93a2cd",
+            400: "#6278b6",
+            500: "#3552a2",
+            600: "#1d3d96",
+            700: "#092c8d",
+            800: "#072371",
+            900: "#061c5a",
+            950: "#04143f",
         },
         colorScheme: {
             light: {
                 primary: {
-                    color: "{primary.600}",
+                    color: "{primary.700}",
                     contrastColor: "#ffffff",
-                    hoverColor: "{primary.700}",
-                    activeColor: "{primary.800}",
+                    hoverColor: "{primary.800}",
+                    activeColor: "{primary.900}",
                 },
                 editor: {
                     panel: {
@@ -98,6 +98,12 @@ const ModularReportPreset = definePreset(Aura, {
                 },
             },
             dark: {
+                primary: {
+                    color: "{primary.300}",
+                    contrastColor: "{surface.900}",
+                    hoverColor: "{primary.200}",
+                    activeColor: "{primary.100}",
+                },
                 surface: {
                     0: "#ffffff",
                     50: "{slate.50}",
@@ -165,7 +171,40 @@ const ModularReportPreset = definePreset(Aura, {
                 },
             },
         },
+        multiselect: {
+            root: {
+                borderRadius: "0.2rem",
+            },
+            overlay: {
+                borderRadius: "0.2rem",
+            },
+            option: {
+                borderRadius: "0.2rem",
+            },
+        },
+        select: {
+            root: {
+                borderRadius: "0.2rem",
+            },
+            overlay: {
+                borderRadius: "0.2rem",
+            },
+            option: {
+                borderRadius: "0.2rem",
+            },
+        },
+        treeselect: {
+            root: {
+                borderRadius: "0.2rem",
+            },
+            overlay: {
+                borderRadius: "0.2rem",
+            },
+        },
         tree: {
+            node: {
+                borderRadius: "0.2rem",
+            },
             colorScheme: {
                 light: {
                     node: {

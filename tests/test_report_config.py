@@ -1,7 +1,11 @@
+from unittest import mock
+
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from django.utils import translation
 
 from arches.app.models.graph import Graph
+from arches.app.models.system_settings import settings
 from arches.app.models.models import (
     CardModel,
     CardXNodeXWidget,
@@ -17,6 +21,7 @@ from arches_modular_reports.app.utils.resource_report_config import (
     REPORT_COMPONENTS_PATH,
     RESOURCE_REPORT_COMPONENT,
     report_component,
+    translated_labels,
 )
 from arches_modular_reports.app.utils.update_report_configuration_for_nodegroup_permissions import (
     update_report_configuration_with_nodegroup_permissions,
@@ -89,6 +94,7 @@ def curated_config():
                         report_component(
                             "SplitPane",
                             {
+                                "aside_size": 40,
                                 "main": [
                                     report_component(
                                         "ReportSection",
@@ -379,6 +385,36 @@ class ResourceReportConfigTests(TestCase):
                 mutation(config)
                 with self.assertRaises(ValidationError):
                     ReportConfig(graph=self.graph, config=config).full_clean()
+
+    def test_an_aside_needs_a_numeric_size(self):
+        missing_size = curated_config()
+        del find_components(missing_size, "SplitPane")[0]["config"]["aside_size"]
+        text_size = curated_config()
+        find_components(text_size, "SplitPane")[0]["config"]["aside_size"] = "wide"
+
+        for config in (missing_size, text_size):
+            with self.subTest(config=config):
+                with self.assertRaises(ValidationError):
+                    ReportConfig(graph=self.graph, config=config).full_clean()
+
+    def test_labels_skip_languages_without_a_translation(self):
+        def fake_gettext(message):
+            if translation.get_language() == "fr":
+                return "Aperçu"
+            return message
+
+        languages = [("en", "English"), ("fr", "French"), ("de", "German")]
+        with (
+            mock.patch.object(settings, "LANGUAGE_CODE", "en"),
+            mock.patch.object(settings, "LANGUAGES", languages),
+            mock.patch(
+                "arches_modular_reports.app.utils.resource_report_config.gettext",
+                fake_gettext,
+            ),
+        ):
+            labels = translated_labels("Overview")
+
+        self.assertEqual(labels, {"en": "Overview", "fr": "Aperçu"})
 
     def test_empty_resource_report_config_is_valid(self):
         config = {

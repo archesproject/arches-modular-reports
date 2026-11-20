@@ -12,10 +12,14 @@ import Tag from "openvue/tag";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
 import { fetchEditHistory } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { useFilterQuery } from "@/arches_modular_reports/ResourceReport/composables/useFilterQuery.ts";
+import { PANEL_COUNT_EVENT } from "@/arches_modular_reports/ResourceReport/constants.ts";
+import { readableText } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 
 import type {
     ComponentNode,
+    DrawerPanelCount,
     EditHistoryEntry,
+    EditHistoryValue,
     LabelledConfig,
     TagSeverity,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
@@ -28,7 +32,11 @@ defineProps<{
     component: ComponentNode<LabelledConfig>;
 }>();
 
-const { $gettext } = useGettext();
+const emit = defineEmits<{
+    (event: typeof PANEL_COUNT_EVENT, panelCount: DrawerPanelCount): void;
+}>();
+
+const { $gettext, $ngettext } = useGettext();
 const reportData = useReportData();
 const { filterText, query } = useFilterQuery();
 
@@ -36,6 +44,7 @@ const entries = ref<EditHistoryEntry[]>([]);
 const nextCursor = ref<string | null>(null);
 const isLoading = ref(false);
 const loadError = ref<Error | null>(null);
+const fullyShownEntryIds = ref(new Set<string>());
 let latestHistoryRequestNumber = 0;
 
 const resourceInstanceId = computed(
@@ -69,6 +78,12 @@ async function loadHistory(
             entries.value = [...entries.value, ...historyPage.results];
         }
         nextCursor.value = historyPage.next_cursor;
+        if (searchText === "" && cursor === null) {
+            emit(PANEL_COUNT_EVENT, {
+                count: historyPage.results.length,
+                hasMore: historyPage.next_cursor !== null,
+            });
+        }
     } catch (error) {
         if (historyRequestNumber === latestHistoryRequestNumber) {
             loadError.value = error as Error;
@@ -82,19 +97,6 @@ async function loadHistory(
 
 function loadMore(): void {
     loadHistory(query.value, nextCursor.value);
-}
-
-function editTypeLabel(entry: EditHistoryEntry): string {
-    if (entry.edit_type === TILE_CREATE) {
-        return $gettext("create");
-    }
-    if (entry.edit_type === TILE_EDIT) {
-        return $gettext("update");
-    }
-    if (entry.edit_type === TILE_DELETE) {
-        return $gettext("delete");
-    }
-    return entry.edit_type;
 }
 
 function editTypeSeverity(entry: EditHistoryEntry): TagSeverity {
@@ -119,6 +121,65 @@ function formatTimestamp(timestamp: string): string {
 function fieldLabel(nodeAlias: string): string {
     return reportData.value.graphNodesByAlias[nodeAlias].label;
 }
+
+function unchangedFieldCount(entry: EditHistoryEntry): number {
+    return entry.values.filter((value) => !value.changed).length;
+}
+
+function hasHideableFields(entry: EditHistoryEntry): boolean {
+    const unchangedCount = unchangedFieldCount(entry);
+    return unchangedCount > 0 && unchangedCount < entry.values.length;
+}
+
+function isShowingAllFields(entry: EditHistoryEntry): boolean {
+    return fullyShownEntryIds.value.has(entry.editlogid);
+}
+
+function valueText(nodeAlias: string, value: string | null): string {
+    if (value === null) {
+        return "";
+    }
+    return readableText(nodeAlias, value, reportData.value.nodeTextContext);
+}
+
+function displayedValues(entry: EditHistoryEntry): EditHistoryValue[] {
+    if (!hasHideableFields(entry) || isShowingAllFields(entry)) {
+        return entry.values;
+    }
+    return entry.values.filter((value) => value.changed);
+}
+
+function isMarkedChanged(
+    entry: EditHistoryEntry,
+    value: EditHistoryValue,
+): boolean {
+    return (
+        value.changed && hasHideableFields(entry) && isShowingAllFields(entry)
+    );
+}
+
+function fieldsToggleLabel(entry: EditHistoryEntry): string {
+    if (isShowingAllFields(entry)) {
+        return $gettext("Show changed fields only");
+    }
+    const unchangedCount = unchangedFieldCount(entry);
+    return $ngettext(
+        "Show %{count} unchanged field",
+        "Show %{count} unchanged fields",
+        unchangedCount,
+        { count: String(unchangedCount) },
+    );
+}
+
+function toggleAllFields(entry: EditHistoryEntry): void {
+    const nextIds = new Set(fullyShownEntryIds.value);
+    if (nextIds.has(entry.editlogid)) {
+        nextIds.delete(entry.editlogid);
+    } else {
+        nextIds.add(entry.editlogid);
+    }
+    fullyShownEntryIds.value = nextIds;
+}
 </script>
 
 <template>
@@ -128,8 +189,17 @@ function fieldLabel(nodeAlias: string): string {
             <InputText
                 v-model="filterText"
                 class="edit-history-filter"
-                :placeholder="$gettext('Filter by card or user…')"
+                :placeholder="$gettext('Filter by card, user or change type…')"
                 :aria-label="$gettext('Filter the edit history')"
+            />
+            <Button
+                v-if="filterText"
+                class="p-inputicon edit-history-filter-clear"
+                icon="pi pi-times"
+                variant="text"
+                :aria-label="$gettext('Clear filter')"
+                :title="$gettext('Clear filter')"
+                @click="filterText = ''"
             />
         </IconField>
         <Message
@@ -168,7 +238,7 @@ function fieldLabel(nodeAlias: string): string {
             >
                 <div class="edit-history-meta">
                     <Tag
-                        :value="editTypeLabel(entry)"
+                        :value="entry.edit_type_label"
                         :severity="editTypeSeverity(entry)"
                     />
                     <span
@@ -210,7 +280,7 @@ function fieldLabel(nodeAlias: string): string {
                             class="edit-history-fields"
                         >
                             <div
-                                v-for="value in entry.values"
+                                v-for="value in displayedValues(entry)"
                                 :key="value.node_alias"
                                 class="edit-history-field"
                                 :class="{
@@ -230,7 +300,26 @@ function fieldLabel(nodeAlias: string): string {
                                         )
                                     }}
                                 </dt>
-                                <dd>{{ value.before }}</dd>
+                                <dd>
+                                    <span>{{
+                                        valueText(
+                                            value.node_alias,
+                                            value.before,
+                                        )
+                                    }}</span>
+                                    <span
+                                        v-if="isMarkedChanged(entry, value)"
+                                        class="edit-history-changed-marker"
+                                    >
+                                        <i
+                                            class="pi pi-pencil"
+                                            aria-hidden="true"
+                                        />
+                                        <span class="edit-history-sr-only">
+                                            {{ $gettext("(changed)") }}
+                                        </span>
+                                    </span>
+                                </dd>
                             </div>
                         </dl>
                     </div>
@@ -249,7 +338,7 @@ function fieldLabel(nodeAlias: string): string {
                             class="edit-history-fields"
                         >
                             <div
-                                v-for="value in entry.values"
+                                v-for="value in displayedValues(entry)"
                                 :key="value.node_alias"
                                 class="edit-history-field"
                                 :class="{
@@ -269,11 +358,35 @@ function fieldLabel(nodeAlias: string): string {
                                         )
                                     }}
                                 </dt>
-                                <dd>{{ value.after }}</dd>
+                                <dd>
+                                    <span>{{
+                                        valueText(value.node_alias, value.after)
+                                    }}</span>
+                                    <span
+                                        v-if="isMarkedChanged(entry, value)"
+                                        class="edit-history-changed-marker"
+                                    >
+                                        <i
+                                            class="pi pi-pencil"
+                                            aria-hidden="true"
+                                        />
+                                        <span class="edit-history-sr-only">
+                                            {{ $gettext("(changed)") }}
+                                        </span>
+                                    </span>
+                                </dd>
                             </div>
                         </dl>
                     </div>
                 </div>
+                <Button
+                    v-if="hasHideableFields(entry)"
+                    class="edit-history-fields-toggle"
+                    variant="link"
+                    size="small"
+                    :label="fieldsToggleLabel(entry)"
+                    @click="toggleAllFields(entry)"
+                />
             </li>
         </ol>
         <Button
@@ -293,10 +406,37 @@ function fieldLabel(nodeAlias: string): string {
     flex-direction: column;
     gap: 1.2rem;
     padding: 1.6rem;
+    container-type: inline-size;
 }
 
 .edit-history-filter {
     inline-size: 100%;
+}
+
+.edit-history-filter-clear {
+    inline-size: auto;
+    block-size: auto;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+}
+
+.edit-history-filter-clear :deep(.p-button-icon) {
+    font-size: inherit;
+}
+
+.edit-history-filter-clear:not(:disabled):hover {
+    border: none;
+    background: none;
+    color: var(--p-text-color);
+}
+
+.edit-history-filter-clear:focus-visible {
+    outline: 0.2rem solid var(--p-primary-color);
+    outline-offset: 0.2rem;
+    border-radius: 0.2rem;
 }
 
 .edit-history-empty {
@@ -383,14 +523,43 @@ function fieldLabel(nodeAlias: string): string {
 
 .edit-history-field dt {
     color: var(--p-text-muted-color);
+    font-weight: 400;
 }
 
 .edit-history-field dd {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4rem;
     margin: 0;
 }
 
 .edit-history-field-changed dd {
     color: var(--p-primary-color);
     font-weight: 600;
+}
+
+.edit-history-changed-marker {
+    font-size: 1.1rem;
+}
+
+.edit-history-fields-toggle {
+    align-self: flex-start;
+    padding-inline: 0;
+}
+
+.edit-history-sr-only {
+    position: absolute;
+    inline-size: 0.1rem;
+    block-size: 0.1rem;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@container (min-inline-size: 60rem) {
+    .edit-history-diff {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
 }
 </style>

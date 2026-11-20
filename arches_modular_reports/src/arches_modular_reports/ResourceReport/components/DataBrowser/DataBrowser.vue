@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, onUnmounted, useTemplateRef } from "vue";
 import { useGettext } from "vue3-gettext";
 
+import Button from "openvue/button";
 import IconField from "openvue/iconfield";
 import InputIcon from "openvue/inputicon";
 import InputText from "openvue/inputtext";
@@ -14,6 +15,7 @@ import { folioMatches } from "@/arches_modular_reports/ResourceReport/utils/data
 import { childNodegroupAliases } from "@/arches_modular_reports/ResourceReport/utils/graph-nodes.ts";
 import { nodegroupTiles } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
+import type { ComponentPublicInstance } from "vue";
 import type { ComponentNode } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 defineProps<{
@@ -24,6 +26,10 @@ const { $gettext } = useGettext();
 const reportData = useReportData();
 
 const { filterText, query: appliedFilterText } = useFilterQuery();
+const filterInput = useTemplateRef<ComponentPublicInstance>("filterInput");
+
+const unregisterFolioByAlias = new Map<string, () => void>();
+let unregisterRevealer = (): void => undefined;
 
 const query = computed(() => appliedFilterText.value.toLocaleLowerCase());
 
@@ -31,8 +37,16 @@ const isEditable = computed(
     () => reportData.value.canEdit && reportData.value.editor.isAvailable,
 );
 
+const topLevelAliases = computed(() =>
+    childNodegroupAliases(reportData.value.nodegroupWidgetConfigs, null),
+);
+
+const flashedNodegroupAlias = computed(
+    () => reportData.value.folioNavigation.flashedNodegroupAlias.value,
+);
+
 const folios = computed(() =>
-    childNodegroupAliases(reportData.value.nodegroupWidgetConfigs, null)
+    topLevelAliases.value
         .map((nodegroupAlias) => ({
             nodegroupAlias,
             tiles: nodegroupTiles(
@@ -47,9 +61,59 @@ const folios = computed(() =>
                     folio.nodegroupAlias,
                     folio.tiles,
                     query.value,
+                    reportData.value.nodeTextContext,
                 ),
         ),
 );
+
+onMounted(() => {
+    unregisterRevealer = reportData.value.folioNavigation.registerRevealer({
+        isLocal: true,
+        contains: (nodegroupAlias) =>
+            topLevelAliases.value.includes(nodegroupAlias),
+        reveal: (nodegroupAlias) => {
+            const isShown = folios.value.some(
+                (folio) => folio.nodegroupAlias === nodegroupAlias,
+            );
+            if (!isShown) {
+                clearFilter();
+            }
+        },
+    });
+});
+
+onUnmounted(() => {
+    unregisterRevealer();
+    unregisterFolioByAlias.forEach((unregisterFolio) => unregisterFolio());
+    unregisterFolioByAlias.clear();
+});
+
+function clearFilter(): void {
+    filterText.value = "";
+    appliedFilterText.value = "";
+}
+
+function clearFilterFromButton(): void {
+    clearFilter();
+    (filterInput.value?.$el as HTMLInputElement | undefined)?.focus();
+}
+
+function trackFolioElement(
+    nodegroupAlias: string,
+    element: Element | ComponentPublicInstance | null,
+): void {
+    unregisterFolioByAlias.get(nodegroupAlias)?.();
+    unregisterFolioByAlias.delete(nodegroupAlias);
+    if (element instanceof HTMLElement) {
+        unregisterFolioByAlias.set(
+            nodegroupAlias,
+            reportData.value.folioNavigation.registerFolio(
+                nodegroupAlias,
+                element,
+            ),
+        );
+    }
+}
 </script>
 
 <template>
@@ -58,10 +122,20 @@ const folios = computed(() =>
             <IconField>
                 <InputIcon class="pi pi-search" />
                 <InputText
+                    ref="filterInput"
                     v-model="filterText"
                     class="data-browser-filter"
                     :placeholder="$gettext('Filter branches, groups, fields…')"
                     :aria-label="$gettext('Filter the data')"
+                />
+                <Button
+                    v-if="filterText"
+                    class="p-inputicon data-browser-filter-clear"
+                    icon="pi pi-times"
+                    variant="text"
+                    :aria-label="$gettext('Clear filter')"
+                    :title="$gettext('Clear filter')"
+                    @click="clearFilterFromButton"
                 />
             </IconField>
         </div>
@@ -78,20 +152,41 @@ const folios = computed(() =>
             }}
         </p>
         <div class="data-browser-folios">
-            <DataFolio
+            <div
                 v-for="folio in folios"
                 :key="folio.nodegroupAlias"
-                :nodegroup-alias="folio.nodegroupAlias"
-                :nodegroup-widget-configs="reportData.nodegroupWidgetConfigs"
-                :tiles="folio.tiles"
-                :parent-tile-id="null"
-                :change-set="reportData.changeSet"
-                :query="query"
-                :matched-by-ancestor="false"
-                :selected-tile-id="reportData.editor.target?.tileId ?? null"
-                :is-editable="isEditable"
-                @edit-tile="reportData.editor.open"
-            />
+                :ref="
+                    (element) =>
+                        trackFolioElement(folio.nodegroupAlias, element)
+                "
+                class="data-browser-folio"
+                tabindex="-1"
+                :class="{
+                    'data-browser-folio-flash':
+                        flashedNodegroupAlias === folio.nodegroupAlias,
+                }"
+                @animationend.self="reportData.folioNavigation.clearFlash"
+            >
+                <DataFolio
+                    :nodegroup-alias="folio.nodegroupAlias"
+                    :nodegroup-widget-configs="
+                        reportData.nodegroupWidgetConfigs
+                    "
+                    :tiles="folio.tiles"
+                    :parent-tile-id="null"
+                    :change-set="reportData.changeSet"
+                    :query="query"
+                    :matched-by-ancestor="false"
+                    :selected-tile-id="reportData.editor.target?.tileId ?? null"
+                    :is-editable="isEditable"
+                    :is-revealed="
+                        flashedNodegroupAlias === folio.nodegroupAlias
+                    "
+                    :node-text-context="reportData.nodeTextContext"
+                    :language-names="reportData.context.languages"
+                    @edit-tile="reportData.editor.open"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -115,7 +210,7 @@ const folios = computed(() =>
 .data-browser-filter-bar .p-iconfield .data-browser-filter {
     inline-size: 100%;
     padding-block: 0.45rem;
-    padding-inline-start: 3.1rem;
+    padding-inline: 3.1rem;
     border-color: var(--p-content-border-color);
     border-radius: 0.5rem;
     font-size: 1.2rem;
@@ -126,10 +221,51 @@ const folios = computed(() =>
     font-size: 1.1rem;
 }
 
+.data-browser-filter-bar .data-browser-filter-clear {
+    inline-size: auto;
+    block-size: auto;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--p-text-muted-color);
+}
+
+.data-browser-filter-bar .data-browser-filter-clear :deep(.p-button-icon) {
+    font-size: inherit;
+}
+
+.data-browser-filter-bar .data-browser-filter-clear:not(:disabled):hover {
+    border: none;
+    background: none;
+    color: var(--p-text-color);
+}
+
+.data-browser-filter-bar .data-browser-filter-clear:focus-visible {
+    outline: 0.2rem solid var(--p-focus-ring-color);
+    outline-offset: 0.2rem;
+    border-radius: 0.2rem;
+}
+
 .data-browser-folios {
     display: flex;
     flex-direction: column;
     padding: 1.6rem;
+}
+
+.data-browser-folio:focus-visible {
+    outline: 0.2rem solid var(--p-focus-ring-color);
+    outline-offset: 0.2rem;
+}
+
+.data-browser-folio-flash {
+    animation: data-browser-folio-flash 1.6s ease-out;
+}
+
+@keyframes data-browser-folio-flash {
+    from {
+        background: var(--p-highlight-background);
+        box-shadow: 0 0 0 0.8rem var(--p-highlight-background);
+    }
 }
 
 .data-browser-no-results {

@@ -1,26 +1,30 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, useId, watchEffect } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
-import ConfirmDialog from "openvue/confirmdialog";
 import Message from "openvue/message";
-import { useConfirm } from "openvue/useconfirm";
+
+import GenericWidget from "@/arches_vue_components/generics/GenericWidget/GenericWidget.vue";
+import AlertDialog from "@/arches_modular_reports/ResourceReport/components/AlertDialog.vue";
+
+import { EDIT } from "@/arches_vue_components/widgets/constants.ts";
 
 import {
     copyResource,
     deleteResource,
-    resourceReportUrl,
-    searchUrl,
+    fetchResourceCopies,
 } from "@/arches_modular_reports/ResourceReport/api.ts";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
+import { findNodeValues } from "@/arches_modular_reports/ResourceReport/utils/find-node-values.ts";
+import { nodeHasData } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 
+import type { AliasedNodeData } from "@/arches_vue_components/types.ts";
 import type {
     ComponentNode,
     LabelledConfig,
+    ResourceCopy,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
-
-const CONFIRM_GROUP = "manage-panel";
 
 defineProps<{
     component: ComponentNode<LabelledConfig>;
@@ -28,23 +32,116 @@ defineProps<{
 
 const { $gettext } = useGettext();
 const reportData = useReportData();
-const confirm = useConfirm();
+const copyNameLabelId = useId();
 
-const copiedResourceId = ref<string | null>(null);
+const copies = ref<ResourceCopy[]>([]);
+const nextCursor = ref<string | null>(null);
+const isLoadingCopies = ref(false);
+const copiesError = ref<Error | null>(null);
+const nameNodeAlias = ref<string | null>(null);
+const initialCopyName = ref<AliasedNodeData | null>(null);
+const copyName = ref<AliasedNodeData | null>(null);
+const copyFormVersion = ref(0);
 const isCopying = ref(false);
+const isConfirmingDelete = ref(false);
 const isDeleting = ref(false);
+const deleteError = ref<Error | null>(null);
 const actionError = ref<Error | null>(null);
 
 const permissions = computed(() => reportData.value.context.permissions);
 const lifecycleState = computed(() => reportData.value.context.lifecycle_state);
+const resourceInstanceId = computed(
+    () => reportData.value.resource.resourceinstanceid,
+);
+const nameWidget = computed(() => {
+    if (nameNodeAlias.value === null) {
+        return undefined;
+    }
+    const graphNode = reportData.value.graphNodesByAlias[nameNodeAlias.value];
+    return reportData.value.nodegroupWidgetConfigs[
+        graphNode?.nodegroupAlias
+    ]?.card_x_node_x_widgets.find(
+        (widget) => widget.node.alias === nameNodeAlias.value,
+    );
+});
+const isCopyNameMissing = computed(
+    () =>
+        nameWidget.value !== undefined &&
+        !nodeHasData(
+            nameWidget.value.node.alias,
+            copyName.value,
+            reportData.value.nodeTextContext,
+        ),
+);
+const deleteWarning = computed(() => {
+    if (reportData.value.changeSet.pendingChanges.value.length > 0) {
+        return $gettext(
+            "Deleting this resource cannot be undone, and your pending edits will be discarded.",
+        );
+    }
+    return $gettext("Deleting this resource cannot be undone.");
+});
+
+watchEffect(() => {
+    loadCopies(resourceInstanceId.value, null);
+});
+
+async function loadCopies(
+    resourceId: string,
+    cursor: string | null,
+): Promise<void> {
+    isLoadingCopies.value = true;
+    copiesError.value = null;
+    try {
+        const copiesPage = await fetchResourceCopies(resourceId, cursor);
+        if (cursor === null) {
+            copies.value = copiesPage.results;
+            nameNodeAlias.value = copiesPage.name_node_alias;
+            initialCopyName.value = originalName(copiesPage.name_node_alias);
+            copyName.value = initialCopyName.value;
+            copyFormVersion.value += 1;
+        } else {
+            copies.value = [...copies.value, ...copiesPage.results];
+        }
+        nextCursor.value = copiesPage.next_cursor;
+    } catch (error) {
+        copiesError.value = error as Error;
+    } finally {
+        isLoadingCopies.value = false;
+    }
+}
+
+function originalName(nodeAlias: string | null): AliasedNodeData | null {
+    if (nodeAlias === null) {
+        return null;
+    }
+    return (
+        findNodeValues(reportData.value.resource.aliased_data, nodeAlias)[0] ??
+        null
+    );
+}
+
+function updateCopyName(aliasedNodeData: AliasedNodeData): void {
+    copyName.value = aliasedNodeData;
+}
+
+function copyNameValue(): unknown {
+    if (nameWidget.value === undefined) {
+        return null;
+    }
+    return copyName.value?.node_value ?? null;
+}
+
+function loadMoreCopies(): void {
+    loadCopies(resourceInstanceId.value, nextCursor.value);
+}
 
 async function createCopy(): Promise<void> {
     isCopying.value = true;
     actionError.value = null;
     try {
-        copiedResourceId.value = await copyResource(
-            reportData.value.resource.resourceinstanceid,
-        );
+        await copyResource(resourceInstanceId.value, copyNameValue());
+        await loadCopies(resourceInstanceId.value, null);
     } catch (error) {
         actionError.value = error as Error;
     } finally {
@@ -52,46 +149,76 @@ async function createCopy(): Promise<void> {
     }
 }
 
+function formatTimestamp(timestamp: string): string {
+    return new Date(timestamp).toLocaleString(
+        reportData.value.context.language,
+    );
+}
+
 function confirmDelete(): void {
-    let message = $gettext("Deleting this resource cannot be undone.");
-    if (reportData.value.changeSet.pendingChanges.value.length > 0) {
-        message = $gettext(
-            "Deleting this resource cannot be undone, and your pending edits will be discarded.",
-        );
-    }
-    confirm.require({
-        group: CONFIRM_GROUP,
-        header: $gettext("Delete this resource?"),
-        message,
-        acceptLabel: $gettext("Delete Resource"),
-        rejectLabel: $gettext("Cancel"),
-        acceptProps: { severity: "danger" },
-        accept: deleteThisResource,
-    });
+    deleteError.value = null;
+    isConfirmingDelete.value = true;
 }
 
 async function deleteThisResource(): Promise<void> {
     isDeleting.value = true;
-    actionError.value = null;
+    deleteError.value = null;
     try {
-        await deleteResource(reportData.value.resource.resourceinstanceid);
-        reportData.value.changeSet.discardAll();
-        window.location.assign(searchUrl());
+        await deleteResource(
+            reportData.value.context.graph.slug,
+            resourceInstanceId.value,
+        );
+        reportData.value.markDeleted();
+        isConfirmingDelete.value = false;
     } catch (error) {
-        actionError.value = error as Error;
+        deleteError.value = error as Error;
     } finally {
         isDeleting.value = false;
     }
-}
-
-function printReport(): void {
-    window.print();
 }
 </script>
 
 <template>
     <div class="manage">
-        <ConfirmDialog :group="CONFIRM_GROUP" />
+        <AlertDialog
+            v-model:visible="isConfirmingDelete"
+            :header="$gettext('Delete this resource?')"
+            :cancel-label="$gettext('Cancel')"
+            :confirm-label="$gettext('Delete Resource')"
+            :is-busy="isDeleting"
+            @confirm="deleteThisResource"
+        >
+            <Message
+                v-if="deleteError"
+                severity="error"
+                size="small"
+                icon="pi pi-times-circle"
+            >
+                {{
+                    $gettext(
+                        "Unable to delete this resource: %{message}",
+                        { message: deleteError.message },
+                        true,
+                    )
+                }}
+            </Message>
+            <Message
+                v-else-if="isDeleting"
+                severity="info"
+                size="small"
+                icon="pi pi-spin pi-spinner"
+            >
+                {{ $gettext("Deleting this resource…") }}
+            </Message>
+            <Message
+                v-else
+                severity="warn"
+                size="small"
+                icon="pi pi-exclamation-triangle"
+            >
+                {{ deleteWarning }}
+            </Message>
+        </AlertDialog>
         <Message
             v-if="actionError"
             severity="error"
@@ -106,58 +233,147 @@ function printReport(): void {
                 }}
             </span>
         </Message>
-        <section
-            v-if="permissions.can_copy"
-            class="manage-card"
-        >
-            <h4 class="manage-card-title">{{ $gettext("Copy Resource") }}</h4>
-            <Button
-                v-if="copiedResourceId === null"
-                icon="pi pi-copy"
-                size="small"
-                :label="$gettext('Create Copy')"
-                :loading="isCopying"
-                @click="createCopy"
-            />
-            <template v-else>
-                <Message
-                    severity="success"
-                    variant="simple"
-                    icon="pi pi-check-circle"
-                >
-                    <span>{{ $gettext("Copy created.") }}</span>
-                </Message>
-                <Button
-                    as="a"
-                    variant="outlined"
-                    size="small"
-                    :href="resourceReportUrl(copiedResourceId)"
-                    :label="$gettext('Open Copy')"
+        <section class="manage-section">
+            <h4 class="manage-section-label">
+                <i
+                    class="pi pi-copy"
+                    aria-hidden="true"
                 />
-            </template>
+                <span>{{ $gettext("Manage Copies") }}</span>
+            </h4>
+            <form
+                v-if="permissions.can_copy"
+                class="manage-copy-form"
+                @submit.prevent="createCopy"
+            >
+                <template v-if="nameWidget">
+                    <span
+                        :id="copyNameLabelId"
+                        class="manage-field-label"
+                    >
+                        {{ $gettext("Name of the copy") }}
+                    </span>
+                    <div
+                        class="manage-copy-name"
+                        role="group"
+                        :aria-labelledby="copyNameLabelId"
+                    >
+                        <GenericWidget
+                            :key="copyFormVersion"
+                            :aliased-node-data="initialCopyName"
+                            :card-x-node-x-widget-data="nameWidget"
+                            :graph-slug="reportData.context.graph.slug"
+                            :mode="EDIT"
+                            :node-alias="nameWidget.node.alias"
+                            :should-show-label="false"
+                            @update:aliased-node-data="updateCopyName"
+                        />
+                    </div>
+                </template>
+                <Button
+                    type="submit"
+                    icon="pi pi-copy"
+                    size="small"
+                    :label="$gettext('Create Copy')"
+                    :loading="isCopying"
+                    :disabled="isCopyNameMissing"
+                />
+            </form>
+            <Message
+                v-if="copiesError"
+                severity="error"
+            >
+                <span>
+                    {{
+                        $gettext(
+                            "Unable to load the copies: %{message}",
+                            { message: copiesError.message },
+                            true,
+                        )
+                    }}
+                </span>
+            </Message>
+            <p
+                v-else-if="!isLoadingCopies && copies.length === 0"
+                class="manage-empty"
+            >
+                {{ $gettext("No copies of this resource yet.") }}
+            </p>
+            <ul
+                v-if="copies.length > 0"
+                class="manage-copies"
+            >
+                <li
+                    v-for="resourceCopy in copies"
+                    :key="resourceCopy.editlogid"
+                    class="manage-copy"
+                >
+                    <Button
+                        v-if="resourceCopy.report_url !== null"
+                        as="a"
+                        variant="link"
+                        size="small"
+                        class="manage-copy-link"
+                        :href="resourceCopy.report_url"
+                        :label="resourceCopy.name"
+                    />
+                    <span
+                        v-else
+                        class="manage-copy-deleted"
+                    >
+                        <s>{{ resourceCopy.name }}</s>
+                        <span>{{ $gettext("(deleted)") }}</span>
+                    </span>
+                    <span class="manage-copy-meta">
+                        <span class="manage-copy-user">
+                            <i
+                                class="pi pi-user"
+                                aria-hidden="true"
+                            />
+                            <span>{{ resourceCopy.user }}</span>
+                        </span>
+                        <time :datetime="resourceCopy.timestamp">
+                            {{ formatTimestamp(resourceCopy.timestamp) }}
+                        </time>
+                    </span>
+                </li>
+            </ul>
+            <Button
+                v-if="nextCursor !== null"
+                class="manage-load-more"
+                variant="link"
+                size="small"
+                :label="$gettext('Load more')"
+                :loading="isLoadingCopies"
+                @click="loadMoreCopies"
+            />
         </section>
         <section
             v-if="permissions.can_delete"
-            class="manage-card"
+            class="manage-section"
         >
-            <h4 class="manage-card-title">{{ $gettext("Delete") }}</h4>
+            <h4 class="manage-section-label">
+                <i
+                    class="pi pi-trash"
+                    aria-hidden="true"
+                />
+                <span>{{ $gettext("Delete Resource") }}</span>
+            </h4>
             <p class="manage-status">
                 <span>{{ $gettext("Current status:") }}</span>
                 <strong>{{ lifecycleState.name }}</strong>
             </p>
             <template v-if="lifecycleState.can_delete_resource_instances">
                 <Message
+                    class="manage-note-message"
                     severity="warn"
-                    variant="simple"
+                    size="small"
                     icon="pi pi-exclamation-triangle"
                 >
-                    <span>
-                        {{
-                            $gettext("Deleting this resource cannot be undone.")
-                        }}
-                    </span>
+                    {{ deleteWarning }}
                 </Message>
                 <Button
+                    class="manage-delete"
                     icon="pi pi-trash"
                     severity="danger"
                     size="small"
@@ -168,7 +384,7 @@ function printReport(): void {
             </template>
             <p
                 v-else
-                class="manage-note"
+                class="manage-empty"
             >
                 {{
                     $gettext(
@@ -177,16 +393,6 @@ function printReport(): void {
                 }}
             </p>
         </section>
-        <section class="manage-card">
-            <h4 class="manage-card-title">{{ $gettext("Print") }}</h4>
-            <Button
-                icon="pi pi-print"
-                variant="outlined"
-                size="small"
-                :label="$gettext('Print')"
-                @click="printReport"
-            />
-        </section>
     </div>
 </template>
 
@@ -194,25 +400,108 @@ function printReport(): void {
 .manage {
     display: flex;
     flex-direction: column;
-    gap: 1.6rem;
+    gap: 2.6rem;
     padding: 1.6rem;
 }
 
-.manage-card {
+.manage-section {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 0.8rem;
-    padding: 1.6rem;
-    border: 0.1rem solid var(--p-content-border-color);
-    border-radius: var(--p-content-border-radius);
-    background: var(--p-content-background);
 }
 
-.manage-card-title {
+.manage-section-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
     margin: 0;
-    font-size: 1.4rem;
+    color: var(--p-text-muted-color);
+    font-size: 1.2rem;
     font-weight: 700;
+    letter-spacing: 0.08rem;
+    text-transform: uppercase;
+}
+
+.manage-copy-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    inline-size: 100%;
+}
+
+.manage-field-label {
+    color: var(--p-text-muted-color);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.manage-copy-name {
+    inline-size: 100%;
+    margin-block-end: 0.3rem;
+}
+
+.manage-copy-name :deep(.p-inputtext) {
+    border-radius: 0.15rem;
+}
+
+.manage-section :deep(.p-button:not(.p-button-link)) {
+    border-radius: 0.15rem;
+}
+
+.manage-empty {
+    margin: 0;
+    color: var(--p-text-muted-color);
+    font-style: italic;
+}
+
+.manage-copies {
+    display: flex;
+    flex-direction: column;
+    inline-size: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.manage-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    padding-block: 0.6rem;
+    border-block-end: 0.1rem solid var(--p-content-border-color);
+}
+
+.manage-copy-link {
+    padding: 0;
+    text-align: start;
+}
+
+.manage-copy-deleted {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    color: var(--p-text-muted-color);
+}
+
+.manage-copy-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.2rem;
+    color: var(--p-text-muted-color);
+    font-size: 1.2rem;
+}
+
+.manage-copy-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.manage-load-more {
+    padding-inline: 0;
 }
 
 .manage-status {
@@ -222,8 +511,21 @@ function printReport(): void {
     margin: 0;
 }
 
-.manage-note {
-    margin: 0;
-    color: var(--p-text-muted-color);
+.manage-note-message {
+    inline-size: 100%;
+    border-radius: 0.15rem;
+}
+
+.manage-note-message :deep(.p-message-content) {
+    gap: 1.5rem;
+}
+
+.manage-note-message :deep(.p-message-text) {
+    font-size: 1.25rem;
+    line-height: 1.4;
+}
+
+.manage-note-message :deep(.p-message-icon) {
+    font-size: 1.4rem;
 }
 </style>

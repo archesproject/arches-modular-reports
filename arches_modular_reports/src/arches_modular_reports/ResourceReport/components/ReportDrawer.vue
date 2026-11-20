@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { computed, shallowRef } from "vue";
+import { computed, ref, shallowRef, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
 
 import { loadComponent } from "@/arches_modular_reports/ModularReport/utils.ts";
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
+import { useWorkspaceOverlayHost } from "@/arches_modular_reports/ResourceReport/composables/useWorkspaceOverlayHost.ts";
 import { localizeLabel } from "@/arches_modular_reports/ResourceReport/utils/localize-label.ts";
 
 import type {
     ComponentNode,
     DrawerConfig,
+    DrawerPanelCount,
     LabelledConfig,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
@@ -20,18 +22,30 @@ const { component } = defineProps<{
 
 const { $gettext } = useGettext();
 const reportData = useReportData();
+const overlayHost = useWorkspaceOverlayHost();
 
 const openPanel = shallowRef<ComponentNode<LabelledConfig> | null>(null);
+const isExpanded = ref(false);
+const savedChangesCount = ref(0);
+const panelCounts = shallowRef(
+    new Map<ComponentNode<LabelledConfig>, DrawerPanelCount>(),
+);
 
 const bodyNodes = computed(() => component.config.components ?? []);
 
+const visiblePanels = computed(() =>
+    (component.config.panels ?? []).filter(
+        (panel) =>
+            panel.config.requires_edit !== true || reportData.value.canEdit,
+    ),
+);
+
 const triggers = computed(() =>
-    (component.config.panels ?? [])
-        .filter(
-            (panel) =>
-                panel.config.requires_edit !== true || reportData.value.canEdit,
-        )
-        .map((panel) => ({ panel, label: panelLabel(panel) })),
+    visiblePanels.value.map((panel) => ({
+        panel,
+        label: panelLabel(panel),
+        countLabel: countLabel(panel),
+    })),
 );
 
 const resourceLabel = computed(
@@ -40,23 +54,75 @@ const resourceLabel = computed(
         reportData.value.context.graph.name,
 );
 
+const openPanelLabel = computed(() => {
+    if (openPanel.value === null) {
+        return "";
+    }
+    return panelLabel(openPanel.value);
+});
+
+const canExpand = computed(() => overlayHost.value !== null);
+
+const isPanelExpanded = computed(() => isExpanded.value && canExpand.value);
+
+const expandIcon = computed(() =>
+    isPanelExpanded.value ? "pi pi-window-minimize" : "pi pi-window-maximize",
+);
+
+watch(
+    () => reportData.value.changeSet.isSaving.value,
+    (isSaving, wasSaving) => {
+        if (
+            wasSaving &&
+            !isSaving &&
+            reportData.value.changeSet.saveError.value === null
+        ) {
+            savedChangesCount.value += 1;
+        }
+    },
+);
+
 function panelLabel(panel: ComponentNode<LabelledConfig>): string {
     return localizeLabel(
         panel.config.label ?? null,
         reportData.value.context.language,
+        reportData.value.context.default_language,
     );
+}
+
+function countLabel(panel: ComponentNode<LabelledConfig>): string | undefined {
+    const panelCount = panelCounts.value.get(panel);
+    if (panelCount === undefined) {
+        return undefined;
+    }
+    if (panelCount.hasMore) {
+        return $gettext("%{count}+", { count: String(panelCount.count) });
+    }
+    return String(panelCount.count);
+}
+
+function setPanelCount(
+    panel: ComponentNode<LabelledConfig>,
+    panelCount: DrawerPanelCount,
+): void {
+    panelCounts.value = new Map(panelCounts.value).set(panel, panelCount);
 }
 
 function togglePanel(panel: ComponentNode<LabelledConfig>): void {
     if (openPanel.value === panel) {
-        openPanel.value = null;
+        closeDrawer();
         return;
     }
     openPanel.value = panel;
 }
 
+function toggleExpanded(): void {
+    isExpanded.value = !isExpanded.value;
+}
+
 function closeDrawer(): void {
     openPanel.value = null;
+    isExpanded.value = false;
 }
 </script>
 
@@ -72,9 +138,11 @@ function closeDrawer(): void {
                 variant="outlined"
                 severity="secondary"
                 size="small"
+                badge-severity="secondary"
                 :rounded="true"
                 :icon="trigger.panel.config.icon ?? undefined"
                 :label="trigger.label"
+                :badge="trigger.countLabel"
                 :aria-pressed="openPanel === trigger.panel"
                 @click="togglePanel(trigger.panel)"
             />
@@ -88,50 +156,79 @@ function closeDrawer(): void {
                     :component="bodyNode"
                 />
             </div>
-            <Transition name="report-drawer-fade">
-                <div
-                    v-if="openPanel"
-                    class="report-drawer-scrim"
-                    @click="closeDrawer"
-                />
-            </Transition>
-            <Transition name="report-drawer-slide">
-                <section
-                    v-if="openPanel"
-                    class="report-drawer-panel"
-                    :aria-label="panelLabel(openPanel)"
-                >
-                    <header class="report-drawer-header">
-                        <div class="report-drawer-crumb">
-                            <span class="report-drawer-crumb-root">{{
-                                resourceLabel
-                            }}</span>
-                            <i
-                                class="pi pi-angle-right"
-                                aria-hidden="true"
-                            />
-                            <span class="report-drawer-crumb-leaf">{{
-                                panelLabel(openPanel)
-                            }}</span>
+            <Teleport
+                :to="overlayHost ?? 'body'"
+                :disabled="!isPanelExpanded"
+            >
+                <Transition name="report-drawer-fade">
+                    <div
+                        v-if="openPanel"
+                        class="report-drawer-scrim"
+                        @click="closeDrawer"
+                    />
+                </Transition>
+                <Transition name="report-drawer-slide">
+                    <section
+                        v-show="openPanel"
+                        class="report-drawer-panel"
+                        :class="{
+                            'report-drawer-panel-expanded': isPanelExpanded,
+                        }"
+                        :aria-label="openPanelLabel"
+                    >
+                        <header class="report-drawer-header">
+                            <div class="report-drawer-crumb">
+                                <span class="report-drawer-crumb-root">{{
+                                    resourceLabel
+                                }}</span>
+                                <i
+                                    class="pi pi-angle-right"
+                                    aria-hidden="true"
+                                />
+                                <span class="report-drawer-crumb-leaf">{{
+                                    openPanelLabel
+                                }}</span>
+                            </div>
+                            <div class="report-drawer-header-actions">
+                                <Button
+                                    v-if="canExpand"
+                                    variant="text"
+                                    severity="secondary"
+                                    size="small"
+                                    :icon="expandIcon"
+                                    :rounded="true"
+                                    :aria-label="$gettext('Expand panel')"
+                                    :aria-pressed="isPanelExpanded"
+                                    :title="$gettext('Expand panel')"
+                                    @click="toggleExpanded"
+                                />
+                                <Button
+                                    icon="pi pi-times"
+                                    variant="text"
+                                    severity="secondary"
+                                    size="small"
+                                    :rounded="true"
+                                    :aria-label="$gettext('Close')"
+                                    @click="closeDrawer"
+                                />
+                            </div>
+                        </header>
+                        <div class="report-drawer-body">
+                            <div
+                                v-for="(panel, panelIndex) in visiblePanels"
+                                v-show="panel === openPanel"
+                                :key="`${panelIndex}:${savedChangesCount}`"
+                            >
+                                <component
+                                    :is="loadComponent(panel.component)"
+                                    :component="panel"
+                                    @count="setPanelCount(panel, $event)"
+                                />
+                            </div>
                         </div>
-                        <Button
-                            icon="pi pi-times"
-                            variant="text"
-                            severity="secondary"
-                            size="small"
-                            :rounded="true"
-                            :aria-label="$gettext('Close')"
-                            @click="closeDrawer"
-                        />
-                    </header>
-                    <div class="report-drawer-body">
-                        <component
-                            :is="loadComponent(openPanel.component)"
-                            :component="openPanel"
-                        />
-                    </div>
-                </section>
-            </Transition>
+                    </section>
+                </Transition>
+            </Teleport>
         </div>
     </div>
 </template>
@@ -147,8 +244,11 @@ function closeDrawer(): void {
 .report-drawer-triggers {
     display: flex;
     flex-wrap: wrap;
+    align-content: center;
+    align-items: center;
     gap: 0.8rem;
-    padding-block: 1.8rem;
+    min-block-size: var(--resource-report-bar-block-size);
+    padding-block: 0.2rem;
     padding-inline: 1.5rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
     background: var(--resource-report-muted-background);
@@ -157,7 +257,8 @@ function closeDrawer(): void {
 .report-drawer-triggers > .p-button {
     --p-button-label-font-weight: 600;
     gap: 0.6rem;
-    padding-block: 0.6rem;
+    block-size: 2.7rem;
+    padding-block: 0;
     padding-inline: 1.2rem;
     border-color: var(--p-content-border-color);
     background: var(--p-content-background);
@@ -170,6 +271,20 @@ function closeDrawer(): void {
     border-color: var(--p-primary-color);
     background: var(--p-content-background);
     color: var(--p-primary-color);
+}
+
+.report-drawer-triggers > .p-button :deep(.p-badge) {
+    min-inline-size: 1.8rem;
+    block-size: 1.8rem;
+    font-size: 1.1rem;
+    line-height: 1.8rem;
+}
+
+.report-drawer-triggers > .p-button[aria-pressed="true"],
+.report-drawer-triggers > .p-button[aria-pressed="true"]:not(:disabled):hover {
+    border-color: var(--resource-report-drawer-trigger-open-background);
+    background: var(--resource-report-drawer-trigger-open-background);
+    color: var(--resource-report-drawer-trigger-open-color);
 }
 
 .report-drawer-stage {
@@ -192,6 +307,7 @@ function closeDrawer(): void {
     position: absolute;
     inset: 0;
     background: color-mix(in srgb, var(--p-surface-950) 28%, transparent);
+    pointer-events: auto;
 }
 
 .report-drawer-panel {
@@ -203,6 +319,12 @@ function closeDrawer(): void {
     inline-size: 90%;
     background: var(--resource-report-panel-background);
     border-inline-start: 0.1rem solid var(--resource-report-bar-border-color);
+    pointer-events: auto;
+}
+
+.report-drawer-panel-expanded {
+    inline-size: 100%;
+    border-inline-start: none;
 }
 
 .report-drawer-header {
@@ -213,10 +335,16 @@ function closeDrawer(): void {
     padding-block: 1.4rem 1rem;
     padding-inline: 1.6rem;
     border-block-end: 0.1rem solid var(--p-content-border-color);
-    background: var(--resource-report-muted-background);
+    background: var(--resource-report-drawer-header-background);
 }
 
-.report-drawer-header > .p-button {
+.report-drawer-header-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.4rem;
+}
+
+.report-drawer-header-actions > .p-button {
     flex-shrink: 0;
     inline-size: 2.8rem;
     block-size: 2.8rem;
@@ -224,7 +352,12 @@ function closeDrawer(): void {
     border: none;
 }
 
-.report-drawer-header > .p-button:not(:disabled):hover {
+.report-drawer-header-actions > .p-button[aria-pressed="true"] {
+    background: var(--resource-report-bar-background);
+    color: var(--p-text-color);
+}
+
+.report-drawer-header-actions > .p-button:not(:disabled):hover {
     background: var(--resource-report-bar-background);
     color: var(--p-text-color);
 }

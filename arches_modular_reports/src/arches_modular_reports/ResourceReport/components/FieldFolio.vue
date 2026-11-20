@@ -6,10 +6,10 @@ import Button from "openvue/button";
 import Message from "openvue/message";
 import Tag from "openvue/tag";
 
-import GenericWidget from "@/arches_vue_components/generics/GenericWidget/GenericWidget.vue";
+import NodeValue from "@/arches_modular_reports/ResourceReport/components/NodeValue.vue";
 
-import { VIEW } from "@/arches_vue_components/widgets/constants.ts";
 import { useFolio } from "@/arches_modular_reports/ResourceReport/composables/useFolio.ts";
+import { nodeHasData } from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import { aliasedNodeDataOf } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
 import type {
@@ -59,7 +59,14 @@ const nodeData = computed(() => {
         return null;
     }
     const tileNodeData = aliasedNodeDataOf(tile.value, widget.value.node.alias);
-    if (tileNodeData === null || tileNodeData.display_value === "") {
+    if (
+        tileNodeData === null ||
+        !nodeHasData(
+            widget.value.node.alias,
+            tileNodeData,
+            reportData.value.nodeTextContext,
+        )
+    ) {
         return null;
     }
     return tileNodeData;
@@ -99,14 +106,10 @@ const isDeleted = computed(
             </span>
             <div class="field-folio-value">
                 <span :class="{ 'field-folio-deleted': isDeleted }">
-                    <GenericWidget
+                    <NodeValue
                         v-if="nodeData !== null && widget !== undefined"
-                        :aliased-node-data="nodeData"
-                        :card-x-node-x-widget-data="widget"
-                        :graph-slug="reportData.context.graph.slug"
-                        :mode="VIEW"
-                        :node-alias="widget.node.alias"
-                        :should-show-label="false"
+                        :node-data="nodeData"
+                        :widget="widget"
                     />
                     <span
                         v-else
@@ -199,7 +202,6 @@ const isDeleted = computed(
 }
 
 .field-folio-label {
-    min-inline-size: 12.8rem;
     color: var(--p-text-muted-color);
 }
 

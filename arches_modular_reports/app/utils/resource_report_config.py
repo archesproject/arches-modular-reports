@@ -28,10 +28,14 @@ def extract_substrings(template_string):
 
 
 def translated_labels(message):
-    labels = {}
-    for language in settings.LANGUAGES:
-        with translation.override(language[0]):
-            labels[language[0]] = gettext(message)
+    with translation.override(settings.LANGUAGE_CODE):
+        default_label = gettext(message)
+    labels = {settings.LANGUAGE_CODE: default_label}
+    for language_code, _language_name in settings.LANGUAGES:
+        with translation.override(language_code):
+            translated_message = gettext(message)
+        if translated_message != default_label:
+            labels[language_code] = translated_message
     return labels
 
 
@@ -232,9 +236,7 @@ def generate_resource_report_config(graph):
         "SplitPane",
         {
             "label": translated_labels(gettext_noop("Report")),
-            "description": translated_labels(
-                gettext_noop("A curated summary of this resource's data")
-            ),
+            "aside_size": 40,
             "main": [
                 report_component(
                     "ReportTabs",
@@ -307,24 +309,12 @@ def generate_resource_report_config(graph):
         "SplitPane",
         {
             "label": translated_labels(gettext_noop("Data")),
-            "description": translated_labels(
-                gettext_noop("Browse and edit every field recorded on this resource")
-            ),
             "requires_edit": True,
+            "aside_size": 60,
             "main": [report_component("DataBrowser/DataBrowser", {})],
             "aside": [
                 report_component("EditorPanel/EditorPanel", {}),
-                report_component(
-                    "ReportPlaceholder",
-                    {
-                        "icon": "pi pi-sitemap",
-                        "message": translated_labels(
-                            gettext_noop(
-                                "Select an entry in the data browser to begin editing."
-                            )
-                        ),
-                    },
-                ),
+                report_component("RecordSummaryPanel", {}),
             ],
             "aside_footer": [report_component("EditListTray", {})],
         },
@@ -333,11 +323,6 @@ def generate_resource_report_config(graph):
         "ReportPlaceholder",
         {
             "label": translated_labels(gettext_noop("Graph")),
-            "description": translated_labels(
-                gettext_noop(
-                    "A visual overview of how this resource connects to its data"
-                )
-            ),
             "icon": "pi pi-sitemap",
             "message": translated_labels(gettext_noop("Graph view — coming soon")),
         },
@@ -398,6 +383,7 @@ def validate_report_config_tree(value, report_graph, refers_to_report_graph=True
     if refers_to_report_graph:
         validate_report_graph_references(value, report_graph)
     validate_other_graph_references(value)
+    validate_aside_size(value)
     for child_value in value.values():
         validate_report_config_tree(child_value, report_graph, refers_to_report_graph)
 
@@ -426,6 +412,14 @@ def validate_report_graph_references(entry, report_graph):
         node = report_graph.nodes_by_alias.get(node_alias)
         if node is None or node.datatype == "semantic":
             raise ValidationError(f"Must name a node that holds a value: {node_alias}")
+
+
+def validate_aside_size(entry):
+    if "aside" not in entry and "aside_footer" not in entry:
+        return
+    require_keys(entry, ["aside_size"], "A config with an aside")
+    if not isinstance(entry["aside_size"], (int, float)):
+        raise ValidationError(f"aside_size is not a number: {entry['aside_size']}")
 
 
 def validate_other_graph_references(entry):

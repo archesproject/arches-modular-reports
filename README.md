@@ -125,7 +125,7 @@ Every level of a report config is a component: a `component` path and the `confi
 
 `ResourceReport` loads the resource and renders its `components` in order. With `"config": {}` it renders an empty report. Nothing below it is fixed: a report can have tabs or none, one pane or two, sections or a plain list of folios.
 
-Labels are a string or an object keyed by language, e.g. `{"en": "Report"}`. A missing child list means no children. A component that is missing config it needs shows an error where it would appear.
+Labels are a string or an object keyed by language, e.g. `{"en": "Report"}`; a language without an entry shows the default language's label. A missing child list means no children. A component that is missing config it needs shows an error where it would appear.
 
 Configs are validated against the graph on save, without looking at component names:
 
@@ -153,7 +153,6 @@ When the report loads, nodegroups and summary entries the user can't read are re
                 "component": ".../SplitPane",
                 "config": {
                     "label": { "en": "Report" },
-                    "description": { "en": "A curated summary of this resource's data" },
                     "main": [
                         {
                             "component": ".../ReportTabs",
@@ -198,9 +197,9 @@ When the report loads, nodegroups and summary entries the user can't read are re
 
 Paths are under `arches_modular_reports/ResourceReport/components/`.
 
--   `WorkspaceTabs`: the tab strip at the top of the report. Each of its `components` is a tab, named by its `label`, with its `description` shown under the strip. `banner` lists components shown under the strip above every tab.
+-   `WorkspaceTabs`: the tab strip at the top of the report. Each of its `components` is a tab, named by its `label`. `banner` lists components shown under the strip above every tab.
 -   `ReportTabs`: tabs inside a pane, with a tab bar that stays in view while the pane scrolls. Each of its `components` is a tab, named by its `label`.
--   `SplitPane`: `main` and `aside` lists side by side. `aside_footer` lists components pinned to the bottom of the aside, below anything that covers it, such as an open `EditorPanel`. Without an `aside` or `aside_footer`, `main` takes the full width.
+-   `SplitPane`: `main` and `aside` lists side by side. `aside_footer` lists components pinned to the bottom of the aside, below anything that covers it, such as an open `EditorPanel`. `aside_size` sets the aside's starting share of the width as a percentage, and is required alongside an `aside` or `aside_footer`. Without an `aside` or `aside_footer`, `main` takes the full width.
 -   `ReportStack`: its `components` in a column.
 -   `ReportSection`: a heading (`label`, optional `icon`) over its `components`.
 -   `ReportDrawer`: its `components`, with `panels` as buttons that open over them.
@@ -218,7 +217,7 @@ A tab or drawer panel with `"requires_edit": true` is hidden from people who can
 -   `EditListTray`: pending edits, with Apply and Cancel. Hidden when nothing is pending. The default config puts it in each `SplitPane`'s `aside_footer`.
 -   `DataBrowser/DataBrowser`: every nodegroup in a tree, with a filter.
 -   `ReportPlaceholder`: an `icon` and a `message`.
--   Drawer panels, each with a `label` and `icon`: `EditHistoryPanel`; `ImagesPanel`, whose `images` lists `{"model": "<graph slug>", "node": "<node alias>"}` sources; `RelatedResourcesPanel`, whose `graphs` lists models in order; `ManagePanel` for copy, delete and print.
+-   Drawer panels, each with a `label` and `icon`: `EditHistoryPanel`; `ImagesPanel`, whose `images` lists `{"model": "<graph slug>", "node": "<node alias>"}` sources; `RelatedResourcesPanel`, whose `graphs` lists models in order; `ManagePanel`, which copies the resource under a new name, lists its copies newest first with their current names, and deletes it. A panel puts a count on its drawer button by emitting `count` with `{count, hasMore}`.
 
 ### Custom components
 

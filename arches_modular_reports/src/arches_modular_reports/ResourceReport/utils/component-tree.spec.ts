@@ -3,13 +3,17 @@ import { describe, expect, it } from "vitest";
 import {
     folioLocations,
     nodegroupAliasesWithin,
+    reportTabGroups,
+    withoutHiddenCards,
 } from "@/arches_modular_reports/ResourceReport/utils/component-tree.ts";
 
+import type { NodegroupWidgetConfig } from "@/arches_vue_components/types.ts";
 import type { ComponentNode } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 const REPORT_TREE: ComponentNode[] = [
     {
-        component: "app/ReportTabs",
+        component:
+            "arches_modular_reports/ResourceReport/components/ReportTabs",
         config: {
             components: [
                 {
@@ -64,11 +68,81 @@ describe("nodegroupAliasesWithin", () => {
     });
 });
 
+describe("reportTabGroups", () => {
+    it("places a nodegroup shown in two tabs in the first only", () => {
+        const tab = (
+            label: string,
+            nodegroupAliases: string[],
+        ): ComponentNode => ({
+            component: "app/ReportStack",
+            config: {
+                label,
+                components: nodegroupAliases.map((nodegroupAlias) => ({
+                    component: "app/ReportFolio",
+                    config: { nodegroup_alias: nodegroupAlias },
+                })),
+            },
+        });
+        const tree: ComponentNode[] = [
+            {
+                component:
+                    "arches_modular_reports/ResourceReport/components/ReportTabs",
+                config: {
+                    components: [
+                        tab("Overview", ["names"]),
+                        tab("Physical", ["names", "colors"]),
+                    ],
+                },
+            },
+        ];
+
+        expect(reportTabGroups(tree, "en", "en")).toEqual([
+            { label: "Overview", nodegroupAliases: ["names"] },
+            { label: "Physical", nodegroupAliases: ["colors"] },
+        ]);
+    });
+});
+
 describe("folioLocations", () => {
     it("joins the labels above each folio in the active language", () => {
-        expect(folioLocations(REPORT_TREE, "de")).toEqual({
+        expect(folioLocations(REPORT_TREE, "de", "en")).toEqual({
             names: "Übersicht / Names",
             statements: "Übersicht",
         });
+    });
+});
+
+describe("withoutHiddenCards", () => {
+    const configs = {
+        names: { card: { visible: true } },
+        statements: { card: { visible: false } },
+    } as unknown as Record<string, NodegroupWidgetConfig>;
+
+    function folio(nodegroupAlias: string): ComponentNode {
+        return {
+            component: "app/ReportFolio",
+            config: { nodegroup_alias: nodegroupAlias },
+        };
+    }
+
+    function section(...components: ComponentNode[]): ComponentNode {
+        return { component: "app/ReportSection", config: { components } };
+    }
+
+    it("drops folios whose card is hidden and containers left empty", () => {
+        expect(
+            withoutHiddenCards(
+                [
+                    section(section(folio("statements"))),
+                    section(
+                        folio("statements"),
+                        folio("names"),
+                        folio("unknown"),
+                    ),
+                    section(),
+                ],
+                configs,
+            ),
+        ).toEqual([section(folio("names"), folio("unknown")), section()]);
     });
 });

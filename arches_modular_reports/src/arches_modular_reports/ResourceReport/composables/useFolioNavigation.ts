@@ -53,7 +53,17 @@ export function useFolioNavigation(
             pass < REVEAL_PASSES && !folioElements.has(nodegroupAlias);
             pass += 1
         ) {
-            for (const revealer of revealers) {
+            const containingRevealers = [...revealers].filter((revealer) =>
+                revealer.contains(nodegroupAlias),
+            );
+            const localRevealers = containingRevealers.filter(
+                (revealer) => revealer.isLocal === true,
+            );
+            let chosenRevealers = containingRevealers;
+            if (localRevealers.length > 0) {
+                chosenRevealers = localRevealers;
+            }
+            for (const revealer of chosenRevealers) {
                 revealer.reveal(nodegroupAlias);
             }
             await nextTick();
@@ -65,9 +75,16 @@ export function useFolioNavigation(
             return;
         }
         const graphNodesByAlias = indexGraphNodes(nodegroupWidgetConfigs.value);
+        await jumpToNodegroup(graphNodesByAlias[nodeAlias].nodegroupAlias);
+    }
+
+    async function jumpToNodegroup(nodegroupAlias: string): Promise<void> {
+        if (nodegroupWidgetConfigs.value === null) {
+            return;
+        }
         const targetNodegroupAlias = nodegroupLineage(
             nodegroupWidgetConfigs.value,
-            graphNodesByAlias[nodeAlias].nodegroupAlias,
+            nodegroupAlias,
         ).find(isReachable);
         if (targetNodegroupAlias === undefined) {
             return;
@@ -76,9 +93,11 @@ export function useFolioNavigation(
         flashedNodegroupAlias.value = null;
         await revealFolio(targetNodegroupAlias);
 
-        folioElements
-            .get(targetNodegroupAlias)
-            ?.scrollIntoView({ block: "center" });
+        const folioElement = folioElements.get(targetNodegroupAlias);
+        folioElement?.scrollIntoView({ block: "center" });
+        if (folioElement?.hasAttribute("tabindex")) {
+            folioElement.focus({ preventScroll: true });
+        }
         flashedNodegroupAlias.value = targetNodegroupAlias;
     }
 
@@ -91,6 +110,7 @@ export function useFolioNavigation(
         registerFolio,
         registerRevealer,
         jumpToNode,
+        jumpToNodegroup,
         clearFlash,
     };
 }

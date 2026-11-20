@@ -14,6 +14,7 @@ export interface ReportContextState {
     isTransitioning: Ref<boolean>;
     transitionError: Ref<Error | null>;
     transitionLifecycle: (lifecycleStateId: string) => Promise<void>;
+    reloadContext: () => Promise<void>;
 }
 
 export function useReportContext(
@@ -56,5 +57,6 @@ export function useReportContext(
         isTransitioning,
         transitionError,
         transitionLifecycle,
+        reloadContext,
     };
 }

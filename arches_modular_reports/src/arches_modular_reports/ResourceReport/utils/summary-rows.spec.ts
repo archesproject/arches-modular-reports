@@ -6,6 +6,13 @@ import type {
     AliasedNodeData,
     AliasedTileData,
 } from "@/arches_vue_components/types.ts";
+import type { NodeTextContext } from "@/arches_modular_reports/ResourceReport/types.ts";
+
+const NODE_TEXT_CONTEXT: NodeTextContext = {
+    richTextNodeAliases: new Set(),
+    activeLanguage: "",
+    defaultLanguage: "",
+};
 
 function nameTile(
     tileid: string,
@@ -40,9 +47,9 @@ describe("summaryRows", () => {
     it("labels each entry from its config and keeps its non-empty values in order", () => {
         expect(
             summaryRows(
-                [{ node_alias: "name_content", label: { en: "Name" } }],
+                [{ node_alias: "name_content", label: "Name" }],
                 ALIASED_DATA,
-                "en",
+                NODE_TEXT_CONTEXT,
             ),
         ).toEqual([
             {

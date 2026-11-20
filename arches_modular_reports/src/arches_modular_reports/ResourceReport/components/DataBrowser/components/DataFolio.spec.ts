@@ -144,6 +144,11 @@ async function mountEditor(
             matchedByAncestor: false,
             selectedTileId,
             isEditable: true,
+            nodeTextContext: {
+                richTextNodeAliases: new Set(),
+                activeLanguage: "",
+                defaultLanguage: "",
+            },
         },
         global: { plugins: [[OpenVue, { theme: "none" }]] },
     });

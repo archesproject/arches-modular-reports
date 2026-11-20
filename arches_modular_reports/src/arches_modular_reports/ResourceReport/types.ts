@@ -30,7 +30,6 @@ export interface ComponentNode<TConfig = Record<string, unknown>> {
 
 export interface LabelledConfig {
     label?: LocalizedLabel | null;
-    description?: LocalizedLabel | null;
     icon?: string | null;
     requires_edit?: boolean;
 }
@@ -58,6 +57,7 @@ export interface SplitPaneConfig extends LabelledConfig {
     main?: ComponentNode[];
     aside?: ComponentNode[];
     aside_footer?: ComponentNode[];
+    aside_size: number;
 }
 
 export interface StackConfig extends LabelledConfig, ContainerConfig {}
@@ -74,6 +74,16 @@ export interface MapFolioConfig extends FolioConfig {
 
 export interface DrawerConfig extends ContainerConfig {
     panels?: ComponentNode<LabelledConfig>[];
+}
+
+export interface ReportTabGroup {
+    label: string;
+    nodegroupAliases: string[];
+}
+
+export interface DrawerPanelCount {
+    count: number;
+    hasMore: boolean;
 }
 
 export interface KeyDataSummaryConfig {
@@ -102,21 +112,38 @@ export interface ReportPermissions {
     can_edit: boolean;
     can_delete: boolean;
     can_copy: boolean;
+    can_create: boolean;
     is_reviewer: boolean;
 }
 
 export interface ReportGraph {
+    graphid: string;
     name: string;
     slug: string;
     iconclass: string | null;
+    color: string | null;
+}
+
+export interface LatestEdit {
+    timestamp: string;
+    user: string;
 }
 
 export interface ReportContext {
     graph: ReportGraph;
     lifecycle_state: LifecycleState;
     language: string;
+    default_language: string;
     language_dir: "ltr" | "rtl";
+    languages: Record<string, string>;
+    latest_edit: LatestEdit | null;
     permissions: ReportPermissions;
+}
+
+export interface NodeTextContext {
+    richTextNodeAliases: ReadonlySet<string>;
+    activeLanguage: string;
+    defaultLanguage: string;
 }
 
 export interface GraphNode {
@@ -256,6 +283,11 @@ export interface ReportEditor {
     register: () => () => void;
 }
 
+export interface ReportEditLinks {
+    isShown: boolean;
+    toggle: () => void;
+}
+
 export interface ReportLifecycle {
     isTransitioning: boolean;
     transitionError: Error | null;
@@ -265,6 +297,7 @@ export interface ReportLifecycle {
 export interface FolioRevealer {
     contains: (nodegroupAlias: string) => boolean;
     reveal: (nodegroupAlias: string) => void;
+    isLocal?: boolean;
 }
 
 export interface FolioNavigation {
@@ -272,6 +305,7 @@ export interface FolioNavigation {
     registerFolio: (nodegroupAlias: string, element: HTMLElement) => () => void;
     registerRevealer: (revealer: FolioRevealer) => () => void;
     jumpToNode: (nodeAlias: string) => Promise<void>;
+    jumpToNodegroup: (nodegroupAlias: string) => Promise<void>;
     clearFlash: () => void;
 }
 
@@ -279,13 +313,17 @@ export interface ReportData {
     resource: AliasedResourceData;
     nodegroupWidgetConfigs: Record<string, NodegroupWidgetConfig>;
     graphNodesByAlias: Record<string, GraphNode>;
+    nodeTextContext: NodeTextContext;
     folioLocations: Record<string, string>;
+    reportTabs: ReportTabGroup[];
     context: ReportContext;
     canEdit: boolean;
     changeSet: ResourceChangeSet;
     editor: ReportEditor;
+    editLinks: ReportEditLinks;
     lifecycle: ReportLifecycle;
     folioNavigation: FolioNavigation;
+    markDeleted: () => void;
 }
 
 export interface EditHistoryValue {
@@ -298,6 +336,7 @@ export interface EditHistoryValue {
 export interface EditHistoryEntry {
     editlogid: string;
     edit_type: string;
+    edit_type_label: string;
     timestamp: string;
     user: string;
     card_name: string | null;
@@ -306,6 +345,22 @@ export interface EditHistoryEntry {
 
 export interface EditHistoryPage {
     results: EditHistoryEntry[];
+    next_cursor: string | null;
+}
+
+export interface ResourceCopy {
+    editlogid: string;
+    resourceid: string;
+    name: string;
+    is_deleted: boolean;
+    report_url: string | null;
+    user: string;
+    timestamp: string;
+}
+
+export interface ResourceCopiesPage {
+    name_node_alias: string | null;
+    results: ResourceCopy[];
     next_cursor: string | null;
 }
 
@@ -349,5 +404,6 @@ export interface ResourceImage {
     alt_text: string;
     resourceinstanceid: string;
     resource_name: string;
+    graph_name: string;
     report_url: string;
 }

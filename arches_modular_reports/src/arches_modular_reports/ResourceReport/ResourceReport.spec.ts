@@ -4,9 +4,13 @@ import OpenVue from "openvue/config";
 import ConfirmationService from "openvue/confirmationservice";
 
 import DataBrowser from "@/arches_modular_reports/ResourceReport/components/DataBrowser/DataBrowser.vue";
+import EditHistoryPanel from "@/arches_modular_reports/ResourceReport/components/EditHistoryPanel.vue";
 import EditListTray from "@/arches_modular_reports/ResourceReport/components/EditListTray.vue";
 import EditorPanel from "@/arches_modular_reports/ResourceReport/components/EditorPanel/EditorPanel.vue";
+import FieldFolio from "@/arches_modular_reports/ResourceReport/components/FieldFolio.vue";
+import ImagesPanel from "@/arches_modular_reports/ResourceReport/components/ImagesPanel.vue";
 import ManagePanel from "@/arches_modular_reports/ResourceReport/components/ManagePanel.vue";
+import RecordSummaryPanel from "@/arches_modular_reports/ResourceReport/components/RecordSummaryPanel.vue";
 import RelatedResourcesPanel from "@/arches_modular_reports/ResourceReport/components/RelatedResourcesPanel.vue";
 import ReportFolio from "@/arches_modular_reports/ResourceReport/components/ReportFolio.vue";
 import ReportDrawer from "@/arches_modular_reports/ResourceReport/components/ReportDrawer.vue";
@@ -20,8 +24,10 @@ import WorkspaceTabs from "@/arches_modular_reports/ResourceReport/components/Wo
 import ResourceReport from "@/arches_modular_reports/ResourceReport/ResourceReport.vue";
 
 import {
+    copyResource,
     deleteResource,
     fetchResource,
+    fetchResourceCopies,
     fetchRelatedResourceGroup,
     fetchRelatedResourceGroups,
     fetchReportContext,
@@ -37,6 +43,7 @@ import type {
 } from "@/arches_vue_components/types.ts";
 import type {
     ComponentNode,
+    EditHistoryEntry,
     LifecycleStateSummary,
     RelatedResourceGroup,
     ReportContext,
@@ -61,11 +68,11 @@ vi.mock("@/arches_modular_reports/ModularReport/utils.ts", () => ({
 vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
     copyResource: vi.fn(),
     deleteResource: vi.fn(),
-    resourceReportUrl: (resourceInstanceId: string) =>
-        `/report/${resourceInstanceId}`,
-    searchUrl: () => "/search",
+    addResourceUrl: (graphId: string) => `/add-resource/${graphId}`,
+    resourceManagerUrl: () => "/resource",
     fetchEditHistory: vi.fn(),
     fetchResource: vi.fn(),
+    fetchResourceCopies: vi.fn(),
     fetchResourceImages: vi.fn(),
     fetchRelatedResourceGroup: vi.fn(),
     fetchRelatedResourceGroups: vi.fn(),
@@ -73,6 +80,26 @@ vi.mock("@/arches_modular_reports/ResourceReport/api.ts", () => ({
     updateLifecycleState: vi.fn(),
     saveResourceChanges: vi.fn(),
     buildExportUrl: () => "/export",
+}));
+
+vi.mock("@/arches_vue_components/generics/GenericCard/api.ts", () => ({
+    fetchTileData: vi.fn(() =>
+        Promise.resolve({
+            aliased_data: {
+                owner_content: {
+                    display_value: "",
+                    node_value: null,
+                    details: [],
+                },
+            },
+            nodegroup: "owners-nodegroup",
+            parenttile: null,
+            provisionaledits: null,
+            resourceinstance: "",
+            sortorder: 0,
+            tileid: null,
+        }),
+    ),
 }));
 
 vi.mock(
@@ -121,9 +148,11 @@ function makeContext(
 ): ReportContext {
     return {
         graph: {
+            graphid: "graph-id",
             name: "Reference and Sample Collection Item",
             slug: "reference_and_sample_collection_item",
             iconclass: "fa fa-asterisk",
+            color: "rgba(42,157,143,0.5)",
         },
         lifecycle_state: {
             ...DRAFT,
@@ -131,11 +160,15 @@ function makeContext(
             previous_resource_instance_lifecycle_states: [],
         },
         language: "en",
+        default_language: "en",
         language_dir: "ltr",
+        languages: { en: "English", de: "German" },
+        latest_edit: null,
         permissions: {
             can_edit: true,
             can_delete: true,
             can_copy: true,
+            can_create: true,
             is_reviewer: true,
             ...permissions,
         },
@@ -168,13 +201,33 @@ function makeWidget(nodeAlias: string, label: string): CardXNodeXWidgetData {
     };
 }
 
+const OWNER_WIDGET = makeWidget("owner_content", "Owner");
+
 const NODEGROUP_WIDGET_CONFIGS: Record<string, NodegroupWidgetConfig> = {
     names: {
         parent_nodegroup_alias: null,
         cardinality: "n",
         is_writable: true,
-        card: null,
+        card: makeWidget("name_content", "Name").card,
         card_x_node_x_widgets: [makeWidget("name_content", "Name")],
+    },
+    owners: {
+        parent_nodegroup_alias: null,
+        cardinality: "1",
+        is_writable: true,
+        card: {
+            ...OWNER_WIDGET.card,
+            name: "Current Owner",
+            sortorder: 1,
+            cardid: "owners-card",
+            nodegroup_id: "owners-nodegroup",
+        },
+        card_x_node_x_widgets: [
+            {
+                ...OWNER_WIDGET,
+                node: { ...OWNER_WIDGET.node, isrequired: true },
+            },
+        ],
     },
     part_notes: {
         parent_nodegroup_alias: "parts",
@@ -215,9 +268,13 @@ const COMPONENTS_PATH = "arches_modular_reports/ResourceReport/components";
 
 const REPORT_COMPONENTS: Record<string, Component> = {
     "DataBrowser/DataBrowser": DataBrowser,
+    EditHistoryPanel,
     EditListTray,
     "EditorPanel/EditorPanel": EditorPanel,
+    FieldFolio,
+    ImagesPanel,
     ManagePanel,
+    RecordSummaryPanel,
     RelatedResourcesPanel,
     ReportDrawer,
     ReportFolio,
@@ -258,9 +315,7 @@ const REPORT_CONFIG: ResourceReportConfig = {
         workspaceTabs(
             reportNode("SplitPane", {
                 label: { en: "Report" },
-                description: {
-                    en: "A curated summary of this resource's data",
-                },
+                aside_size: 40,
                 main: [reportNode("ReportTabs", { components: [] })],
                 aside: [
                     reportNode("EditorPanel/EditorPanel"),
@@ -271,6 +326,7 @@ const REPORT_CONFIG: ResourceReportConfig = {
             reportNode("SplitPane", {
                 label: { en: "Data" },
                 requires_edit: true,
+                aside_size: 60,
                 main: [reportNode("DataBrowser/DataBrowser")],
                 aside: [reportNode("EditorPanel/EditorPanel")],
                 aside_footer: [reportNode("EditListTray")],
@@ -306,6 +362,7 @@ function folioConfig(aside: ComponentNode[]): ResourceReportConfig {
             workspaceTabs(
                 reportNode("SplitPane", {
                     label: "Report",
+                    aside_size: 40,
                     main: [
                         reportNode("ReportTabs", {
                             components: [
@@ -336,6 +393,7 @@ function drawerConfig(): ResourceReportConfig {
             workspaceTabs(
                 reportNode("SplitPane", {
                     label: "Report",
+                    aside_size: 40,
                     aside: [
                         reportNode("ReportDrawer", {
                             panels: [
@@ -357,8 +415,120 @@ function drawerConfig(): ResourceReportConfig {
     };
 }
 
-function mountReport(config: ResourceReportConfig = REPORT_CONFIG): VueWrapper {
+function recordSummaryConfig(): ResourceReportConfig {
+    return {
+        components: [
+            workspaceTabs(
+                reportNode("SplitPane", {
+                    label: "Report",
+                    aside_size: 40,
+                    main: [
+                        reportNode("ReportTabs", {
+                            components: [
+                                reportNode("ReportStack", {
+                                    label: "Overview",
+                                    components: [
+                                        reportNode("ReportSection", {
+                                            label: "Names & Identifiers",
+                                            components: [
+                                                reportNode("ReportFolio", {
+                                                    nodegroup_alias: "names",
+                                                }),
+                                            ],
+                                        }),
+                                        reportNode("ReportSection", {
+                                            label: "Location & Ownership",
+                                            components: [
+                                                reportNode("FieldFolio", {
+                                                    nodegroup_alias: "owners",
+                                                }),
+                                            ],
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }),
+                    ],
+                }),
+                reportNode("SplitPane", {
+                    label: "Data",
+                    requires_edit: true,
+                    aside_size: 60,
+                    main: [reportNode("DataBrowser/DataBrowser")],
+                    aside: [
+                        reportNode("EditorPanel/EditorPanel"),
+                        reportNode("RecordSummaryPanel"),
+                    ],
+                    aside_footer: [reportNode("EditListTray")],
+                }),
+            ),
+        ],
+    };
+}
+
+async function openDataWorkspace(attachTo?: HTMLElement): Promise<VueWrapper> {
+    const wrapper = mountReport(recordSummaryConfig(), attachTo);
+    await flushPromises();
+    const dataTab = wrapper
+        .findAll(".workspace-tabs-strip .p-tab")
+        .find((tab) => tab.text() === "Data");
+    if (dataTab === undefined) {
+        throw new Error("No Data workspace tab");
+    }
+    await dataTab.trigger("click");
+    await flushPromises();
+    return wrapper;
+}
+
+function summaryFacts(wrapper: VueWrapper): Record<string, string> {
+    return Object.fromEntries(
+        wrapper
+            .findAll(".record-summary-panel-fact")
+            .map((fact) => [fact.find("dt").text(), fact.find("dd").text()]),
+    );
+}
+
+function summaryEmptyCards(
+    wrapper: VueWrapper,
+): { group: string; cards: { name: string; isRequired: boolean }[] }[] {
+    return wrapper.findAll(".record-summary-panel-group").map((group) => ({
+        group: group.find(".record-summary-panel-group-label").text(),
+        cards: group.findAll(".record-summary-panel-card").map((card) => ({
+            name: card.find(".record-summary-panel-card-name").text(),
+            isRequired: card.find(".record-summary-panel-required").exists(),
+        })),
+    }));
+}
+
+const NAME_EDIT: EditHistoryEntry = {
+    editlogid: "edit-log-1",
+    edit_type: "tile edit",
+    edit_type_label: "update",
+    timestamp: "2026-11-13T10:00:00Z",
+    user: "Ada Lovelace",
+    card_name: "Names",
+    values: [
+        {
+            node_alias: "name_content",
+            before: "Cobalt",
+            after: "Cobalt blue",
+            changed: true,
+        },
+        {
+            node_alias: "part_note_content",
+            before: "Dry pigment",
+            after: "Dry pigment",
+            changed: false,
+        },
+    ],
+};
+
+function mountReport(
+    config: ResourceReportConfig = REPORT_CONFIG,
+    attachTo?: HTMLElement,
+): VueWrapper {
     return mount(ResourceReport, {
+        attachTo,
         props: {
             component: {
                 component:
@@ -378,6 +548,29 @@ function mountReport(config: ResourceReportConfig = REPORT_CONFIG): VueWrapper {
     });
 }
 
+async function openDeleteDialog(): Promise<VueWrapper> {
+    const wrapper = mountReport(drawerConfig());
+    await flushPromises();
+    await drawerTrigger(wrapper, "Manage").trigger("click");
+    await buttonWithText(wrapper, ".manage", "Delete Resource").trigger(
+        "click",
+    );
+    await flushPromises();
+    return wrapper;
+}
+
+function dialogDeleteButton(wrapper: VueWrapper): HTMLButtonElement {
+    const deleteButton = [...document.body.querySelectorAll("button")].find(
+        (button) =>
+            button.textContent?.trim() === "Delete Resource" &&
+            !wrapper.element.contains(button),
+    );
+    if (deleteButton === undefined) {
+        throw new Error("No Delete Resource button in the confirm dialog");
+    }
+    return deleteButton;
+}
+
 function buttonWithText(
     wrapper: VueWrapper,
     containerSelector: string,
@@ -392,13 +585,80 @@ function buttonWithText(
     return button;
 }
 
+function drawerTrigger(
+    wrapper: VueWrapper,
+    label: string,
+): DOMWrapper<Element> {
+    const trigger = wrapper
+        .findAll(".report-drawer-triggers button")
+        .find(
+            (candidate) => candidate.find(".p-button-label").text() === label,
+        );
+    if (trigger === undefined) {
+        throw new Error(`No ${label} drawer trigger`);
+    }
+    return trigger;
+}
+
 describe("ResourceReport", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        localStorage.clear();
         Element.prototype.scrollIntoView = vi.fn();
         vi.mocked(fetchReportContext).mockResolvedValue(makeContext());
         vi.mocked(fetchResource).mockResolvedValue(RESOURCE);
         vi.mocked(updateLifecycleState).mockResolvedValue();
+        vi.mocked(fetchResourceCopies).mockResolvedValue({
+            name_node_alias: "name_content",
+            results: [],
+            next_cursor: null,
+        });
+        vi.mocked(fetchRelatedResourceGroups).mockResolvedValue([]);
+    });
+
+    it("discards every pending edit only once the discard is confirmed", async () => {
+        const wrapper = mountReport(FOLIO_CONFIG);
+        await flushPromises();
+        await buttonWithText(
+            wrapper,
+            ".report-folio-tile-actions",
+            "Edit",
+        ).trigger("click");
+        await wrapper.find(".card-stub").trigger("click");
+
+        await buttonWithText(
+            wrapper,
+            ".edit-list-tray-actions",
+            "Cancel all edits",
+        ).trigger("click");
+        await flushPromises();
+
+        const dialog = document.body.querySelector(".alert-dialog");
+        expect(dialog?.getAttribute("role")).toBe("alertdialog");
+        expect(dialog?.textContent).toContain("Discard all changes?");
+        expect(document.activeElement?.textContent?.trim()).toBe(
+            "Keep editing",
+        );
+
+        (document.activeElement as HTMLButtonElement).click();
+        await flushPromises();
+        expect(wrapper.find(".edit-list-tray").exists()).toBe(true);
+
+        await buttonWithText(
+            wrapper,
+            ".edit-list-tray-actions",
+            "Cancel all edits",
+        ).trigger("click");
+        await flushPromises();
+        const discardButton = [
+            ...document.body.querySelectorAll(".alert-dialog button"),
+        ].find((button) => button.textContent?.trim() === "Discard all");
+        (discardButton as HTMLButtonElement).click();
+        await flushPromises();
+
+        expect(wrapper.find(".edit-list-tray").exists()).toBe(false);
+
+        wrapper.unmount();
     });
 
     it("holds lifecycle changes while edits are pending", async () => {
@@ -435,33 +695,91 @@ describe("ResourceReport", () => {
         expect(wrapper.text()).toContain("Unable to refresh this report");
     });
 
-    it("deletes the resource only once the deletion is confirmed", async () => {
-        vi.mocked(deleteResource).mockRejectedValue(new Error("Offline"));
+    it("copies the resource under the entered name and lists the copies", async () => {
+        const newCopy = {
+            editlogid: "edit-2",
+            resourceid: "copy-2",
+            name: "Second sample",
+            is_deleted: false,
+            report_url: "/report/copy-2",
+            user: "Ada Lovelace",
+            timestamp: "2026-11-13T10:00:00Z",
+        };
+        const deletedCopy = {
+            ...newCopy,
+            editlogid: "edit-1",
+            resourceid: "copy-1",
+            name: "First sample",
+            is_deleted: true,
+            report_url: null,
+        };
+        vi.mocked(fetchResourceCopies)
+            .mockResolvedValueOnce({
+                name_node_alias: "name_content",
+                results: [deletedCopy],
+                next_cursor: null,
+            })
+            .mockResolvedValueOnce({
+                name_node_alias: "name_content",
+                results: [newCopy, deletedCopy],
+                next_cursor: null,
+            });
+        vi.mocked(copyResource).mockResolvedValue("copy-2");
         const wrapper = mountReport(drawerConfig());
         await flushPromises();
-        await buttonWithText(
-            wrapper,
-            ".report-drawer-triggers",
-            "Manage",
-        ).trigger("click");
-
-        await buttonWithText(wrapper, ".manage", "Delete Resource").trigger(
-            "click",
-        );
+        await drawerTrigger(wrapper, "Manage").trigger("click");
         await flushPromises();
+
+        const nameWidget = wrapper
+            .find(".manage-copy-name")
+            .findComponent({ name: "GenericWidget" });
+        expect(nameWidget.props("nodeAlias")).toBe("name_content");
+        expect(nameWidget.props("aliasedNodeData").node_value).toBe(
+            "Cobalt blue",
+        );
+        expect(wrapper.find(".manage-copy-deleted s").text()).toBe(
+            "First sample",
+        );
+
+        nameWidget.vm.$emit("update:aliasedNodeData", {
+            display_value: "Second sample",
+            node_value: "Second sample",
+            details: [],
+        });
+        await wrapper.find(".manage-copy-form").trigger("submit");
+        await flushPromises();
+
+        expect(copyResource).toHaveBeenCalledWith(
+            "resource-id",
+            "Second sample",
+        );
+        const copyItems = wrapper.findAll(".manage-copy");
+        expect(copyItems).toHaveLength(2);
+        expect(copyItems[0].text()).toContain("Second sample");
+        expect(copyItems[1].find(".manage-copy-deleted").exists()).toBe(true);
+        expect(wrapper.find(".manage-copy-link").attributes("href")).toBe(
+            "/report/copy-2",
+        );
+
+        wrapper.unmount();
+    });
+
+    it("deletes the resource only once the deletion is confirmed", async () => {
+        vi.mocked(deleteResource).mockRejectedValue(new Error("Offline"));
+        const wrapper = await openDeleteDialog();
         expect(deleteResource).not.toHaveBeenCalled();
 
-        const acceptButton = [...document.body.querySelectorAll("button")].find(
-            (button) =>
-                button.textContent?.trim() === "Delete Resource" &&
-                !wrapper.element.contains(button),
-        );
-        if (acceptButton === undefined) {
-            throw new Error("No Delete Resource button in the confirm dialog");
-        }
-        acceptButton.click();
+        dialogDeleteButton(wrapper).click();
         await flushPromises();
-        expect(deleteResource).toHaveBeenCalledWith("resource-id");
+
+        expect(deleteResource).toHaveBeenCalledWith(
+            "reference_and_sample_collection_item",
+            "resource-id",
+        );
+        expect(document.body.textContent).toContain(
+            "Unable to delete this resource: %{message}",
+        );
+        expect(wrapper.find(".resource-report").exists()).toBe(true);
 
         wrapper.unmount();
     });
@@ -496,11 +814,7 @@ describe("ResourceReport", () => {
         );
         const wrapper = mountReport(drawerConfig());
         await flushPromises();
-        await buttonWithText(
-            wrapper,
-            ".report-drawer-triggers",
-            "Related Resources",
-        ).trigger("click");
+        await drawerTrigger(wrapper, "Related Resources").trigger("click");
         await flushPromises();
 
         await wrapper.find(".related-resources-group button").trigger("click");
@@ -587,13 +901,8 @@ describe("ResourceReport", () => {
         ]);
         const wrapper = mountReport(drawerConfig());
         await flushPromises();
-        await buttonWithText(
-            wrapper,
-            ".report-drawer-triggers",
-            "Related Resources",
-        ).trigger("click");
+        await drawerTrigger(wrapper, "Related Resources").trigger("click");
         await flushPromises();
-        expect(wrapper.findAll(".related-resources-group")).toHaveLength(2);
 
         vi.useFakeTimers();
         await wrapper.find(".related-resources-filter").setValue("smalt");
@@ -606,5 +915,36 @@ describe("ResourceReport", () => {
                 .findAll(".related-resources-group-label")
                 .map((label) => label.text()),
         ).toEqual(["Pigments"]);
+        expect(wrapper.find(".related-resources-empty").exists()).toBe(false);
+    });
+
+    it("summarizes the latest edit and which cards have data", async () => {
+        vi.mocked(fetchReportContext).mockResolvedValue({
+            ...makeContext(),
+            latest_edit: {
+                timestamp: NAME_EDIT.timestamp,
+                user: NAME_EDIT.user,
+            },
+        });
+        const wrapper = await openDataWorkspace();
+
+        const facts = summaryFacts(wrapper);
+        expect(facts["Last updated"]).toBe(
+            new Date(NAME_EDIT.timestamp).toLocaleString("en", {
+                dateStyle: "medium",
+                timeStyle: "short",
+            }),
+        );
+        expect(facts["Updated by"]).toBe("Ada Lovelace");
+        expect(facts["Cards with data"]).toBe("%{filled} of %{total}");
+        expect(facts["Cards without data"]).toBe(
+            "%{count}, including %{required} required",
+        );
+        expect(summaryEmptyCards(wrapper)).toEqual([
+            {
+                group: "Overview",
+                cards: [{ name: "Current Owner", isRequired: true }],
+            },
+        ]);
     });
 });

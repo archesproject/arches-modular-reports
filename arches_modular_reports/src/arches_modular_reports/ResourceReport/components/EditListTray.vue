@@ -3,11 +3,15 @@ import { computed, nextTick, ref, watch } from "vue";
 import { useGettext } from "vue3-gettext";
 
 import Button from "openvue/button";
-import ConfirmDialog from "openvue/confirmdialog";
 import Message from "openvue/message";
-import { useConfirm } from "openvue/useconfirm";
+
+import AlertDialog from "@/arches_modular_reports/ResourceReport/components/AlertDialog.vue";
 
 import { useReportData } from "@/arches_modular_reports/ResourceReport/composables/useReportData.ts";
+import {
+    nodeText,
+    readableText,
+} from "@/arches_modular_reports/ResourceReport/utils/localized-text.ts";
 import { findTile } from "@/arches_modular_reports/ResourceReport/utils/resource-change-set.ts";
 import { tileSummary } from "@/arches_modular_reports/ResourceReport/utils/tiles.ts";
 
@@ -17,17 +21,15 @@ import type {
     ResourceChange,
 } from "@/arches_modular_reports/ResourceReport/types.ts";
 
-const CONFIRM_GROUP = "edit-list-tray";
-
 defineProps<{
     component: ComponentNode;
 }>();
 
 const { $gettext, $ngettext } = useGettext();
 const reportData = useReportData();
-const confirm = useConfirm();
 
 const conflictSummary = ref<HTMLElement | null>(null);
+const isConfirmingDiscard = ref(false);
 
 const hasPendingChanges = computed(
     () => reportData.value.changeSet.pendingChanges.value.length > 0,
@@ -102,7 +104,36 @@ function nodegroupLabel(nodegroupAlias: string): string {
 }
 
 function displayOrEmpty(value: string | null | undefined): string {
-    return value ? value : $gettext("(empty)");
+    return value || $gettext("(empty)");
+}
+
+function currentNodeText(
+    conflict: ChangeConflict,
+    nodeAlias: string,
+): string | null {
+    const currentDisplay = conflict.nodes?.[nodeAlias].currentDisplay;
+    if (!currentDisplay) {
+        return null;
+    }
+    return readableText(
+        nodeAlias,
+        currentDisplay,
+        reportData.value.nodeTextContext,
+    );
+}
+
+function pendingNodeText(
+    change: ResourceChange | undefined,
+    nodeAlias: string,
+): string | null {
+    if (change?.type !== "edit") {
+        return null;
+    }
+    return nodeText(
+        nodeAlias,
+        change.aliasedData[nodeAlias] ?? null,
+        reportData.value.nodeTextContext,
+    );
 }
 
 interface ConflictRow {
@@ -153,12 +184,8 @@ function describeConflict(conflict: ChangeConflict): ConflictViewModel {
         const fields = nodeAliases.map(nodeLabel).join(", ");
         const rows = nodeAliases.map((nodeAlias) => ({
             field: nodeLabel(nodeAlias),
-            mine: displayOrEmpty(
-                change?.type === "edit"
-                    ? change.aliasedData[nodeAlias]?.display_value
-                    : null,
-            ),
-            theirs: displayOrEmpty(conflict.nodes?.[nodeAlias].currentDisplay),
+            mine: displayOrEmpty(pendingNodeText(change, nodeAlias)),
+            theirs: displayOrEmpty(currentNodeText(conflict, nodeAlias)),
         }));
         return {
             ...base,
@@ -184,14 +211,16 @@ function describeConflict(conflict: ChangeConflict): ConflictViewModel {
         };
     }
     if (conflict.reason === "deleted") {
-        const summary = conflict.tileSnapshot
-            ? tileSummary(
-                  conflict.tileSnapshot,
-                  reportData.value.nodegroupWidgetConfigs[
-                      conflict.nodegroupAlias
-                  ],
-              )
-            : "";
+        let summary = "";
+        if (conflict.tileSnapshot) {
+            summary = tileSummary(
+                conflict.tileSnapshot,
+                reportData.value.nodegroupWidgetConfigs[
+                    conflict.nodegroupAlias
+                ],
+                reportData.value.nodeTextContext,
+            );
+        }
         return {
             ...base,
             message: $gettext(
@@ -283,6 +312,7 @@ function changedTileSummary(change: ResourceChange): string {
     return tileSummary(
         tile,
         reportData.value.nodegroupWidgetConfigs[change.nodegroupAlias],
+        reportData.value.nodeTextContext,
     );
 }
 
@@ -297,19 +327,13 @@ function openChange(change: ResourceChange): void {
 }
 
 function confirmCancelAll(): void {
-    confirm.require({
-        group: CONFIRM_GROUP,
-        header: $gettext("Discard all changes?"),
-        message: $gettext(
-            "Every pending change will be discarded. This cannot be undone.",
-        ),
-        acceptLabel: $gettext("Discard all"),
-        rejectLabel: $gettext("Keep editing"),
-        accept: () => {
-            reportData.value.changeSet.discardAll();
-            reportData.value.editor.close();
-        },
-    });
+    isConfirmingDiscard.value = true;
+}
+
+function discardAll(): void {
+    isConfirmingDiscard.value = false;
+    reportData.value.changeSet.discardAll();
+    reportData.value.editor.close();
 }
 
 async function applyAll(): Promise<void> {
@@ -328,11 +352,46 @@ async function applyAll(): Promise<void> {
         v-if="hasPendingChanges"
         class="edit-list-tray"
     >
-        <ConfirmDialog :group="CONFIRM_GROUP" />
-        <div class="edit-list-tray-changes">
+        <AlertDialog
+            v-model:visible="isConfirmingDiscard"
+            :header="$gettext('Discard all changes?')"
+            :cancel-label="$gettext('Keep editing')"
+            :confirm-label="$gettext('Discard all')"
+            @confirm="discardAll"
+        >
+            <Message
+                severity="warn"
+                size="small"
+                icon="pi pi-exclamation-triangle"
+            >
+                {{
+                    $gettext(
+                        "Every pending change will be discarded. This cannot be undone.",
+                    )
+                }}
+            </Message>
+        </AlertDialog>
+        <div class="edit-list-tray-header">
             <h3 class="edit-list-tray-title">
                 {{ $gettext("Edit List") }}
             </h3>
+            <div class="edit-list-tray-actions">
+                <Button
+                    class="edit-list-tray-action edit-list-tray-cancel"
+                    severity="secondary"
+                    :label="$gettext('Cancel all edits')"
+                    :disabled="reportData.changeSet.isBusy.value"
+                    @click="confirmCancelAll"
+                />
+                <Button
+                    class="edit-list-tray-action"
+                    :label="$gettext('Apply all edits')"
+                    :loading="reportData.changeSet.isSaving.value"
+                    @click="applyAll"
+                />
+            </div>
+        </div>
+        <div class="edit-list-tray-changes">
             <div
                 class="edit-list-tray-sr-only"
                 role="status"
@@ -538,21 +597,6 @@ async function applyAll(): Promise<void> {
                 </li>
             </ul>
         </div>
-        <div class="edit-list-tray-actions">
-            <Button
-                class="edit-list-tray-action edit-list-tray-cancel"
-                severity="secondary"
-                :label="$gettext('Cancel all edits')"
-                :disabled="reportData.changeSet.isBusy.value"
-                @click="confirmCancelAll"
-            />
-            <Button
-                class="edit-list-tray-action"
-                :label="$gettext('Apply all edits')"
-                :loading="reportData.changeSet.isSaving.value"
-                @click="applyAll"
-            />
-        </div>
     </section>
 </template>
 
@@ -560,17 +604,29 @@ async function applyAll(): Promise<void> {
 .edit-list-tray {
     display: flex;
     flex-direction: column;
+    gap: 0.8rem;
+    min-block-size: 0;
+    padding-block: 0.8rem 1.4rem;
+    padding-inline: 1.4rem;
     border-block-start: 0.2rem solid var(--resource-report-bar-border-color);
     background: var(--p-content-background);
     color: var(--p-text-color);
+}
+
+.edit-list-tray-header {
+    display: flex;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.8rem 1.6rem;
 }
 
 .edit-list-tray-changes {
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
-    padding-block: 0.6rem 2.4rem;
-    padding-inline: 1.4rem;
+    min-block-size: 0;
+    overflow-y: auto;
 }
 
 .edit-list-tray-title {
@@ -676,18 +732,15 @@ async function applyAll(): Promise<void> {
 
 .edit-list-tray-actions {
     display: flex;
-    justify-content: flex-end;
     gap: 0.8rem;
-    padding: 1.5rem;
-    border-block-start: 0.1rem solid var(--resource-report-bar-border-color);
-    background: var(--resource-report-bar-background);
+    margin-inline-start: auto;
 }
 
 .edit-list-tray-actions .edit-list-tray-action {
     --p-button-label-font-weight: 600;
     padding-block: 0.7rem;
     padding-inline: 1.6rem;
-    border-radius: 0.5rem;
+    border-radius: 0.2rem;
     font-size: 1.3rem;
     line-height: 1.2;
 }

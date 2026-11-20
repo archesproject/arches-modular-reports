@@ -5,6 +5,7 @@ import type {
     AliasedTileData,
     NodegroupWidgetConfig,
 } from "@/arches_vue_components/types.ts";
+import type { NodeTextContext } from "@/arches_modular_reports/ResourceReport/types.ts";
 
 export function ownLabelsMatch(
     nodegroupWidgetConfig: NodegroupWidgetConfig,
@@ -38,9 +39,10 @@ export function folioMatches(
     nodegroupAlias: string,
     tiles: AliasedTileData[],
     query: string,
+    context: NodeTextContext,
 ): boolean {
     return (
         nodegroupMatches(nodegroupWidgetConfigs, nodegroupAlias, query) ||
-        tiles.some((tile) => tileSearchText(tile).includes(query))
+        tiles.some((tile) => tileSearchText(tile, context).includes(query))
     );
 }

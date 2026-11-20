@@ -80,7 +80,10 @@ export function useFolio(
     });
 
     const canEditEntries = computed(
-        () => reportData.value.canEdit && reportData.value.editor.isAvailable,
+        () =>
+            reportData.value.canEdit &&
+            reportData.value.editor.isAvailable &&
+            reportData.value.editLinks.isShown,
     );
 
     const isAddable = computed(
@@ -145,7 +148,11 @@ export function useFolio(
     }
 
     function tileLabel(tile: AliasedTileData): string {
-        const summary = tileSummary(tile, nodegroupWidgetConfig.value);
+        const summary = tileSummary(
+            tile,
+            nodegroupWidgetConfig.value,
+            reportData.value.nodeTextContext,
+        );
         if (summary === "") {
             return cardName.value;
         }
